@@ -136,7 +136,7 @@ def listen(port = 3000, params = {})
 	Anorexic::Application.instance.add_server port, params
 end
 
-# sets a route to the last server object
+# adds a route to the last server object
 #
 # path:: the path for the route
 # config:: options for the default behaviour of the route.
@@ -151,7 +151,7 @@ def route(path, config = {'Content-Type' => 'text/html'}, &block)
 	Anorexic::Application.instance.add_route path, config, &block
 end
 
-# sets a route to the all the previous server objects
+# adds a route to the all the previous server objects
 # accepts same options as route
 def shared_route(path, config = {'Content-Type' => 'text/html'}, &block)
 	Anorexic::Application.instance.add_shared_route path, config, &block
@@ -167,4 +167,3 @@ def start(deamon = false)
 	trap("INT") {Anorexic::Application.instance.shutdown}
 	Anorexic::Application.instance.start deamon
 end
-

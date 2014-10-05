@@ -9,7 +9,13 @@ Gem::Specification.new do |spec|
   spec.authors       = ["Boaz Segev (Myst)"]
   spec.email         = ["boaz@2be.co.il"]
   spec.summary       = %q{ A pure ruby framework for web services - so small, it's anotexic! }
-  spec.description   = %q{ a very simple DSL framework for web services (web apps). it's a small and barebones WEBrick application that allows multi-port, multi-threaded services. It's so small, it's anorexic! if you want more (HAML, SASS, etc'), it's very easy to add it in... but it's not there! look for the plugins you want in the ruby community.}
+  spec.description   = %q{this is a small and barebones WEBrick application that allows multi-port, multi-threaded services. It's so small, it's anorexic!
+
+this is a very simple DSL framework for web services (web apps).
+
+if you want more (HAML, SASS, etc'), it's very easy to add it in... but it's not there!
+
+look for the plugins you want in the ruby community.}
   spec.homepage      = "https://github.com/boazsegev/anorexic"
   spec.license       = "MIT"
 
