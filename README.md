@@ -52,6 +52,7 @@ the app is a simple DSL that deletes itself once the server starts running (this
 
 The most simple app will be a simple web server (it can actually be even more simple):
 
+		# load all your gams, assuming you have a gemfile
 		require 'bundler'
 		Bundler.require
 
@@ -62,14 +63,13 @@ The most simple app will be a simple web server (it can actually be even more si
 		public_folder = File.expand_path(File.dirname(__FILE__), 'public')
 
 		# set up a non-secure service on port 80
-		listen 80, DocumentRoot: public_folder
+		# serves file without file indexingå
+		listen 80, file_root: public_folder
 
-		# this route is just to show who made the app
-		route "/people" do |req, res|
-			res.body = "<html><head></head><body><p>I made this app! :-)</p></body></html>"
-		end
+		# this route is not rquired. it's just to show who made the app
+		route "/people" { |req, res| res.body = "<html><head></head><body><p>I made this app! :-)</p></body></html>" }
 
-		# deletes the DSL and starts the service
+		# The Magic: deletes the DSL and starts the service
 		start
 
 
