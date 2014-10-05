@@ -2,8 +2,7 @@ require "anorexic/version"
 # Using the built-in webrick to create services.
 require 'openssl'
 require 'webrick'
-require 'webrick/httpservlet'
-require 'webrick/httpservlet/filehandler'
+require 'webrick/https'
 
 ##############################################################################
 # a stand alone webrick services app.
@@ -25,12 +24,11 @@ module Anorexic
 
 	# This is the main application object. only one can exist.
 	#
-	# This object holds the server(s) created by the `listen` function.
-	# Each server will be run in it's own thread once the `start` function is called
-	#
 	# This object is the power behind the `listen`, `route` and `start` functions.
 	#
 	# Please use the`listen`, `route` and `start` functions rather then accessing this object.
+	#
+	# It is better to make most settings using the listen paramaters.
 	class Application
 		include Singleton
 
@@ -39,11 +37,31 @@ module Anorexic
 			@threads = []
 		end
 
-		def add_server(server)
-			unless server.is_a? WEBrick::HTTPServer
-				raise "TYPE ERROR: server objects must be WEBrick::HTTPServer. use 'listen' to add server objects."
+		def add_server(port = 3000, params = {})
+			server_params = {Port: port}.update params
+			options = { v_host: nil, s_alias: nil, ssl_cert: nil, ssl_pkey: nil, ssl_self: false }
+			options.update params
+
+			if options[:file_root]
+				options[:allow_indexing] ||= false
+				server_params[:DocumentRootOptions] ||= {}
+				server_params[:DocumentRoot] = options[:file_root]
+				server_params[:DocumentRootOptions][:FancyIndexing] ||= options[:allow_indexing]
 			end
-			@servers << server
+
+			if options[:vhost]
+				server_params[:ServerName] = options[:vhost]
+				server_params[:ServerAlias] = options[:s_alias]
+			end
+
+			if options[:ssl_self]
+				server_name = server_params[:ServerName] || "localhost"
+				server_params[:SSLEnable] = true
+				server_params[:SSLCertName] = [ ["CN" , server_name]]
+			elsif options[:ssl_cert] && options[:ssl_pkey]
+				server_params[:SSLEnable], server_params[:SSLCertificate], server_params[:SSLPrivateKey] = true, options[:ssl_cert], options[:ssl_pkey]
+			end
+			@servers << WEBrick::HTTPServer.new(server_params)
 		end
 
 		def check_server_array
@@ -67,9 +85,10 @@ module Anorexic
 		end
 
 		def add_route_to_server(server, path, config = {}, &block)
-			if config[:folder]
-				puts "Setting up a folder service for #{config[:folder]} - it will be exposed!"
-				server.mount path, WEBrick::FileHandler, config[:folder]
+			if config[:servlet]
+				puts "attempting to mount a servlet - not yet tested nor fully supportted"
+				config[:servlet_args] ||= []
+				server.mount path, config[:servlet], *config[:servlet_args]
 			else
 				server.mount_proc path do |request, response|
 					response['Content-Type'] = config['Content-Type'] || 'text/html'
@@ -104,6 +123,8 @@ end
 #
 # The different keys in the params hash control the server's behaviour, as follows:
 #
+# file_root:: sets a root folder to serve files. defaults to nil (no root).
+# allow_indexing:: if a root folder is set, this sets th indexing option. defaults to false.
 # v_host:: sets the virtual host name, for virtual hosts. defaults to nil (no virtual host).
 # ssl_self:: sets an SSL server with a self assigned certificate (changes with every restart). defaults to false.
 # ssl_cert:: sets an SSL certificate (an OpenSSL::X509::Certificate object). if both ssl_cert and ssl_pkey, an SSL server will be established. defaults to nil.
@@ -112,27 +133,20 @@ end
 # you can also add any of the WEBrick values as described at:
 # http://www.ruby-doc.org/stdlib-2.0/libdoc/webrick/rdoc/WEBrick/HTTPServer.html#method-i-mount_proc
 def listen(port = 3000, params = {})
-	server_params = {Port: port}.merge params
-	options = { v_host: nil, s_alias: nil, ssl_cert: nil, ssl_pkey: nil, ssl_self: false }
-	options.merge params
-
-	if options[:vhost]
-		server_params[:ServerName] = options[:vhost]
-		server_params[:ServerAlias] = options[:s_alias]
-	end
-
-	if options[:ssl_self]
-		server_name = server_params[:ServerName] || "localhost"
-		server_params[:SSLEnable], server_params[:SSLCertName] = true, [ ["CN" , server_name]]
-	elsif options[:ssl_cert] && options[:ssl_pkey]
-		server_params[:SSLEnable], server_params[:SSLCertificate], server_params[:SSLPrivateKey] = true, options[:ssl_cert], options[:ssl_pkey]
-	end
-	Anorexic::Application.instance.add_server WEBrick::HTTPServer.new(server_params)
+	Anorexic::Application.instance.add_server port = 3000, params = {}
 end
 
 # sets a route to the last server object
+#
 # path:: the path for the route
 # config:: options for the default behaviour of the route.
+#
+# the current options for the config are:
+#
+# Content-Type:: the key should be the string 'Content-Type'. defaults to 'Content-Type' => 'text/html'.
+# servlet:: set a servlet instead of a Proc, see WEBRick documentation for more info. defaults to nil.
+# servlet_args:: if a servlet is set, attempts to send arguments to the constructor. defaults to [] (no arguments).
+#
 def route(path, config = {'Content-Type' => 'text/html'}, &block)
 	Anorexic::Application.instance.add_route path, config, &block
 end

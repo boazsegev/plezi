@@ -3,33 +3,52 @@
 app_template = <<ENDTEMPLATE
 #!/usr/bin/env ruby
 
+# using bundler to load gems (including the anorexic gem)
 require 'bundler'
+
+# Using pathname extentions for setting public folder
+require 'pathname'
+
+# load all gems from gemfile
 Bundler.require
 
-# set the folder from which to serve files - this can be removed to avoid file access.
-public_folder = File.expand_path(File.dirname(__FILE__), 'public')
+# load config files
+Dir["{config}/**/*.rb"].each {|file| require Pathname.new(file).expand_path}
 
-# set up a non-secure service
-listen 3000, DocumentRoot: public_folder
+# load all library files
+Dir["{lib}/**/*.rb"].each {|file| require Pathname.new(file).expand_path}
+
+# set up WEBrick logs
+logger = WEBrick::Log.new Pathname.new(File.dirname(__FILE__)).expand_path.join('logs', 'server.log')
+
+# set the folder from which to serve files - this can be removed to avoid file access.
+public_folder = Pathname.new(File.dirname(__FILE__)).expand_path.join('public')
+
+# set up a non-encrypted service with file access
+# (remove the DocumentRoot and FancyIndexing to disable public file access)
+listen 3000, file_root: public_folder
 
 # this rount is only for the non-secure service
 route "/people" do |req, res|
 	res.body = "<html><head></head><body><p>I made this app! :-)</p></body></html>"
 end
 
-# add a secure service
-listen 3001, ssl_self: true, DocumentRoot: public_folder
+# add an encrypted (SSL) web service
+# (remove the DocumentRoot and FancyIndexing to disable public file access)
+listen 3001, ssl_self: true, file_root: public_folder
 
-# this rount is only for the secure service
+# this route is only for the encrypted service
 route "/people" do |req, res|
 	res.body = "<html><head></head><body><p>I made this app! ... but I had some help... ;)</p></body></html>"
 end
 
 
-# these routes will be shared among the secure and non-secure services
+# these routes will be shared among the encrypted and non-encrypted services
 shared_route "/shared" do |req, res|
 	res.body = "<html><head></head><body><p>this is both secure and non-secure</p></body></html>"
 end
+
+# THIS IS WHERE THE MAGIC STARTS - deletes the DSL and starts the service :)
 start
 
 ENDTEMPLATE
@@ -39,8 +58,6 @@ source "https://rubygems.org"
 
 gem 'anorexic'
 
-# gem 'haml'
-# gem 'i18n'
 ENDTEMPLATE
 
 html_template = <<ENDTEMPLATE
@@ -49,22 +66,32 @@ html_template = <<ENDTEMPLATE
 		<title>Feed me!!!</title>
 	</head>
 	<body>
-		<p>Hello World... feed me!</p>
+		<h1>Hello World... feed me!</h1>
+		<p>you can find this file at ./public/index.html</p>
 	</body>
 </html>
 ENDTEMPLATE
 
 
-if ARGV[0] == 'new'
+if ARGV[0] == 'new' || ARGV[0] == 'n'
 	if Dir.exists?(ARGV[1])
+		puts ""
 		puts "ERROR: dir exists, choose a defferent app name."
+		puts ""
+		exit
 	end
 	Dir.mkdir ARGV[1]
 	puts "create #{ARGV[1]} application directory."
 	Dir.chdir ARGV[1]
 	puts "changed into #{ARGV[1]} directory."
-	Dir.mkdir "models"
-	puts "      create #{ARGV[1]}/models"
+	Dir.mkdir "logs"
+	puts "      create #{ARGV[1]}/logs"
+	Dir.chdir "logs"
+	IO.write "server.log", ""
+	Dir.chdir ".."
+	puts "      create #{ARGV[1]}/logs/server.log"
+	Dir.mkdir "lib"
+	puts "      create #{ARGV[1]}/lib"
 	Dir.mkdir "config"
 	puts "      create #{ARGV[1]}/config"
 	Dir.mkdir "public"
@@ -74,12 +101,30 @@ if ARGV[0] == 'new'
 	puts "      create #{ARGV[1]}/public/index.html"
 	Dir.chdir ".."
 	IO.write "#{ARGV[1]}.rb", app_template
-	File.chmod 775, "#{ARGV[1]}.rb"
 	puts "      create #{ARGV[1]}.rb"
 	IO.write "Gemfile", gemfile_template
 	puts "      create Gemfile"
+	File.chmod 0775, "#{ARGV[1]}.rb"
+	puts "tried to update execution permissions. this probably failed."
+	puts "use: chmod +x ./#{ARGV[1]}.rb to set execution permissions."
+	puts ""
+	puts "done."
+	puts ""
+	puts "run the app using: ./#{ARGV[1]}.rb or using: anorexic s"
+	puts ""
+elsif ARGV[0] == 'server' || ARGV[0] == 'start' || ARGV[0] == 's'
+	load File.expand_path(Dir["."][0], (File.expand_path(Dir["."][0]).split(/[\\\/]/).last + ".rb") )
 else
 	puts "Anorexic fast web app starter."
 	puts "use: anorexic new appname"
+	puts "=============================="
+	puts "options:"
+	puts "option             description"
+	puts "new <appname>      creates a new application called <appname>."
+	puts "n                  alias for new."
+	puts "server             runs the app."
+	puts "start              alias for server."
+	puts "s                  alias for start/server."
+	puts ""
 end
 

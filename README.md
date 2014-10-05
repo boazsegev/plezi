@@ -54,15 +54,17 @@ The most simple app will be a simple web server (it can actually be even more si
 
 		require 'bundler'
 		Bundler.require
+
+		# just so you remember, although it should be in the gemfile anyway...
 		require 'anorexic'
 
-		# set the folder from which to serve files - this can be removed to avoid file access.
+		# set the folder from which to serve files
 		public_folder = File.expand_path(File.dirname(__FILE__), 'public')
 
 		# set up a non-secure service on port 80
 		listen 80, DocumentRoot: public_folder
 
-		# this rount is just to show who made the app
+		# this route is just to show who made the app
 		route "/people" do |req, res|
 			res.body = "<html><head></head><body><p>I made this app! :-)</p></body></html>"
 		end
