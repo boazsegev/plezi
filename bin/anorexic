@@ -1,0 +1,85 @@
+#!/usr/bin/env ruby
+
+app_template = <<ENDTEMPLATE
+#!/usr/bin/env ruby
+
+require 'bundler'
+Bundler.require
+
+# set the folder from which to serve files - this can be removed to avoid file access.
+public_folder = File.expand_path(File.dirname(__FILE__), 'public')
+
+# set up a non-secure service
+listen 3000, DocumentRoot: public_folder
+
+# this rount is only for the non-secure service
+route "/people" do |req, res|
+	res.body = "<html><head></head><body><p>I made this app! :-)</p></body></html>"
+end
+
+# add a secure service
+listen 3001, ssl_self: true, DocumentRoot: public_folder
+
+# this rount is only for the secure service
+route "/people" do |req, res|
+	res.body = "<html><head></head><body><p>I made this app! ... but I had some help... ;)</p></body></html>"
+end
+
+
+# these routes will be shared among the secure and non-secure services
+shared_route "/shared" do |req, res|
+	res.body = "<html><head></head><body><p>this is both secure and non-secure</p></body></html>"
+end
+start
+
+ENDTEMPLATE
+
+gemfile_template = <<ENDTEMPLATE
+source "https://rubygems.org"
+
+gem 'anorexic'
+
+# gem 'haml'
+# gem 'i18n'
+ENDTEMPLATE
+
+html_template = <<ENDTEMPLATE
+<html>
+	<head>
+		<title>Feed me!!!</title>
+	</head>
+	<body>
+		<p>Hello World... feed me!</p>
+	</body>
+</html>
+ENDTEMPLATE
+
+
+if ARGV[0] == 'new'
+	if Dir.exists?(ARGV[1])
+		puts "ERROR: dir exists, choose a defferent app name."
+	end
+	Dir.mkdir ARGV[1]
+	puts "create #{ARGV[1]} application directory."
+	Dir.chdir ARGV[1]
+	puts "changed into #{ARGV[1]} directory."
+	Dir.mkdir "models"
+	puts "      create #{ARGV[1]}/models"
+	Dir.mkdir "config"
+	puts "      create #{ARGV[1]}/config"
+	Dir.mkdir "public"
+	puts "      create #{ARGV[1]}/public"
+	Dir.chdir "public"
+	IO.write "index.html", html_template
+	puts "      create #{ARGV[1]}/public/index.html"
+	Dir.chdir ".."
+	IO.write "#{ARGV[1]}.rb", app_template
+	File.chmod 775, "#{ARGV[1]}.rb"
+	puts "      create #{ARGV[1]}.rb"
+	IO.write "Gemfile", gemfile_template
+	puts "      create Gemfile"
+else
+	puts "Anorexic fast web app starter."
+	puts "use: anorexic new appname"
+end
+

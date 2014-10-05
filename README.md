@@ -18,7 +18,9 @@ Or install it yourself as:
 
 ## Usage
 
-TODO: Write usage instructions here
+to write a web app, simply type
+
+    $ anorexic new app
 
 ## Contributing
 

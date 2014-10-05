@@ -2,7 +2,8 @@ require "anorexic/version"
 # Using the built-in webrick to create services.
 require 'openssl'
 require 'webrick'
-
+require 'webrick/httpservlet'
+require 'webrick/httpservlet/filehandler'
 
 ##############################################################################
 # a stand alone webrick services app.
@@ -57,18 +58,23 @@ module Anorexic
 
 		def add_route(path, config = {}, &block)
 			check_server_array
-			add_route_to_server @servers.last, path, config = {}, &block
+			add_route_to_server @servers.last, path, config, &block
 		end
 
 		def add_shared_route(path, config = {}, &block)
 			check_server_array
-			@servers.each { |s| add_route_to_server(s, path, config = {}, &block) }
+			@servers.each { |s| add_route_to_server(s, path, config, &block) }
 		end
 
 		def add_route_to_server(server, path, config = {}, &block)
-			server.mount_proc path do |request, response|
-				response['Content-Type'] = config['Content-Type'] || 'text/html'
-				block.call request, response
+			if config[:folder]
+				puts "Setting up a folder service for #{config[:folder]} - it will be exposed!"
+				server.mount path, WEBrick::FileHandler, config[:folder]
+			else
+				server.mount_proc path do |request, response|
+					response['Content-Type'] = config['Content-Type'] || 'text/html'
+					block.call request, response
+				end
 			end
 		end
 
@@ -114,6 +120,7 @@ def listen(port = 3000, params = {})
 		server_params[:ServerName] = options[:vhost]
 		server_params[:ServerAlias] = options[:s_alias]
 	end
+
 	if options[:ssl_self]
 		server_name = server_params[:ServerName] || "localhost"
 		server_params[:SSLEnable], server_params[:SSLCertName] = true, [ ["CN" , server_name]]
@@ -127,13 +134,13 @@ end
 # path:: the path for the route
 # config:: options for the default behaviour of the route.
 def route(path, config = {'Content-Type' => 'text/html'}, &block)
-	Anorexic::Application.instance.add_route path, config = {}, &block
+	Anorexic::Application.instance.add_route path, config, &block
 end
 
 # sets a route to the all the previous server objects
 # accepts same options as route
-def shared_route(path, config = {}, &block)
-	Anorexic::Application.instance.add_shared_route path, config = {}, &block
+def shared_route(path, config = {'Content-Type' => 'text/html'}, &block)
+	Anorexic::Application.instance.add_shared_route path, config, &block
 end
 
 # finishes setup of the servers and starts them up. This will hange the proceess unless it's set up as a deamon.
@@ -143,7 +150,7 @@ def start(deamon = false)
 	undef shared_route
 	undef route
 	undef start
-	trap("INT") {Application.instance.shutdown}
+	trap("INT") {Anorexic::Application.instance.shutdown}
 	Anorexic::Application.instance.start deamon
 end
 
