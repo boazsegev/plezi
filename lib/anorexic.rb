@@ -133,7 +133,7 @@ end
 # you can also add any of the WEBrick values as described at:
 # http://www.ruby-doc.org/stdlib-2.0/libdoc/webrick/rdoc/WEBrick/HTTPServer.html#method-i-mount_proc
 def listen(port = 3000, params = {})
-	Anorexic::Application.instance.add_server port = 3000, params = {}
+	Anorexic::Application.instance.add_server port, params
 end
 
 # sets a route to the last server object
