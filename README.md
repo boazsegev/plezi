@@ -44,11 +44,11 @@ Or install it yourself as:
 
 ## Usage
 
-to write a web app, simply type
+to create a new web app, run from terminal:
 
     $ anorexic new appname
 
-the app is a simple DSL that deletes itself once the server starts running (this way, we avoid any conflicts in the code - no reserved keywords).
+the app is a simple DSL that deletes all the DLS methods once the server starts running (this way, we avoid any conflicts in the code - no reserved keywords).
 
 The most simple app will be a simple web server (it can actually be even more simple):
 
