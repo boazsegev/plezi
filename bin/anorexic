@@ -187,6 +187,7 @@ ENDTEMPLATE
 	end
 end
 
+
 ######################################################################
 # tweek the string class for termial coloring options
 class String
@@ -259,4 +260,6 @@ else
 	puts "s                       alias for start/server."
 	puts ""
 end
+
+
 
