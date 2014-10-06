@@ -1,5 +1,7 @@
 #!/usr/bin/env ruby
 
+require 'rubygems'
+
 #########
 ## set up building environment
 BUILDING_ANOREXIC_TEMPLATE = true
@@ -15,6 +17,9 @@ BUILDING_ANOREXIC_TEMPLATE = true
 #				def initialize
 #					# start with the old initialize, to set the template up
 #					old_init
+#					# add your gem to the gemfile
+#					@gemfile_template << "\n# feed GEMNAME to anorexic"
+#					@gemfile_template << "\ngem 'GEMNAME'"
 #					# make sure your folder exists, but don't overwrite!!!
 #					# if you overwrite!!! you might destroy other gems additions.
 #					app_tree["new_folder"] ||= {}
@@ -231,12 +236,18 @@ if ARGV[0] == 'new' || ARGV[0] == 'n'
 	if ARGV.count > 3 && ARGV[2] == 'with'
 		local_gems = Gem::Specification.map {|g| g.name}
 		# this will load all requested gems and allow them to update the AppTemplate
+		require 'pathname'
 		ARGV[3..-1].each do |g|
-			begin
-				require g if local_gems.include? g
+			if local_gems.include? g
+				puts "trying to require '#{g}'"
+				require g
+				puts "did the gem load?"
+				puts "yes, gem loaded" if defined? Anorexic::FeedHaml
 				puts "loaded the #{g} gem, and gave it a change to update the template."
-			rescue Exception => e
-				
+			else
+				puts "Error, the gem: #{g} could not be found!".red
+				puts "try first running: gem install #{g}".green
+				exit
 			end
 		end
 	end
