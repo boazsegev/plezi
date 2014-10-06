@@ -28,45 +28,45 @@ require 'webrick/https'
 # the add_server(port = 3000, params = {}) and  add_route_to_server(server, path, config = {}, &block)
 # should take the parameters allowed in listen and route
 #
+# here is an empty overwrite example (which will crash if you leave it like this)
+#
+#
+#
 # thanks to Russ Olsen for his ideas for DSL and his blog post at:
 # http://www.jroller.com/rolsen/entry/building_a_dsl_in_ruby1 
 ##############################################################################
 module Anorexic
 
-	# This is the main application object. only one can exist.
+	# this is the basic server object for the Anorexic framework.
+	# create a similar one to change the anorexic server
+	# (to support unicorn, thin, rack, etc').
 	#
-	# This object is the power behind the `listen`, `route` and `start` functions.
+	# remember to set the `Anorexic::Application.instance.server_class` to you new class:
+	#    `Anorexic::Application.instance.server_class = NewServer`
 	#
-	# Please use the`listen`, `route` and `start` functions rather then accessing this object.
-	#
-	# It is better to make most settings using the listen paramaters.
-	class Application
-		include Singleton
+	# the server class must support the fullowing methods:
+	# new:: new(port = 3000, params = {})
+	# add_route:: path, config, &block
+	# start:: (no paramaters)
+	# shutdown:: (no paramaters)
+	# self.set_logger:: log_file (class method)
+	class WEBrickServer
+		attr_reader :server
+		attr_reader :routes
 
-		attr_reader :logger, :log_file
-		attr_accessor :server_class
+		@@logger = nil
+		@@log_file = nil
 
-		def initialize
-			@servers = []
-			@threads = []
-			@logger = nil
-			@log_file = nil
-		end
+		def initialize(port = 3000, params = {})
+			@routes = []
 
-		def set_logger file_name
-			@log_file = File.open file_name, 'a+'
-			@logger = (WEBrick::Log.new Application.instance.log_file)
-
-		end
-
-		def add_server(port = 3000, params = {})
 			server_params = {Port: port}.update params
 			options = { v_host: nil, s_alias: nil, ssl_cert: nil, ssl_pkey: nil, ssl_self: false }
 			options.update params
 
-			if @log_file
+			if @@log_file
 				server_params[:AccessLog] = [
-					[@log_file, WEBrick::AccessLog::COMBINED_LOG_FORMAT],
+					[@@log_file, WEBrick::AccessLog::COMBINED_LOG_FORMAT],
 				]
 			end
 
@@ -89,15 +89,88 @@ module Anorexic
 			elsif options[:ssl_cert] && options[:ssl_pkey]
 				server_params[:SSLEnable], server_params[:SSLCertificate], server_params[:SSLPrivateKey] = true, options[:ssl_cert], options[:ssl_pkey]
 			end
-			@servers << WEBrick::HTTPServer.new(server_params)
+			@server = WEBrick::HTTPServer.new(server_params)
+			self
+		end
+
+		def add_route path, config, &block
+			# add route to server
+			if config[:servlet]
+				puts "attempting to mount a servlet - not yet tested nor fully supportted"
+				config[:servlet_args] ||= []
+				@server.mount path, config[:servlet], *config[:servlet_args]
+			elsif config[:file_root]
+				config[:servlet_args] ||= []
+				extra_options = [config[:file_root]]
+				extra_options << {}
+				extra_options.last[:FancyIndexing] = true if config[:allow_indexing]
+				extra_options.last.update config[:options] if config[:options].is_a?(Hash)
+				extra_options.push *config[:servlet_args]
+				@server.mount path, WEBrick::HTTPServlet::FileHandler, *extra_options
+			else
+				@server.mount_proc path do |request, response|
+					response['Content-Type'] = config['Content-Type'] || 'text/html'
+					block.call request, response
+				end
+			end
+		end
+
+		def start
+			# start the server
+			@server.start
+		end
+
+		def shutdown
+			# start the server
+			@server.shutdown
+		end
+
+		def self.set_logger file_name
+			@@log_file = File.open file_name, 'a+'
+			@@logger = (WEBrick::Log.new @@log_file)
+			@@logger
+		end
+
+		def self.log_file
+			@@log_file
+		end
+
+		def self.logger
+			@@logger
+		end
+	end
+
+	# This is the main application object. only one can exist.
+	#
+	# This object is the power behind the `listen`, `route` and `start` functions.
+	#
+	# Please use the`listen`, `route` and `start` functions rather then accessing this object.
+	#
+	# It is better to make most settings using the listen paramaters.
+	class Application
+		include Singleton
+
+		attr_reader :logger
+		attr_accessor :server_class
+
+		def initialize
+			@servers = []
+			@threads = []
+			@logger = nil
+			@server_class = WEBrickServer
+		end
+
+		def set_logger file_name
+			@logger = @server_class.set_logger file_name
+		end
+
+		def add_server(port = 3000, params = {})
+			@servers << @server_class.new(port, params)
 		end
 
 		def check_server_array
 			if @servers.empty?
 				raise "ERROR: must define a listenong point before setting it's routes."
-			end
-			unless (@servers.select {|s| !s.is_a? WEBrick::HTTPServer}).empty?
-				raise "TYPE ERROR: server objects must be WEBrick::HTTPServer. use 'listen' to add server objects."
 			end
 			true
 		end
@@ -113,24 +186,7 @@ module Anorexic
 		end
 
 		def add_route_to_server(server, path, config = {}, &block)
-			if config[:servlet]
-				puts "attempting to mount a servlet - not yet tested nor fully supportted"
-				config[:servlet_args] ||= []
-				server.mount path, config[:servlet], *config[:servlet_args]
-			elsif config[:file_root]
-				config[:servlet_args] ||= []
-				extra_options = [config[:file_root]]
-				extra_options << {}
-				extra_options.last[:FancyIndexing] = true if config[:allow_indexing]
-				extra_options.last.update config[:options] if config[:options].is_a?(Hash)
-				extra_options.push *config[:servlet_args]
-				server.mount path, WEBrick::HTTPServlet::FileHandler, *extra_options
-			else
-				server.mount_proc path do |request, response|
-					response['Content-Type'] = config['Content-Type'] || 'text/html'
-					block.call request, response
-				end
-			end
+			server.add_route path, config, &block
 		end
 
 		def start deamon = false
