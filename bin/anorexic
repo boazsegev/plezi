@@ -125,33 +125,27 @@ ENDTEMPLATE
 		str = <<ENDTEMPLATE
 #!/usr/bin/env ruby
 
-# load all framework and gems
+## load all framework and gems
 require './framework.rb'
 
-# set up a non-encrypted service with file access
-# (remove the file_root to disable public file access)
+## set up a non-encrypted service with file access
+## (remove the file_root to disable public file access)
 listen 3000, file_root: Root.join('public').to_s
 
+## uncomment the following line to add an SSL server
+# listen 3001, ssl_self: true, file_root: Root.join('public').to_s
 
-# this rount is only for the non-secure service
-route "/people" do |req, res|
-	res.body = "<html><head></head><body><p>I made this app! :-)</p></body></html>"
+# this route will be available for both encrypted and non-encrypted connections
+shared_route "/people" do |req, res|
+	res.body = "your name here\\ngive someone else some credit too...?"
+	res['Content-Type'] = 'text/plain'
 end
 
-# add an encrypted (SSL) web service
-# (remove the file_root to disable public file access)
-listen 3001, ssl_self: true, file_root: Root.join('public').to_s
-
-# this route is only for the encrypted service
-route "/people" do |req, res|
-	res.body = "<html><head></head><body><p>I made this app! ... but I had some help... ;)</p></body></html>"
-end
-
-
-# these routes will be shared among the encrypted and non-encrypted services
-shared_route "/shared" do |req, res|
-	res.body = "<html><head></head><body><p>this is both secure and non-secure</p></body></html>"
-end
+## uncomment the following lines to add an encrypted only route
+# route "/login" do |req, res|
+# 	# add your code here
+# 	res.body = ""
+# end
 
 # THIS IS WHERE THE MAGIC STARTS - deletes the DSL and starts the service :)
 start
