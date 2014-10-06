@@ -236,20 +236,29 @@ if ARGV[0] == 'new' || ARGV[0] == 'n'
 	if ARGV.count > 3 && ARGV[2] == 'with'
 		local_gems = Gem::Specification.map {|g| g.name}
 		# this will load all requested gems and allow them to update the AppTemplate
-		require 'pathname'
-		ARGV[3..-1].each do |g|
-			if local_gems.include? g
-				puts "trying to require '#{g}'"
-				require g
-				puts "did the gem load?"
-				puts "yes, gem loaded" if defined? Anorexic::FeedHaml
-				puts "loaded the #{g} gem, and gave it a change to update the template."
-			else
-				puts "Error, the gem: #{g} could not be found!".red
-				puts "try first running: gem install #{g}".green
-				exit
+		if ARGV[3] == "all"
+			puts "loading gems and giving each gem a chance to update the app template:".yellow
+			local_gems.each do |g|
+				begin
+					puts "loaded the #{g} gem."	if require g				
+				rescue Exception => e
+					puts "couldn't load the #{g} gem... moving on.".red
+				end
+			end
+		else
+			require 'pathname'
+			ARGV[3..-1].each do |g|
+				if local_gems.include? g
+					require g
+					puts "loaded the #{g} gem, and gave it a change to update the template."
+				else
+					puts "Error, the gem: #{g} could not be found!".red
+					puts "try first running: gem install #{g}".green
+					exit
+				end
 			end
 		end
+		true
 	end
 
 	template = AppTemplate.new
@@ -260,15 +269,23 @@ else
 	puts ""
 	puts "Anorexic fast web app starter.".red
 	puts "use: anorexic new appname"
+	puts "or: anorexic new appname with all"
 	puts "==============================".green
 	puts "options:".pink
 	puts "option                  description".yellow
 	puts "new <appname>           creates a new application called <appname>."
-	puts "new <app> with <gem(s)> loads the gem(s) and allows them to update the template before building the app."
 	puts "n                       alias for new."
 	puts "server                  runs the app."
 	puts "start                   alias for server."
 	puts "s                       alias for start/server."
+	puts ""
+	puts "create an app with specific plugins:".pink
+	puts "new <app> with <gem(s)>"
+	puts "loads the specific gem(s) and allows them to update the template before building the app.".green
+	puts ""
+	puts "create an app with ALL plugins:".pink
+	puts "new <app> with all"
+	puts "loads the all available gem(s) and allows them to update the template before building the app.".green
 	puts ""
 end
 
