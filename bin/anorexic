@@ -31,7 +31,7 @@ class AppTemplate
 		initialize_template_globals
 		@app_tree = {}
 
-		@app_tree["logs"] = {"server.log" => ""}
+		@app_tree["logs"] = {}
 		@app_tree["config"] = {}
 		@app_tree["lib"] = {}
 		@app_tree["public"] = {"index.html" => @html_template}
