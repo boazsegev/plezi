@@ -67,9 +67,12 @@ The most simple app will be a simple web server (it can actually be even more si
 		listen 80, file_root: public_folder
 
 		# this route is not rquired. it's just to show who made the app
-		route "/people" { |req, res| res.body = "<html><head></head><body><p>I made this app! :-)</p></body></html>" }
+		route "/people" do |req, res|
+			res.body = "your name here :)"
+			res['Content-Type'] = 'text/plain'
+		end
 
-		# The Magic: deletes the DSL and starts the service
+		# The Magic: removes the DSL and starts the service
 		start
 
 
