@@ -4,6 +4,8 @@ require 'openssl'
 require 'webrick'
 require 'webrick/https'
 
+# used to define root
+
 ##############################################################################
 # a stand alone webrick services app.
 # this is the common code for all apps.

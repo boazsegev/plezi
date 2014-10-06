@@ -1,8 +1,103 @@
 #!/usr/bin/env ruby
 
-app_template = <<ENDTEMPLATE
-#!/usr/bin/env ruby
+##########
+# this is the template writer
+#
+# you can update it by aliasing the old initialize and writing adding to it:
+#
+#		class AppTemplate
+#			alias :old_init :initialize
+#			def initialize
+#				# start with the old initialize, to set the template up
+#				old_init
+#				# make sure your folder exists, but don't overwrite!!!
+#				# if you overwrite!!! you might destroy other gems additions.
+#				app_tree["new_folder"] ||= {}
+#				# once your folder exists, create your file
+#				app_tree["new_folder"]["filename.rb"] = "data"
+#				app_tree["file_without_folder"] = "data"
+#			end
+#		end
+#
+class String
+  # colorization
+  def colorize(color_code)
+    "\e[#{color_code}m#{self}\e[0m"
+  end
 
+  def red
+    colorize(31)
+  end
+
+  def green
+    colorize(32)
+  end
+
+  def yellow
+    colorize(33)
+  end
+
+  def pink
+    colorize(35)
+  end
+end
+
+class AppTemplate
+
+	def initialize
+		@app_tree = {}
+
+		@app_tree["logs"] = {"server.log" => ""}
+		@app_tree["config"] = {}
+		@app_tree["lib"] = {}
+		@app_tree["public"] = {"index.html" => html_template}
+		@app_tree["Gemfile"] = gemfile_template
+		@app_tree["framework.rb"] = framework_template
+	end
+
+	def app_tree
+		@app_tree
+	end
+
+	def build appname
+		Dir.mkdir appname
+		Dir.chdir appname
+		puts "created the #{appname} application directory.".green
+		puts "starting to write template data...".red
+		puts ""
+		@app_tree["#{appname}.rb"] = app_template
+		write_files app_tree
+		File.chmod 0775, "#{appname}.rb"
+		puts "tried to update execution permissions. this probably failed.".pink
+		puts "use: chmod +x ./#{ARGV[1]}.rb to set execution permissions."
+		puts ""
+		puts "done."
+		puts ""
+		puts "please change directory into the app directory: cd #{ARGV[1]}"
+		puts ""
+		puts "run the #{ARGV[1]} app using: ./#{ARGV[1]}.rb or using: anorexic s"
+		puts ""
+	end
+
+	def write_files files, parent = "."
+		if files.is_a? Hash
+			files.each do |k, v|
+				if v.is_a? Hash
+					Dir.mkdir k
+					Dir.chdir k
+					puts "    created #{parent}/#{k}".green
+					write_files v, (parent + "/" + k)
+					Dir.chdir ".."
+				elsif v.is_a? String
+					IO.write k, v
+					puts "    wrote #{parent}/#{k}".yellow
+				end
+			end
+		end
+	end
+
+	def framework_template
+		str = <<ENDTEMPLATE
 # using bundler to load gems (including the anorexic gem)
 require 'bundler'
 
@@ -18,15 +113,25 @@ Dir["{config}/**/*.rb"].each {|file| require Pathname.new(file).expand_path}
 # load all library files
 Dir["{lib}/**/*.rb"].each {|file| require Pathname.new(file).expand_path}
 
-# set up WEBrick logs
-logger = WEBrick::Log.new Pathname.new(File.dirname(__FILE__)).expand_path.join('logs', 'server.log')
+#set up root object
+Root = Pathname.new(File.dirname(__FILE__)).expand_path
 
-# set the folder from which to serve files - this can be removed to avoid file access.
-public_folder = Pathname.new(File.dirname(__FILE__)).expand_path.join('public')
+# set up WEBrick logs
+Logger = WEBrick::Log.new Root.join('logs', 'server.log')
+
+ENDTEMPLATE
+	end
+	def app_template
+		str = <<ENDTEMPLATE
+#!/usr/bin/env ruby
+
+# load all framework and gems
+require './framework.rb'
 
 # set up a non-encrypted service with file access
-# (remove the DocumentRoot and FancyIndexing to disable public file access)
-listen 3000, file_root: public_folder
+# (remove the file_root to disable public file access)
+listen 3000, file_root: Root.join('public').to_s
+
 
 # this rount is only for the non-secure service
 route "/people" do |req, res|
@@ -34,8 +139,8 @@ route "/people" do |req, res|
 end
 
 # add an encrypted (SSL) web service
-# (remove the DocumentRoot and FancyIndexing to disable public file access)
-listen 3001, ssl_self: true, file_root: public_folder
+# (remove the file_root to disable public file access)
+listen 3001, ssl_self: true, file_root: Root.join('public').to_s
 
 # this route is only for the encrypted service
 route "/people" do |req, res|
@@ -52,18 +157,45 @@ end
 start
 
 ENDTEMPLATE
+	end
 
-gemfile_template = <<ENDTEMPLATE
+	def gemfile_template
+		str = <<ENDTEMPLATE
 source "https://rubygems.org"
 
 gem 'anorexic'
 
 ENDTEMPLATE
+	end
 
-html_template = <<ENDTEMPLATE
+	def html_template
+			str = <<ENDTEMPLATE
 <html>
 	<head>
 		<title>Feed me!!!</title>
+		<style type="text/css">
+			body, html
+			{
+				background-color: #eee;
+				padding: 0; margin: 0;
+			}
+			h1
+			{
+				background-color: #ddd;
+				color: #008;
+				text-align: center;
+				border-bottom: 1px solid #000;
+				margin: 0 0 1em 0;
+				padding: 0.5em;
+				width: 100%;
+			}
+			p
+			{
+				color:#004;
+				font-size: 1.2em;
+				padding: 0 1em;			
+			}
+		</style>
 	</head>
 	<body>
 		<h1>Hello World... feed me!</h1>
@@ -71,6 +203,8 @@ html_template = <<ENDTEMPLATE
 	</body>
 </html>
 ENDTEMPLATE
+	end
+end
 
 
 if ARGV[0] == 'new' || ARGV[0] == 'n'
@@ -80,51 +214,36 @@ if ARGV[0] == 'new' || ARGV[0] == 'n'
 		puts ""
 		exit
 	end
-	Dir.mkdir ARGV[1]
-	puts "create #{ARGV[1]} application directory."
-	Dir.chdir ARGV[1]
-	puts "changed into #{ARGV[1]} directory."
-	Dir.mkdir "logs"
-	puts "      create #{ARGV[1]}/logs"
-	Dir.chdir "logs"
-	IO.write "server.log", ""
-	Dir.chdir ".."
-	puts "      create #{ARGV[1]}/logs/server.log"
-	Dir.mkdir "lib"
-	puts "      create #{ARGV[1]}/lib"
-	Dir.mkdir "config"
-	puts "      create #{ARGV[1]}/config"
-	Dir.mkdir "public"
-	puts "      create #{ARGV[1]}/public"
-	Dir.chdir "public"
-	IO.write "index.html", html_template
-	puts "      create #{ARGV[1]}/public/index.html"
-	Dir.chdir ".."
-	IO.write "#{ARGV[1]}.rb", app_template
-	puts "      create #{ARGV[1]}.rb"
-	IO.write "Gemfile", gemfile_template
-	puts "      create Gemfile"
-	File.chmod 0775, "#{ARGV[1]}.rb"
-	puts "tried to update execution permissions. this probably failed."
-	puts "use: chmod +x ./#{ARGV[1]}.rb to set execution permissions."
-	puts ""
-	puts "done."
-	puts ""
-	puts "run the app using: ./#{ARGV[1]}.rb or using: anorexic s"
-	puts ""
+	if ARGV.count > 3 && ARGV[2] == 'with'
+		local_gems = Gem::Specification.map {|g| g.name}
+		# this will load all requested gems and allow them to update the AppTemplate
+		ARGV[3..-1].each do |g|
+			begin
+				require g if local_gems.include? g
+				puts "loaded the #{g} gem, and gave it a change to update the template."
+			rescue Exception => e
+				
+			end
+		end
+	end
+
+	template = AppTemplate.new
+	template.build ARGV[1]
 elsif ARGV[0] == 'server' || ARGV[0] == 'start' || ARGV[0] == 's'
 	load File.expand_path(Dir["."][0], (File.expand_path(Dir["."][0]).split(/[\\\/]/).last + ".rb") )
 else
-	puts "Anorexic fast web app starter."
+	puts ""
+	puts "Anorexic fast web app starter.".red
 	puts "use: anorexic new appname"
-	puts "=============================="
-	puts "options:"
-	puts "option             description"
-	puts "new <appname>      creates a new application called <appname>."
-	puts "n                  alias for new."
-	puts "server             runs the app."
-	puts "start              alias for server."
-	puts "s                  alias for start/server."
+	puts "==============================".green
+	puts "options:".pink
+	puts "option                  description".yellow
+	puts "new <appname>           creates a new application called <appname>."
+	puts "new <app> with <gem(s)> loads the gem(s) and allows them to update the template before building the app."
+	puts "n                       alias for new."
+	puts "server                  runs the app."
+	puts "start                   alias for server."
+	puts "s                       alias for start/server."
 	puts ""
 end
 
