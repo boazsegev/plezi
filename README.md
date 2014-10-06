@@ -10,14 +10,6 @@ It's a barebones DLS running WEBrick... if you want something (Thin, HAML, anyth
 
 ...and since it's all pure ruby, it's as easy as it gets.
 
-## Anorexic is hungry for pristine yummy gems
-
-This is the "Pristine chunks" phylosophy.
-
-Our needs are totally different for each project. An XML web service for an iPhone native app is a very different animal then a book-store web app (not another book store app!).
-
-Together we can write add-ons and features and beautifuls gems that we will use when (and if) we need them - so our apps are always happy and never overweight!
-
 ## Installation
 
 install it using:
@@ -72,6 +64,14 @@ I especially usful for serving xml data to app clients:
 		end
 
 and, were serving the same XML, no matter the request...
+
+## Anorexic is hungry for pristine yummy gems
+
+This is the "Pristine chunks" phylosophy.
+
+Our needs are totally different for each project. An XML web service for an iPhone native app is a very different animal then a book-store web app (not another book store app!).
+
+Together we can write add-ons and features and beautifuls gems that we will use when (and if) we need them - so our apps are always happy and never overweight!
 
 ## why not Ruby on Rails?
 
