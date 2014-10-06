@@ -16,8 +16,8 @@ require 'webrick/https'
 # - shared_route <<path>> &block : sets up a route for all previous servers
 # - start : starts to actually listen. can be set up as a deamon.
 #
-# Once you call `start`, the DSL will be removed (undefined),
-# so as to avoid conflicts.
+# the `start` is automatically when the setup is finished.
+# once called, the DSL will be removed (undefined), so as to avoid conflicts.
 #
 # To overide the behavior, overide tha Anorexic::Application methods:
 #
