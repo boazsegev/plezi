@@ -34,7 +34,7 @@ install it using:
 
     $ gem install anorexic
 
-## Usage
+## Barebones Web Service
 
 the app is a simple DSL that deletes all the DLS methods once the server starts running (this way, we avoid any conflicts in the code - no reserved keywords).
 
@@ -48,10 +48,24 @@ The most simple app will be a simple web server (it can actually be even more si
 		public_folder = File.expand_path(File.dirname(__FILE__), 'public')
 
 		# set up a non-secure service on port 80
-		# serves file without file indexingå
+		# serves local files without folder indexing
 		listen 80, file_root: public_folder
 
 and, with 4 lines of very clear code, without any shortcuts, we have a running web server :)
+
+I especially usful for serving xml data to app clients:
+
+		require 'rubygems'
+		require 'anorexic'
+
+		listen 6068
+
+		route "/" do |request, response|
+			response['Content-Type'] = 'text/xml'
+			response.body = "<xml><data>DATA</data></xml>"
+		end
+
+and, were serving the same XML, no matter the request...
 
 ## Framework Usage
 
