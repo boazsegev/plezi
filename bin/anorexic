@@ -54,7 +54,7 @@ class AppTemplate
 		puts "created the #{appname} application directory.".green
 		puts "starting to write template data...".red
 		puts ""
-		@app_tree["#{appname}.rb"] = @app_template
+		@app_tree["#{appname}.rb"] = @app_template + @default_code
 		write_files app_tree
 		File.chmod 0775, "#{appname}.rb"
 		puts "tried to update execution permissions. this probably failed.".pink
@@ -122,32 +122,57 @@ ENDTEMPLATE
 		@app_template = <<ENDTEMPLATE
 #!/usr/bin/env ruby
 
-## load all framework and gems
+# load all framework and gems
 require './framework.rb'
 
-## set up a non-encrypted service with file access
-## (remove the file_root to disable public file access)
-listen 3000, file_root: Root.join('public').to_s
+# a simple app, with can look like this:
+# 	require './framework.rb'
+# 	listen 3000
+# 	route "/", file_root: Root.join('public').to_s, allow_indexing: false
+#
+# a simple app with an encrypted sevice can look like this:
+# 	require './framework.rb'
+# 	listen 3000, ssl_self: true
+# 	route "/", file_root: Root.join('public').to_s, allow_indexing: false
+#
+# here is an app with both encrypted and non-encrypted services, shring routes:
+#
+# 	require './framework.rb'
+# 	listen 3000
+# 	listen 3001, ssl_self: true
+#
+# 	shared_route "/", file_root: Root.join('public').to_s, allow_indexing: false
+#
+# 	shared_route "/people" do |request, response|
+# 		response.body = "your name here\\ngive someone else some credit too...?"
+# 		response['Content-Type'] = 'text/plain'
+# 	end
+#
+# 	# non shared routes will only be available to the last service
+# 	# (in this example it's the encrypted service)
+#
+# 	route "/login" do |request, response|
+# 		# add your code here
+# 		response.body = ""
+# 	end
+#
+#
+# have fun coding, and good luck!
 
-## uncomment the following line to add an SSL server
-# listen 3001, ssl_self: true, file_root: Root.join('public').to_s
-
-# this route will be available for both encrypted and non-encrypted connections
-shared_route "/people" do |req, res|
-	res.body = "your name here\\ngive someone else some credit too...?"
-	res['Content-Type'] = 'text/plain'
+# the following is some default example code to get you started...
+# replace it with your code and enjoy!
+ENDTEMPLATE
+		@default_code = %q{
+port = 3000
+if ARGV.find_index('-p')
+	port = ARGV[ARGV.find_index('-p') + 1].to_i
+	port = 3000 unless port != 0
 end
 
-## uncomment the following lines to add an encrypted only route
-# route "/login" do |req, res|
-# 	# add your code here
-# 	res.body = ""
-# end
+listen port
 
-# THIS IS WHERE THE MAGIC STARTS - deletes the DSL and starts the service :)
-start
-
-ENDTEMPLATE
+shared_route "/", file_root: Root.join('public').to_s, allow_indexing: false
+}
 		@gemfile_template = <<ENDTEMPLATE
 source "https://rubygems.org"
 
@@ -233,7 +258,7 @@ if ARGV[0] == 'new' || ARGV[0] == 'n'
 		puts ""
 		exit
 	end
-	if ARGV.count > 3 && ARGV[2] == 'with'
+	if ARGV.count > 3 && (ARGV[2] == 'with' || ARGV[2] == 'w')
 		local_gems = Gem::Specification.map {|g| g.name}
 		# this will load all requested gems and allow them to update the AppTemplate
 		if ARGV[3] == "all"
@@ -264,28 +289,37 @@ if ARGV[0] == 'new' || ARGV[0] == 'n'
 	template = AppTemplate.new
 	template.build ARGV[1]
 elsif ARGV[0] == 'server' || ARGV[0] == 'start' || ARGV[0] == 's'
+	ARGV.shift
 	load File.expand_path(Dir["."][0], (File.expand_path(Dir["."][0]).split(/[\\\/]/).last + ".rb") )
 else
 	puts ""
-	puts "Anorexic fast web app starter.".red
+	puts "Anorexic fast web app starter.".pink
 	puts "use: anorexic new appname"
 	puts "or: anorexic new appname with all"
 	puts "==============================".green
-	puts "options:".pink
+	puts "new app options:".pink
 	puts "option                  description".yellow
 	puts "new <appname>           creates a new application called <appname>."
 	puts "n                       alias for new."
-	puts "server                  runs the app."
+	puts "n <appname> with gem    'new' accepts the 'with' paramater (or w for short)."
+	puts "n <appname> w all       creates a new app with all relevant gem plugins."
+	puts "starting app up options:".pink
+	puts "option                  description".yellow
+	puts "server                  runs the app. accepts any paramaters the app supports."
 	puts "start                   alias for server."
 	puts "s                       alias for start/server."
-	puts ""
+	puts "==============================".green
 	puts "create an app with specific plugins:".pink
-	puts "new <app> with <gem(s)>"
+	puts "anorexic new app with gem1 gem2"
 	puts "loads the specific gem(s) and allows them to update the template before building the app.".green
 	puts ""
 	puts "create an app with ALL plugins:".pink
-	puts "new <app> with all"
+	puts "anorexic n app w all"
 	puts "loads the all available gem(s) and allows them to update the template before building the app.".green
+	puts ""
+	puts "start the application with any paramaters it supports:".pink
+	puts "anorexic s -p 80"
+	puts "loads the app with paramaters -p 80".green
 	puts ""
 end
 

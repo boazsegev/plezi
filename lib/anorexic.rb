@@ -210,3 +210,6 @@ def start(deamon = false)
 	trap("INT") {Anorexic::Application.instance.shutdown}
 	Anorexic::Application.instance.start deamon
 end
+
+# sets to start the services once dsl script is finished loading.
+at_exit { start }
