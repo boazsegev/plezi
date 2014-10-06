@@ -19,6 +19,15 @@ require 'webrick/https'
 # Once you call `start`, the DSL will be removed (undefined),
 # so as to avoid conflicts.
 #
+# To overide the behavior, overide tha Anorexic::Application methods:
+#
+# set_logger, add_server, add_route_to_server
+#
+# the set_logger should set the @logger and @log_file application variables. and return a logger IO object.
+#
+# the add_server(port = 3000, params = {}) and  add_route_to_server(server, path, config = {}, &block)
+# should take the parameters allowed in listen and route
+#
 # thanks to Russ Olsen for his ideas for DSL and his blog post at:
 # http://www.jroller.com/rolsen/entry/building_a_dsl_in_ruby1 
 ##############################################################################
@@ -34,15 +43,32 @@ module Anorexic
 	class Application
 		include Singleton
 
+		attr_reader :logger, :log_file
+		attr_accessor :server_class
+
 		def initialize
 			@servers = []
 			@threads = []
+			@logger = nil
+			@log_file = nil
+		end
+
+		def set_logger file_name
+			@log_file = File.open file_name, 'a+'
+			@logger = (WEBrick::Log.new Application.instance.log_file)
+
 		end
 
 		def add_server(port = 3000, params = {})
 			server_params = {Port: port}.update params
 			options = { v_host: nil, s_alias: nil, ssl_cert: nil, ssl_pkey: nil, ssl_self: false }
 			options.update params
+
+			if @log_file
+				server_params[:AccessLog] = [
+					[@log_file, WEBrick::AccessLog::COMBINED_LOG_FORMAT],
+				]
+			end
 
 			if options[:file_root]
 				options[:allow_indexing] ||= false
@@ -91,6 +117,14 @@ module Anorexic
 				puts "attempting to mount a servlet - not yet tested nor fully supportted"
 				config[:servlet_args] ||= []
 				server.mount path, config[:servlet], *config[:servlet_args]
+			elsif config[:file_root]
+				config[:servlet_args] ||= []
+				extra_options = [config[:file_root]]
+				extra_options << {}
+				extra_options.last[:FancyIndexing] = true if config[:allow_indexing]
+				extra_options.last.update config[:options] if config[:options].is_a?(Hash)
+				extra_options.push *config[:servlet_args]
+				server.mount path, WEBrick::HTTPServlet::FileHandler, *extra_options
 			else
 				server.mount_proc path do |request, response|
 					response['Content-Type'] = config['Content-Type'] || 'text/html'
@@ -115,7 +149,14 @@ module Anorexic
 		end
 	end
 
+	module_function
 
+	def logger
+		Application.instance.logger
+	end
+	def create_logger log_file
+		Application.instance.set_logger log_file
+	end
 end
 
 # creates a server object and waits for routes to be set.
@@ -132,7 +173,7 @@ end
 # ssl_cert:: sets an SSL certificate (an OpenSSL::X509::Certificate object). if both ssl_cert and ssl_pkey, an SSL server will be established. defaults to nil.
 # ssl_pkey:: sets an SSL private ket (an OpenSSL::PKey::RSA object). if both ssl_cert and ssl_pkey, an SSL server will be established. defaults to nil.
 #
-# you can also add any of the WEBrick values as described at:
+# if you're not using a rack extention, you can also add any of the WEBrick values as described at:
 # http://www.ruby-doc.org/stdlib-2.0/libdoc/webrick/rdoc/WEBrick/HTTPServer.html#method-i-mount_proc
 def listen(port = 3000, params = {})
 	Anorexic::Application.instance.add_server port, params

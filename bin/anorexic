@@ -1,58 +1,42 @@
 #!/usr/bin/env ruby
 
+#########
+## set up building environment
+BUILDING_ANOREXIC_TEMPLATE = true
+
 ##########
 # this is the template writer
 #
 # you can update it by aliasing the old initialize and writing adding to it:
 #
-#		class AppTemplate
-#			alias :old_init :initialize
-#			def initialize
-#				# start with the old initialize, to set the template up
-#				old_init
-#				# make sure your folder exists, but don't overwrite!!!
-#				# if you overwrite!!! you might destroy other gems additions.
-#				app_tree["new_folder"] ||= {}
-#				# once your folder exists, create your file
-#				app_tree["new_folder"]["filename.rb"] = "data"
-#				app_tree["file_without_folder"] = "data"
+#		if defined? BUILDING_ANOREXIC_TEMPLATE
+#			class AppTemplate
+#				alias :old_init :initialize
+#				def initialize
+#					# start with the old initialize, to set the template up
+#					old_init
+#					# make sure your folder exists, but don't overwrite!!!
+#					# if you overwrite!!! you might destroy other gems additions.
+#					app_tree["new_folder"] ||= {}
+#					# once your folder exists, create your file
+#					app_tree["new_folder"]["filename.rb"] = "data"
+#					app_tree["file_without_folder"] = "data"
+#				end
 #			end
 #		end
 #
-class String
-  # colorization
-  def colorize(color_code)
-    "\e[#{color_code}m#{self}\e[0m"
-  end
-
-  def red
-    colorize(31)
-  end
-
-  def green
-    colorize(32)
-  end
-
-  def yellow
-    colorize(33)
-  end
-
-  def pink
-    colorize(35)
-  end
-end
-
 class AppTemplate
 
 	def initialize
+		initialize_template_globals
 		@app_tree = {}
 
 		@app_tree["logs"] = {"server.log" => ""}
 		@app_tree["config"] = {}
 		@app_tree["lib"] = {}
-		@app_tree["public"] = {"index.html" => html_template}
-		@app_tree["Gemfile"] = gemfile_template
-		@app_tree["framework.rb"] = framework_template
+		@app_tree["public"] = {"index.html" => @html_template}
+		@app_tree["Gemfile"] = @gemfile_template
+		@app_tree["framework.rb"] = @framework_template
 	end
 
 	def app_tree
@@ -65,7 +49,7 @@ class AppTemplate
 		puts "created the #{appname} application directory.".green
 		puts "starting to write template data...".red
 		puts ""
-		@app_tree["#{appname}.rb"] = app_template
+		@app_tree["#{appname}.rb"] = @app_template
 		write_files app_tree
 		File.chmod 0775, "#{appname}.rb"
 		puts "tried to update execution permissions. this probably failed.".pink
@@ -96,8 +80,18 @@ class AppTemplate
 		end
 	end
 
-	def framework_template
-		str = <<ENDTEMPLATE
+	def initialize_template_globals
+		@framework_template = <<ENDTEMPLATE
+
+# Don't move this file.
+#
+# this file sets up the basic framework.
+# the file uses it's location to set the Root path object.
+# the file then loads all the .rb files from ./config and ./lib
+# the file sets the default logger
+
+
+
 # using bundler to load gems (including the anorexic gem)
 require 'bundler'
 
@@ -107,22 +101,20 @@ require 'pathname'
 # load all gems from gemfile
 Bundler.require
 
+#set up root object (some config files will use it as well as our app)
+Root = Pathname.new(File.dirname(__FILE__)).expand_path
+
 # load config files
 Dir["{config}/**/*.rb"].each {|file| require Pathname.new(file).expand_path}
 
 # load all library files
 Dir["{lib}/**/*.rb"].each {|file| require Pathname.new(file).expand_path}
 
-#set up root object
-Root = Pathname.new(File.dirname(__FILE__)).expand_path
-
-# set up WEBrick logs
-Logger = WEBrick::Log.new Root.join('logs', 'server.log')
+# set up Anorexic logs
+Logger = ( Anorexic.create_logger Root.join('logs', 'server.log') )
 
 ENDTEMPLATE
-	end
-	def app_template
-		str = <<ENDTEMPLATE
+		@app_template = <<ENDTEMPLATE
 #!/usr/bin/env ruby
 
 ## load all framework and gems
@@ -151,19 +143,14 @@ end
 start
 
 ENDTEMPLATE
-	end
-
-	def gemfile_template
-		str = <<ENDTEMPLATE
+		@gemfile_template = <<ENDTEMPLATE
 source "https://rubygems.org"
 
+#include the basic anorexic library
 gem 'anorexic'
 
 ENDTEMPLATE
-	end
-
-	def html_template
-			str = <<ENDTEMPLATE
+		@html_template = <<ENDTEMPLATE
 <html>
 	<head>
 		<title>Feed me!!!</title>
@@ -200,6 +187,38 @@ ENDTEMPLATE
 	end
 end
 
+######################################################################
+# tweek the string class for termial coloring options
+class String
+  # colorization
+  def colorize(color_code)
+    "\e[#{color_code}m#{self}\e[0m"
+  end
+
+  def red
+    colorize(31)
+  end
+
+  def green
+    colorize(32)
+  end
+
+  def yellow
+    colorize(33)
+  end
+
+  def pink
+    colorize(35)
+  end
+end
+
+######################################################################
+######################################################################
+##
+## Start the Build script
+##
+######################################################################
+######################################################################
 
 if ARGV[0] == 'new' || ARGV[0] == 'n'
 	if Dir.exists?(ARGV[1])
