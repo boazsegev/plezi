@@ -10,16 +10,6 @@ It's a barebones DLS running WEBrick... if you want something (Thin, HAML, anyth
 
 ...and since it's all pure ruby, it's as easy as it gets.
 
-## why not Ruby on Rails?
-
-I love the Ruby community and I know that we are realy good at writing gems and plug-ins that save a lot of time and code. But we don't need all the plug-ins all the time.
-
-Ruby on Rails became too bloated and big for some projects... It's full of greate features that some of them are sometimes used... but at the end of the day, it's HEAVY.
-
-in comes anorexic to the rescue. Feed it on plug-ins and gems to expend it's capabilities, or feed it on your own code - it will eat it all up and size up to your exact needs.
-
-Don't get me wrong, I love Ruby on Rails... but it's just to big and heavy for some apps I want to develop. 
-
 ## Anorexic is hungry for pristine yummy gems
 
 This is the "Pristine chunks" phylosophy.
@@ -33,6 +23,22 @@ Together we can write add-ons and features and beautifuls gems that we will use 
 install it using:
 
     $ gem install anorexic
+
+## Framework Usage
+
+to create a new barebones app using the Anorexic framework, run from terminal:
+
+    $ anorexic new appname
+
+or, create a new web app with some anorexic gems you installed:
+
+    $ anorexic n appname w anorexic-haml
+
+or, even create a new web app with all the anorexic gems you installed:
+
+    $ anorexic n appname w all
+
+That's it, you have a ready to use basic web server, just run it.
 
 ## Barebones Web Service
 
@@ -67,19 +73,13 @@ I especially usful for serving xml data to app clients:
 
 and, were serving the same XML, no matter the request...
 
-## Framework Usage
+## why not Ruby on Rails?
 
-to create a new barebones app using the Anorexic framework, run from terminal:
+I love the Ruby community and I know that we are realy good at writing gems and plug-ins that save a lot of time and code. But we don't need all the plug-ins all the time.
 
-    $ anorexic new appname
+Ruby on Rails became too bloated and big for some projects... It's full of greate features that some of them are sometimes used... but at the end of the day, it's HEAVY.
 
-or, create a new web app with some anorexic gems you installed:
-
-    $ anorexic n appname w anorexic-haml
-
-or, even create a new web app with all the anorexic gems you installed:
-
-    $ anorexic n appname w all
+Don't get me wrong, I love Ruby on Rails... but it's just to big and heavy for some apps I want to develop. 
 
 # Feed the Anorexic framework
 
