@@ -90,7 +90,7 @@ see the anorexic-haml for an example of a small gem that feeds HAML and I18n to 
 ## Contributing
 
 
-1. Fork it ( https://github.com/[my-github-username]/anorexic/fork )
+1. Fork it ( https://github.com/boazsegev/anorexic/fork )
 2. Create your feature branch (`git checkout -b my-new-feature`)
 3. Commit your changes (`git commit -am 'Add some feature'`)
 4. Push to the branch (`git push origin my-new-feature`)
