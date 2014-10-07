@@ -36,6 +36,20 @@ That's it, you have a ready to use basic web server, just run it.
 
 the app is a simple DSL that deletes all the DLS methods once the server starts running (this way, we avoid any conflicts in the code - no reserved keywords).
 
+this one is basic, useless, but required for every doc out there...
+
+"Hello World!" in 3 lines - try it in irb (exit irb to start server):
+
+		require 'anorexic'
+		listen 3000
+		route('/') { |req, res| res.body << "Hello World!" }
+
+or, the leverage Rack with the `anorexic-thin-mvc`:
+
+		require 'anorexic-thin-mvc'
+		listen 3000, server: 'thin' # :server can be any rack server you loaded.
+		route('*') { |req, res| res.body << "Hello World!" } # support for catch-all
+
 The most simple app will be a simple web server (it can actually be even more simple):
 
 		# load the anorexic gem

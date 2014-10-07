@@ -32,7 +32,7 @@ BUILDING_ANOREXIC_TEMPLATE = true
 #
 class AppTemplate
 
-	def initialize
+	def initialize(appname = ARGV[1])
 		initialize_template_globals
 		@app_tree = {}
 
@@ -49,6 +49,7 @@ class AppTemplate
 	end
 
 	def build appname
+		@gemfile_template << "\n\n\n ruby '#{RUBY_VERSION}'"
 		Dir.mkdir appname
 		Dir.chdir appname
 		puts "created the #{appname} application directory.".green
@@ -259,6 +260,8 @@ if ARGV[0] == 'new' || ARGV[0] == 'n'
 		exit
 	end
 	if ARGV.count > 3 && (ARGV[2] == 'with' || ARGV[2] == 'w')
+
+		# gem loading
 		local_gems = Gem::Specification.map {|g| g.name}
 		# this will load all requested gems and allow them to update the AppTemplate
 		if ARGV[3] == "all"
@@ -286,7 +289,8 @@ if ARGV[0] == 'new' || ARGV[0] == 'n'
 		true
 	end
 
-	template = AppTemplate.new
+	# building
+	template = AppTemplate.new ARGV[1]
 	template.build ARGV[1]
 elsif ARGV[0] == 'server' || ARGV[0] == 'start' || ARGV[0] == 's'
 	ARGV.shift
