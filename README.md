@@ -24,7 +24,7 @@ to create a new barebones app using the Anorexic framework, run from terminal:
 
 or, create a new web app with some anorexic gems you installed:
 
-    $ anorexic n appname w anorexic-haml
+    $ anorexic n appname w anorexic-haml anorexic-thin-mvc
 
 or, even create a new web app with all the anorexic gems you installed:
 
