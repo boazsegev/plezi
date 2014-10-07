@@ -107,7 +107,7 @@ require 'pathname'
 Bundler.require
 
 #set up root object (some config files will use it as well as our app)
-Root = Pathname.new(File.dirname(__FILE__)).expand_path
+Root ||= Pathname.new(File.dirname(__FILE__)).expand_path
 
 # load config files
 Dir["{config}/**/*.rb"].each {|file| require Pathname.new(file).expand_path}
@@ -116,7 +116,7 @@ Dir["{config}/**/*.rb"].each {|file| require Pathname.new(file).expand_path}
 Dir["{lib}/**/*.rb"].each {|file| require Pathname.new(file).expand_path}
 
 # set up Anorexic logs
-Logger = ( Anorexic.create_logger Root.join('logs', 'server.log') )
+Anorexic.create_logger Root.join('logs', 'server.log')
 
 ENDTEMPLATE
 		@app_template = <<ENDTEMPLATE
@@ -144,7 +144,7 @@ require './framework.rb'
 # 	shared_route "/", file_root: Root.join('public').to_s, allow_indexing: false
 #
 # 	shared_route "/people" do |request, response|
-# 		response.body = "your name here\\ngive someone else some credit too...?"
+# 		response.body << "your name here\\ngive someone else some credit too...?"
 # 		response['Content-Type'] = 'text/plain'
 # 	end
 #
@@ -153,7 +153,7 @@ require './framework.rb'
 #
 # 	route "/login" do |request, response|
 # 		# add your code here
-# 		response.body = ""
+# 		response.body << ""
 # 	end
 #
 #

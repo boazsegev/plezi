@@ -240,9 +240,12 @@ end
 # path:: the path for the route
 # config:: options for the default behaviour of the route.
 #
-# the current options for the config are:
+# the current options for the config depend on the active server.
+# for the default server ( Anorexic::WEBrickServer ), the are:
 #
 # Content-Type:: the key should be the string 'Content-Type'. defaults to 'Content-Type' => 'text/html'.
+# file_root:: sets a root folder to serve files. defaults to nil (no root).
+# allow_indexing:: if a root folder is set, this sets th indexing option. defaults to false.
 # servlet:: set a servlet instead of a Proc, see WEBRick documentation for more info. defaults to nil.
 # servlet_args:: if a servlet is set, attempts to send arguments to the constructor. defaults to [] (no arguments).
 #
