@@ -159,7 +159,7 @@ module Anorexic
 		def initialize
 			@servers = []
 			@threads = []
-			@logger = nil
+			@logger = ::Logger.new STDOUT
 			@server_class = WEBrickServer
 		end
 
