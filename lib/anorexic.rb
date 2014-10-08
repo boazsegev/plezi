@@ -10,14 +10,14 @@ require 'webrick/https'
 # a stand alone webrick services app.
 # this is the common code for all apps.
 #
-# it is a simple DSL with four functions:
+# it is a simple DSL with five functions:
 # - listen <<port>>, <<options>> : sets up a server
 # - route <<path>> &block : sets up a route for the last server created
 # - shared_route <<path>> &block : sets up a route for all previous servers
 # - start : starts to actually listen. can be set up as a deamon.
 #
 # the `start` is automatically when the setup is finished.
-# once called, the DSL will be removed (undefined), so as to avoid conflicts.
+# once called, the main DSL will be removed (undefined), so as to avoid conflicts.
 #
 # To overide the behavior, overide tha Anorexic::Application methods:
 #
@@ -50,15 +50,22 @@ module Anorexic
 	# start:: (no paramaters)
 	# shutdown:: (no paramaters)
 	# self.set_logger:: log_file (class method)
+	#
+	# it is advised that the server class pass-through any paramaters
+	# defined in `params[:server_params]` to the server.
+	#
+	# it is advised that Rack servers accept a `params[:middleware]` Array.
+	# each item is a string to be placed after the Rack::Builder `use` function.
+	#
 	class WEBrickServer
 		attr_reader :server
 		attr_reader :routes
 
 		@@logger = nil
-		@@log_file = nil
 
 		def initialize(port = 3000, params = {})
 			@routes = []
+			params[:server_params] ||= {}
 
 			server_params = {Port: port}.update params
 			options = { v_host: nil, s_alias: nil, ssl_cert: nil, ssl_pkey: nil, ssl_self: false }
@@ -89,7 +96,7 @@ module Anorexic
 			elsif options[:ssl_cert] && options[:ssl_pkey]
 				server_params[:SSLEnable], server_params[:SSLCertificate], server_params[:SSLPrivateKey] = true, options[:ssl_cert], options[:ssl_pkey]
 			end
-			@server = WEBrick::HTTPServer.new(server_params)
+			@server = WEBrick::HTTPServer.new(server_params.update(params[:server_params]))
 			self
 		end
 
@@ -126,13 +133,7 @@ module Anorexic
 		end
 
 		def self.set_logger file_name
-			@@log_file = File.open file_name, 'a+'
-			@@logger = (WEBrick::Log.new @@log_file)
-			@@logger
-		end
-
-		def self.log_file
-			@@log_file
+			@@logger = (WEBrick::Log.new Logger.new(file_name))
 		end
 
 		def self.logger

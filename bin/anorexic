@@ -49,7 +49,7 @@ class AppTemplate
 	end
 
 	def build appname
-		@gemfile_template << "\n\n\n ruby '#{RUBY_VERSION}'"
+		@gemfile_template << "\n\n\nruby '#{RUBY_VERSION}'"
 		Dir.mkdir appname
 		Dir.chdir appname
 		puts "created the #{appname} application directory.".green
@@ -88,6 +88,7 @@ class AppTemplate
 
 	def initialize_template_globals
 		@framework_template = <<ENDTEMPLATE
+# encoding: UTF-8
 
 # Don't move this file.
 #
@@ -122,6 +123,7 @@ Anorexic.create_logger Root.join('logs', 'server.log')
 ENDTEMPLATE
 		@app_template = <<ENDTEMPLATE
 #!/usr/bin/env ruby
+# encoding: UTF-8
 
 # load all framework and gems
 require './framework.rb'
