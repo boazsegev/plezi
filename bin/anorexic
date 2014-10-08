@@ -47,6 +47,7 @@ class AppTemplate
 		@app_tree["public"]["index.html"] ||= @html_template
 		@app_tree["Gemfile"] ||= @gemfile_template
 		@app_tree["framework.rb"] ||= @framework_template 
+	end
 
 	def app_tree
 		@app_tree
