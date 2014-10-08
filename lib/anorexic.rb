@@ -4,7 +4,8 @@ require 'openssl'
 require 'webrick'
 require 'webrick/https'
 
-# used to define root
+Encoding.default_internal = 'utf-8'
+Encoding.default_external = 'utf-8'
 
 ##############################################################################
 # a stand alone webrick services app.
@@ -39,7 +40,7 @@ module Anorexic
 
 	# this is the basic server object for the Anorexic framework.
 	# create a similar one to change the anorexic server
-	# (to support unicorn, thin, rack, etc').
+	# (to support puma, thin, rack, etc').
 	#
 	# remember to set the `Anorexic::Application.instance.server_class` to you new class:
 	#    `Anorexic::Application.instance.server_class = NewServer`
