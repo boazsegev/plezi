@@ -162,9 +162,13 @@ module Anorexic
 			@logger = ::Logger.new STDOUT
 			@server_class = WEBrickServer
 		end
-
-		def set_logger file_name
-			@logger = @server_class.set_logger file_name
+		def set_logger log_file, copy_to_stdout = true
+			@logger = ::Logger.new(log_file)
+			if log_file != STDOUT && copy_to_stdout
+				@logger = CustomIO.new(@logger, (::Logger.new(STDOUT)))
+				# $stdout = @logger - fails when debugging....
+			end
+			@logger
 		end
 
 		def add_server(port = 3000, params = {})
@@ -208,13 +212,39 @@ module Anorexic
 		end
 	end
 
+	# used to merge logger with STDOUT (double out)
+	class CustomIO
+		def initialize *targets
+			@targets = targets
+		end
+
+		def write(sym, *args, &block)
+			method_missing(:write, *args, &block)
+		end
+		def write(sym, *args, &block)
+			method_missing(:close, *args, &block)
+		end
+
+		def method_missing(sym, *args, &block)
+			ret = []
+			if block
+				@targets.each {|t| ret << (t.send(sym, *args) &block)}
+			else
+				@targets.each {|t| ret << (t.send(sym, *args) )}
+			end
+			return *ret
+		end
+		alias :write :method_missing
+		
+	end
+
 	module_function
 
 	def logger
 		Application.instance.logger
 	end
-	def create_logger log_file
-		Application.instance.set_logger log_file
+	def create_logger log_file, copy_to_stdout = true
+		Application.instance.set_logger log_file, copy_to_stdout
 	end
 end
 
