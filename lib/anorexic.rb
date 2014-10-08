@@ -63,8 +63,6 @@ module Anorexic
 		attr_reader :server
 		attr_reader :routes
 
-		@@logger = nil
-
 		def initialize(port = 3000, params = {})
 			@routes = []
 			params[:server_params] ||= {}
@@ -73,9 +71,9 @@ module Anorexic
 			options = { v_host: nil, s_alias: nil, ssl_cert: nil, ssl_pkey: nil, ssl_self: false }
 			options.update params
 
-			if self.class.logger
+			if Anorexic.logger
 				server_params[:AccessLog] = [
-					[self.class.logger, WEBrick::AccessLog::COMBINED_LOG_FORMAT],
+					[Anorexic.logger, WEBrick::AccessLog::COMBINED_LOG_FORMAT],
 				]
 			end
 
@@ -132,14 +130,6 @@ module Anorexic
 		def shutdown
 			# start the server
 			@server.shutdown
-		end
-
-		def self.set_logger file_name
-			@@logger = (WEBrick::Log.new Logger.new(file_name))
-		end
-
-		def self.logger
-			@@logger
 		end
 	end
 
@@ -221,7 +211,7 @@ module Anorexic
 		def write(sym, *args, &block)
 			method_missing(:write, *args, &block)
 		end
-		def write(sym, *args, &block)
+		def close(sym, *args, &block)
 			method_missing(:close, *args, &block)
 		end
 
