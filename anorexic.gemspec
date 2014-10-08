@@ -12,7 +12,7 @@ Gem::Specification.new do |spec|
   spec.description   = %q{this is a small and barebones application that allows multi-port, multi-threaded services. It's so small, it's anorexic!
 
 this is a very simple DSL framework for web services (web apps).
-<br/>
+
 it defaults to WEBRick, but it will eat Thin, or any suppoted Rack server with the anorexic-thin-mvc gem.
 
 if you want more (HAML, SASS, etc'), it's very easy to add it in... but it's not there!

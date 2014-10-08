@@ -1,6 +1,7 @@
 #!/usr/bin/env ruby
 
 require 'rubygems'
+require 'irb'
 
 #########
 ## set up building environment
@@ -312,6 +313,14 @@ if ARGV[0] == 'new' || ARGV[0] == 'n'
 elsif ARGV[0] == 'server' || ARGV[0] == 'start' || ARGV[0] == 's'
 	ARGV.shift
 	load File.expand_path(Dir["."][0], (File.expand_path(Dir["."][0]).split(/[\\\/]/).last + ".rb") )
+elsif ARGV[0] == 'console' || ARGV[0] == 'c'
+	NO_ANOREXIC_AUTO_START ||= true
+	require File.expand_path(Dir["."][0], (File.expand_path(Dir["."][0]).split(/[\\\/]/).last + ".rb") )
+	ARGV.clear
+	IRB.setup nil
+	IRB.conf[:MAIN_CONTEXT] = IRB::Irb.new.context
+	require 'irb/ext/multi-irb'
+	IRB.irb nil, self
 else
 	puts ""
 	puts "Anorexic fast web app starter.".pink
@@ -322,13 +331,13 @@ else
 	puts "option                  description".yellow
 	puts "new <appname>           creates a new application called <appname>."
 	puts "n                       alias for new."
-	puts "n <appname> with gem    'new' accepts the 'with' paramater (or w for short)."
-	puts "n <appname> w all       creates a new app with all relevant gem plugins."
-	puts "starting app up options:".pink
-	puts "option                  description".yellow
-	puts "server                  runs the app. accepts any paramaters the app supports."
-	puts "start                   alias for server."
+	puts "new app with gem        'new' accepts the 'with' paramater (or w for short)."
+	puts "starting up an app:".pink
+	puts "start                   runs the app. accepts any paramaters the app supports."
 	puts "s                       alias for start/server."
+	puts "start console innsead of services:".pink
+	puts "console                 runs the app. accepts any paramaters the app supports."
+	puts "c                       alias for start/server."
 	puts "==============================".green
 	puts "create an app with specific plugins:".pink
 	puts "anorexic new app with gem1 gem2"
