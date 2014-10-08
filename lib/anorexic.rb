@@ -274,4 +274,4 @@ def start(deamon = false)
 end
 
 # sets to start the services once dsl script is finished loading.
-at_exit { start } unless defined? NO_ANOREXIC_AUTO_START
+at_exit { start } unless defined?(NO_ANOREXIC_AUTO_START) || defined?(BUILDING_ANOREXIC_TEMPLATE)
