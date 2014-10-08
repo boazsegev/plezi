@@ -208,24 +208,25 @@ module Anorexic
 			@targets = targets
 		end
 
-		def write(sym, *args, &block)
-			method_missing(:write, *args, &block)
+		def write(*args, &block)
+			send_to_targets(:write, *args, &block)
 		end
-		def close(sym, *args, &block)
-			method_missing(:close, *args, &block)
+		def close(*args, &block)
+			send_to_targets(:close, *args, &block)
 		end
-
-		def method_missing(sym, *args, &block)
+		def send_to_targets(sym, *args, &block)
 			ret = []
 			if block
-				@targets.each {|t| ret << (t.send(sym, *args) &block)}
+				@targets.each {|t| ret << t.send(sym, *args, &block)}
 			else
-				@targets.each {|t| ret << (t.send(sym, *args) )}
+				@targets.each {|t| ret << t.send(sym, *args)}
 			end
 			return *ret
 		end
-		alias :write :method_missing
-		
+
+		def method_missing(sym, *args, &block)
+			send_to_targets sym, *args, &block
+		end
 	end
 
 	module_function
