@@ -1,5 +1,6 @@
 require "anorexic/version"
 # Using the built-in webrick to create services.
+require 'logger'
 require 'openssl'
 require 'webrick'
 require 'webrick/https'
@@ -72,9 +73,9 @@ module Anorexic
 			options = { v_host: nil, s_alias: nil, ssl_cert: nil, ssl_pkey: nil, ssl_self: false }
 			options.update params
 
-			if @@log_file
+			if self.class.logger
 				server_params[:AccessLog] = [
-					[@@log_file, WEBrick::AccessLog::COMBINED_LOG_FORMAT],
+					[self.class.logger, WEBrick::AccessLog::COMBINED_LOG_FORMAT],
 				]
 			end
 
@@ -273,4 +274,4 @@ def start(deamon = false)
 end
 
 # sets to start the services once dsl script is finished loading.
-at_exit { start }
+at_exit { start } unless defined? NO_ANOREXIC_AUTO_START

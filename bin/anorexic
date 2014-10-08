@@ -13,19 +13,20 @@ BUILDING_ANOREXIC_TEMPLATE = true
 #
 #		if defined? BUILDING_ANOREXIC_TEMPLATE
 #			class AppTemplate
-#				alias :old_init :initialize
-#				def initialize
+#				alias :my_new_gem_old_init :initialize
+#				def initialize(appname = ARGV[1])
 #					# start with the old initialize, to set the template up
-#					old_init
+#					my_new_gem_old_init appname
 #					# add your gem to the gemfile
 #					@gemfile_template << "\n# feed GEMNAME to anorexic"
 #					@gemfile_template << "\ngem 'GEMNAME'"
 #					# make sure your folder exists, but don't overwrite!!!
 #					# if you overwrite!!! you might destroy other gems additions.
-#					app_tree["new_folder"] ||= {}
+#					app_tree["lib"] ||= {}
+#					app_tree["MY_SPECIAL_GEM"] ||= {}
 #					# once your folder exists, create your file
-#					app_tree["new_folder"]["filename.rb"] = "data"
-#					app_tree["file_without_folder"] = "data"
+#					app_tree["lib]["MY_SPECIAL_GEM"]["filename.rb"] = "data"
+#					app_tree["file_without_folder"] ||= "data"
 #				end
 #			end
 #		end
@@ -34,15 +35,18 @@ class AppTemplate
 
 	def initialize(appname = ARGV[1])
 		initialize_template_globals
-		@app_tree = {}
+		@app_tree ||= {}
 
-		@app_tree["logs"] = {}
-		@app_tree["config"] = {}
-		@app_tree["lib"] = {}
-		@app_tree["public"] = {"index.html" => @html_template}
-		@app_tree["Gemfile"] = @gemfile_template
-		@app_tree["framework.rb"] = @framework_template
-	end
+		app_tree["Procfile"] ||= ""
+		app_tree["Procfile"] << "\nweb: bundle exec ./#{appname}.rb -p $PORT\n"
+
+		@app_tree["logs"] ||= {}
+		@app_tree["config"] ||= {}
+		@app_tree["lib"] ||= {}
+		@app_tree["public"] ||= {}
+		@app_tree["public"]["index.html"] ||= @html_template
+		@app_tree["Gemfile"] ||= @gemfile_template
+		@app_tree["framework.rb"] ||= @framework_template 
 
 	def app_tree
 		@app_tree
@@ -55,7 +59,7 @@ class AppTemplate
 		puts "created the #{appname} application directory.".green
 		puts "starting to write template data...".red
 		puts ""
-		@app_tree["#{appname}.rb"] = @app_template + @default_code
+		@app_tree["#{appname}.rb"] ||= @app_template + @default_code
 		write_files app_tree
 		File.chmod 0775, "#{appname}.rb"
 		puts "tried to update execution permissions. this probably failed.".pink
@@ -127,8 +131,8 @@ class ::Logger
 	alias_method :write, :<<
 end
 
-# set up Anorexic logs
-Anorexic.create_logger Root.join('logs', 'server.log')
+# set up Anorexic logs - Heroku logs to STDOUT, otherwise logs to log file
+Anorexic.create_logger (ENV['DYNO']) ? STDOUT : Root.join('logs','server.log')
 
 ENDTEMPLATE
 		@app_template = <<ENDTEMPLATE
