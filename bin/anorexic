@@ -127,11 +127,12 @@ Dir["{config}/**/*.rb"].each {|file| require Pathname.new(file).expand_path}
 # load all library files
 Dir["{lib}/**/*.rb"].each {|file| require Pathname.new(file).expand_path}
 
-# fix the Ruby Logger class (used by Anorexic) to fit Rack and WEBrick:
-# (Rack uses `write`, which Logger doesn't define)
-class ::Logger
-	alias_method :write, :<<
-end
+# # This code exists in the gem file, since the Logger doen't define 'write'
+# # fix the Ruby Logger class (used by Anorexic) to fit Rack and WEBrick:
+# # (Rack uses `write`, which Logger doesn't define)
+# class ::Logger
+# 	alias_method :write, :<<
+# end
 
 # set up Anorexic logs - Heroku logs to STDOUT, otherwise logs to log file
 Anorexic.create_logger (ENV['DYNO']) ? STDOUT : Root.join('logs','server.log')

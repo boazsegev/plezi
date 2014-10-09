@@ -237,6 +237,13 @@ module Anorexic
 	def create_logger log_file, copy_to_stdout = true
 		Application.instance.set_logger log_file, copy_to_stdout
 	end
+
+end
+
+# fix the Ruby Logger class (used by Anorexic) to fit Rack and WEBrick:
+# (Rack uses `write`, which Logger doesn't define)
+class ::Logger
+	alias_method :write, :<<
 end
 
 # creates a server object and waits for routes to be set.
