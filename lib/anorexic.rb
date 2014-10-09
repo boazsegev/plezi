@@ -293,6 +293,7 @@ end
 # finishes setup of the servers and starts them up. This will hange the proceess unless it's set up as a deamon.
 # deamon:: defaults to false.
 def start(deamon = false)
+	Object.const_set "NO_ANOREXIC_AUTO_START", true
 	undef listen
 	undef shared_route
 	undef route
