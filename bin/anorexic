@@ -44,6 +44,7 @@ class AppTemplate
 		@app_tree["logs"] ||= {}
 		@app_tree["config"] ||= {}
 		@app_tree["lib"] ||= {}
+		@app_tree["app"] ||= {}
 		@app_tree["public"] ||= {}
 		@app_tree["public"]["index.html"] ||= @html_template
 		@app_tree["Gemfile"] ||= @gemfile_template
@@ -122,10 +123,13 @@ Bundler.require
 Root ||= Pathname.new(File.dirname(__FILE__)).expand_path
 
 # load config files
-Dir["{config}/**/*.rb"].each {|file| require Pathname.new(file).expand_path}
+Dir[File.join "{config}", "**" , "*.rb"].each {|file| require Pathname.new(file).expand_path}
 
 # load all library files
-Dir["{lib}/**/*.rb"].each {|file| require Pathname.new(file).expand_path}
+Dir[File.join "{lib}", "**" , "*.rb"].each {|file| require Pathname.new(file).expand_path}
+
+# load all application files
+Dir[File.join "{app}", "**" , "*.rb"].each {|file| require Pathname.new(file).expand_path}
 
 # # This code exists in the gem file, since the Logger doen't define 'write'
 # # fix the Ruby Logger class (used by Anorexic) to fit Rack and WEBrick:
