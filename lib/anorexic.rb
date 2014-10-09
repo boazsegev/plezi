@@ -143,7 +143,7 @@ module Anorexic
 	class Application
 		include Singleton
 
-		attr_reader :logger
+		attr_reader :logger, :servers
 		attr_accessor :server_class
 
 		def initialize

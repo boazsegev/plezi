@@ -46,9 +46,16 @@ class AppTemplate
 		@app_tree["lib"] ||= {}
 		@app_tree["app"] ||= {}
 		@app_tree["public"] ||= {}
-		@app_tree["public"]["index.html"] ||= @html_template
+		@app_tree["public"]["index.html"] ||= IO.read ::File.expand_path(File.join("..", "..", "resources" ,"welcome_page.html"),  __FILE__)
 		@app_tree["Gemfile"] ||= @gemfile_template
-		@app_tree["framework.rb"] ||= @framework_template 
+		@app_tree["framework.rb"] ||= IO.read ::File.expand_path(File.join("..", "..", "resources" ,"framework.rb"),  __FILE__)
+	end
+
+	def add_folder folder_name
+		@app_tree[folder_name] ||= {}
+	end
+	def add_file file_name, data
+
 	end
 
 	def app_tree
@@ -56,13 +63,13 @@ class AppTemplate
 	end
 
 	def build appname
-		@gemfile_template << "\n\n\nruby '#{RUBY_VERSION}'"
+		@gemfile_template << "\n\n\nruby '#{RUBY_VERSION}'\n"
 		Dir.mkdir appname
 		Dir.chdir appname
 		puts "created the #{appname} application directory.".green
 		puts "starting to write template data...".red
 		puts ""
-		@app_tree["#{appname}.rb"] ||= @app_template + @default_code
+		@app_tree["#{appname}.rb"] ||= @default_code
 		write_files app_tree
 		File.chmod 0775, "#{appname}.rb"
 		puts "tried to update execution permissions. this probably failed.".pink
@@ -94,110 +101,22 @@ class AppTemplate
 	end
 
 	def initialize_template_globals
-		@framework_template = <<ENDTEMPLATE
-# encoding: UTF-8
-
-# also set by other files, change to nil to avoid
-Encoding.default_internal = 'utf-8'
-Encoding.default_external = 'utf-8'
-
-# Don't move this file.
-#
-# this file sets up the basic framework.
-# the file uses it's location to set the Root path object.
-# the file then loads all the .rb files from ./config and ./lib
-# the file sets the default logger
-
-
-
-# using bundler to load gems (including the anorexic gem)
-require 'bundler'
-
-# Using pathname extentions for setting public folder
-require 'pathname'
-
-# load all gems from gemfile
-Bundler.require
-
-#set up root object (some config files will use it as well as our app)
-Root ||= Pathname.new(File.dirname(__FILE__)).expand_path
-
-# load config files
-Dir[File.join "{config}", "**" , "*.rb"].each {|file| load Pathname.new(file).expand_path}
-
-# load all library files
-Dir[File.join "{lib}", "**" , "*.rb"].each {|file| load Pathname.new(file).expand_path}
-
-# load all application files
-Dir[File.join "{app}", "**" , "*.rb"].each {|file| load Pathname.new(file).expand_path}
-
-# # This code exists in the gem file, since the Logger doen't define 'write'
-# # fix the Ruby Logger class (used by Anorexic) to fit Rack and WEBrick:
-# # (Rack uses `write`, which Logger doesn't define)
-# class ::Logger
-# 	alias_method :write, :<<
-# end
-
-# set up Anorexic logs - Heroku logs to STDOUT, otherwise logs to log file
-Anorexic.create_logger (ENV['DYNO']) ? STDOUT : Root.join('logs','server.log')
-
-ENDTEMPLATE
-		@app_template = <<ENDTEMPLATE
-#!/usr/bin/env ruby
+		@default_code = %q{#!/usr/bin/env ruby
 # encoding: UTF-8
 
 # load all framework and gems
-require './framework.rb'
+require ::File.expand_path(File.join("..", "framework.rb"),  __FILE__)
 
-# a simple app, with can look like this:
-# 	require './framework.rb'
-# 	listen 3000
-# 	route "/", file_root: Root.join('public').to_s, allow_indexing: false
-#
-# a simple app with an encrypted sevice can look like this:
-# 	require './framework.rb'
-# 	listen 3000, ssl_self: true
-# 	route "/", file_root: Root.join('public').to_s, allow_indexing: false
-#
-# here is an app with both encrypted and non-encrypted services, shring routes:
-#
-# 	require './framework.rb'
-# 	listen 3000
-# 	listen 3001, ssl_self: true
-#
-# 	shared_route "/", file_root: Root.join('public').to_s, allow_indexing: false
-#
-# 	shared_route "/people" do |request, response|
-# 		response.body << "your name here\\ngive someone else some credit too...?"
-# 		response['Content-Type'] = 'text/plain'
-# 	end
-#
-# 	# non shared routes will only be available to the last service
-# 	# (in this example it's the encrypted service)
-#
-# 	route "/login" do |request, response|
-# 		# add your code here
-# 		response.body << ""
-# 	end
-#
-#
-# have fun coding, and good luck!
-
-# the following is some default example code to get you started...
-# replace it with your code and enjoy!
-ENDTEMPLATE
-		@default_code = %q{
-port = 3000
-if ARGV.find_index('-p')
-	port = ARGV[ARGV.find_index('-p') + 1].to_i
-	port = 3000 unless port != 0
-end
+port = ARGV[ARGV.find_index('-p') + 1].to_i if ARGV.find_index('-p')
+port ||= 3000
 
 listen port
 
+# add your routes here.
+
 shared_route "/", file_root: Root.join('public').to_s, allow_indexing: false
 }
-		@gemfile_template = <<ENDTEMPLATE
+		@gemfile_template = %q{
 source "https://rubygems.org"
 
 #include the basic anorexic library
@@ -205,42 +124,7 @@ gem 'anorexic'
 
 # to use pry gem for basic debug ( put `binding.pry` at breake point )
 # gem 'pry'
-
-ENDTEMPLATE
-		@html_template = <<ENDTEMPLATE
-<html>
-	<head>
-		<title>Feed me!!!</title>
-		<style type="text/css">
-			body, html
-			{
-				background-color: #eee;
-				padding: 0; margin: 0;
-			}
-			h1
-			{
-				background-color: #ddd;
-				color: #008;
-				text-align: center;
-				border-bottom: 1px solid #000;
-				margin: 0 0 1em 0;
-				padding: 0.5em;
-				width: 100%;
-			}
-			p
-			{
-				color:#004;
-				font-size: 1.2em;
-				padding: 0 1em;			
-			}
-		</style>
-	</head>
-	<body>
-		<h1>Hello World... feed me!</h1>
-		<p>you can find this file at ./public/index.html</p>
-	</body>
-</html>
-ENDTEMPLATE
+}
 	end
 end
 
