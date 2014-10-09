@@ -199,6 +199,9 @@ source "https://rubygems.org"
 #include the basic anorexic library
 gem 'anorexic'
 
+# to use pry gem for basic debug ( put `binding.pry` at breake point )
+# gem 'pry'
+
 ENDTEMPLATE
 		@html_template = <<ENDTEMPLATE
 <html>
