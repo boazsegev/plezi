@@ -9,30 +9,33 @@ Encoding.default_internal = 'utf-8'
 Encoding.default_external = 'utf-8'
 
 ##############################################################################
-# a stand alone webrick services app.
-# this is the common code for all apps.
+# a stand alone web services app.
+# this is the common code for all anorexic apps.
 #
-# it is a simple DSL with five functions:
-# - listen <<port>>, <<options>> : sets up a server
-# - route <<path>> &block : sets up a route for the last server created
-# - shared_route <<path>> &block : sets up a route for all previous servers
-# - start : starts to actually listen. can be set up as a deamon.
+# it is a simple DSL with five functions that can build a whole web application:
+# - listen port=3000, options={} : sets up a server
+# - route "path", options={} &block : sets up a route for the last server created
+# - shared_route "path", options={} &block : sets up a route for all previous servers
 #
-# the `start` is automatically when the setup is finished.
-# once called, the main DSL will be removed (undefined), so as to avoid conflicts.
+# we said, four, where's the forth?
 #
-# To overide the behavior, overide tha Anorexic::Application methods:
+# - start : the `start` is automatically called when the setup is finished. once called, the main DSL will be removed (undefined), so as to avoid code conflicts.
 #
-# set_logger, add_server, add_route_to_server
+# if no server class is set, the built in WEBRick server will be used. this is the default state:
 #
-# the set_logger should set the @logger and @log_file application variables. and return a logger IO object.
+#		Anorexic::Application.instance.server_class = Anorexic::WEBrickServer
 #
-# the add_server(port = 3000, params = {}) and  add_route_to_server(server, path, config = {}, &block)
-# should take the parameters allowed in listen and route
+# it is recommended to use the `anorexic-thin-mvc` gem to load Rack supported servers. this will also set up an MVC structure for your app.
 #
-# here is an empty overwrite example (which will crash if you leave it like this)
+# here is some sample code:
+#		require 'anorexic'
+#		listen 3000
+#		route('/') { |request, response| response.body << "Hello World from 3000!" }
 #
+#		listen 8080, ssl_self: true 
+#		route('/') { |request, response| response.body << "SSL Hello World from 8080!" }
 #
+#		shared_route('/people') { |request, response| response.body << "Hello People!" }
 #
 # thanks to Russ Olsen for his ideas for DSL and his blog post at:
 # http://www.jroller.com/rolsen/entry/building_a_dsl_in_ruby1 
@@ -41,14 +44,16 @@ module Anorexic
 
 	# this is the basic server object for the Anorexic framework.
 	# create a similar one to change the anorexic server
-	# (to support puma, thin, rack, etc').
+	# (to run puma, thin, rack, etc').
 	#
-	# remember to set the `Anorexic::Application.instance.server_class` to you new class:
-	#    `Anorexic::Application.instance.server_class = NewServer`
+	# the anorexic-thin-mvc already made some progress for Rack supported servers, and it is recommended over WEBrick.
+	#
+	# if you create your own server class, remember to set the `Anorexic::Application.instance.server_class` to you new class:
+	#    `Anorexic::Application.instance.server_class = NewServerClass`
 	#
 	# the server class must support the fullowing methods:
-	# new:: new(port = 3000, params = {})
-	# add_route:: path, config, &block
+	# new:: new(port = 3000, params = {}). defined using the `def initialize(port, params)`.
+	# add_route:: add_route(path, config, &block).
 	# start:: (no paramaters)
 	# shutdown:: (no paramaters)
 	# self.set_logger:: log_file (class method)
@@ -57,7 +62,7 @@ module Anorexic
 	# defined in `params[:server_params]` to the server.
 	#
 	# it is advised that Rack servers accept a `params[:middleware]` Array.
-	# each item is a string to be placed after the Rack::Builder `use` function.
+	# each item is also an Array of [MiddlewareClass, arguments, to, use] to be placed in the `params[:middleware]` Array.
 	#
 	class WEBrickServer
 		attr_reader :server

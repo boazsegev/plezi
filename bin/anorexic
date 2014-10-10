@@ -46,9 +46,9 @@ class AppTemplate
 		@app_tree["lib"] ||= {}
 		@app_tree["app"] ||= {}
 		@app_tree["public"] ||= {}
-		@app_tree["public"]["index.html"] ||= IO.read ::File.expand_path(File.join("..", "..", "resources" ,"welcome_page.html"),  __FILE__)
+		@app_tree["public"]["index.html"] ||= IO.read(::File.expand_path(File.join("..", "..", "resources" ,"welcome_page.html"),  __FILE__)).gsub('appname', appname)
 		@app_tree["Gemfile"] ||= @gemfile_template
-		@app_tree["framework.rb"] ||= IO.read ::File.expand_path(File.join("..", "..", "resources" ,"framework.rb"),  __FILE__)
+		@app_tree["environment.rb"] ||= IO.read ::File.expand_path(File.join("..", "..", "resources" ,"framework.rb"),  __FILE__)
 	end
 
 	def add_folder folder_name
@@ -105,7 +105,10 @@ class AppTemplate
 # encoding: UTF-8
 
 # load all framework and gems
-require ::File.expand_path(File.join("..", "framework.rb"),  __FILE__)
+require ::File.expand_path(File.join("..", "environment.rb"),  __FILE__)
+
+# ensure development mode? (comment before production, environment dependent)
+ENV["RACK_ENV"] ||= "development"
 
 port = ARGV[ARGV.find_index('-p') + 1].to_i if ARGV.find_index('-p')
 port ||= 3000
@@ -115,6 +118,7 @@ listen port
 # add your routes here.
 
 shared_route "/", file_root: Root.join('public').to_s, allow_indexing: false
+
 }
 		@gemfile_template = %q{
 source "https://rubygems.org"

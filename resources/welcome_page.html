@@ -1,17 +1,18 @@
 <html>
 	<head>
-		<title>Feed me!!!</title>
+		<title>appname - Feed me!!!</title>
 		<style type="text/css">
 			body, html
 			{
-				background-color: #ddd;
+				background-color: #eee;
 				padding: 0; margin: 0;
-				width: 100%
+				width: 100%;
+				font-size: 1.1em;
 			}
 			h1
 			{
-				background-color: #ccc;
-				color: #008;
+				background-color: #ddd;
+				color: #00a;
 				text-align: center;
 				border-bottom: 1px solid #000;
 				margin: 0 0 1em 0;
@@ -25,7 +26,7 @@
 			}
 			a
 			{
-				color: #40a;
+				color: #a04;
 				text-decoration: none;
 			}
 			a:hover
@@ -35,16 +36,100 @@
 			}
 			#wrapper
 			{
-				background-color: #eee;
+				background-color: #fff;
 				margin: 1em 5%;
-				padding: 2em;
-				border-radius: 1em;
+				padding: 0 0 2%;
+				border-radius: 20px;
+				min-height: 50%;
 				color: #007;
+			}
+			#wrapper h2
+			{
+				background-color: #ddd;
+				color: #008;
+				text-align: center;
+				margin: 0 0 1em 0;
+				padding: 0.5em 0;
+				width: 100%;
+				border-radius: 20px;
+			}
+			#wrapper p{ padding: 0 2%;}
+			pre
+			{
+				padding: 0.5em 0;
+				background-color: #444;
+				color: #ddd;
 			}
 		</style>
 	</head>
 	<body>
-		<h1>I started Anorexic... feed me!</h1>
-		<p>you can find this file at ./public/index.html</p>
+		<h1>I started <a href='https://github.com/boazsegev/anorexic'>Anorexic</a>... feed me!</h1>
+		<div id='wrapper'>
+<h2>I installed Anorexic, what now?</h2>
+<p>
+The main code for the app is in the app file (appname.rb). here's the universal example:
+</p>
+<pre><code>    require 'anorexic'
+    listen 3000
+    route('/') { |request, response| response.body &lt;&lt; "Hello World!" }
+</code></pre>
+
+<p>
+It also works with multiple services (ports), which is great for having some routes work only on SSL (*disclaimer, not all Rack servers serve SSL. WEBrick does, but it's slower):
+<pre><code>    require 'anorexic'
+    listen 3000
+    route('/') { |request, response| response.body &lt;&lt; "Hello World from 3000!" }
+
+    listen 8080, ssl_self: true 
+    route('/') { |request, response| response.body &lt;&lt; "SSL Hello World from 8080!" }
+
+    shared_route('/people') { |request, response| response.body &lt;&lt; "Hello People!" }
+</code></pre>
+</p>
+
+<p>It's possible to leverage Rack with the <a href='https://github.com/boazsegev/anorexic-thin-mvc'>anorexic-thin-mvc</a> - read it's <a href="http://rubydoc.info/gems/anorexic-thin-mvc/frames">documentation to learn about this powerful extension</a>.</p>
+<p>with <a href='https://github.com/boazsegev/anorexic-thin-mvc'>anorexic-thin-mvc</a>, your code might look something like this:</p>
+
+<pre><code>    require 'anorexic-thin-mvc'
+    listen 3000, server: 'thin'
+    # catch all route
+    route('*') { |req, res| res.body &lt;&lt; "Hello World!" }
+
+    listen 8080, ssl_self: true, server: 'webrick' # thin doesn't support SSL. use WEBrick.
+    route('*') { |request, response| response.body &lt;&lt; "SSL Hello World from 8080!" }
+</code></pre>
+<h2>Routes?</h2>
+<p>
+Routes are the way the server knows which code to run for every request it recieves. This is the route: http://www.server.com<b>/the/stuff/they/request</b>
+</p>
+<p>
+<b>Each server deals with routes differently.</b>
+</p>
+<p>
+Some servers, like the basic WEBrick (if you're not using the <a href='https://github.com/boazsegev/anorexic-thin-mvc'>anorexic-thin-mvc</a> gem), will overwrite old routes if they exist.
+</p>
+<pre><code>    require 'anorexic'
+    listen 3000
+    # this route will die, it's about to be overwritten
+    route('/') { |req, res| res.body &lt;&lt; "Help Me!" }
+    # this route wins
+    route('/') { |request, response| response.body &lt;&lt; "I Win!" }
+</code></pre>
+<p>
+	<a href='https://github.com/boazsegev/anorexic-thin-mvc'>anorexic-thin-mvc</a> doesn't do that - instead, it allows your code to choose dynamically. if the route answers, that's it. If a route returns false, we move on to the next.
+</p>
+<pre><code>    require 'anorexic-thin-mvc'
+    listen 3000, server: 'thin'
+    # this route wins
+    route('/') { |req, res| res.body &lt;&lt; "I Win!" }
+    # this route never sees the light of day
+    route('/') { |request, response| response.body &lt;&lt; "Help Me!" }
+</code></pre>
+
+<h2>More</h2>
+<p>
+Anorexic is thin, light and built for capable Rubyists. If you want to learn more, <a href='http://rubydoc.info/gems/anorexic/frames'>read the documentation</a>. We actually tried to write some for you to enjoy...
+</p>
+		</div>
 	</body>
 </html>
