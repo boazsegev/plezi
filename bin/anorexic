@@ -3,10 +3,6 @@
 require 'rubygems'
 require 'irb'
 
-#########
-## set up building environment
-BUILDING_ANOREXIC_TEMPLATE = true
-
 ##########
 # this is the template writer
 #
@@ -49,13 +45,7 @@ class AppTemplate
 		@app_tree["public"]["index.html"] ||= IO.read(::File.expand_path(File.join("..", "..", "resources" ,"welcome_page.html"),  __FILE__)).gsub('appname', appname)
 		@app_tree["Gemfile"] ||= @gemfile_template
 		@app_tree["environment.rb"] ||= IO.read ::File.expand_path(File.join("..", "..", "resources" ,"environment.rb"),  __FILE__)
-	end
-
-	def add_folder folder_name
-		@app_tree[folder_name] ||= {}
-	end
-	def add_file file_name, data
-
+		@app_tree["rakefile.rb"] ||= IO.read ::File.expand_path(File.join("..", "..", "resources" ,"rakefile.rb"),  __FILE__)
 	end
 
 	def app_tree
@@ -64,7 +54,12 @@ class AppTemplate
 
 	def build appname
 		@gemfile_template << "\n\n\nruby '#{RUBY_VERSION}'\n"
-		Dir.mkdir appname
+		begin
+			Dir.mkdir appname
+			puts "created the #{appname} application directory.".green
+		rescue Exception => e
+			puts "the #{appname} application directory exists - trying to rebuild (no overwrite).".pink
+		end
 		Dir.chdir appname
 		puts "created the #{appname} application directory.".green
 		puts "starting to write template data...".red
@@ -87,14 +82,22 @@ class AppTemplate
 		if files.is_a? Hash
 			files.each do |k, v|
 				if v.is_a? Hash
-					Dir.mkdir k
+					begin
+						Dir.mkdir k
+						puts "    created #{parent}/#{k}".green
+					rescue Exception => e
+						puts "    exists #{parent}/#{k}".red
+					end
 					Dir.chdir k
-					puts "    created #{parent}/#{k}".green
 					write_files v, (parent + "/" + k)
 					Dir.chdir ".."
 				elsif v.is_a? String
-					IO.write k, v
-					puts "    wrote #{parent}/#{k}".yellow
+					if ::File.exists? k
+						puts "    exists #{parent}/#{k}".red
+					else
+						IO.write k, v
+						puts "    wrote #{parent}/#{k}".yellow
+					end
 				end
 			end
 		end
@@ -166,10 +169,13 @@ end
 ######################################################################
 ######################################################################
 
-if ARGV[0] == 'new' || ARGV[0] == 'n'
-	if Dir.exists?(ARGV[1])
+if ARGV[0] == 'new' || ARGV[0] == 'n' || ARGV[0] == "force"
+	#########
+	## set up building environment
+	BUILDING_ANOREXIC_TEMPLATE = true
+	if Dir.exists?(ARGV[1]) && ARGV[0] != "force"
 		puts ""
-		puts "ERROR: dir exists, choose a defferent app name."
+		puts "WARNING: app/folder alread exists, use `anorexic fource #{ARGV[1]} ...` to attempt rebuild (no overwrite).".red
 		puts ""
 		exit
 	end

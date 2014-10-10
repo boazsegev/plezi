@@ -262,7 +262,7 @@ end
 # ssl_self:: sets an SSL server with a self assigned certificate (changes with every restart). defaults to false.
 # server_params:: a hash of paramaters to be passed directly to the server - architecture dependent.
 #
-# if you're not using a rack extention, you can also add any of the WEBrick values as described at:
+# if you're not using a rack extention, the WEBrick options for :server_params are as described at:
 # http://www.ruby-doc.org/stdlib-2.0/libdoc/webrick/rdoc/WEBrick/HTTPServer.html#method-i-mount_proc
 def listen(port = nil, params = {})
 	if !port && defined? ARGV
@@ -313,6 +313,7 @@ def start(deamon = false)
 	undef route
 	undef start
 	trap("INT") {Anorexic::Application.instance.shutdown}
+	trap("TERM") {Anorexic::Application.instance.shutdown}
 	Anorexic::Application.instance.start deamon
 end
 
