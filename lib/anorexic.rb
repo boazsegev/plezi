@@ -172,7 +172,7 @@ module Anorexic
 
 		def check_server_array
 			if @servers.empty?
-				raise "ERROR: must define a listenong point before setting it's routes."
+				raise "ERROR: use `listen` first! must define a listening service before setting it's routes."
 			end
 			true
 		end
@@ -253,21 +253,30 @@ end
 
 # creates a server object and waits for routes to be set.
 # 
-# port:: the port to listen to. defaults to 3000.
+# port:: the port to listen to. the first port defaults to 3000 and increments by 1 with every `listen` call.
 # params:: a Hash of serever paramaters: v_host, s_alias, ssl_cert, ssl_pkey or ssl_self.
 #
 # The different keys in the params hash control the server's behaviour, as follows:
 #
-# file_root:: sets a root folder to serve files. defaults to nil (no root).
-# allow_indexing:: if a root folder is set, this sets th indexing option. defaults to false.
 # v_host:: sets the virtual host name, for virtual hosts. defaults to nil (no virtual host).
 # ssl_self:: sets an SSL server with a self assigned certificate (changes with every restart). defaults to false.
-# ssl_cert:: sets an SSL certificate (an OpenSSL::X509::Certificate object). if both ssl_cert and ssl_pkey, an SSL server will be established. defaults to nil.
-# ssl_pkey:: sets an SSL private ket (an OpenSSL::PKey::RSA object). if both ssl_cert and ssl_pkey, an SSL server will be established. defaults to nil.
+# server_params:: a hash of paramaters to be passed directly to the server - architecture dependent.
 #
 # if you're not using a rack extention, you can also add any of the WEBrick values as described at:
 # http://www.ruby-doc.org/stdlib-2.0/libdoc/webrick/rdoc/WEBrick/HTTPServer.html#method-i-mount_proc
-def listen(port = 3000, params = {})
+def listen(port = nil, params = {})
+	if !port && defined? ARGV
+		if ARGV.find_index('-p')
+			port_index = ARGV.find_index('-p') + 1
+			port ||= ARGV[port_index].to_i
+			ARGV[port_index] = (port + 1).to_s
+		else
+			ARGV << '-p'
+			ARGV << '3000'
+			return listen port, params
+		end
+	end
+	port ||= 3000	
 	Anorexic::Application.instance.add_server port, params
 end
 
