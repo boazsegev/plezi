@@ -94,13 +94,13 @@ class AppTemplate
 					Dir.chdir ".."
 				elsif v.is_a? String
 					if ::File.exists? k
-						if %w{rakefile.rb, Gemfile}.include? k
-							old = IO.read k
-							old = (old.lines.map {|l| "\##{l}"}).join
-							IO.write k, "#####################\n#\n# OLD DATA COMMENTED OUT - PLEASE REVIEW\n#\n##{old}\n#{v}"
-							puts "    #{parent}/#{k} WAS OVERWRITTEN, old data was preserved by comenting it out.".pink
-							puts "    #{parent}/#{k} PLEASE REVIEW.".pink
-							@end_comments << "#{parent}/#{k} WAS OVERWRITTEN, old data was preserved by comenting it out. PLEASE REVIEW."
+						if false #%w{Gemfile rakefile.rb}.include? k
+							# old = IO.read k
+							# old = (old.lines.map {|l| "\##{l}"}).join
+							# IO.write k, "#####################\n#\n# OLD DATA COMMENTED OUT - PLEASE REVIEW\n#\n##{old}\n#{v}"
+							# puts "    #{parent}/#{k} WAS OVERWRITTEN, old data was preserved by comenting it out.".pink
+							# puts "    #{parent}/#{k} PLEASE REVIEW.".pink
+							# @end_comments << "#{parent}/#{k} WAS OVERWRITTEN, old data was preserved by comenting it out. PLEASE REVIEW."
 						else
 							puts "    exists #{parent}/#{k}".red
 						end
