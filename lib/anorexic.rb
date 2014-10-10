@@ -253,7 +253,7 @@ end
 
 # creates a server object and waits for routes to be set.
 # 
-# port:: the port to listen to. the first port defaults to 3000 and increments by 1 with every `listen` call.
+# port:: the port to listen to. the first port defaults to 3000 and increments by 1 with every `listen` call. it's possible to set the first port number by running the app with the -p paramater.
 # params:: a Hash of serever paramaters: v_host, s_alias, ssl_cert, ssl_pkey or ssl_self.
 #
 # The different keys in the params hash control the server's behaviour, as follows:
