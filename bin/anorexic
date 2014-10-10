@@ -46,6 +46,7 @@ class AppTemplate
 		@app_tree["Gemfile"] ||= @gemfile_template
 		@app_tree["environment.rb"] ||= IO.read ::File.expand_path(File.join("..", "..", "resources" ,"environment.rb"),  __FILE__)
 		@app_tree["rakefile.rb"] ||= IO.read ::File.expand_path(File.join("..", "..", "resources" ,"rakefile.rb"),  __FILE__)
+		@end_comments = []
 	end
 
 	def app_tree
@@ -61,7 +62,6 @@ class AppTemplate
 			puts "the #{appname} application directory exists - trying to rebuild (no overwrite).".pink
 		end
 		Dir.chdir appname
-		puts "created the #{appname} application directory.".green
 		puts "starting to write template data...".red
 		puts ""
 		@app_tree["#{appname}.rb"] ||= @default_code
@@ -71,6 +71,7 @@ class AppTemplate
 		puts "use: chmod +x ./#{ARGV[1]}.rb to set execution permissions."
 		puts ""
 		puts "done."
+		puts "\n#{@end_comments.join("\n")}"
 		puts ""
 		puts "please change directory into the app directory: cd #{ARGV[1]}"
 		puts ""
@@ -93,7 +94,16 @@ class AppTemplate
 					Dir.chdir ".."
 				elsif v.is_a? String
 					if ::File.exists? k
-						puts "    exists #{parent}/#{k}".red
+						if %w{rakefile.rb, Gemfile}.include? k
+							old = IO.read k
+							old = (old.lines.map {|l| "\##{l}"}).join
+							IO.write k, "#####################\n#\n# OLD DATA COMMENTED OUT - PLEASE REVIEW\n#\n##{old}\n#{v}"
+							puts "    #{parent}/#{k} WAS OVERWRITTEN, old data was preserved by comenting it out.".pink
+							puts "    #{parent}/#{k} PLEASE REVIEW.".pink
+							@end_comments << "#{parent}/#{k} WAS OVERWRITTEN, old data was preserved by comenting it out. PLEASE REVIEW."
+						else
+							puts "    exists #{parent}/#{k}".red
+						end
 					else
 						IO.write k, v
 						puts "    wrote #{parent}/#{k}".yellow
@@ -126,8 +136,11 @@ shared_route "/", file_root: Root.join('public').to_s, allow_indexing: false
 		@gemfile_template = %q{
 source "https://rubygems.org"
 
-#include the basic anorexic library
+# include the basic anorexic library
 gem 'anorexic'
+
+# enable rake tasks.
+# gem 'rake'
 
 # to use pry gem for basic debug ( put `binding.pry` at breake point )
 # gem 'pry'
