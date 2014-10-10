@@ -48,7 +48,7 @@ class AppTemplate
 		@app_tree["public"] ||= {}
 		@app_tree["public"]["index.html"] ||= IO.read(::File.expand_path(File.join("..", "..", "resources" ,"welcome_page.html"),  __FILE__)).gsub('appname', appname)
 		@app_tree["Gemfile"] ||= @gemfile_template
-		@app_tree["environment.rb"] ||= IO.read ::File.expand_path(File.join("..", "..", "resources" ,"framework.rb"),  __FILE__)
+		@app_tree["environment.rb"] ||= IO.read ::File.expand_path(File.join("..", "..", "resources" ,"environment.rb"),  __FILE__)
 	end
 
 	def add_folder folder_name
