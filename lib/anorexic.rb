@@ -150,12 +150,15 @@ module Anorexic
 
 		attr_reader :logger, :servers
 		attr_accessor :server_class
+		# gets/sets the default content type for the 
+		attr_accessor :default_content_type
 
 		def initialize
 			@servers = []
 			@threads = []
 			@logger = ::Logger.new STDOUT
 			@server_class = WEBrickServer
+			@default_content_type = "text/html; charset=utf-8"
 		end
 		def set_logger log_file, copy_to_stdout = true
 			@logger = ::Logger.new(log_file)
@@ -241,6 +244,14 @@ module Anorexic
 	end
 	def create_logger log_file, copy_to_stdout = true
 		Application.instance.set_logger log_file, copy_to_stdout
+	end
+
+	def default_content_type
+		Application.instance.default_content_type
+	end
+
+	def default_content_type= new_type
+		Application.instance.default_content_type = new_type
 	end
 
 end

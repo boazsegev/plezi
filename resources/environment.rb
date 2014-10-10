@@ -13,13 +13,16 @@ Encoding.default_external = 'utf-8'
 
 # Using pathname extentions for setting public folder
 require 'pathname'
-#set up root object (some config files will use it as well as our app)
-Root ||= Pathname.new(File.dirname(__FILE__)).expand_path
 
+#set up root object, it might be used by anorexic extension gems.
+Root ||= Pathname.new(File.dirname(__FILE__)).expand_path
 
 # using bundler to load gems (including the anorexic gem)
 require 'bundler'
 Bundler.require
+
+# set up Anorexic logs - Heroku logs to STDOUT, this machine logs to log file
+Anorexic.create_logger (ENV['DYNO']) ? STDOUT : Root.join('logs','server.log')
 
 
 # load all config files
@@ -30,7 +33,3 @@ Dir[File.join "{lib}", "**" , "*.rb"].each {|file| load Pathname.new(file).expan
 
 # load all application files
 Dir[File.join "{app}", "**" , "*.rb"].each {|file| load Pathname.new(file).expand_path}
-
-# set up Anorexic logs - Heroku logs to STDOUT, this machine logs to log file
-Anorexic.create_logger (ENV['DYNO']) ? STDOUT : Root.join('logs','server.log')
-

@@ -1,5 +1,7 @@
 #!/usr/bin/env ruby
 
+# count lines of code with: ^[ \t]*[\w\d\"\(\{\@\[\]\}\)\:\'\.\*\&]+.*$
+
 require 'rubygems'
 require 'irb'
 
@@ -133,14 +135,10 @@ listen port
 shared_route "/", file_root: Root.join('public').to_s, allow_indexing: false
 
 }
-		@gemfile_template = %q{
-source "https://rubygems.org"
+		@gemfile_template = %q{source "https://rubygems.org"
 
 # include the basic anorexic library
 gem 'anorexic'
-
-# enable rake tasks.
-# gem 'rake'
 
 # to use pry gem for basic debug ( put `binding.pry` at breake point )
 # gem 'pry'
@@ -182,16 +180,33 @@ end
 ######################################################################
 ######################################################################
 
-if ARGV[0] == 'new' || ARGV[0] == 'n' || ARGV[0] == "force"
+if ARGV[0] == 'new-mvc' || ARGV[0] == 'full'
+	BUILDING_ANOREXIC_TEMPLATE = true
+	if Dir.exists?(ARGV[1]) && ARGV[0] != "force"
+		puts ""
+		puts "WARNING: app/folder alread exists, use `anorexic fource #{ARGV[1]}` to attempt rebuild (no overwrite).".red
+		puts ""
+		exit
+	end
+	require 'anorexic-haml'
+	require 'anorexic-thin-mvc'
+	AppTemplate.new(ARGV[1]).build(ARGV[1])
+elsif ARGV[0] == 'new' || ARGV[0] == 'n' || ARGV[0] == "force"
 	#########
 	## set up building environment
 	BUILDING_ANOREXIC_TEMPLATE = true
 	if Dir.exists?(ARGV[1]) && ARGV[0] != "force"
 		puts ""
-		puts "WARNING: app/folder alread exists, use `anorexic fource #{ARGV[1]} ...` to attempt rebuild (no overwrite).".red
+		puts "WARNING: app/folder alread exists, use `anorexic fource #{ARGV[1]}` to attempt rebuild (no overwrite).".red
 		puts ""
 		exit
 	end
+	if Dir.exists?(ARGV[1]) && ARGV[0] == "force"
+		Dir.chdir ARGV[1]
+		require ::File.expand_path(::Dir["."][0], ( ARGV[1] + ".rb") )
+		Dir.chdir '..'
+	end
+
 	if ARGV.count > 3 && (ARGV[2] == 'with' || ARGV[2] == 'w')
 
 		# gem loading
@@ -239,14 +254,17 @@ elsif ARGV[0] == 'console' || ARGV[0] == 'c'
 else
 	puts ""
 	puts "Anorexic fast web app starter.".pink
-	puts "use: anorexic new appname"
-	puts "or: anorexic new appname with all"
+	puts "use: anorexic new appname for an anorexic only app"
+	puts "use: anorexic new-mvc appname for a full mvc anorexic framework."
+	puts "or: anorexic new appname with anorexic-gem-to-put-in another-gem-to-put"
 	puts "==============================".green
 	puts "new app options:".pink
 	puts "option                  description".yellow
 	puts "new <appname>           creates a new application called <appname>."
 	puts "n                       alias for new."
 	puts "new app with gem        'new' accepts the 'with' paramater (or w for short)."
+	puts "new-mvc <appname>       creates a full framework application called <appname> (see docs)."
+	puts "full <appname>          alias for neew-mvc."
 	puts "starting up an app:".pink
 	puts "start                   runs the app. accepts any paramaters the app supports."
 	puts "s                       alias for start/server."
