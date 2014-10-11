@@ -80,9 +80,6 @@ module Anorexic
 				options[:middleware] ||= []
 			end
 
-			# force server daemonize - shutdowns will be handled by Anorexic
-			server_params[:daemonize] = true
-
 			# add controller magic :)
 			@routes.each_index do |i|
 				config = @routes[i][1]
@@ -362,6 +359,8 @@ module Anorexic
 		# flash:: an amazing Hash object that sets temporary cookies for one request only - greate for saving data between redirect calls.
 		#
 		def add_magic(controller)
+			new_class_name = "AnorexicMegicRuntimeController_#{controller.name.gsub /[\:\-]/, '_'}"
+			return Module.const_get new_class_name if Module.const_defined? new_class_name
 			ret = Class.new(controller) do
 				include Anorexic::ControllerMagic
 
@@ -434,20 +433,19 @@ module Anorexic
 					return true
 				end
 			end
-
-			Object.const_set("AnorexicMegic_#{controller.name.gsub /[\:\-]/, '_'}", ret)
-
+			Object.const_set(new_class_name, ret)
 			ret
 		end
 
 		# shuts down the server. it's called by the system, but never used as rack server's handle shutdown themselves.
 		def shutdown
-			# Rack handles shutdowns
-		    if @server.respond_to?(:shutdown)
-		      @server.shutdown
-		    else
-		      exit
-		    end
+			if defined? EventMachine && EventMachine.reactor_running?
+				EventMachine.stop
+			elsif Rack::Server.resopnd_to? :stop
+				Rack::Server.stop
+			elsif
+				exit
+			end
 		end
 
 		# Copied from the Ruby core WEBrick project, in order to create self signed certificates...

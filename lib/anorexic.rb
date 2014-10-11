@@ -174,23 +174,25 @@ module Anorexic
 			server.add_route path, config, &block
 		end
 
-		def start deamon = false
+		def start deamon = false, wait_for_load = 3
+			Anorexic.logger.info "starting up Anorexic and waiting for load compleation (count to #{wait_for_load})."
 			@servers.each do |s|
 				@threads << Thread.new do
 					s.start
 				end
 			end
 			unless deamon
+				sleep wait_for_load
+				Anorexic.logger.info "Anorexic service(s) active - listening for shutdown."
+				trap("INT") {Anorexic::Application.instance.shutdown}
+				trap("TERM") {Anorexic::Application.instance.shutdown}
 				@threads.each {|t| t.join}
 			end
 			self
 		end
 		def shutdown
-			@threads.each do |t|
-				Thread.kill t
-			end
-			EventMachine.stop if defined? EventMachine && EventMachine.reactor_running?
 			@servers.each {|s| s.shutdown }
+			# 
 		end
 	end
 
@@ -281,15 +283,14 @@ end
 
 # finishes setup of the servers and starts them up. This will hange the proceess unless it's set up as a deamon.
 # deamon:: defaults to false.
-def start(deamon = false)
+# wait_for_load:: how long Anorexic should wait for servers to start before setting the exit routine (only if deamon is false).
+def start(deamon = false, wait_for_load = 4)
 	Object.const_set "NO_ANOREXIC_AUTO_START", true
 	undef listen
 	undef shared_route
 	undef route
 	undef start
-	trap("INT") {Anorexic::Application.instance.shutdown}
-	trap("TERM") {Anorexic::Application.instance.shutdown}
-	Anorexic::Application.instance.start deamon
+	Anorexic::Application.instance.start deamon, wait_for_load
 end
 
 
