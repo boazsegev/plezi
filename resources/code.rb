@@ -16,7 +16,7 @@ listen
 
 # remove this demo route and add your routes here:
 # this route accepts any /:id and the :id is mapped to: params["id"] (available at params[:id] as well.)
-shared_route '/', SampleController
+shared_route '/', SampleController #, debug: true
 
 
 # this is the static file route

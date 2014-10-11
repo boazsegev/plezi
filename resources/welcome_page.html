@@ -7,7 +7,7 @@
 				background-color: #eee;
 				padding: 0; margin: 0;
 				width: 100%;
-				font-size: 1.1em;
+				font-size: 1.05em;
 			}
 			h1
 			{
@@ -63,72 +63,116 @@
 		</style>
 	</head>
 	<body>
-		<h1>I started <a href='https://github.com/boazsegev/anorexic'>Anorexic</a>... feed me!</h1>
+		<h1><a href='https://github.com/boazsegev/anorexic'>Anorexic</a> is hungry... feed it your code!</h1>
 		<div id='wrapper'>
 <h2>I installed Anorexic, what now?</h2>
 <p>
-The main code for the app is in the app file (appname.rb). here's the universal example:
+The main code for the app is in the app file (appname.rb). here's the universal example you can rub from your favorit Ruby terminal:
 </p>
 <pre><code>    require 'anorexic'
     listen 3000
     route('/') { |request, response| response.body &lt;&lt; "Hello World!" }
 </code></pre>
-
 <p>
 It also works with multiple services (ports), which is great for having some routes work only on SSL (*disclaimer, not all Rack servers serve SSL. WEBrick does, but it's slower):
 <pre><code>    require 'anorexic'
-    listen 3000
+
+    listen 3000 # => server: 'thin', 'puma', 'webrick' - searched for in order.
     route('/') { |request, response| response.body &lt;&lt; "Hello World from 3000!" }
 
-    listen 8080, ssl_self: true 
+    listen 8080, ssl_self: true , server: 'webrick'
     route('/') { |request, response| response.body &lt;&lt; "SSL Hello World from 8080!" }
 
     shared_route('/people') { |request, response| response.body &lt;&lt; "Hello People!" }
 </code></pre>
 </p>
 
-<p>It's possible to leverage Rack with the <a href='https://github.com/boazsegev/anorexic-thin-mvc'>anorexic-thin-mvc</a> - read it's <a href="http://rubydoc.info/gems/anorexic-thin-mvc/frames">documentation to learn about this powerful extension</a>.</p>
-<p>with <a href='https://github.com/boazsegev/anorexic-thin-mvc'>anorexic-thin-mvc</a>, your code might look something like this:</p>
 
-<pre><code>    require 'anorexic-thin-mvc'
-    listen 3000, server: 'thin'
-    # catch all route
-    route('*') { |req, res| res.body &lt;&lt; "Hello World!" }
-
-    listen 8080, ssl_self: true, server: 'webrick' # thin doesn't support SSL. use WEBrick.
-    route('*') { |request, response| response.body &lt;&lt; "SSL Hello World from 8080!" }
-</code></pre>
 <h2>Routes?</h2>
 <p>
-Routes are the way the server knows which code to run for every request it recieves. This is the route: http://www.server.com<b>/the/stuff/they/request</b>
+Routes have paths that tell the application which code to run for every request it recieves. The route's path is the part in bold: http://www.server.com<b>/the/stuff/they/request</b>?paramaters=params[:paramaters]
 </p>
 <p>
-<b>Each server deals with routes differently.</b>
+As long as Anorexic uses the Anorexic::RackServer class (we could change that, but why would we?), the routes will work the same for all the listening ports.
 </p>
 <p>
-Some servers, like the basic WEBrick (if you're not using the <a href='https://github.com/boazsegev/anorexic-thin-mvc'>anorexic-thin-mvc</a> gem), will overwrite old routes if they exist.
+	 <a href='https://github.com/boazsegev/anorexic'>Anorexic</a> allows your code to choose it's routes dynamically, in the order they are created. like so:
 </p>
 <pre><code>    require 'anorexic'
-    listen 3000
-    # this route will die, it's about to be overwritten
-    route('/') { |req, res| res.body &lt;&lt; "Help Me!" }
-    # this route wins
-    route('/') { |request, response| response.body &lt;&lt; "I Win!" }
-</code></pre>
-<p>
-	<a href='https://github.com/boazsegev/anorexic-thin-mvc'>anorexic-thin-mvc</a> doesn't do that - instead, it allows your code to choose dynamically. if the route answers, that's it. If a route returns false, we move on to the next.
-</p>
-<pre><code>    require 'anorexic-thin-mvc'
-    listen 3000, server: 'thin'
+    listen
+    # this route declines to answer
+    route('/') { |req, res| res.body &lt;&lt; "I Give Up!"; false }
     # this route wins
     route('/') { |req, res| res.body &lt;&lt; "I Win!" }
     # this route never sees the light of day
     route('/') { |request, response| response.body &lt;&lt; "Help Me!" }
 </code></pre>
+<p>
+	 <a href='https://github.com/boazsegev/anorexic'>Anorexic</a> accepts Regexp routes and defines a short cut for a catch-all route:
+</p>
+<pre><code>    require 'anorexic'
+    listen
+
+    # this route accepts paths that start with a number (i.e.: /nonumber)
+    route(/^\/[\d]+[\D]+/) { |req, res| res.body &lt;&lt; "Give me more numbers :)" }
+
+    # this route accepts paths that are just numbers (i.e.: /87652)
+    route(/^\/[\d]+$/) { |req, res| res.body &lt;&lt; "I Love Numbers!" }
+
+    # this route accepts paths that don't have any number (i.e.: /nonumber)
+    route(/^\/[\D]+$/) { |req, res| res.body &lt;&lt; "Where're my numbers :(" }
+
+    # this route catches everything else.
+    route('*') { |request, response| response.body &lt;&lt; "Gotcha!" }
+</code></pre>
+
+
+
+<h2>Controllers</h2>
+<p>
+Controllers are `special` classes.
+</p>
+<p>
+In fact, Controllers are so special, they are the reason the Anorexic project started - to build light efficient controllers that can replace the heavy core experienced while using Rails or Sinatra based frameworks.
+</p>
+<p>
+Although Controllers can be any class, they have a lot of advantages over defining routes using blocks of code. look at this:
+</p>
+<pre><code>    require 'anorexic'
+    listen
+    route "/", Anorexic::StubController
+</code></pre>
+<p>
+Building our own controller is as easy as defining a class:
+</p>
+<pre><code>    class MyController
+        def index
+            "Hello World!"
+        end
+        def demo
+            "This is a demo path!"
+        end
+        def no
+            false
+        end
+
+        # show, update, save, defete, before and after are extra special.
+        def show
+            "Looking for the #{params[:id]} object?"
+        end
+    end
+
+	require 'anorexic'
+    listen
+    route "/", MyController
+</code></pre>
+<p>
+Read more about controllers <a href='http://rubydoc.info/gems/anorexic/frames'>on our documentation page</a>
+.</p>
 
 <h2>More</h2>
 <p>
-Anorexic is thin, light and built for capable Rubyists. If you want to learn more, <a href='http://rubydoc.info/gems/anorexic/frames'>read the documentation</a>. We actually tried to write some for you to enjoy...
+<a href='https://github.com/boazsegev/anorexic'>Anorexic</a> is thin, light and built for lego-block world of open-source. If you want to learn more, <a href='http://rubydoc.info/gems/anorexic/frames'>read the documentation</a>. We actually tried to write some for you to enjoy...
 </p>
 		</div>
 	</body>

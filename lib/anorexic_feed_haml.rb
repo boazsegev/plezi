@@ -90,7 +90,7 @@ module Anorexic
 				# get all haml files in 'views' folder
 				root = Root if defined? Root
 				root ||= Pathname.new('.').expand_path
-				Dir["#{root.join('views').to_s}**/**/*.#{extention}"].each do |file|
+				Dir["#{root.join('app', 'views').to_s}**/**/*.#{extention}"].each do |file|
 					return file if file.split(/[\\\/]/).last[0..(0-2-extention.length)].include?(template.to_s + "." + type)
 				end
 				false

@@ -74,10 +74,9 @@ module Anorexic
 			server_params = {Port: @port, server: @rack_handlers}
 			options = @params
 			options[:server_params] ||= {}
-			if ENV["RACK_ENV"] && ENV["RACK_ENV"] == "development"
-				options[:middleware] ||= [[Rack::ShowExceptions]]
-			else
-				options[:middleware] ||= []
+			options[:middleware] ||= []
+			if options[:debug]
+				options[:middleware] << [Rack::ShowExceptions]
 			end
 
 			# add controller magic :)
@@ -205,8 +204,7 @@ module Anorexic
 			@routes.each do |r|
 				route_path, config, block = *r
 				# check if paths fit and extract any inline paramaters from path
-				paths_fit, inline_params = self.class.match_path(route_path, original_request_path.dup, config)
-				request.env["PATH_INFO"] = original_request_path
+				paths_fit, inline_params = self.class.match_path(route_path, original_request_path, config)
 				next unless paths_fit
 
 				# add any inline params (implied params["id"])
@@ -224,11 +222,17 @@ module Anorexic
 							r = Rack::Directory.new(config[:file_root]).call(env)
 							return r if r && r[0] != 404
 						end
+					request.env["PATH_INFO"] = original_request_path.dup
 					end
 					if block
 						response = Rack::Response.new
 						response["Content-Type"] = ::Anorexic.default_content_type
-						return response.finish if block.call(request,response)						
+						block_returned = false
+						begin
+							block_returned = block.call(request,response)
+						rescue Exception => e							
+						end
+						return response.finish if block_returned
 					end
 				elsif config.is_a? Class #Anorexic::StubController
 					#######################
@@ -439,13 +443,13 @@ module Anorexic
 
 		# shuts down the server. it's called by the system, but never used as rack server's handle shutdown themselves.
 		def shutdown
-			if defined? EventMachine && EventMachine.reactor_running?
-				EventMachine.stop
-			elsif Rack::Server.resopnd_to? :stop
-				Rack::Server.stop
-			elsif
-				exit
+			if defined? ::EventMachine
+				if ::EventMachine.reactor_running?
+					::EventMachine.stop
+					return
+				end
 			end
+			exit
 		end
 
 		# Copied from the Ruby core WEBrick project, in order to create self signed certificates...

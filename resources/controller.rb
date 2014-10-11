@@ -51,27 +51,23 @@ class SampleController
 		false
 	end
 
-	def demo
+	def fail
 		# throw up this code and feed anorexic your own lines :)
-		if defined? Anorexic::FeedHaml
-			render :mvc_demo, locals: {request: request}
-		else
-			"#{request.path} -  Anorexic Thin-MVC path got you here..."
-		end
+		raise "Anorexic raising hell!"
 	end
 
 	# called when request is GET and quary defines "id"
 	def show
-		false
-	end
-
-	# called when request is POST or PUT and there's no "id" in quary
-	def save
 		if defined? Anorexic::FeedHaml
 			false
 		else
 			"#{request.path} -  Anorexic Thin-MVC path telss me you're looking for ID: #{params[:id]}..."
 		end
+	end
+
+	# called when request is POST or PUT and there's no "id" in quary
+	def save
+		false
 	end
 
 	# called when request is POST or PUT and quary defines "id"

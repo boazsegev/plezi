@@ -268,8 +268,9 @@ end
 # Content-Type:: the key should be the string 'Content-Type'. defaults to 'Content-Type' => 'text/html'.
 # file_root:: sets a root folder to serve files. defaults to nil (no root).
 # allow_indexing:: if a root folder is set, this sets th indexing option. defaults to false.
-# servlet:: set a servlet instead of a Proc, see WEBRick documentation for more info. defaults to nil.
-# servlet_args:: if a servlet is set, attempts to send arguments to the constructor. defaults to [] (no arguments).
+# debug:: ONLY FOR RackServer: set's detailed exeption output, using Rack::ShowExceptions
+# servlet:: ONLY FOR WEBrickServer: set a servlet instead of a Proc, see WEBRick documentation for more info. defaults to nil.
+# servlet_args:: ONLY FOR WEBrickServer: if a servlet is set, attempts to send arguments to the constructor. defaults to [] (no arguments).
 #
 def route(path, config = {}, &block)
 	Anorexic::Application.instance.add_route path, config, &block

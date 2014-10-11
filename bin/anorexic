@@ -37,25 +37,6 @@ class AppTemplate
 		@end_comments = []
 		@app_tree ||= {}
 
-		# create library and log folders
-		app_tree["logs"] ||= {}
-		app_tree["lib"] ||= {}
-
-		# set up the assets folder, which will be used in the future for compiling assets using rake
-		app_tree["assets"] ||= {}
-		app_tree["assets"]["css"] ||= {}
-		app_tree["assets"]["javascript"] ||= {}
-
-		# set up a public folder for atatic file service
-		app_tree["public"] ||= {}		
-		app_tree["public"]["index.html"] ||= IO.read(::File.expand_path(File.join("..", "..", "resources" ,"welcome_page.html"),  __FILE__)).gsub('appname', ARGV[1])
-		app_tree["public"]["404.html"] ||= IO.read(::File.expand_path(File.join("..", "..", "resources" ,"404.html"),  __FILE__))
-		app_tree["public"]["404.html.haml"] ||= IO.read(::File.expand_path(File.join("..", "..", "resources" ,"404.html.haml"),  __FILE__))
-		app_tree["public"]["500.html.haml"] ||= IO.read(::File.expand_path(File.join("..", "..", "resources" ,"500.html.haml"),  __FILE__))
-
-		#set the views forlder for all HAML files and templates
-		app_tree["views"] ||= {}
-
 		# app core files.
 		app_tree["environment.rb"] ||= IO.read ::File.expand_path(File.join("..", "..", "resources" ,"environment.rb"),  __FILE__)
 		app_tree["rakefile.rb"] ||= IO.read ::File.expand_path(File.join("..", "..", "resources" ,"rakefile.rb"),  __FILE__)
@@ -77,11 +58,33 @@ class AppTemplate
 		app_tree["config"]["haml_config.rb"] = IO.read(::File.expand_path(File.join("..", "..", "resources" ,"haml_config.rb"),  __FILE__))
 		app_tree["config"]["i18n_config.rb"] = IO.read(::File.expand_path(File.join("..", "..", "resources" ,"i18n_config.rb"),  __FILE__))
 
-		# set up library files
+		# create library and log folders
+		app_tree["logs"] ||= {}
+		app_tree["lib"] ||= {}
+
+		# set up application files
 		app_tree["app"] ||= {}
 		app_tree["app"]["controllers"] ||= {}
 		app_tree["app"]["models"] ||= {}
 		app_tree["app"]["sample_controller.rb"] ||= IO.read(::File.expand_path(File.join("..", "..", "resources" ,"controller.rb"),  __FILE__))
+
+		#set the views forlder for all HAML files and templates
+		app_tree["app"] ||= {}
+		app_tree["app"]["views"] ||= {}
+		app_tree["app"]["views"]["404.html.haml"] ||= IO.read(::File.expand_path(File.join("..", "..", "resources" ,"404.html.haml"),  __FILE__))
+		app_tree["app"]["views"]["500.html.haml"] ||= IO.read(::File.expand_path(File.join("..", "..", "resources" ,"500.html.haml"),  __FILE__))
+
+		# set up the assets folder, which will be used in the future for compiling assets using rake
+		app_tree["assets"] ||= {}
+		app_tree["assets"]["css"] ||= {}
+		app_tree["assets"]["javascript"] ||= {}
+
+		# set up a public folder for static file service
+		app_tree["public"] ||= {}		
+		app_tree["public"]["index.html"] ||= IO.read(::File.expand_path(File.join("..", "..", "resources" ,"welcome_page.html"),  __FILE__)).gsub('appname', ARGV[1])
+		app_tree["public"]["404.html"] ||= IO.read(::File.expand_path(File.join("..", "..", "resources" ,"404.html"),  __FILE__))
+		app_tree["public"]["500.html"] ||= IO.read(::File.expand_path(File.join("..", "..", "resources" ,"500.html"),  __FILE__))
+
 	end
 
 	def app_tree

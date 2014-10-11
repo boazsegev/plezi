@@ -15,7 +15,7 @@
 			border-bottom: 1px solid #000;
 			margin: 0;
 			padding: 0.5em;
-			width: 100%;
+			width: auto;
 		}
 		p
 		{
@@ -23,21 +23,11 @@
 			font-size: 1.2em;
 			padding: 0 1em;			
 		}
-		#missing
-		{
-			color:#904;
-			font-size: 1.4em;
-			padding: 0.5em 0;
-			text-align: center;			
-			background-color: #fee;
-			border-bottom: 1px solid #800;
-			margin: 0;
-		}
 		#wrapper
 		{
 			background-color: #fff;
 			margin: 1em 5%;
-			padding: 0 0 2%;
+			padding: 0 0 2% 0;
 			border-radius: 20px;
 			min-height: 50%;
 			color: #007;
@@ -53,10 +43,21 @@
 			border-radius: 20px;
 		}
 		#wrapper p{ padding: 0 2%;}
+		#wrapper #missing
+		{
+			color:#904;
+			font-size: 1.4em;
+			padding: 0.5em 0;
+			text-align: center;         
+			background-color: #fee;
+			border-bottom: 1px solid #800;
+			margin: 0;
+		}
 %body
 	%h1< Anorexic 500 error code (broken?!)...
-	%p#missing
-		something went wrong @ 
-		= defined?(request) ? request.path : "what you're looking for..."
 	#wrapper
-		%p If this persists, please let up know...
+		%h2#missing
+			something went wrong with:
+			= defined?(request) ? request.path : "what you're looking for..."
+		%p Sorry, something went wrong trying to process your request...
+		%p ... Please try again soon and if this issue persists, please let us know.
