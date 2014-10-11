@@ -8,6 +8,9 @@
 Encoding.default_internal = 'utf-8'
 Encoding.default_external = 'utf-8'
 
+#set up root object, it will be used by the environment and\or the anorexic extension gems.
+Root ||= Pathname.new(File.dirname(__FILE__)).expand_path
+
 # ensure development mode? (comment before production, environment dependent)
 ENV["RACK_ENV"] ||= "development"
 

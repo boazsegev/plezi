@@ -32,9 +32,11 @@ require 'irb'
 #
 class AppTemplate
 
-	def initialize(appname = ARGV[1])
+	def initialize
 		# set end comments
 		@end_comments = []
+		@gemfile_template ||= []
+		@app_tree ||= {}
 
 		# create library and log folders
 		app_tree["logs"] ||= {}
@@ -47,7 +49,10 @@ class AppTemplate
 
 		# set up a public folder for atatic file service
 		app_tree["public"] ||= {}		
-		app_tree["public"]["index.html"] ||= IO.read(::File.expand_path(File.join("..", "..", "resources" ,"welcome_page.html"),  __FILE__)).gsub('appname', appname)
+		app_tree["public"]["index.html"] ||= IO.read(::File.expand_path(File.join("..", "..", "resources" ,"welcome_page.html"),  __FILE__)).gsub('appname', ARGV[1])
+		app_tree["public"]["404.html"] ||= IO.read(::File.expand_path(File.join("..", "..", "resources" ,"404.html"),  __FILE__))
+		app_tree["public"]["404.html.haml"] ||= IO.read(::File.expand_path(File.join("..", "..", "resources" ,"404.html.haml"),  __FILE__))
+		app_tree["public"]["500.html.haml"] ||= IO.read(::File.expand_path(File.join("..", "..", "resources" ,"500.html.haml"),  __FILE__))
 
 		#set the views forlder for all HAML files and templates
 		app_tree["views"] ||= {}
@@ -56,7 +61,7 @@ class AppTemplate
 		app_tree["environment.rb"] ||= IO.read ::File.expand_path(File.join("..", "..", "resources" ,"environment.rb"),  __FILE__)
 		app_tree["rakefile.rb"] ||= IO.read ::File.expand_path(File.join("..", "..", "resources" ,"rakefile.rb"),  __FILE__)
 		app_tree["Procfile"] ||= ""
-		app_tree["Procfile"] << "\nweb: bundle exec ./#{appname}.rb -p $PORT\n"
+		app_tree["Procfile"] << "\nweb: bundle exec ./#{ARGV[1]}.rb -p $PORT\n"
 
 		#set up the extras folder, to be filled with future goodies.
 		app_tree["extras"] ||= {}
@@ -80,7 +85,7 @@ class AppTemplate
 
 		# set gem file
 		gemfile << 'source "https://rubygems.org"'
-		gemfile << 
+		gemfile << ''
 		gemfile << '# include the basic anorexic library'
 		gemfile << "gem 'anorexic'"
 		gemfile << "gem 'rack'"
@@ -106,27 +111,29 @@ class AppTemplate
 	end
 
 	def app_tree
-		@app_tree ||= {}
+		@app_tree
 	end
 	def gemfile
-		@gemfile_template ||= []
+		@gemfile_template
 	end
 
-	def build appname
+	def build
+		# require 'pry'
+		# binding.pry
 		gemfile << "\n\n\nruby '#{RUBY_VERSION}'\n"
-		app_tree["Gemfile"] = gemfile.join('\n')
+		app_tree["Gemfile"] = gemfile.join("\n")
 		begin
-			Dir.mkdir appname
-			puts "created the #{appname} application directory.".green
+			Dir.mkdir ARGV[1]
+			puts "created the #{ARGV[1]} application directory.".green
 		rescue Exception => e
-			puts "the #{appname} application directory exists - trying to rebuild (no overwrite).".pink
+			puts "the #{ARGV[1]} application directory exists - trying to rebuild (no overwrite).".pink
 		end
-		Dir.chdir appname
+		Dir.chdir ARGV[1]
 		puts "starting to write template data...".red
 		puts ""
-		@app_tree["#{appname}.rb"] ||= IO.read ::File.expand_path(File.join("..", "..", "resources" ,"code.rb"),  __FILE__)
+		@app_tree["#{ARGV[1]}.rb"] ||= IO.read ::File.expand_path(File.join("..", "..", "resources" ,"code.rb"),  __FILE__)
 		write_files app_tree
-		File.chmod 0775, "#{appname}.rb"
+		File.chmod 0775, "#{ARGV[1]}.rb"
 		puts "tried to update execution permissions. this probably failed.".pink
 		puts "use: chmod +x ./#{ARGV[1]}.rb to set execution permissions."
 		puts ""
@@ -255,8 +262,8 @@ if ARGV[0] == 'new' || ARGV[0] == 'n' || ARGV[0] == "force"
 	end
 
 	# building
-	template = AppTemplate.new ARGV[1]
-	template.build ARGV[1]
+	template = AppTemplate.new
+	template.build
 elsif ARGV[0] == 'server' || ARGV[0] == 'start' || ARGV[0] == 's'
 	ARGV.shift
 	load File.expand_path(Dir["."][0], (File.expand_path(Dir["."][0]).split(/[\\\/]/).last + ".rb") )

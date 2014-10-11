@@ -1,0 +1,42 @@
+
+!!!5
+%head
+	:css
+		body, html
+		{
+			background-color: #eee;
+			padding: 0; margin: 0;
+			width: 100%;
+		}
+		h1
+		{
+			background-color: #ddd;
+			color: #008;
+			text-align: center;
+			border-bottom: 1px solid #000;
+			margin: 0;
+			padding: 0.5em;
+			width: 100%;
+		}
+		p
+		{
+			color:#004;
+			font-size: 1.2em;
+			padding: 0 1em;			
+		}
+		#missing
+		{
+			color:#904;
+			font-size: 1.4em;
+			padding: 0.5em 0;
+			text-align: center;			
+			background-color: #fee;
+			border-bottom: 1px solid #800;
+			margin: 0;
+		}
+%body
+	%h1< Anorexic 500 error code (broken?!)...
+	%p#missing
+		something went wrong @ 
+		= defined?(request) ? request.path : "what you're looking for..."
+	%p If this persists, please let up know...

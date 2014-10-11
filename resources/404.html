@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<head>
+  <style>
+    body, html
+    {
+    	background-color: #eee;
+    	padding: 0; margin: 0;
+    	width: 100%;
+    }
+    h1
+    {
+    	background-color: #ddd;
+    	color: #008;
+    	text-align: center;
+    	border-bottom: 1px solid #000;
+    	margin: 0;
+    	padding: 0.5em;
+    	width: 100%;
+    }
+    p
+    {
+    	color:#004;
+    	font-size: 1.2em;
+    	padding: 0 1em;			
+    }
+    #missing
+    {
+    	color:#904;
+    	font-size: 1.4em;
+    	padding: 0.5em 0;
+    	text-align: center;			
+    	background-color: #fee;
+    	border-bottom: 1px solid #800;
+    	margin: 0;
+    }
+	#wrapper
+	{
+		background-color: #fff;
+		margin: 1em 5%;
+		padding: 0 0 2%;
+		border-radius: 20px;
+		min-height: 50%;
+		color: #007;
+	}
+	#wrapper h2
+	{
+		background-color: #ddd;
+		color: #008;
+		text-align: center;
+		margin: 0 0 1em 0;
+		padding: 0.5em 0;
+		width: 100%;
+		border-radius: 20px;
+	}
+	#wrapper p{ padding: 0 2%;}
+  </style>
+</head>
+<body>
+  <h1>Anorexic 404 error code (missing, not broken)...</h1>
+  <p id='missing'>
+    couldn't find
+    /1/index.html
+  </p>
+  <div id='wrapper'>
+	  <p>Sorry, we couldn't find what you're looking for...</p>
+	  <p>... but it's really cool we can use HAML for this dynamic error page, right?</p>
+  </div>
+</body>
+

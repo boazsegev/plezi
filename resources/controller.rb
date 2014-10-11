@@ -34,7 +34,7 @@ class SampleController
 	# it is possible to includes all the Anorexic::FeedHaml helper methods...
 	# ... this breakes the strict MVC architecture by running the HAML view
 	# as part of the controller class. It's good for hacking, but bad practice.
-	# include Anorexic::FeedHaml
+	# include Anorexic::FeedHaml if defined? Anorexic::FeedHaml
 
 	# called before any action
 	def before
@@ -47,16 +47,17 @@ class SampleController
 
 	# called when request is GET and there's no "id" in quary
 	def index
+		# returning false will make the routes continue to the next target route - the static file service.
+		false
+	end
+
+	def demo
 		# throw up this code and feed anorexic your own lines :)
 		if defined? Anorexic::FeedHaml
 			render :mvc_demo, locals: {request: request}
 		else
 			"#{request.path} -  Anorexic Thin-MVC path got you here..."
 		end
-	end
-
-	def demo
-		return index
 	end
 
 	# called when request is GET and quary defines "id"
@@ -66,7 +67,11 @@ class SampleController
 
 	# called when request is POST or PUT and there's no "id" in quary
 	def save
-		false
+		if defined? Anorexic::FeedHaml
+			false
+		else
+			"#{request.path} -  Anorexic Thin-MVC path telss me you're looking for ID: #{params[:id]}..."
+		end
 	end
 
 	# called when request is POST or PUT and quary defines "id"

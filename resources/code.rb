@@ -11,7 +11,7 @@ Root ||= Pathname.new(File.dirname(__FILE__)).expand_path
 require ::File.expand_path(File.join("..", "environment.rb"),  __FILE__)
 
 # start first service - defaults to 3000 or the port set by command-line
-listen port
+listen
 
 
 # remove this demo route and add your routes here:
