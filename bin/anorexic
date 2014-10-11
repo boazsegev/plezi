@@ -35,7 +35,6 @@ class AppTemplate
 	def initialize
 		# set end comments
 		@end_comments = []
-		@gemfile_template ||= []
 		@app_tree ||= {}
 
 		# create library and log folders
@@ -62,6 +61,7 @@ class AppTemplate
 		app_tree["rakefile.rb"] ||= IO.read ::File.expand_path(File.join("..", "..", "resources" ,"rakefile.rb"),  __FILE__)
 		app_tree["Procfile"] ||= ""
 		app_tree["Procfile"] << "\nweb: bundle exec ./#{ARGV[1]}.rb -p $PORT\n"
+		app_tree["Gemfile"] ||= IO.read ::File.expand_path(File.join("..", "..", "resources" ,"Gemfile"),  __FILE__)
 
 		#set up the extras folder, to be filled with future goodies.
 		app_tree["extras"] ||= {}
@@ -113,15 +113,10 @@ class AppTemplate
 	def app_tree
 		@app_tree
 	end
-	def gemfile
-		@gemfile_template
-	end
-
 	def build
 		# require 'pry'
 		# binding.pry
-		gemfile << "\n\n\nruby '#{RUBY_VERSION}'\n"
-		app_tree["Gemfile"] = gemfile.join("\n")
+		app_tree["Gemfile"] << "\n\n\nruby '#{RUBY_VERSION}'\n"
 		begin
 			Dir.mkdir ARGV[1]
 			puts "created the #{ARGV[1]} application directory.".green
