@@ -33,30 +33,82 @@ require 'irb'
 class AppTemplate
 
 	def initialize(appname = ARGV[1])
-		initialize_template_globals
-		@app_tree ||= {}
+		# set end comments
+		@end_comments = []
 
+		# create library and log folders
+		app_tree["logs"] ||= {}
+		app_tree["lib"] ||= {}
+
+		# set up the assets folder, which will be used in the future for compiling assets using rake
+		app_tree["assets"] ||= {}
+		app_tree["assets"]["css"] ||= {}
+		app_tree["assets"]["javascript"] ||= {}
+
+		# set up a public folder for atatic file service
+		app_tree["public"] ||= {}		
+		app_tree["public"]["index.html"] ||= IO.read(::File.expand_path(File.join("..", "..", "resources" ,"welcome_page.html"),  __FILE__)).gsub('appname', appname)
+
+		#set the views forlder for all HAML files and templates
+		app_tree["views"] ||= {}
+
+		# app core files.
+		app_tree["Gemfile"] ||= @gemfile_template
+		app_tree["environment.rb"] ||= IO.read ::File.expand_path(File.join("..", "..", "resources" ,"environment.rb"),  __FILE__)
+		app_tree["rakefile.rb"] ||= IO.read ::File.expand_path(File.join("..", "..", "resources" ,"rakefile.rb"),  __FILE__)
 		app_tree["Procfile"] ||= ""
 		app_tree["Procfile"] << "\nweb: bundle exec ./#{appname}.rb -p $PORT\n"
 
-		@app_tree["logs"] ||= {}
-		@app_tree["config"] ||= {}
-		@app_tree["lib"] ||= {}
-		@app_tree["app"] ||= {}
-		@app_tree["public"] ||= {}
-		@app_tree["public"]["index.html"] ||= IO.read(::File.expand_path(File.join("..", "..", "resources" ,"welcome_page.html"),  __FILE__)).gsub('appname', appname)
-		@app_tree["Gemfile"] ||= @gemfile_template
-		@app_tree["environment.rb"] ||= IO.read ::File.expand_path(File.join("..", "..", "resources" ,"environment.rb"),  __FILE__)
-		@app_tree["rakefile.rb"] ||= IO.read ::File.expand_path(File.join("..", "..", "resources" ,"rakefile.rb"),  __FILE__)
-		@end_comments = []
+		#set up the extras folder, to be filled with future goodies.
+		app_tree["extras"] ||= {}
+		app_tree["extras"]["config.ru"] ||= IO.read ::File.expand_path(File.join("..", "..", "resources" ,"config.ru"),  __FILE__)
+
+		#set up database stub folders
+		app_tree["db"] ||= {}
+		app_tree["db"]["migrations"] ||= {}
+
+		# set up config files
+		app_tree["config"] ||= {}
+		app_tree["config"]["thin_mvc.rb"] = IO.read(::File.expand_path(File.join("..", "..", "resources" ,"settings.rb"),  __FILE__))
+
+		# set up library files
+		app_tree["app"] ||= {}
+		app_tree["app"]["controllers"] ||= {}
+		app_tree["app"]["models"] ||= {}
+		app_tree["app"]["sample_controller.rb"] ||= IO.read(::File.expand_path(File.join("..", "..", "resources" ,"controller.rb"),  __FILE__))
+
+		# set gem file
+		gemfile << 'source "https://rubygems.org"'
+		gemfile << 
+		gemfile << '# include the basic anorexic library'
+		gemfile << "gem 'anorexic'"
+		gemfile << "gem 'rack'"
+		gemfile << "gem 'thin'"
+		gemfile << ""
+		gemfile << "# use pry gem for basic debug ( put `binding.pry` at breake point )?"
+		gemfile << "# gem 'pry'"
+		gemfile << "\n## if you want to use a database, here are a two common enough options:"
+		gemfile << "# gem 'sqlite3'"
+		gemfile << "# gem 'pg'"
+		gemfile << ""
+		gemfile << "## if you want to use ActiveRecord, uncomment the following line(s):"
+		gemfile << "# gem 'activerecord', :require => 'active_record'"
+		gemfile << "# gem 'bcrypt', '~> 3.1.7'"
+		gemfile << "\n## or, use data_mapper, an auto-migration magic gem (no longer under development):"
+		gemfile << "# gem 'data_mapper'"
+		gemfile << "# gem 'dm-sqlite-adapter'"
+		gemfile << "# gem 'dm-postgres-adapter'"
 	end
 
 	def app_tree
-		@app_tree
+		@app_tree ||= {}
+	end
+	def gemfile
+		@gemfile_template ||= []
 	end
 
 	def build appname
-		@gemfile_template << "\n\n\nruby '#{RUBY_VERSION}'\n"
+		gemfile << "\n\n\nruby '#{RUBY_VERSION}'\n"
 		begin
 			Dir.mkdir appname
 			puts "created the #{appname} application directory.".green
@@ -114,36 +166,6 @@ class AppTemplate
 			end
 		end
 	end
-
-	def initialize_template_globals
-		@default_code = %q{#!/usr/bin/env ruby
-# encoding: UTF-8
-
-# load all framework and gems
-require ::File.expand_path(File.join("..", "environment.rb"),  __FILE__)
-
-# ensure development mode? (comment before production, environment dependent)
-ENV["RACK_ENV"] ||= "development"
-
-port = ARGV[ARGV.find_index('-p') + 1].to_i if ARGV.find_index('-p')
-port ||= 3000
-
-listen port
-
-# add your routes here.
-
-shared_route "/", file_root: Root.join('public').to_s, allow_indexing: false
-
-}
-		@gemfile_template = %q{source "https://rubygems.org"
-
-# include the basic anorexic library
-gem 'anorexic'
-
-# to use pry gem for basic debug ( put `binding.pry` at breake point )
-# gem 'pry'
-}
-	end
 end
 
 
@@ -180,18 +202,7 @@ end
 ######################################################################
 ######################################################################
 
-if ARGV[0] == 'new-mvc' || ARGV[0] == 'full'
-	BUILDING_ANOREXIC_TEMPLATE = true
-	if Dir.exists?(ARGV[1]) && ARGV[0] != "force"
-		puts ""
-		puts "WARNING: app/folder alread exists, use `anorexic fource #{ARGV[1]}` to attempt rebuild (no overwrite).".red
-		puts ""
-		exit
-	end
-	require 'anorexic-haml'
-	require 'anorexic-thin-mvc'
-	AppTemplate.new(ARGV[1]).build(ARGV[1])
-elsif ARGV[0] == 'new' || ARGV[0] == 'n' || ARGV[0] == "force"
+if ARGV[0] == 'new' || ARGV[0] == 'n' || ARGV[0] == "force"
 	#########
 	## set up building environment
 	BUILDING_ANOREXIC_TEMPLATE = true
@@ -254,17 +265,14 @@ elsif ARGV[0] == 'console' || ARGV[0] == 'c'
 else
 	puts ""
 	puts "Anorexic fast web app starter.".pink
-	puts "use: anorexic new appname for an anorexic only app"
-	puts "use: anorexic new-mvc appname for a full mvc anorexic framework."
-	puts "or: anorexic new appname with anorexic-gem-to-put-in another-gem-to-put"
+	puts "use: anorexic new appname"
+	puts "or: anorexic new appname with template-gem-to-put-in another-template-gem-to-put"
 	puts "==============================".green
 	puts "new app options:".pink
 	puts "option                  description".yellow
 	puts "new <appname>           creates a new application called <appname>."
 	puts "n                       alias for new."
 	puts "new app with gem        'new' accepts the 'with' paramater (or w for short)."
-	puts "new-mvc <appname>       creates a full framework application called <appname> (see docs)."
-	puts "full <appname>          alias for neew-mvc."
 	puts "starting up an app:".pink
 	puts "start                   runs the app. accepts any paramaters the app supports."
 	puts "s                       alias for start/server."
