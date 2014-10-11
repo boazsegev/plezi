@@ -53,7 +53,6 @@ class AppTemplate
 		app_tree["views"] ||= {}
 
 		# app core files.
-		app_tree["Gemfile"] ||= @gemfile_template
 		app_tree["environment.rb"] ||= IO.read ::File.expand_path(File.join("..", "..", "resources" ,"environment.rb"),  __FILE__)
 		app_tree["rakefile.rb"] ||= IO.read ::File.expand_path(File.join("..", "..", "resources" ,"rakefile.rb"),  __FILE__)
 		app_tree["Procfile"] ||= ""
@@ -69,7 +68,9 @@ class AppTemplate
 
 		# set up config files
 		app_tree["config"] ||= {}
-		app_tree["config"]["thin_mvc.rb"] = IO.read(::File.expand_path(File.join("..", "..", "resources" ,"settings.rb"),  __FILE__))
+		app_tree["config"]["mvc_config.rb"] = IO.read(::File.expand_path(File.join("..", "..", "resources" ,"settings.rb"),  __FILE__))
+		app_tree["config"]["haml_config.rb"] = IO.read(::File.expand_path(File.join("..", "..", "resources" ,"haml_config.rb"),  __FILE__))
+		app_tree["config"]["i18n_config.rb"] = IO.read(::File.expand_path(File.join("..", "..", "resources" ,"i18n_config.rb"),  __FILE__))
 
 		# set up library files
 		app_tree["app"] ||= {}
@@ -87,6 +88,10 @@ class AppTemplate
 		gemfile << ""
 		gemfile << "# use pry gem for basic debug ( put `binding.pry` at breake point )?"
 		gemfile << "# gem 'pry'"
+		gemfile << "\n## we love HAML:"
+		gemfile << "# gem 'haml'"
+		gemfile << "\n## we also love I18n:"
+		gemfile << "# gem 'i18n'"
 		gemfile << "\n## if you want to use a database, here are a two common enough options:"
 		gemfile << "# gem 'sqlite3'"
 		gemfile << "# gem 'pg'"
@@ -109,6 +114,7 @@ class AppTemplate
 
 	def build appname
 		gemfile << "\n\n\nruby '#{RUBY_VERSION}'\n"
+		app_tree["Gemfile"] = gemfile.join('\n')
 		begin
 			Dir.mkdir appname
 			puts "created the #{appname} application directory.".green
