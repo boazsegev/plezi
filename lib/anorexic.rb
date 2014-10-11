@@ -44,12 +44,12 @@ Encoding.default_external = 'utf-8'
 #
 # There are two built-in server classes:
 #
+# Anorexic::RackServer:: the rack  server - has MVC support and some lightweight magic features.
 # Anorexic::WEBrickServer:: the WEBrick stand alone server - no rack support. has SSL features.
-# Anorexic::RackServer:: the rack  server - no rack support. has SSL features.
 #
 # its is possible to "mix and match" the different server classes. set the server class you want BEFORE calling listen:
 #
-#		Anorexic::Application.instance.server_class = Anorexic::WEBrickServer
+#       Anorexic::Application.instance.server_class = Anorexic::WEBrickServer
 #
 # Anorexic::RackServer is the default server class. it will also set up an MVC structure for your app.
 #
@@ -175,17 +175,19 @@ module Anorexic
 		end
 
 		def start deamon = false, wait_for_load = 3
-			Anorexic.logger.info "starting up Anorexic and waiting for load compleation (count to #{wait_for_load})."
+			Anorexic.logger.info "starting up Anorexic and waiting for load compleation (count to #{wait_for_load})." if @servers.length > 1
 			@servers.each do |s|
 				@threads << Thread.new do
 					s.start
 				end
 			end
 			unless deamon
-				sleep wait_for_load
-				Anorexic.logger.info "Anorexic service(s) active - listening for shutdown."
-				trap("INT") {Anorexic::Application.instance.shutdown}
-				trap("TERM") {Anorexic::Application.instance.shutdown}
+				if @servers.length > 1
+					sleep wait_for_load
+					Anorexic.logger.info "Multiple Anorexic services active - listening for shutdown."
+					trap("INT") {Anorexic::Application.instance.shutdown}
+					trap("TERM") {Anorexic::Application.instance.shutdown}
+				end
 				@threads.each {|t| t.join}
 			end
 			self

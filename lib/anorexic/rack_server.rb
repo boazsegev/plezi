@@ -145,25 +145,23 @@ module Anorexic
 					rack_wrapper.call env
 				rescue Exception => e
 					if Anorexic.logger
-						Anorexic.logger.error << e
+						Anorexic.logger.error e
 					else
-						warn e
+						puts "ERROR: #{e.to_s}"
 					end
 
 					request = Rack::Request.new(env)
 
-					not_found = nil
+					not_found = false
 					if defined? Anorexic::FeedHaml
-						puts "looking for 500.html.haml file."
 						not_found = Anorexic::FeedHaml.render "500".to_sym, locals: { request: request, error: e}
 					end
 					unless not_found
-						puts "looking for 500.html file."
-						path_to_404 = Root.join("public", "500.html").to_s if defined? Root
-						path_to_404 ||= Pathname.new('.').expand_path.join("public", "400.html").to_s
-						not_found = IO.read path_to_404 if File.exist?(path_to_404)
+						path_to_500 = Root.join("public", "500.html").to_s if defined? Root
+						path_to_500 ||= ::File.expand_path(File.join(".", "public", "500.html"))
+						not_found = IO.read path_to_500 if File.exist?(path_to_500)
 					end
-					not_found = 'Sorry, something went wrong... internal server error 500 :-(' unless not_found
+					not_found ||= 'Sorry, something went wrong... internal server error 500 :-(' unless not_found
 					response = Rack::Response.new [not_found], 502
 					response.finish
 				end
@@ -197,6 +195,23 @@ module Anorexic
 			# 	request.env["REQUEST_METHOD"] = params[:_method].upcase
 			# end
 
+			# set magic cookies
+			class << request.cookies
+				def set_controller controller
+					@controller = controller
+				end
+				def []= key, val
+					if @controller
+						if val
+							@controller.response.set_cookie key, val
+						else
+							@controller.response.delete_cookie key
+						end
+					end
+					super
+				end
+			end
+
 			# remember original request path
 			original_request_path = request.path
 
@@ -227,12 +242,18 @@ module Anorexic
 					if block
 						response = Rack::Response.new
 						response["Content-Type"] = ::Anorexic.default_content_type
-						block_returned = false
 						begin
-							block_returned = block.call(request,response)
-						rescue Exception => e							
+							block_response = block.call(request,response)
+						rescue Exception => e
+							# require 'pry'
+							# binding.pry
+							if e.is_a?(LocalJumpError) && e.message == "unexpected return"
+								block_response = e.exit_value
+							else
+								raise e 
+							end
 						end
-						return response.finish if block_returned
+						return response.finish if block_response
 					end
 				elsif config.is_a? Class #Anorexic::StubController
 					#######################
@@ -261,7 +282,7 @@ module Anorexic
 			unless not_found
 				puts "looking for 404.html file."
 				path_to_404 = Root.join("public", "404.html").to_s if defined? Root
-				path_to_404 ||= Pathname.new('.').expand_path.join("public", "404.html").to_s
+				path_to_404 ||= ::File.expand_path(File.join(".", "public", "404.html"))
 				not_found = IO.read path_to_404 if File.exist?(path_to_404)
 			end
 			not_found = 'Sorry, you requested something we don\'t have yet... error 404 :-(' unless not_found
@@ -372,7 +393,10 @@ module Anorexic
 					@env, @params, @request = env, params, request
 					@response = Rack::Response.new
 					@response["Content-Type"] = ::Anorexic.default_content_type
+
+					# create magical cookies
 					@cookies = request.cookies
+					@cookies.set_controller self
 
 					# propegate flash object
 					@flash = Hash.new do |hs,k|
@@ -393,7 +417,7 @@ module Anorexic
 					ret ||= true
 
 					cookies.keys.each do |k|
-						if k.start_with? "anorexic_flash_"
+						if k.to_s.start_with? "anorexic_flash_"
 							response.delete_cookie k
 							flash.delete k
 						end
