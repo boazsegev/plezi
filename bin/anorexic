@@ -66,7 +66,7 @@ class AppTemplate
 		app_tree["app"] ||= {}
 		app_tree["app"]["controllers"] ||= {}
 		app_tree["app"]["models"] ||= {}
-		app_tree["app"]["sample_controller.rb"] ||= IO.read(::File.expand_path(File.join("..", "..", "resources" ,"controller.rb"),  __FILE__))
+		app_tree["app"]["controllers"]["sample_controller.rb"] ||= IO.read(::File.expand_path(File.join("..", "..", "resources" ,"controller.rb"),  __FILE__))
 
 		#set the views forlder for all HAML files and templates
 		app_tree["app"] ||= {}
