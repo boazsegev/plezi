@@ -118,7 +118,7 @@ class AppTemplate
 		Dir.chdir appname
 		puts "starting to write template data...".red
 		puts ""
-		@app_tree["#{appname}.rb"] ||= @default_code
+		@app_tree["#{appname}.rb"] ||= IO.read ::File.expand_path(File.join("..", "..", "resources" ,"code.rb"),  __FILE__)
 		write_files app_tree
 		File.chmod 0775, "#{appname}.rb"
 		puts "tried to update execution permissions. this probably failed.".pink

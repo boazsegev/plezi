@@ -14,7 +14,8 @@ require ::File.expand_path(File.join("..", "environment.rb"),  __FILE__)
 listen port
 
 
-# removie this demo route and add your routes here:
+# remove this demo route and add your routes here:
+# this route accepts any /:id and the :id is mapped to: params["id"] (available at params[:id] as well.)
 shared_route '/', SampleController
 
 
@@ -22,17 +23,5 @@ shared_route '/', SampleController
 shared_route "/", file_root: Root.join('public').to_s, allow_indexing: false
 
 
-# Thin server MVC controller path
-# the SampleController is just waiting to be inherited...
-#
-# perfomance note: it's better to place MVC routes BEFORE the file serving route.
-#
-# this route accepts any /mvc/:id and the :id is mapped to: params["id"]
-#
-# a SampleController instance will be created and called (supports REST).
-# 
-# if the :id is the name of an SampleController instance method, it will be called.
-# try: http://localhost:3000/demo
-#
-shared_route '/users', UserController
-
+# this is a catch all route
+# route('*') { |req, res| res.body << "Hello World!" }
