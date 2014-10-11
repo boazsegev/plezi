@@ -1,4 +1,3 @@
-
 !!!5
 %head
 	:css
@@ -34,9 +33,30 @@
 			border-bottom: 1px solid #800;
 			margin: 0;
 		}
+		#wrapper
+		{
+			background-color: #fff;
+			margin: 1em 5%;
+			padding: 0 0 2%;
+			border-radius: 20px;
+			min-height: 50%;
+			color: #007;
+		}
+		#wrapper h2
+		{
+			background-color: #ddd;
+			color: #008;
+			text-align: center;
+			margin: 0 0 1em 0;
+			padding: 0.5em 0;
+			width: 100%;
+			border-radius: 20px;
+		}
+		#wrapper p{ padding: 0 2%;}
 %body
 	%h1< Anorexic 500 error code (broken?!)...
 	%p#missing
 		something went wrong @ 
 		= defined?(request) ? request.path : "what you're looking for..."
-	%p If this persists, please let up know...
+	#wrapper
+		%p If this persists, please let up know...
