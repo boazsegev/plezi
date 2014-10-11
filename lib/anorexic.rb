@@ -1,8 +1,8 @@
 require "anorexic/version"
-# Using the built-in webrick to create services.
-require 'rack/lobster'
+
+# require 'thin'
+
 require 'rack'
-require 'thin'
 
 require 'openssl'
 require 'strscan'
@@ -47,7 +47,7 @@ Encoding.default_external = 'utf-8'
 #
 #		Anorexic::Application.instance.server_class = Anorexic::WEBrickServer
 #
-# Anorexic::RackServer is the default derver class. it will also set up an MVC structure for your app.
+# Anorexic::RackServer is the default server class. it will also set up an MVC structure for your app.
 #
 # The RackServer server can be used for any supported rack server. for example, to use webrick server:
 #
@@ -56,6 +56,12 @@ Encoding.default_external = 'utf-8'
 #    listen port, server: 'webrick', ssl_self: true
 #
 # Thin is the default server if no 'server' option is passed. Thin doesn't support SSL.
+# It is possible to change the default server, for all the `listen` calls that do not specify a server, using:
+#
+#    Anorexic::RackServer.default_server = 'webrick'
+#
+# If the Thin server doesn't exist, the app will fall back to Puma (if available) or
+# back to WEBrick server (if Puma isn't available) - the MVC RackServer implemantation will still be used.
 # 
 # The RackServer accepts Regexp (regular exception) for route paths. for example:
 #
@@ -212,7 +218,13 @@ module Anorexic
 	# ... it is actually possible to use any server that has a Rack:Handler, not just the thin server:
 	#    listen 80, server: 'puma'
 	#
-	# Thin is the default server if no 'server' option is passed.
+	# Thin is the default server if no 'server' option is passed. If Thin isn't available, Puma will be tested for.
+	# Webrick, which is the Ruby build-in server, will be the last resort default server.
+	#
+	# it is possible to change the default server using:
+	#
+	#    Anorexic::RackServer.default_server = 'webrick'
+	#
 	class RackServer
 		# holds the server object
 		attr_reader :server
@@ -230,7 +242,19 @@ module Anorexic
 			@server = nil
 			@port, @params = port, params
 			@routes = []
-			@rack_handlers = params[:server] || 'thin'
+			@rack_handlers = params[:server] || self.class.default_server
+		end
+
+		# sets the default server
+		def self.default_server= def_serv
+			@@default_server = def_serv
+		end
+		# gets the default server
+		def self.default_server
+			@@default_server ||= nil
+			return @@default_server || 'thin' if defined? Thin
+			return @@default_server || 'puma' if defined? Puma
+			@@default_server || 'webrick'
 		end
 
 		# this is called by the Anorexic framework to add a route to the server
@@ -730,7 +754,7 @@ module Anorexic
 			@servers = []
 			@threads = []
 			@logger = ::Logger.new STDOUT
-			@server_class = WEBrickServer
+			@server_class = Anorexic::RackServer
 			@default_content_type = "text/html; charset=utf-8"
 		end
 		def set_logger log_file, copy_to_stdout = true
@@ -742,7 +766,7 @@ module Anorexic
 			@logger
 		end
 
-		def add_server(port = 3000, params = {})
+		def add_server(port, params = {})
 			@servers << @server_class.new(port, params)
 		end
 
@@ -967,8 +991,6 @@ def start(deamon = false)
 	trap("TERM") {Anorexic::Application.instance.shutdown}
 	Anorexic::Application.instance.start deamon
 end
-
-Anorexic::Application.instance.server_class = Anorexic::RackServer
 
 
 # sets to start the services once dsl script is finished loading.

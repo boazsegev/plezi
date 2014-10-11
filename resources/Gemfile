@@ -1,0 +1,30 @@
+source "https://rubygems.org"
+
+# include the basic anorexic library
+gem 'anorexic'
+gem 'rack'
+
+# sets the default server to thin
+gem 'thin'
+
+# use pry gem for basic debug ( put `binding.pry` at breake point )?
+# gem 'pry'
+
+## we love HAML:
+# gem 'haml'
+
+## we also like I18n:
+# gem 'i18n'
+
+## if you want to use a database, here are a two common enough options:
+# gem 'sqlite3'
+# gem 'pg'
+
+## if you want to use ActiveRecord, uncomment the following line(s):
+# gem 'activerecord', :require => 'active_record'
+# gem 'bcrypt', '~> 3.1.7'
+
+## or, use data_mapper, an auto-migration magic gem (no longer under development):
+# gem 'data_mapper'
+# gem 'dm-sqlite-adapter'
+# gem 'dm-postgres-adapter'
