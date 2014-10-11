@@ -82,32 +82,6 @@ class AppTemplate
 		app_tree["app"]["controllers"] ||= {}
 		app_tree["app"]["models"] ||= {}
 		app_tree["app"]["sample_controller.rb"] ||= IO.read(::File.expand_path(File.join("..", "..", "resources" ,"controller.rb"),  __FILE__))
-
-		# set gem file
-		gemfile << 'source "https://rubygems.org"'
-		gemfile << ''
-		gemfile << '# include the basic anorexic library'
-		gemfile << "gem 'anorexic'"
-		gemfile << "gem 'rack'"
-		gemfile << "gem 'thin'"
-		gemfile << ""
-		gemfile << "# use pry gem for basic debug ( put `binding.pry` at breake point )?"
-		gemfile << "# gem 'pry'"
-		gemfile << "\n## we love HAML:"
-		gemfile << "# gem 'haml'"
-		gemfile << "\n## we also love I18n:"
-		gemfile << "# gem 'i18n'"
-		gemfile << "\n## if you want to use a database, here are a two common enough options:"
-		gemfile << "# gem 'sqlite3'"
-		gemfile << "# gem 'pg'"
-		gemfile << ""
-		gemfile << "## if you want to use ActiveRecord, uncomment the following line(s):"
-		gemfile << "# gem 'activerecord', :require => 'active_record'"
-		gemfile << "# gem 'bcrypt', '~> 3.1.7'"
-		gemfile << "\n## or, use data_mapper, an auto-migration magic gem (no longer under development):"
-		gemfile << "# gem 'data_mapper'"
-		gemfile << "# gem 'dm-sqlite-adapter'"
-		gemfile << "# gem 'dm-postgres-adapter'"
 	end
 
 	def app_tree
