@@ -252,7 +252,8 @@ end
 # server_params:: a hash of paramaters to be passed directly to the server - architecture dependent.
 #
 def listen(port = nil, params = {})
-	if !port && defined? ARGV
+	ARGV ||= []
+	if !port
 		if ARGV.find_index('-p')
 			port_index = ARGV.find_index('-p') + 1
 			port ||= ARGV[port_index].to_i

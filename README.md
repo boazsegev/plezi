@@ -27,6 +27,14 @@ That's it, now you have a ready to use basic web server (with some demo code), j
 
 this is a smart framework app that comes very skinny and will happily eat any gem you feed it. it responds extra well to Thin and Haml, which you can enable in it's Gemfile.
 
+now go, in your browser, to: http://localhost:3000/
+
+the default first port for the app is 3000. you can set the first port to listen to by using the `-p ` option:
+
+    $ ./appname.rb -p 80
+
+if more then one `listen` call was made, ports will be sequential (80, 81, 82...) unless explicitly set(`listen 443`).
+
 ## Barebones Web Service
 
 the app is a simple DSL that deletes all the DLS methods once the server starts running (less clutter while running).
@@ -38,14 +46,18 @@ this example is basic, useless, but required for every doc out there...
 "Hello World!" in 3 lines - try it in irb (exit irb to start server):
 
 		require 'anorexic'
-		listen 
+		listen
 		route(/.?/) { |req, res| res.body << "Hello World!" }
+
+After you exited irb, the Anorexic server started up. go to http://localhost:3000/ and see it run :)
 
 did you notice the catch-all regular-expression? you can write it like this too:
 
 		require 'anorexic'
 		listen
 		route('*') { |req, res| res.body << "Hello World!" }
+
+Notice that you can also set a port to listen to. if no port is set, the first unset port will default to 3000 and each `listen` call will increment that number by 1 (3001, 3002).
 
 Here's a simple web server in three (+2) lines of code, serving static pages from the `public` folder::
 
