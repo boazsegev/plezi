@@ -1,5 +1,8 @@
 source "https://rubygems.org"
 
+####################
+# core gems
+
 # include the basic anorexic library
 gem 'anorexic'
 gem 'rack'
@@ -7,24 +10,41 @@ gem 'rack'
 # sets the default server to thin
 gem 'thin'
 
+####################
+# development gems
+
 # use pry gem for basic debug ( put `binding.pry` at breake point )?
 # gem 'pry'
 
-## we love HAML:
+
+####################
+# gems for easy markup
+
+## we love Haml:
 # gem 'haml'
+
+## we love Sass
+# gem "sass"
+
+## and maybe coffee (although, we just use javascript, really)
+# gem "rack-coffee"
 
 ## we also like I18n:
 # gem 'i18n'
+
+####################
+# gems for databases and models
 
 ## if you want to use a database, here are a two common enough options:
 # gem 'sqlite3'
 # gem 'pg'
 
+## someone told me good things about sequel:
+## http://sequel.jeremyevans.net/rdoc/files/README_rdoc.html
+## http://sequel.jeremyevans.net/rdoc/files/doc/cheat_sheet_rdoc.html
+## this seems greate, but we left out any auto-config for this one... seems to work out of the box.
+# gem 'sequel'
+
 ## if you want to use ActiveRecord, uncomment the following line(s):
 # gem 'activerecord', :require => 'active_record'
 # gem 'bcrypt', '~> 3.1.7'
-
-## or, use data_mapper, an auto-migration magic gem (no longer under development):
-# gem 'data_mapper'
-# gem 'dm-sqlite-adapter'
-# gem 'dm-postgres-adapter'

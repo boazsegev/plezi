@@ -130,6 +130,7 @@ module Anorexic
 
 		attr_reader :logger, :servers
 		attr_accessor :server_class
+		attr_accessor :default_middleware
 		# gets/sets the default content type for the 
 		attr_accessor :default_content_type
 
@@ -139,6 +140,7 @@ module Anorexic
 			@logger = ::Logger.new STDOUT
 			@server_class = Anorexic::RackServer
 			@default_content_type = "text/html; charset=utf-8"
+			@default_middleware = []
 		end
 		def set_logger log_file, copy_to_stdout = true
 			@logger = ::Logger.new(log_file)
@@ -199,6 +201,14 @@ module Anorexic
 	end
 
 	module_function
+
+	# get the default middleware array.
+	#
+	# this can be used to ass middleware to all Rack servers like so:
+	#     Anorexic.default_middleware << [MiddleWare, paramater]
+	def default_middleware
+		Application.instance.default_middleware
+	end
 
 	# get the logger object
 	def logger

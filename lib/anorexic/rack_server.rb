@@ -75,9 +75,11 @@ module Anorexic
 			options = @params
 			options[:server_params] ||= {}
 			options[:middleware] ||= []
+			options[:middleware].push *Anorexic.default_middleware
 			if options[:debug]
 				options[:middleware] << [Rack::ShowExceptions]
 			end
+			options[:middleware].unshift [Rack::ContentLength] unless options[:middleware].include? [Rack::ContentLength]
 
 			# add controller magic :)
 			@routes.each_index do |i|
@@ -137,6 +139,8 @@ module Anorexic
 
 			end
 
+			####
+			# this code could move to a Rack::MiddleWare module, but why bother if it's only used here?
 			server_params[:app] = Proc.new do |env|
 				begin
 					# re-encode to utf-8, as it's all BINARY encoding at first

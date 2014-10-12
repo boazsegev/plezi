@@ -47,10 +47,9 @@
 			{
 				background-color: #ddd;
 				color: #008;
-				text-align: center;
+				text-align: left;
 				margin: 0 0 1em 0;
-				padding: 0.5em 0;
-				width: 100%;
+				padding: 0.5em 5%;
 				border-radius: 20px;
 			}
 			#wrapper p{ padding: 0 2%;}
@@ -87,7 +86,16 @@ It also works with multiple services (ports), which is great for having some rou
 </code></pre>
 </p>
 
-
+<h2>Building with Gems</h2>
+<p>
+	The <b>first</b> think you should do, is open your Gemfile and decide which gems you want to put in.
+</p>
+<p>
+	You already know what app you want to make - what does it need? does it need a database? maybe simplify html markup using haml?
+</p>
+<p>
+	<a href='https://github.com/boazsegev/anorexic'>Anorexic</a> takes the lego blocks approach - this framework is a wonderful clean slate. Now is the time to add the stuff you want.
+</p>
 <h2>Routes?</h2>
 <p>
 Routes have paths that tell the application which code to run for every request it recieves. The route's path is the part in bold: http://www.server.com<b>/the/stuff/they/request</b>?paramaters=params[:paramaters]
