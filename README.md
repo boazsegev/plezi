@@ -38,25 +38,27 @@ this example is basic, useless, but required for every doc out there...
 "Hello World!" in 3 lines - try it in irb (exit irb to start server):
 
 		require 'anorexic'
-		listen 3000
+		listen 
 		route(/.?/) { |req, res| res.body << "Hello World!" }
 
 did you notice the catch-all regular-expression? you can write it like this too:
 
 		require 'anorexic'
-		listen 3000
+		listen
 		route('*') { |req, res| res.body << "Hello World!" }
 
-Here's a simple web server in three (+1) lines of code, serving static pages from the `public` folder::
+Here's a simple web server in three (+2) lines of code, serving static pages from the `public` folder::
 
 		require 'anorexic'
 
 		# set up a non-secure service on port 80
 		listen 80
+		# set up a encrypted service on port 443, works only with servers that support SSL (i.e. webrick)
+		listen 443, server: 'webrick', ssl_self: true
 
-		route('/people') { |req, res| res.body << "I made this :-)" }
+		shared_route('/people') { |req, res| res.body << "I made this :-)" }
 
-		route '*', file_root: File.expand_path(File.dirname(__FILE__), 'public')
+		shared_route '*', file_root: File.expand_path(File.dirname(__FILE__), 'public')
 
 ## Anorexic Controller classes
 
@@ -83,8 +85,8 @@ one of the best things about the Anorexic is it's ability to take in any class a
 		end
 
 		listen
-		route "/" , Controller
 		route "/users" , Controller
+		route "/" , Controller
 
 Controllers can even be nested (order matters) or have advanced uses that are definitly worth exploring. here's some food for thought:
 
