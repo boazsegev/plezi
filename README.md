@@ -110,7 +110,7 @@ Anorexic accepts Regexp routes as well as string routes and defines a short cut 
 
 ## Anorexic Controller classes
 
-one of the best things about the Anorexic is it's ability to take in any class as a controller class and route to the classes methods with special support for RESTful methods (index, show, save, update, before, after):
+One of the best things about the Anorexic is it's ability to take in any class as a controller class and route to the classes methods with special support for RESTful methods (index, show, save, update, before, after):
 
 		require 'pry'
 		require 'anorexic'
@@ -176,13 +176,15 @@ Our needs are totally different for each project. An XML web service for an iPho
 
 Together we can write add-ons and features and beautifuls gems that we will use when (and if) we need them - so our apps are always happy and never overweight!
 
-## why not Ruby on Rails? why not Sinatra?
+## What about Ruby on Rails or Sinatra?
 
 I love the Ruby community and I know that we are realy good at writing gems and plug-ins that save a lot of time and code. But we don't need all the plug-ins all the time.
 
 Ruby on Rails became too bloated and big for some projects... It's full of great features that some of them are sometimes used... but at the end of the day, it's HEAVY.
 
-Looking into Sinatra benchmarks on the web showed that Rails and Sinatra perform on a similar level. The added 'lightness' just wasn't light enough.
+Looking into Sinatra benchmarks on the web showed that Rails and Sinatra frameworks perform on a similar level. The added 'lightness' just wasn't light enough.
+
+Some of us started reverting to pure Rack, and a lot of code kept being written over and over again... Actually, Anorexic is just a smart wrapper to Rack, to make routing and MVC (Model-View-Controller) programming easier.
 
 So sure, you can use Rails or Sinatra, they're great, but we Love to feed Anorexic our code, it just eats it up so nicely.
 
@@ -190,7 +192,7 @@ So sure, you can use Rails or Sinatra, they're great, but we Love to feed Anorex
 
 The whole of the Anorexic framework philosophy is about community, sharing and feeding the anorexic framework with small and pristine gems.
 
-see the anorexic-haml for an example of a small gem that feeds HAML and I18n to the Anorexic framework.
+Please, feel free to contribute, push any changes on the github project and create your own gems to feed the Anorexic open framework.
 
 ## Contributing
 
