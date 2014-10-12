@@ -57,6 +57,7 @@ class AppTemplate
 		app_tree["config"]["mvc_config.rb"] = IO.read(::File.expand_path(File.join("..", "..", "resources" ,"settings.rb"),  __FILE__))
 		app_tree["config"]["haml_config.rb"] = IO.read(::File.expand_path(File.join("..", "..", "resources" ,"haml_config.rb"),  __FILE__))
 		app_tree["config"]["i18n_config.rb"] = IO.read(::File.expand_path(File.join("..", "..", "resources" ,"i18n_config.rb"),  __FILE__))
+		app_tree["config"]["sass_coffee.rb"] = IO.read(::File.expand_path(File.join("..", "..", "resources" ,"sass_config.rb"),  __FILE__))
 
 		# create library, log and tmp folders
 		app_tree["logs"] ||= {}
