@@ -9,12 +9,22 @@ gem 'rack'
 
 # sets the default server to thin
 gem 'thin'
+# gem 'puma'
 
 ####################
 # development gems
 
 # use pry gem for basic debug ( put `binding.pry` at breake point )?
 # gem 'pry'
+
+
+# active support can run without rails and extends the Ruby language.
+# it might be heavy, be warned.
+# see: http://guides.rubyonrails.org/active_support_core_extensions.html
+# 
+# gem 'activesupport', :require => ['active_support', 'active_support/core_ext'] 
+# or:
+# gem 'activesupport', :require => ['active_support', active_support/all'] 
 
 
 ####################

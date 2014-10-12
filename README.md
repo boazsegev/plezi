@@ -1,14 +1,12 @@
 # Anorexic
 
-A thin, lightweight, barebones, ruby alternative to rails (ROR)... so thin, it's anorexic!
+A thin, lightweight, barebones, mutli-threaded Ruby alternative to Rails (ROR) and Sinatra frameworks... so thin, it's anorexic!
 
 The philosophy is simple - pristine, simple and dedicated gems for each functionality allow for a custom made framework that is exactly the right size during runtime.
 
-Anorexic is the pristine, simple and dedicated DSL that will make your web app respond like it's on steroids.
+Anorexic is a barebones DLS that can run with or without Rack and offers single-port as well as multi-port service for basic and advanced web services alike.
 
-It's a barebones DLS running WEBrick... if you want something (Thin, HAML, anythin), you will have to plug it in or hard-code it yourself...
-
-...and since it's all pure ruby, it's as easy as it gets.
+...and since it's all pure Ruby, it's as easy as it gets.
 
 ## Installation
 
@@ -22,78 +20,121 @@ to create a new barebones app using the Anorexic framework, run from terminal:
 
     $ anorexic new appname
 
-or, create a new web app with some anorexic gems you installed:
+That's it, now you have a ready to use basic web server (with some demo code), just run it:
 
-    $ anorexic n appname w anorexic-haml anorexic-thin-mvc
+    $ cd appname
+    $ ./appname.rb # ( or: anorexic s )
 
-or, even create a new web app with all the anorexic gems you installed:
-
-    $ anorexic n appname w all
-
-That's it, you have a ready to use basic web server, just run it.
+this is a smart framework app that comes very skinny and will happily eat any gem you feed it. it responds extra well to Thin and Haml, which you can enable in it's Gemfile.
 
 ## Barebones Web Service
 
-the app is a simple DSL that deletes all the DLS methods once the server starts running (this way, we avoid any conflicts in the code - no reserved keywords).
+the app is a simple DSL that deletes all the DLS methods once the server starts running (less clutter while running).
 
-this one is basic, useless, but required for every doc out there...
+you can run anorexic from your favorite Ruby terminal :) - Anorexic starts the moment you exit the terminal.
+
+this example is basic, useless, but required for every doc out there...
 
 "Hello World!" in 3 lines - try it in irb (exit irb to start server):
 
 		require 'anorexic'
 		listen 3000
-		route('/') { |req, res| res.body << "Hello World!" }
+		route(/.?/) { |req, res| res.body << "Hello World!" }
 
-or, the leverage Rack with the `anorexic-thin-mvc`:
+did you notice the catch-all regular-expression? you can write it like this too:
 
-		require 'anorexic-thin-mvc'
-		listen 3000, server: 'thin' # :server can be any rack server you loaded.
-		route('*') { |req, res| res.body << "Hello World!" } # support for catch-all
-
-The most simple app will be a simple web server (it can actually be even more simple):
-
-		# load the anorexic gem
-		require 'rubygems'
 		require 'anorexic'
+		listen 3000
+		route('*') { |req, res| res.body << "Hello World!" }
 
-		# set the folder from which to serve files
-		public_folder = File.expand_path(File.dirname(__FILE__), 'public')
+Here's a simple web server in three (+1) lines of code, serving static pages from the `public` folder::
+
+		require 'anorexic'
 
 		# set up a non-secure service on port 80
-		# serves local files without folder indexing
-		listen 80, file_root: public_folder
+		listen 80
 
-and, with 4 lines of very clear code, without any shortcuts, we have a running web server :)
+		route('/people') { |req, res| res.body << "I made this :-)" }
 
-I especially usful for serving xml data to app clients:
+		route '*', file_root: File.expand_path(File.dirname(__FILE__), 'public')
 
-		require 'rubygems'
+## Anorexic Controller classes
+
+one of the best things about the Anorexic is it's ability to take in any class as a controller class and route to the classes methods with special support for RESTful methods (index, show, save, update, before, after):
+
+		require 'pry'
 		require 'anorexic'
+		require 'thin' # will change the default server to thin automatically.
 
-		listen 6068
-
-		route "/" do |request, response|
-			response['Content-Type'] = 'text/xml'
-			response.body = "<xml><data>DATA</data></xml>"
+		class Controller
+			def index
+				"Hellow World!"
+			end
+			def show
+				"You're looking for: #{params[:id]}"
+			end
+			def debug
+				binding.pry
+				true
+			end
+			def delete
+				"did you try /#{params["id"]}/?_method=delete"
+			end
 		end
 
-and, were serving the same XML, no matter the request...
+		listen
+		route "/" , Controller
+		route "/users" , Controller
+
+Controllers can even be nested (order matters) or have advanced uses that are definitly worth exploring. here's some food for thought:
+
+		class SuperController
+			def before
+				# using the before filter and regular expressions to make some changes.
+				params[:added_param] = " user id" if request.path.match /^\/users\/[^\/]+\/?$/
+				return false
+			end
+		end
+
+		class Controller
+			def index
+				"Hellow World!"
+			end
+			def show
+				"You're looking for#{params[:added_param]}: #{params[:id]}"
+			end
+			def debug
+				binding.pry
+				true
+			end
+			def delete
+				"did you try /#{params["id"]}/?_method=delete"
+			end
+		end
+
+		listen
+		route "*" , SuperController
+		route "/users" , Controller
+		route "/" , Controller
+
 
 ## Anorexic is hungry for pristine yummy gems
 
 This is the "Pristine chunks" phylosophy.
 
-Our needs are totally different for each project. An XML web service for an iPhone native app is a very different animal then a book-store web app (not another book store app!).
+Our needs are totally different for each project. An XML web service for an iPhone native app is a very different animal then a book-store web app (please, not another book store app...).
 
 Together we can write add-ons and features and beautifuls gems that we will use when (and if) we need them - so our apps are always happy and never overweight!
 
-## why not Ruby on Rails?
+## why not Ruby on Rails? why not Sinatra?
 
 I love the Ruby community and I know that we are realy good at writing gems and plug-ins that save a lot of time and code. But we don't need all the plug-ins all the time.
 
-Ruby on Rails became too bloated and big for some projects... It's full of greate features that some of them are sometimes used... but at the end of the day, it's HEAVY.
+Ruby on Rails became too bloated and big for some projects... It's full of great features that some of them are sometimes used... but at the end of the day, it's HEAVY.
 
-Don't get me wrong, I love Ruby on Rails... but it's just to big and heavy for some apps I want to develop. 
+Looking into Sinatra benchmarks on the web showed that Rails and Sinatra perform on a similar level. The added 'lightness' just wasn't light enough.
+
+So sure, you can use Rails or Sinatra, they're great, but we Love to feed Anorexic our code, it just eats it up so nicely.
 
 # Feed the Anorexic framework
 

@@ -188,11 +188,11 @@ module Anorexic
 		def call env
 			# set request object
 			request = Rack::Request.new(env)
+			# allow lookup of params as keys run:
+			make_hash_accept_symbols hash: request.params
+			make_hash_accept_symbols hash: request.cookies
 			# easy lookup
 			params = request.params
-			# allow lookup of params as keys run:
-			make_hash_accept_symbols hash: params
-			make_hash_accept_symbols hash: request.cookies
 			### not supported by some servers... commented out.
 			# emulate DELETE & PUT is the same way Rails eulates them (consistancy)
 			# if %w{PUT DELETE}.include? params[:_method].to_s.upcase
@@ -249,8 +249,6 @@ module Anorexic
 						begin
 							block_response = block.call(request,response)
 						rescue Exception => e
-							# require 'pry'
-							# binding.pry
 							if e.is_a?(LocalJumpError) && e.message == "unexpected return"
 								block_response = e.exit_value
 							else
