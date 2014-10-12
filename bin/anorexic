@@ -50,7 +50,7 @@ class AppTemplate
 
 		#set up database stub folders
 		app_tree["db"] ||= {}
-		app_tree["db"]["migrations"] ||= {}
+		app_tree["db"]["migrate"] ||= {}
 
 		# set up config files
 		app_tree["config"] ||= {}

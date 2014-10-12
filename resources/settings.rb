@@ -78,10 +78,10 @@ if defined? ActiveRecord
 
     namespace :db do
 
-      desc "Migrate the database so that it is fully updated, using db/migrations."
+      desc "Migrate the database so that it is fully updated, using db/migrate."
       task :migrate do
         ActiveRecord::Base.logger = Anorexic.logger
-        ActiveRecord::Migrator.migrate(Root.join('db', 'migrations').to_s, ENV["VERSION"] ? ENV["VERSION"].to_i : nil )
+        ActiveRecord::Migrator.migrate(Root.join('db', 'migrate').to_s, ENV["VERSION"] ? ENV["VERSION"].to_i : nil )
       end
 
       desc "Seed the database using the db/seeds.rb file"
