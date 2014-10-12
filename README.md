@@ -118,7 +118,7 @@ One of the best things about the Anorexic is it's ability to take in any class a
 
 		class Controller
 			def index
-				"Hellow World!"
+				"Hello World!"
 			end
 			def show
 				"You're looking for: #{params[:id]}"

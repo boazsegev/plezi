@@ -64,11 +64,17 @@ module Anorexic
 
 		# starts the server - runs only once, on boot
 		def start
-			Rack::Server.start( make_server_paramaters) do |server|
-				# @server = server
-				# if rack_handlers == 'thin'
-
-				# end
+			options = make_server_paramaters
+			Rack::Handler.get(options.delete :server).run(options.delete(:app), options ) do |server|
+				if server.is_a? Thin::Server
+					if options[:SSLEnable]
+						server.ssl = true
+						server.ssl_options = {
+							cert: options[:SSLCertificate], key: options[:SSLPrivateKey] 
+						}
+					end
+				else
+				end
 			end
 		end
 
@@ -107,18 +113,16 @@ module Anorexic
 					cert, rsa = create_self_signed_cert
 				end
 				server_params[:SSLEnable] = true
-				server_params[:SSL] = true
-				server_params[:SSLVerify] = OpenSSL::SSL::VERIFY_NONE
 				server_params[:SSLVerifyClient] = OpenSSL::SSL::VERIFY_NONE
 				server_params[:SSLCertificate] = cert
-				server_params[:SSLCert] = cert
 				server_params[:SSLPrivateKey] = rsa
 				server_params[:SSLCertName] = [ [ "CN",(options[:vhost] || WEBrick::Utils::getservername) ] ]
 
 			elsif options[:ssl_cert] && options[:ssl_pkey]
-				ssl_options = {
-					:verify_peer => false,
-				}
+				server_params[:SSLEnable] = true
+				server_params[:SSLVerifyClient] = OpenSSL::SSL::VERIFY_NONE
+				server_params[:SSLCertificate] = options[:ssl_cert]
+				server_params[:SSLPrivateKey] = options[:ssl_pkey]
 			end
 
 			#######
