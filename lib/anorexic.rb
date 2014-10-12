@@ -243,7 +243,7 @@ end
 # creates a server object and waits for routes to be set.
 # 
 # port:: the port to listen to. the first port defaults to 3000 and increments by 1 with every `listen` call. it's possible to set the first port number by running the app with the -p paramater.
-# params:: a Hash of serever paramaters: v_host, s_alias, ssl_cert, ssl_pkey or ssl_self.
+# params:: a Hash of serever paramaters: v_host, ssl_cert, ssl_pkey or ssl_self.
 #
 # The different keys in the params hash control the server's behaviour, as follows:
 #
@@ -251,8 +251,6 @@ end
 # ssl_self:: sets an SSL server with a self assigned certificate (changes with every restart). defaults to false.
 # server_params:: a hash of paramaters to be passed directly to the server - architecture dependent.
 #
-# if you're not using a rack extention, the WEBrick options for :server_params are as described at:
-# http://www.ruby-doc.org/stdlib-2.0/libdoc/webrick/rdoc/WEBrick/HTTPServer.html#method-i-mount_proc
 def listen(port = nil, params = {})
 	if !port && defined? ARGV
 		if ARGV.find_index('-p')
@@ -290,6 +288,7 @@ end
 
 # adds a route to the all the previous server objects
 # accepts same options as route
+#
 def shared_route(path, config = {}, &block)
 	Anorexic::Application.instance.add_shared_route path, config, &block
 end
@@ -297,6 +296,7 @@ end
 # finishes setup of the servers and starts them up. This will hange the proceess unless it's set up as a deamon.
 # deamon:: defaults to false.
 # wait_for_load:: how long Anorexic should wait for servers to start before setting the exit routine (only if deamon is false).
+#
 def start(deamon = false, wait_for_load = 4)
 	Object.const_set "NO_ANOREXIC_AUTO_START", true
 	undef listen
