@@ -70,6 +70,44 @@ Here's a simple web server in three (+2) lines of code, serving static pages fro
 
 		shared_route '*', file_root: File.expand_path(File.dirname(__FILE__), 'public')
 
+## Anorexic Routes
+
+Routes have paths that tell the application which code to run for every request it recieves. when you set your browser to: `http://www.server.com/the/stuff/they/request?paramaters=params[:paramaters]` , this is the routes path: `/the/stuff/they/request`
+
+As long as Anorexic uses the Anorexic::RackServer class (we could change that, but why would we?), the routes will work the same for all the listening ports.
+
+Anorexic allows your code to choose it's routes dynamically, in the order they are created. like so:
+
+    require 'anorexic'
+    listen
+
+    # this route declines to answer
+    route('/') { |req, res| res.body << "I Give Up!"; false }
+
+    # this route wins
+    route('/') { |req, res| res.body << "I Win!" }
+
+    # this route never sees the light of day
+    route('/') { |request, response| response.body << "Help Me!" }
+
+Anorexic accepts Regexp routes as well as string routes and defines a short cut for a catch-all route:
+
+    require 'anorexic'
+    listen
+
+    # this route accepts paths that start with a number (i.e.: /nonumber)
+    route(/^\/[\d]+[\D]+/) { |req, res| res.body << "Give me more numbers :)" }
+
+    # this route accepts paths that are just numbers (i.e.: /87652)
+    route(/^\/[\d]+$/) { |req, res| res.body << "I Love Numbers!" }
+
+    # this route accepts paths that don't have any number (i.e.: /nonumber)
+    route(/^\/[\D]+$/) { |req, res| res.body << "Where're my numbers :(" }
+
+    # this route catches everything else.
+    route('*') { |request, response| response.body << "Gotcha!" }
+
+
 ## Anorexic Controller classes
 
 one of the best things about the Anorexic is it's ability to take in any class as a controller class and route to the classes methods with special support for RESTful methods (index, show, save, update, before, after):
