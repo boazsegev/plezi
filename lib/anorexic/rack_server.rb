@@ -64,7 +64,12 @@ module Anorexic
 
 		# starts the server - runs only once, on boot
 		def start
-			@server = Rack::Server.start make_server_paramaters
+			Rack::Server.start( make_server_paramaters) do |server|
+				# @server = server
+				# if rack_handlers == 'thin'
+
+				# end
+			end
 		end
 
 		# this method sets up the server's paramaters and creates the server Proc that will be passed to the rack server.
@@ -91,7 +96,7 @@ module Anorexic
 
 			if options[:vhost]
 				server_params[:Host] = options[:vhost]
-				server_params[:ServerAlias] = options[:s_alias]				
+				server_params[:ServerAlias] = options[:s_alias] if options[:s_alias]
 			end
 
 			if options[:ssl_self]
@@ -102,8 +107,11 @@ module Anorexic
 					cert, rsa = create_self_signed_cert
 				end
 				server_params[:SSLEnable] = true
+				server_params[:SSL] = true
+				server_params[:SSLVerify] = OpenSSL::SSL::VERIFY_NONE
 				server_params[:SSLVerifyClient] = OpenSSL::SSL::VERIFY_NONE
 				server_params[:SSLCertificate] = cert
+				server_params[:SSLCert] = cert
 				server_params[:SSLPrivateKey] = rsa
 				server_params[:SSLCertName] = [ [ "CN",(options[:vhost] || WEBrick::Utils::getservername) ] ]
 
