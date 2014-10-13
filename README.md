@@ -29,7 +29,7 @@ this is a smart framework app that comes very skinny and will happily eat any ge
 
 now go, in your browser, to: http://localhost:3000/
 
-the default first port for the app is 3000. you can set the first port to listen to by using the `-p ` option:
+the default first port for the app is 3000. you can set the first port to listen to by using the `-p ` option (make sure you have permissions for the requested port):
 
     $ ./appname.rb -p 80
 
@@ -57,18 +57,17 @@ if more then one `listen` call was made, ports will be sequential (3000, 3001, 3
 		listen
 		route('*') { |req, res| res.body << "Hello World!" }
 
-Here's a simple web server in three (+2) lines of code, serving static pages from the `public` folder::
+Here's a simple web server, complete with SSL, in three (+1) lines of code, serving static pages from the `public` folder::
 
 		require 'anorexic'
 
 		# set up a non-secure service on port 80
-		listen 80
-		# set up a encrypted service on port 443, works only with servers that support SSL (i.e. webrick)
-		listen 443, server: 'webrick', ssl_self: true
+		listen 80, file_root: File.expand_path(Dir.pwd, 'public')
+
+		# set up a encrypted service on port 443, works only with some servers (i.e. thin, webrick)
+		listen 443, server: 'thin', ssl_self: true, file_root: File.expand_path(Dir.pwd, 'public') 
 
 		shared_route('/people') { |req, res| res.body << "I made this :-)" }
-
-		shared_route '*', file_root: File.expand_path(File.dirname(__FILE__), 'public')
 
 ## Anorexic Routes
 

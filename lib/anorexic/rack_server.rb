@@ -86,7 +86,7 @@ module Anorexic
 			# set up server paramaters
 			server_params = {Port: @port, server: @rack_handlers}
 			options = @params
-			options[:file_root] ||= false
+			options[:file_root] ||=  options[:root] || false
 			options[:server_params] ||= {}
 
 			#######
@@ -107,7 +107,7 @@ module Anorexic
 			end
 			if options[:file_root]
 				options[:middleware] << [Rack::Static, root: options[:file_root]]
-				options[:middleware] << [ServeIndex, options[:file_root]]
+				options[:middleware] << [Anorexic::AnoRack::ServeIndex, options[:file_root]]
 			end
 			options[:middleware] << [Anorexic::AnoRack::NotFound, options[:file_root]]
 

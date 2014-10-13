@@ -10,17 +10,13 @@ Root ||= Pathname.new(File.dirname(__FILE__)).expand_path
 # load all framework and gems
 require ::File.expand_path(File.join("..", "environment.rb"),  __FILE__)
 
-# start first service - defaults to 3000 or the port set by command-line
-listen
+# start a web service to listen on the first default (3000 or the port set by the command-line).
+listen file_root: Root.join('public').to_s
 
 
 # remove this demo route and add your routes here:
-# this route accepts any /:id and the :id is mapped to: params["id"] (available at params[:id] as well.)
+# this route accepts any /:id and the :id is mapped to: params["id"] (available as params[:id] as well.)
 shared_route '/', SampleController #, debug: true
-
-
-# this is the static file route
-shared_route "/", file_root: Root.join('public').to_s, allow_indexing: false
 
 
 # this is a catch all route

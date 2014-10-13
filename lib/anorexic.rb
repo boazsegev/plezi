@@ -299,6 +299,10 @@ end
 # middleware:: a middleray array of arras of type [Middleware, paramater, paramater], if using RackServer.
 #
 def listen(port = nil, params = {})
+	if port.is_a?(Hash)
+		params = port
+		port = nil
+	end
 	if !port && defined? ARGV
 		if ARGV.find_index('-p')
 			port_index = ARGV.find_index('-p') + 1
@@ -307,13 +311,12 @@ def listen(port = nil, params = {})
 		else
 			ARGV << '-p'
 			ARGV << '3000'
-			return listen port, params
+			return listen nil, params
 		end
 	end
 	port ||= 3000	
 	Anorexic::Application.instance.add_server port, params
 end
-
 # adds a route to the last server object
 #
 # path:: the path for the route

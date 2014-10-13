@@ -40,9 +40,9 @@ module Anorexic
 				@app = app
 			end
 			def call env
-				@app.call(env) || file_not_found
+				@app.call(env) || file_not_found(env)
 			end
-			def file_not_found
+			def file_not_found env
 				########################
 				# 404 not found
 				# routes finished. if we got all the way here, need to return a 404.
@@ -53,7 +53,7 @@ module Anorexic
 				not_found = nil
 				unless @root == true
 					if defined? Anorexic::FeedHaml
-						not_found = Anorexic::FeedHaml.render "404".to_sym, locals: { request: request, path: original_request_path}
+						not_found = Anorexic::FeedHaml.render "404".to_sym, locals: { request: Rack::Request.new(env) }
 					end
 					unless not_found
 						path_to_404 = File.join(@root, "404.html")

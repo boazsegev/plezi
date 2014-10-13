@@ -28,6 +28,18 @@ module Anorexic
 		# these cookies will live for one successful request to a Controller and will then be removed.
 		attr_reader :flash
 
+		# this method does two things.
+		#
+		# 1. calls the redirect method for the response object (setting it's optional status).
+		# 2. sets the `flash` object (short-time cookies) with all the values passed except the :status value.
+		#
+		# use:
+		#      redirect_to 'http://google.com', notice: "foo", status: 302
+		#      # => redirects to 'http://google.com' with status 302 and adds notice: "foo" to the flash
+		# or simply:
+		#      redirect_to 'http://google.com'
+		#      # => redirects to 'http://google.com' with status 302 (default status)
+		#
 		def redirect_to url, options = {}
 			return super *[] if defined? super
 			url = "#{request.base_url}/#{url.to_s.gsub('_', '/')}" if url.is_a?(Symbol)
@@ -40,6 +52,9 @@ module Anorexic
 			@flash.update options
 		end
 
+		# this method adds data to be sent in the que.
+		# 
+		#
 		def send_data data, options = {}
 			# write data to response object
 			response.write data
@@ -62,6 +77,7 @@ module Anorexic
 				options.delete :filename
 			end
 			response["Content-Disposition"] = content_disposition
+			true
 		end
 
 	end
