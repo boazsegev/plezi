@@ -202,6 +202,52 @@ module Anorexic
 
 	module_function
 
+	# Copied from the Ruby core WEBrick project, in order to create self signed certificates...
+	#
+	# ...but many Rack servers don't support SSL any way. WEBrick does (on rack as well as on stand-alone).
+	def create_self_signed_cert(bits=1024, cn=nil, comment='a self signed certificate for when we only need encryption and no more.')
+
+		cn ||= "CN=#{WEBrick::Utils::getservername}"
+
+		rsa = OpenSSL::PKey::RSA.new(bits){|p, n|
+		case p
+		when 0; $stderr.putc "."  # BN_generate_prime
+		when 1; $stderr.putc "+"  # BN_generate_prime
+		when 2; $stderr.putc "*"  # searching good prime,
+		                          # n = #of try,
+		                          # but also data from BN_generate_prime
+		when 3; $stderr.putc "\n" # found good prime, n==0 - p, n==1 - q,
+		                          # but also data from BN_generate_prime
+		else;   $stderr.putc "*"  # BN_generate_prime
+		end
+		}
+		cert = OpenSSL::X509::Certificate.new
+		cert.version = 2
+		cert.serial = 1
+		name = OpenSSL::X509::Name.parse(cn)
+		cert.subject = name
+		cert.issuer = name
+		cert.not_before = Time.now
+		cert.not_after = Time.now + (365*24*60*60)
+		cert.public_key = rsa.public_key
+
+		ef = OpenSSL::X509::ExtensionFactory.new(nil,cert)
+		ef.issuer_certificate = cert
+		cert.extensions = [
+		ef.create_extension("basicConstraints","CA:FALSE"),
+		ef.create_extension("keyUsage", "keyEncipherment"),
+		ef.create_extension("subjectKeyIdentifier", "hash"),
+		ef.create_extension("extendedKeyUsage", "serverAuth"),
+		ef.create_extension("nsComment", comment),
+		]
+		aki = ef.create_extension("authorityKeyIdentifier",
+		                        "keyid:always,issuer:always")
+		cert.add_extension(aki)
+		cert.sign(rsa, OpenSSL::Digest::SHA1.new)
+
+		return [ cert, rsa ]
+	end
+
 	# get the default middleware array.
 	#
 	# this can be used to ass middleware to all Rack servers like so:
