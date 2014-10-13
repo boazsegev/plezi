@@ -104,7 +104,7 @@ module Anorexic
 			end
 		end
 
-		# Serve the index file in a folder
+		# Serves static files, including an index file in a folder
 		# This was written because the :index option in Rack::Static breaks the code.
 		class ServeIndex
 			def initialize app, root, index_file = 'index.html'
@@ -116,6 +116,11 @@ module Anorexic
 				file_requested = env["PATH_INFO"].to_s.split('/')
 				unless file_requested.include? ".."
 					file_requested.shift
+					pure_request = ::File.join(@root, *file_requested)
+					if File.exists?(pure_request) && !::File.directory?(pure_request)
+						return Rack::File.new(@root).call(env)
+						# return [ 200, { 'Content-Type' => Rack::Mime..mime_type(::File.extname(pure_request)), 'Cache-Control' => 'public, max-age=86400'}, ::File.open(pure_request, ::File::RDONLY)]
+					end			
 					file_requested = ::File.join(@root, *file_requested, @index_name)
 					if File.exists? file_requested
 						return [ 200, { 'Content-Type'  => 'text/html', 'Cache-Control' => 'public, max-age=86400'}, ::File.open(file_requested, ::File::RDONLY)]

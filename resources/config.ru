@@ -21,7 +21,7 @@
 
 working_dir = ::File.expand_path(Dir.pwd)
 app_path = ::File.expand_path(File.join(".."),  __FILE__)
-app_file_name = app_path.split(/[\\/]/).last + ".rb"
+app_file_name = app_path.split(/[\\\/]/).last + ".rb"
 
 # make sure anorexic doesn't auto-start on end of script, as it normally would
 NO_ANOREXIC_AUTO_START = true

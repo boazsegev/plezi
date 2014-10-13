@@ -52,6 +52,10 @@ class AppTemplate
 		app_tree["db"] ||= {}
 		app_tree["db"]["migrate"] ||= {}
 
+		#set up I18n stub
+		app_tree["locales"] ||= {}
+		app_tree["locales"]["en.yml"] ||= {}
+
 		# set up config files
 		app_tree["config"] ||= {}
 		app_tree["config"]["mvc_config.rb"] = IO.read(::File.expand_path(File.join("..", "..", "resources" ,"settings.rb"),  __FILE__))

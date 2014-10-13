@@ -92,22 +92,24 @@ module Anorexic
 			#######
 			# set up middleware array
 			options[:middleware] ||= []
+
 			options[:middleware].push *Anorexic.default_middleware
 
-			options[:middleware].unshift [Rack::ContentLength] unless options[:middleware].include? [Rack::ContentLength]
-			options[:middleware].unshift [Anorexic::AnoRack::ReEncoder, ::Anorexic.default_content_type]
+			if options[:file_root]
+				options[:middleware].unshift [Anorexic::AnoRack::ServeIndex, options[:file_root]]
+			end
 
 			if options[:debug]
 				options[:middleware].unshift [Rack::ShowExceptions, options[:file_root]]
 			else
 				options[:middleware].unshift [Anorexic::AnoRack::Exceptions]
 			end
+
+			options[:middleware].unshift [Rack::ContentLength] unless options[:middleware].include? [Rack::ContentLength]
+			options[:middleware].unshift [Anorexic::AnoRack::ReEncoder, ::Anorexic.default_content_type]
+
 			if Anorexic.logger
 				options[:middleware].unshift [Rack::CommonLogger, Anorexic.logger]
-			end
-			if options[:file_root]
-				options[:middleware] << [Rack::Static, root: options[:file_root]]
-				options[:middleware] << [Anorexic::AnoRack::ServeIndex, options[:file_root]]
 			end
 			options[:middleware] << [Anorexic::AnoRack::NotFound, options[:file_root]]
 
