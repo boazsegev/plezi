@@ -9,7 +9,6 @@ module Anorexic
 				@routes = []
 			end
 			def call env
-				path_requested = env["PATH_INFO"].to_s.chomp '/'
 				# set response object
 				response = Rack::Response.new
 				# set request object
@@ -37,7 +36,7 @@ module Anorexic
 				return_value = false
 				# compare routes
 				@routes.each do |route|
-					next unless self.class.match path_requested, route[0], request.params
+					next unless self.class.match request.path.chomp('/'), route[0], request.params
 					if route[1].is_a? Class
 						break if return_value = route[1].new(env, request, response)._route_path_to_methods_and_set_the_response_
 					elsif route[1].public_methods.include? :call
