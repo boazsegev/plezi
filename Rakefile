@@ -16,7 +16,7 @@ namespace :test do
 	task :port do
 		a = []
 		10.times { a << listen}
-		assert (a[-1].port - a[0].port) == 10
+		return (assert (a[-1].port - a[0].port) == 9) ? "pass" : "fail" # (had to increment 9 times - the first time increments nothing)
 	end
 
 	
