@@ -154,6 +154,7 @@ module Anorexic
 
 		def add_server(port, params = {})
 			@servers << @server_class.new(port, params)
+			@servers.last
 		end
 
 		def check_server_array
@@ -358,4 +359,4 @@ end
 
 
 # sets to start the services once dsl script is finished loading.
-at_exit { start } unless defined?(NO_ANOREXIC_AUTO_START) || defined?(BUILDING_ANOREXIC_TEMPLATE)
+at_exit { start } unless ( defined?(NO_ANOREXIC_AUTO_START) || defined?(BUILDING_ANOREXIC_TEMPLATE) )

@@ -71,6 +71,9 @@ module Anorexic
 				end
 			end
 
+
+			protected
+
 			def find_template template, type = "", extention = "haml"
 				# get all haml files in 'views' folder
 				root = Root if defined? Root
@@ -80,8 +83,6 @@ module Anorexic
 				end
 				false
 			end
-
-			protected
 
 			def render_engine view, options
 				return false unless view
