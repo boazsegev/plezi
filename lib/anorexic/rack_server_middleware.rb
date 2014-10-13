@@ -80,10 +80,12 @@ module Anorexic
 				end
 			end
 			def exception_thrown e, env
-				if false #Anorexic.logger
+				if Anorexic.logger
 					Anorexic.logger.error e
+					Anorexic.logger.error e.backtrace.join("\n")
 				else
 					puts "ERROR: #{e.to_s}"
+					puts e.backtrace.join("\n")
 				end
 
 				request = Rack::Request.new(env)

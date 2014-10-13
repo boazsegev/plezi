@@ -4,7 +4,7 @@
 if defined? Haml
 	# place the Anorexic::FeedHaml in the top-level namespace (main)
 	# Since there is no specific view class, this allows direct access to the Anorexic::FeedHaml helpers
-	require 'anorexic_feed_haml'
+	require 'anorexic/feed_haml'
 	include Anorexic::FeedHaml
 end
 
