@@ -57,7 +57,8 @@ module Anorexic
 					# add controller magic
 					controller = self.class.make_magic controller
 				end
-				@routes << [path.chomp('/'), block || controller]
+				path.chomp!('/') if path.is_a?(String)
+				@routes << [path, block || controller]
 			end
 
 			def self.match path_requested, path, params

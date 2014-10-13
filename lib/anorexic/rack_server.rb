@@ -60,6 +60,7 @@ module Anorexic
 		def add_route path, config, &block
 			# add route to server
 			@router.add_route path, config, &block
+			@router.routes.last
 		end
 
 		# starts the server - runs only once, on boot

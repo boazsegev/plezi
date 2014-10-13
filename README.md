@@ -147,7 +147,7 @@ Controllers can even be nested (order matters) or have advanced uses that are de
 
 		class Controller
 			def index
-				"Hellow World!"
+				"Hello World!"
 			end
 			def show
 				"You're looking for#{params[:added_param]}: #{params[:id]}"
