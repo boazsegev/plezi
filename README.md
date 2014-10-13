@@ -136,36 +136,61 @@ One of the best things about the Anorexic is it's ability to take in any class a
 		route "/" , Controller
 
 Controllers can even be nested (order matters) or have advanced uses that are definitly worth exploring. here's some food for thought:
+here's some food for thought:
 
-		class SuperController
+		require 'pry'
+		require 'anorexic'
+		require 'thin'
+
+		class ReWriteController
+			# using the before filter and regular expressions to make some changes.
 			def before
-				# using the before filter and regular expressions to make some changes.
-				params[:added_param] = " user id" if request.path.match /^\/users\/[^\/]+\/?$/
+				result = request.path.match /^\/(en|fr)(\/?.*)/
+				if result
+					params["locale"] = result[1].to_sym
+					request.path_info = result[2]
+				end
 				return false
 			end
 		end
 
 		class Controller
 			def index
+				return "Bonjour le monde!" if params[:locale] == :fr
 				"Hello World!"
 			end
 			def show
-				"You're looking for#{params[:added_param]}: #{params[:id]}"
+				return "Vous êtes à la recherche d' : #{params[:id]}" if params[:locale] == :fr
+				"You're looking for: #{params[:id]}"
 			end
 			def debug
 				binding.pry
 				true
 			end
 			def delete
+				"Mon Dieu! Mon français est mauvais!" if params[:locale] == :fr
 				"did you try /#{params["id"]}/?_method=delete"
 			end
 		end
 
 		listen
-		route "*" , SuperController
+
+		route "*" , ReWriteController
+
+		route /^\/[\d\+\-\*\/\(\)\.]+$/ do |request, response|
+			message = (request.params[:locale] == :fr) ? "La solution est" : "My Answer is"
+			response.body << "#{message}: #{eval(request.path[1..-1])}"
+		end
+
 		route "/users" , Controller
+
 		route "/" , Controller
 
+try:
+* http://localhost:3000/
+* http://localhost:3000/users
+* http://localhost:3000/users/hello
+* http://localhost:3000/(5+5*20-15)/9
 
 ## Anorexic is hungry for pristine yummy gems
 
