@@ -95,7 +95,7 @@ module Anorexic
 			options[:middleware].push *Anorexic.default_middleware
 
 			options[:middleware].unshift [Rack::ContentLength] unless options[:middleware].include? [Rack::ContentLength]
-			options[:middleware].unshift [Anorexic::AnoRack::ReEncoder]
+			options[:middleware].unshift [Anorexic::AnoRack::ReEncoder, ::Anorexic.default_content_type]
 
 			if options[:debug]
 				options[:middleware].unshift [Rack::ShowExceptions, options[:file_root]]

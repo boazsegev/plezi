@@ -33,7 +33,7 @@ module Anorexic
 		end
 
 
-		# Middleware to redirect 404 not found errors to the local 404.html file
+		# Middleware to report 404 not found errors or render the local 404.haml / 404.html file
 		class NotFound
 			def initialize app, root = nil
 				@root = (root == false) || ::File.expand_path(File.join(Dir.pwd , 'public') )
@@ -66,7 +66,7 @@ module Anorexic
 			end
 		end
 
-		# Middleware to redirect exception errors to the local 500.html file
+		# Middleware to report internal errors or render the local 500.haml / 500.html file
 		class Exceptions
 			def initialize app, root = nil
 				@root = (root == false) || ::File.expand_path(File.join(Dir.pwd , 'public') )
@@ -105,7 +105,7 @@ module Anorexic
 		end
 
 		# Serve the index file in a folder
-		# This was written because the :index option in Rack::Static is broken.
+		# This was written because the :index option in Rack::Static breaks the code.
 		class ServeIndex
 			def initialize app, root, index_file = 'index.html'
 				@index_name = index_file
