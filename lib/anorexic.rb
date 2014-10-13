@@ -2,6 +2,8 @@ require "anorexic/version"
 require "anorexic/stubs.rb"
 require "anorexic/magic.rb"
 require "anorexic/webrick_server.rb"
+require "anorexic/rack_server_middleware.rb"
+require "anorexic/rack_server_router.rb"
 require "anorexic/rack_server.rb"
 
 # require 'thin'
@@ -9,7 +11,6 @@ require "anorexic/rack_server.rb"
 require 'rack'
 
 require 'openssl'
-require 'strscan'
 require 'pathname'
 require 'logger'
 
@@ -130,6 +131,7 @@ module Anorexic
 
 		attr_reader :logger, :servers
 		attr_accessor :server_class
+		# an array for middleware specs
 		attr_accessor :default_middleware
 		# gets/sets the default content type for the 
 		attr_accessor :default_content_type
@@ -146,7 +148,6 @@ module Anorexic
 			@logger = ::Logger.new(log_file)
 			if log_file != STDOUT && copy_to_stdout
 				@logger = CustomIO.new(@logger, (::Logger.new(STDOUT)))
-				# $stdout = @logger - fails when debugging....
 			end
 			@logger
 		end
@@ -293,9 +294,9 @@ end
 #
 # The different keys in the params hash control the server's behaviour, as follows:
 #
-# v_host:: sets the virtual host name, for virtual hosts. defaults to nil (no virtual host).
 # ssl_self:: sets an SSL server with a self assigned certificate (changes with every restart). defaults to false.
 # server_params:: a hash of paramaters to be passed directly to the server - architecture dependent.
+# middleware:: a middleray array of arras of type [Middleware, paramater, paramater], if using RackServer.
 #
 def listen(port = nil, params = {})
 	if !port && defined? ARGV
