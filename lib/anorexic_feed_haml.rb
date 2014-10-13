@@ -19,12 +19,14 @@ module Anorexic
 			def translate *args
 				I18n.t *args
 			end
+			alias :t :translate
 
 			# calls the I18n.localize with the arguments specified.
 			# you can use the `l` alias.
 			def localize *args
 				I18n.l *args		
 			end
+			alias :l :localize
 		end
 
 		if defined? Haml

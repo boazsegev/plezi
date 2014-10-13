@@ -85,7 +85,7 @@ if defined? ActiveRecord
       end
 
       desc "Seed the database using the db/seeds.rb file"
-      task :migrate do
+      task :seed do
         if ::File.exists? Root.join('db','seeds.rb').to_s
           load Root.join('db','seeds.rb').to_s
         else
