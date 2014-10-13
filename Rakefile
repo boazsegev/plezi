@@ -1,5 +1,5 @@
 require 'rubygems'
-require 'rspec'
+# require 'rspec'
 require "bundler/gem_tasks"
 
 
