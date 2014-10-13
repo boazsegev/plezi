@@ -10,7 +10,7 @@ module Anorexic
 	# ServeIndex:: milddleware to serve folder index files (the :index option for Rack::Static was causing issues).
 	# Router:: this is the final middleware / actual application for the RackServer class.
 	#
-	module Rack
+	module AnoRack
 
 		# the ReEncoder Middleware re-encodes the request to UTF-8 format, unless a different encoding is set
 		#

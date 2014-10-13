@@ -1,6 +1,6 @@
 module Anorexic
 
-	module Rack
+	module AnoRack
 
 		# the router - this is the actuale application object for the RackServer
 		class Router
@@ -68,8 +68,8 @@ module Anorexic
 				return true if path == path_requested
 				# should this piece of magic stay?
 				path, path_requested = path.split('/'), path_requested.split('/')
-				path_requested.unshift
-				if path_requested[1..-2] == path
+				path.unshift "" if path.empty?
+				if path_requested[0..-2] == path
 					params["id"] = path_requested[-1]
 					return true
 				end

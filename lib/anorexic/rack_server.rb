@@ -32,7 +32,7 @@ module Anorexic
 		def initialize(port = 3000, params = {})
 			@server = nil
 			@port, @params = port, params
-			@router = Anorexic::Router.new
+			@router = Anorexic::AnoRack::Router.new
 			@rack_handlers = params[:server] || self.class.default_server
 		end
 
@@ -73,6 +73,7 @@ module Anorexic
 							cert: options[:SSLCertificate], key: options[:SSLPrivateKey]
 						}
 					end
+				elsif server.is_a? WEBrick::HTTPServer
 				else
 					Anorexic.logger.error "Could not start SSL service for this server class #{server.class}. not yet supported by Anorexic. SERVICE WILL BE UN-ENCRYPTED."
 				end
@@ -94,12 +95,12 @@ module Anorexic
 			options[:middleware].push *Anorexic.default_middleware
 
 			options[:middleware].unshift [Rack::ContentLength] unless options[:middleware].include? [Rack::ContentLength]
-			options[:middleware].unshift [Anorexic::Rack::ReEncoder]
+			options[:middleware].unshift [Anorexic::AnoRack::ReEncoder]
 
 			if options[:debug]
 				options[:middleware].unshift [Rack::ShowExceptions, options[:file_root]]
 			else
-				options[:middleware].unshift [Anorexic::Rack::Exceptions]
+				options[:middleware].unshift [Anorexic::AnoRack::Exceptions]
 			end
 			if Anorexic.logger
 				options[:middleware].unshift [Rack::CommonLogger, Anorexic.logger]
@@ -108,7 +109,7 @@ module Anorexic
 				options[:middleware] << [Rack::Static, root: options[:file_root]]
 				options[:middleware] << [ServeIndex, options[:file_root]]
 			end
-			options[:middleware] << [NotFound, options[:file_root]]
+			options[:middleware] << [Anorexic::AnoRack::NotFound, options[:file_root]]
 
 			#######
 			# set up server paramaters
