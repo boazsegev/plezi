@@ -62,15 +62,15 @@ if more then one `listen` call was made, ports will be sequential (3000, 3001, 3
 		listen
 		route('*') { |req, res| res.body << "Hello World!" }
 
-Here's a simple web server, complete with SSL, in three (+1) lines of code, serving static pages from the `public` folder::
+Here's a simple web server, complete with SSL (supported on Thin and webrick servers), in three (+1) lines of code, serving static pages from the `public` folder::
 
 		require 'anorexic'
 
-		# set up a non-secure service on port 80
-		listen 80, file_root: File.expand_path(Dir.pwd, 'public')
+		# set up a non-secure service on port 3000
+		listen 3000, file_root: File.expand_path(Dir.pwd, 'public')
 
-		# set up a encrypted service on port 443, works only with some servers (i.e. thin, webrick)
-		listen 443, server: 'thin', ssl_self: true, file_root: File.expand_path(Dir.pwd, 'public') 
+		# set up a encrypted service on port 8080, works only with some servers (i.e. thin, webrick)
+		listen 8080, ssl_self: true, file_root: File.expand_path(Dir.pwd, 'public') 
 
 		shared_route('/people') { |req, res| res.body << "I made this :-)" }
 

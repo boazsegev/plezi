@@ -1,5 +1,13 @@
 #Change Log
 
+Change log v.0.3.3 (not published - worksheet)
+
+**fix**: 404 and 505 errors set content type correctly.
+
+
+
+***
+
 Change log v.0.3.2
 
 **fix**: the SSL features fix depended on Thin being defined. this caused programs without Thin server to fail. this is now fixed.

@@ -101,9 +101,9 @@ module Anorexic
 			end
 
 			if options[:debug]
-				options[:middleware].unshift [Rack::ShowExceptions, options[:file_root]]
+				options[:middleware].unshift [Rack::ShowExceptions]
 			else
-				options[:middleware].unshift [Anorexic::AnoRack::Exceptions]
+				options[:middleware].unshift [Anorexic::AnoRack::Exceptions, options[:file_root]]
 			end
 
 			options[:middleware].unshift [Rack::ContentLength] unless options[:middleware].include? [Rack::ContentLength]

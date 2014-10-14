@@ -54,9 +54,6 @@ module Anorexic
 				# 404 not found
 				# routes finished. if we got all the way here, need to return a 404.
 
-				# new response object
-				response = Rack::Response.new
-
 				not_found = nil
 				unless @root == true
 					if defined? Anorexic::FeedHaml
@@ -67,17 +64,20 @@ module Anorexic
 						not_found = ::File.open(path_to_404, ::File::RDONLY) if ::File.exist?(path_to_404)
 					end
 				end
-				not_found = 'Sorry, you requested something we don\'t have yet... error 404 :-(' unless not_found
+				content_type = 'text/html'
+				unless not_found
+					not_found = 'Sorry, you requested something we don\'t have yet... error 404 :-('
+					content_type = 'text/plain'
+				end
 				not_found = [not_found] if not_found.is_a? String
-				response = Rack::Response.new not_found, 404
-				response.finish
+				[ 404, { 'Content-Type'  => content_type}, not_found ]
 			end
 		end
 
 		# Middleware to report internal errors or render the local 500.haml / 500.html file
 		class Exceptions
 			def initialize app, root = nil
-				@root = (root == false)  || root ||  ::File.expand_path(::File.join(Dir.pwd , 'public') )
+				@root = (root == false) || root || ::File.expand_path(File.join(Dir.pwd , 'public') )
 				@app = app
 			end
 			def call env
@@ -96,21 +96,23 @@ module Anorexic
 					puts e.backtrace.join("\n")
 				end
 
-				request = Rack::Request.new(env)
-
 				message = false
 				unless @root == true
 					if defined? Anorexic::FeedHaml
-						message = Anorexic::FeedHaml.render "500".to_sym, locals: { request: request, error: e}
+						message = Anorexic::FeedHaml.render "500".to_sym, locals: { request: Rack::Request.new(env), error: e}
 					end
 					unless message
 						path_to_500 = File.join(@root, "500.html")
-						message = IO.read path_to_500 if File.exist?(path_to_500)
+						message = ::File.open(path_to_500, ::File::RDONLY) if File.exist?(path_to_500)
 					end
 				end
-				message ||= 'Sorry, something went wrong... internal server error 500 :-(' unless message
-				response = Rack::Response.new [message], 500
-				response.finish
+				content_type = 'text/html'
+				unless message
+					message = 'Sorry, something went wrong... internal server error 500 :-('
+					content_type = 'text/plain'
+				end
+				message = [message] if message.is_a? String
+				[ 500, { 'Content-Type'  => content_type}, message ]
 			end
 		end
 

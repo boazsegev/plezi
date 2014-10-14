@@ -34,18 +34,19 @@ Encoding.default_external = 'utf-8'
 # - start : the `start` is automatically called when the setup is finished. once called, the main DSL will be removed (undefined), so as to avoid code conflicts.
 #
 # here is some sample code:
-#		require 'anorexic'
-#		listen 3000
-#		route('/') { |request, response| response.body << "Hello World from 3000!" }
+#    require 'anorexic'
 #
-#		listen 8080, ssl_self: true 
-#		route('/') { |request, response| response.body << "SSL Hello World from 8080!" }
+#    listen 3000
+#    route('/') { |request, response| response.body << "Hello World from 3000!" }
 #
-#		shared_route('/people') { |request, response| response.body << "Hello People!" }
+#    listen 8080, ssl_self: true 
+#    route('/') { |request, response| response.body << "SSL Hello World from 8080!" }
+#
+#    shared_route('/people') { |request, response| response.body << "Hello People!" }
 #
 # There are two built-in server classes:
 #
-# Anorexic::RackServer:: the rack  server - has MVC support and some lightweight magic features.
+# Anorexic::RackServer:: this is the default server class, levereging the power of rack. it has MVC support and some lightweight magic features.
 # Anorexic::WEBrickServer:: the WEBrick stand alone server - no rack support. has SSL features.
 #
 # its is possible to "mix and match" the different server classes. set the server class you want BEFORE calling listen:

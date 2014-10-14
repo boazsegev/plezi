@@ -11,7 +11,7 @@ Root ||= Pathname.new(File.dirname(__FILE__)).expand_path
 require ::File.expand_path(File.join("..", "environment.rb"),  __FILE__)
 
 # start a web service to listen on the first default port (3000 or the port set by the command-line).
-listen root: Root.join('public').to_s
+listen root: Root.join('public').to_s, debug: (ENV['RACK_ENV'] != 'production')
 
 
 # This is an optional re-write route for I18n - Set it up in the ./config/i18n_config.rb file
