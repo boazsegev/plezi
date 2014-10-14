@@ -1,7 +1,7 @@
-# require 'rack/utf8_sanitizer' # will not be using this after all
 
 module Anorexic
 
+	# require 'rack/utf8_sanitizer' # will not be using this after all
 
 	# This is the main Server class for the Anorexic framework.
 	#
@@ -67,14 +67,14 @@ module Anorexic
 		def start
 			options = make_server_paramaters
 			Rack::Handler.get(options.delete :server).run(options.delete(:app), options ) do |server|
-				if server.is_a? Thin::Server
+				if defined?(Thin::Server) && server.is_a?(Thin::Server)
 					if options[:SSLEnable] && options[:SSLCertificate] && options[:SSLPrivateKey]
 						server.ssl = true
 						server.ssl_options = {
 							cert: options[:SSLCertificate], key: options[:SSLPrivateKey]
 						}
 					end
-				elsif server.is_a? WEBrick::HTTPServer
+				elsif defined?(WEBrick::HTTPServer) &&  server.is_a?( WEBrick::HTTPServer)
 				else
 					Anorexic.logger.error "Could not start SSL service for this server class #{server.class}. not yet supported by Anorexic. SERVICE WILL BE UN-ENCRYPTED."
 				end

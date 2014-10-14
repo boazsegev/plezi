@@ -35,9 +35,14 @@ the default first port for the app is 3000. you can set the first port to listen
 
 ## Barebones Web Service
 
-the app is a simple DSL that deletes all the DLS methods once the server starts running (less clutter while running).
+Anorexic contains is a simple single-use DSL (all the DLS methods are removed once the server starts running - less clutter while running).
 
 you can run anorexic from your favorite Ruby terminal :) - Anorexic starts the moment you exit the terminal.
+
+Anorexic creates a whole web service with three commands that speek for themselves:
+- listen
+- route
+- shared_route
 
 this example is basic, useless, but required for every doc out there...
 

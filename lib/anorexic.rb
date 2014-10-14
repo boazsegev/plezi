@@ -190,9 +190,12 @@ module Anorexic
 				end
 			end
 			unless deamon
-				if @servers.length > 1
+				if (@servers.length > 1)
 					sleep wait_for_load
 					Anorexic.logger.info "Multiple Anorexic services active - listening for shutdown."
+					trap("INT") {Anorexic::Application.instance.shutdown}
+					trap("TERM") {Anorexic::Application.instance.shutdown}
+				elsif @servers[0].rack_handlers == 'webrick'
 					trap("INT") {Anorexic::Application.instance.shutdown}
 					trap("TERM") {Anorexic::Application.instance.shutdown}
 				end

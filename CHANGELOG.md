@@ -1,5 +1,15 @@
 #Change Log
 
+Change log v.0.3.2
+
+**fix**: the SSL features fix depended on Thin being defined. this caused programs without Thin server to fail. this is now fixed.
+
+**fix**: using a single webrick server didn't trap the ^C so that it was impossible to exit the service. this is now fixed.
+
+**fix**: a comment in the code caused the documentation to be replaced with that comment (oops...). this is now fixed.
+
+***
+
 Change log v.0.3.1
 
 **feature removed**: (Code Breaker), removed the `Anorexic.default_content_type` feature. it's prone to issues.
