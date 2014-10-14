@@ -4,8 +4,6 @@ Change log v.0.3.3 (not published - worksheet)
 
 **fix**: 404 and 505 errors set content type correctly.
 
-
-
 ***
 
 Change log v.0.3.2

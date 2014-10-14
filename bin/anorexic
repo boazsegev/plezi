@@ -1,5 +1,5 @@
 #!/usr/bin/env ruby
-
+$0="Anorexic Builder"
 # count lines of code with: ^[ \t]*[\w\d\"\(\{\@\[\]\}\)\:\'\.\*\&]+.*$
 
 require 'rubygems'

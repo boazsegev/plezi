@@ -1,10 +1,8 @@
 # encoding: UTF-8
 
 # this file sets up the basic framework.
-# the file then loads all the .rb files from the ./config , ./lib and ./app folders.
-# the file sets the default logger
 
-# also set by other files, change to nil to avoid
+# set default strings to UTF-8
 Encoding.default_internal = 'utf-8'
 Encoding.default_external = 'utf-8'
 
@@ -13,6 +11,9 @@ Root ||= Pathname.new(File.dirname(__FILE__)).expand_path
 
 # ensure development mode? (comment before production, environment dependent)
 ENV["RACK_ENV"] ||= "development"
+
+# save the process id (pid) to file
+IO.write Root.join('tmp','pid').to_s, Process.pid
 
 # using bundler to load gems (including the anorexic gem)
 require 'bundler'

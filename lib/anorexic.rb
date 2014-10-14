@@ -184,29 +184,33 @@ module Anorexic
 		end
 
 		def start deamon = false, wait_for_load = 3
+			# attempt to name the process as Anorexic Services
+			$0="Anorexic Services"
 			Anorexic.logger.info "starting up Anorexic and waiting for load compleation (count to #{wait_for_load})." if @servers.length > 1
+			#start each of the services in their own thread.
 			@servers.each do |s|
 				@threads << Thread.new do
 					s.start
 				end
 			end
+			# wait for the services to finish
 			unless deamon
 				if (@servers.length > 1)
 					sleep wait_for_load
 					Anorexic.logger.info "Multiple Anorexic services active - listening for shutdown."
 					trap("INT") {Anorexic::Application.instance.shutdown}
 					trap("TERM") {Anorexic::Application.instance.shutdown}
-				elsif @servers[0].rack_handlers == 'webrick'
+				elsif @servers[0].rack_handlers != 'thin'
 					trap("INT") {Anorexic::Application.instance.shutdown}
 					trap("TERM") {Anorexic::Application.instance.shutdown}
 				end
 				@threads.each {|t| t.join}
 			end
+			# return the application object (used when demonized).
 			self
 		end
 		def shutdown
 			@servers.each {|s| s.shutdown }
-			# 
 		end
 	end
 
