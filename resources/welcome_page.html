@@ -7,7 +7,7 @@
 				background-color: #eee;
 				padding: 0; margin: 0;
 				width: 100%;
-				font-size: 1.05em;
+				font-size: 1em;
 			}
 			h1
 			{
@@ -55,6 +55,7 @@
 			#wrapper p{ padding: 0 2%;}
 			pre
 			{
+				border-radius: 20px;
 				padding: 0.5em 0;
 				background-color: #444;
 				color: #ddd;
@@ -64,26 +65,27 @@
 	<body>
 		<h1><a href='https://github.com/boazsegev/anorexic'>Anorexic</a> is hungry... feed it your code!</h1>
 		<div id='wrapper'>
-<h2>I installed Anorexic, what now?</h2>
+<h2>I installed <a href='https://github.com/boazsegev/anorexic'>Anorexic</a>, what now?</h2>
 <p>
-The main code for the app is in the app file (appname.rb). here's the universal example you can rub from your favorit Ruby terminal:
+Welcome to the amazing world of <a href='https://github.com/boazsegev/anorexic'>Anorexic</a> - an agnostic Ruby framework that's hungry to eat up your code.
+</p>
+<p>
+The <a href='https://github.com/boazsegev/anorexic'>Anorexic</a> framework can even serve multiple services (ports), which is great for having some routes work only on SSL <span style='font-size:0.9em'>(*disclaimer, not all Rack servers SSL setting are supported. Thin and WEBrick are)</span>:
 </p>
 <pre><code>    require 'anorexic'
-    listen 3000
-    route('/') { |request, response| response.body &lt;&lt; "Hello World!" }
-</code></pre>
-<p>
-It also works with multiple services (ports), which is great for having some routes work only on SSL (*disclaimer, not all Rack servers serve SSL. WEBrick does, but it's slower):
-<pre><code>    require 'anorexic'
 
-    listen 3000 # => server: 'thin', 'puma', 'webrick' - searched for in order.
+    listen 3000 
     route('/') { |request, response| response.body &lt;&lt; "Hello World from 3000!" }
 
-    listen 8080, ssl_self: true , server: 'webrick'
+    listen 8080, ssl_self: true
     route('/') { |request, response| response.body &lt;&lt; "SSL Hello World from 8080!" }
 
     shared_route('/people') { |request, response| response.body &lt;&lt; "Hello People!" }
 </code></pre>
+<p>
+<a href='https://github.com/boazsegev/anorexic'>Anorexic</a> is thin, light and built for lego-block world of open-source. If you want to learn more, <a href='http://rubydoc.info/gems/anorexic/frames'>read the documentation</a>. We actually tried to write some for you to enjoy...
+</p>
+
 </p>
 
 <h2>Building with Gems</h2>
@@ -101,10 +103,10 @@ It also works with multiple services (ports), which is great for having some rou
 Routes have paths that tell the application which code to run for every request it recieves. The route's path is the part in bold: http://www.server.com<b>/the/stuff/they/request</b>?paramaters=params[:paramaters]
 </p>
 <p>
-As long as Anorexic uses the Anorexic::RackServer class (we could change that, but why would we?), the routes will work the same for all the listening ports.
+Since <a href='https://github.com/boazsegev/anorexic'>Anorexic</a> uses the Anorexic::RackServer class (we could change that, but why would we?), the routes will work the same for all the listening ports.
 </p>
 <p>
-	 <a href='https://github.com/boazsegev/anorexic'>Anorexic</a> allows your code to choose it's routes dynamically, in the order they are created. like so:
+	 <a href='https://github.com/boazsegev/anorexic'>Anorexic</a> routes allows your code to choose it's routes dynamically, in the order they are created. like so:
 </p>
 <pre><code>    require 'anorexic'
     listen
@@ -133,8 +135,6 @@ As long as Anorexic uses the Anorexic::RackServer class (we could change that, b
     # this route catches everything else.
     route('*') { |request, response| response.body &lt;&lt; "Gotcha!" }
 </code></pre>
-
-
 
 <h2>Controllers</h2>
 <p>
@@ -177,11 +177,6 @@ Building our own controller is as easy as defining a class:
 <p>
 Read more about controllers <a href='http://rubydoc.info/gems/anorexic/frames'>on our documentation page</a>
 .</p>
-
-<h2>More</h2>
-<p>
-<a href='https://github.com/boazsegev/anorexic'>Anorexic</a> is thin, light and built for lego-block world of open-source. If you want to learn more, <a href='http://rubydoc.info/gems/anorexic/frames'>read the documentation</a>. We actually tried to write some for you to enjoy...
-</p>
 		</div>
 	</body>
 </html>
