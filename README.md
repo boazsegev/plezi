@@ -145,7 +145,7 @@ here's some food for thought:
 		class ReWriteController
 			# using the before filter and regular expressions to make some changes.
 			def before
-				result = request.path.match /^\/(en|fr)(\/?.*)/
+				result = request.path.match /^\/(en|fr)($|\/.*)/
 				if result
 					params["locale"] = result[1].to_sym
 					request.path_info = result[2]

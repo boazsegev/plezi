@@ -133,15 +133,19 @@ module Anorexic
 		attr_accessor :server_class
 		# an array for middleware specs
 		attr_accessor :default_middleware
-		# gets/sets the default content type for the 
-		attr_accessor :default_content_type
+		# gets/sets the default content type for the application
+		# attr_accessor :default_content_type
+
+		# gets/sets the default encoding used to encode (from binary) any incoming requests.
+		attr_accessor :default_encoding
 
 		def initialize
 			@servers = []
 			@threads = []
 			@logger = ::Logger.new STDOUT
 			@server_class = Anorexic::RackServer
-			@default_content_type = "text/html; charset=utf-8"
+			# @default_content_type = "text/html; charset=utf-8"
+			@default_encoding = "utf-8"
 			@default_middleware = []
 		end
 		def set_logger log_file, copy_to_stdout = true
@@ -252,13 +256,13 @@ module Anorexic
 
 	# get the default middleware array.
 	#
-	# this can be used to ass middleware to all Rack servers like so:
+	# this can be used to add middleware to all Rack servers like so:
 	#     Anorexic.default_middleware << [MiddleWare, paramater]
 	def default_middleware
 		Application.instance.default_middleware
 	end
 
-	# get the logger object
+	# gets the logger object
 	def logger
 		Application.instance.logger
 	end
@@ -270,14 +274,24 @@ module Anorexic
 		Application.instance.set_logger log_file, copy_to_stdout
 	end
 
-	# gets the default content type that should be sent back if an HTTP response header "Content-Type" wasn't set by the response.
-	def default_content_type
-		Application.instance.default_content_type
+	# # gets the default content type that should be sent back if an HTTP response header "Content-Type" wasn't set by the response.
+	# def default_content_type
+	# 	Application.instance.default_content_type
+	# end
+
+	# # sets the default content type that should be sent back if an HTTP response header "Content-Type" wasn't set by the response.
+	# def default_content_type= new_type
+	# 	Application.instance.default_content_type = new_type
+	# end
+
+	# gets the default encoding used to encode (from binary) any incoming requests.
+	def default_encoding
+		Application.instance.default_encoding
 	end
 
-	# sets the default content type that should be sent back if an HTTP response header "Content-Type" wasn't set by the response.
-	def default_content_type= new_type
-		Application.instance.default_content_type = new_type
+	# sets the default encoding used to encode (from binary) any incoming requests.
+	def default_encoding= encoding
+		Application.instance.default_encoding = encoding
 	end
 
 end

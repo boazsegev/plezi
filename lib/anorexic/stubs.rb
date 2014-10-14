@@ -30,16 +30,17 @@ module Anorexic
 	####
 	# a skelaton for a RESTful controller class
 	#
-	# you dont have to inherit this or use this, this stub code.
+	# you dont have to inherit this or use this, this is stub code.
 	#
 	# it can also be used for non RESTful requests by utilizing only the
-	# index method.
+	# index method or adding public methods that aren't RESTful reserved (and don't start with '_').
 	#
-	# if a method returns false, an 404 not found is assumed. and routes continue to search.
+	# if a method returns false, a 404 error (not found) is assumed. and routes continue to search.
 	#
 	# otherwise, the method's return value is added to the response body. Normally, the method will return a String object.
 	#
-	# methods should return the body string as their last value
+	# methods should return the response's body string as their last value, unless
+	# they have correctly edited the response (in which case they should return `true`).
 	#
 	class StubController
 
@@ -66,7 +67,7 @@ module Anorexic
 			"update called: #{params[:id]}"
 		end
 
-		# called when request is DELETE and quary defines "id"
+		# called when request is DELETE (or params["_method"] == 'delete') and quary defines "id"
 		def delete
 			"delete called: #{params[:id]}"
 		end

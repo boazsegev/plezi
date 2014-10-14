@@ -10,8 +10,12 @@ Root ||= Pathname.new(File.dirname(__FILE__)).expand_path
 # load all framework and gems
 require ::File.expand_path(File.join("..", "environment.rb"),  __FILE__)
 
-# start a web service to listen on the first default (3000 or the port set by the command-line).
-listen file_root: Root.join('public').to_s
+# start a web service to listen on the first default port (3000 or the port set by the command-line).
+listen root: Root.join('public').to_s
+
+
+# This is an optional re-write route for I18n - Set it up in the ./config/i18n_config.rb file
+route "*" , I18nReWrite if defined? I18n
 
 
 # remove this demo route and add your routes here:

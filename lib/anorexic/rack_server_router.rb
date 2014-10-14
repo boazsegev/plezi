@@ -2,7 +2,7 @@ module Anorexic
 
 	module AnoRack
 
-		# the router - this is the actuale application object for the RackServer
+		# the router - this is the actual application object for the RackServer
 		class Router
 			attr_accessor :routes
 			def initialize
@@ -36,7 +36,7 @@ module Anorexic
 				return_value = false
 				# compare routes
 				@routes.each do |route|
-					next unless self.class.match request.path.chomp('/'), route[0], request.params
+					next unless self.class.match request.path_info.chomp('/'), route[0], request.params
 					if route[1].is_a? Class
 						break if return_value = route[1].new(env, request, response)._route_path_to_methods_and_set_the_response_
 					elsif route[1].public_methods.include? :call
@@ -48,6 +48,7 @@ module Anorexic
 				end
 				return_value
 			end
+			# adds a route to the router - used by the Anorexic framework.
 			def add_route path = "", controller = nil, &block
 				unless (controller && (controller.is_a?( Class ) || controller.is_a?( Proc ) ) ) || block
 					raise "Counldn't add an empty route! Routes must have either a Controller class or a block statement!"
@@ -60,6 +61,7 @@ module Anorexic
 				@routes << [path, block || controller]
 			end
 
+			# checks for a match between a requested path and a route's path, while setting the "id" in params (when implied).
 			def self.match path_requested, path, params
 				if path.is_a? Regexp
 					return !(!(path.match path_requested))
@@ -76,7 +78,7 @@ module Anorexic
 				return false
 			end
 
-			# tweeks the params hash to accept :symbols in addition to strings (similar to Rails, but probably different, as two keys, such as "id" and :id can co-exist if the developer isn't careful).
+			# tweeks the params and cookie's hash object to accept :symbols in addition to strings (similar to Rails but without ActiveSupport).
 			def self.make_hash_accept_symbols hash
 				df_proc = Proc.new do |hs,k|
 					if k.is_a?(Symbol) && hs.has_key?( k.to_s)
@@ -93,7 +95,7 @@ module Anorexic
 				end
 			end
 
-			# injects the magic to the controller
+			# injects some magic to the controller
 			#
 			# adds the `redirect_to` and `send_data` methods to the controller class, as well as the properties:
 			# env:: the env recieved by the Rack server.
@@ -110,7 +112,7 @@ module Anorexic
 					def initialize env, request, response
 						@env, @request, @params = env, request, request.params
 						@response = response
-						@response["Content-Type"] = ::Anorexic.default_content_type
+						# @response["Content-Type"] ||= ::Anorexic.default_content_type
 
 						# create magical cookies
 						@cookies = request.cookies

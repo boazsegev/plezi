@@ -21,6 +21,8 @@ Gem::Specification.new do |spec|
   spec.required_ruby_version = '>= 1.9.2'
 
   spec.add_runtime_dependency 'rack', '>= 1.5.2'
+  # spec.add_runtime_dependency 'rack-utf8_sanitizer', '>= 1.2.2'
+
 
   spec.add_development_dependency "bundler", "~> 1.6"
   spec.add_development_dependency "rake"

@@ -28,5 +28,21 @@ if defined? I18n
 	end
 	alias :l :localize
 
+
+	# this class can be used as a controller to set the locale and re-write the request path,
+	# so that : /en/welcome, is translated to /welcome?locale=en
+	class I18nReWrite
+		# using the before filter and regular expressions to make some changes.
+		def before
+			result = request.path_info.match /^\/(en|fr)($|\/.*)/
+			if result
+				params["locale"] = I18n.locale = result[1].to_sym
+				request.path_info = result[2].to_s
+			end
+			return false
+		end
+	end
+
+
 end
 			

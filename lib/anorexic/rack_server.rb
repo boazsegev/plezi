@@ -1,12 +1,12 @@
+# require 'rack/utf8_sanitizer' # will not be using this after all
+
 module Anorexic
 
 
-	# This is the main Server class for the anorexic framework.
+	# This is the main Server class for the Anorexic framework.
 	#
-	# since this is actually a rack based server class,
-	# and since rack is actually server agnostic...
-	#
-	# ... it is actually possible to use any server that has a Rack:Handler, not just the thin server:
+	# this is a rack based server class,
+	# hence, it should be possible to use any server that has a Rack:Handler, like so:
 	#    listen 80, server: 'puma'
 	#
 	# Thin is the default server if no 'server' option is passed. If Thin isn't available, Puma will be tested for.
@@ -14,7 +14,7 @@ module Anorexic
 	#
 	# it is possible to change the default server using:
 	#
-	#    Anorexic::RackServer.default_server = 'webrick'
+	#    Anorexic::RackServer.default_server = 'foo_server'
 	#
 	class RackServer
 		# holds the server object
@@ -107,7 +107,9 @@ module Anorexic
 			end
 
 			options[:middleware].unshift [Rack::ContentLength] unless options[:middleware].include? [Rack::ContentLength]
-			options[:middleware].unshift [Anorexic::AnoRack::ReEncoder, ::Anorexic.default_content_type]
+			# will not be using this gem after all
+			# options[:middleware].unshift [Rack::UTF8Sanitizer] if ::Anorexic.default_encoding.to_s.downcase == 'utf-8'
+			options[:middleware].unshift [Anorexic::AnoRack::ReEncoder, ::Anorexic.default_encoding]
 
 			if Anorexic.logger
 				options[:middleware].unshift [Rack::CommonLogger, Anorexic.logger]

@@ -17,7 +17,6 @@ module Anorexic
 	# add_route:: add_route(path, config, &block).
 	# start:: (no paramaters)
 	# shutdown:: (no paramaters)
-	# self.set_logger:: log_file (class method)
 	#
 	# it is advised that the server class pass-through any paramaters
 	# defined in `params[:server_params]` to the server.
@@ -82,7 +81,7 @@ module Anorexic
 				@server.mount path, WEBrick::HTTPServlet::FileHandler, *extra_options
 			else
 				@server.mount_proc path do |request, response|
-					response['Content-Type'] = Anorexic.default_content_type
+					# response['Content-Type'] = Anorexic.default_content_type
 					block.call request, response
 				end
 			end

@@ -1,23 +1,27 @@
+require 'pathname'
 module Anorexic
 
-	# the module FeedHaml holds the main wrapper functions for the I18n and HAML objects.
+	# the module FeedHaml implements easy rendering for HAML templates.
 	#
-	# Use I18n by adding `.yml` or `.rb` I18n locales to the `locales` folder in your app.
+	# this is NOT a default module. to use this module use:
 	#
-	# Use HAML by calling (from your rout):
-	#    response.body = render :template, type: 'htm', layout: :layout_template
+	#    require 'anorexic/feed_haml'
 	#
-	# Templates are searched for in the `views` folder in your app.
+	# render a Haml template to a string by calling:
+	#    Anorexic::FeedHaml.render :template, layout: :layout_template
+	#
+	# Templates are searched for in the `app/views` folder.
+	#
 	module FeedHaml
 
 		module_function
 
 		if defined? Haml
 			
-			# returns a rendered string the HAML template given, after searching for it in the `views` folder.
+			# returns a string representing th rendered Haml template given, after searching for it in the `app/views` folder.
 			#
 			# for example, to render the file `body.html.haml` with the layout `main_layout.html.haml`:
-			#   render :body, layout: main_layout => "<html><body></body></html>"
+			#   render :body, layout: :main_layout => "<html><body></body></html>"
 			#
 			# template:: a Symbol for the template to be used.
 			# options:: a Hash for any options such as `:layout` or `locale`.
@@ -33,7 +37,7 @@ module Anorexic
 			# if template is a string, it will assume the string is an
 			# absolute path to a template file. it will NOT search for the template but might raise exceptions.
 			#
-			# it will raise exceptions if the template file cannot be opened or doesn't exist.
+			# returns false if the template or layout files cannot be found.
 			#
 			def render template, options = {}
 				# set basics
@@ -70,9 +74,6 @@ module Anorexic
 					view
 				end
 			end
-
-
-			protected
 
 			def find_template template, type = "", extention = "haml"
 				# get all haml files in 'views' folder

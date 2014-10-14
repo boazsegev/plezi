@@ -52,8 +52,21 @@ module Anorexic
 			@flash.update options
 		end
 
-		# this method adds data to be sent in the que.
-		# 
+		# this method adds data to be sent.
+		#
+		# this is usful for sending 'attachments' (data to be downloaded) rather then
+		# a regular response.
+		#
+		# this is also usful for offering a file name for the browser to "save as".
+		#
+		# it accepts:
+		# data:: the data to be sent
+		# options:: a hash of any of the options listed furtheron.
+		#
+		# the :symbol=>value options are:
+		# type:: the type of the data to be sent. defaults to empty. if :filename is supplied, an attempt to guess will be made.
+		# inline:: sets the data to be sent an an inline object (to be viewed rather then downloaded). defaults to false.
+		# filename:: sets a filename for the browser to "save as". defaults to empty.
 		#
 		def send_data data, options = {}
 			# write data to response object
@@ -61,8 +74,11 @@ module Anorexic
 
 			# set headers
 			content_disposition = "attachment"
+
+			options[:type] ||= Rack::Mime.mime_type(::File.extname(options[:filename])) if options[:filename]
+
 			if options[:type]
-				response["Content-Type"] = 'application/pdf'
+				response["Content-Type"] = options[:type]
 				options.delete :type
 			end
 			if options[:inline]
