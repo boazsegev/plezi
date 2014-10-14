@@ -2,15 +2,17 @@
 
 Change log v.0.3.1
 
-**fix**: a very rare issue was found in the 404.html and 500.html handlers which caused unformatted error messages (as if the 404.html or 500.html files didn't exist). this is now fixed.
-
 **feature removed**: (Code Breaker), removed the `Anorexic.default_content_type` feature. it's prone to issues.
-
-**fix**: the send_data method now sets the content-type that was set by the caller (was sending 'application/pdf' for some historic testing reason).
 
 **patched**: utf-8 encoding enforcement now works. this might disrupt non-text web-apps (which should use `Anorexic.default_encoding = 'binary'` or `Anorexic.default_encoding = false`).
 
 **feature**: Enabled path rewrites to effect router - see the advanced features in the wiki home for how to apply this powerful feature. Notice that re-writing is done using the `env["PATH_INFO"]` or the `request.path_info=` method - the `request.path` method is a read only method.
+
+**fix**: a very rare issue was found in the 404.html and 500.html handlers which caused unformatted error messages (as if the 404.html or 500.html files didn't exist). this is now fixed.
+
+**fix**: the send_data method now sets the content-type that was set by the caller (was sending 'application/pdf' for a historic testing reason).
+
+**fix**: minor fixes to the app generator. `anorexic new app` should now place the `en.yaml` file correctly (it was making a directory instead of writing the file... oops).
 
 ***
 
