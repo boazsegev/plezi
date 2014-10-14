@@ -2,6 +2,8 @@
 
 Change log v.0.3.3 (not published - worksheet)
 
+**update**: new Web App templates save the process id (pid) to the tmp folder (architecture only).
+
 **fix**: 404 and 505 errors set content type correctly.
 
 ***
