@@ -78,7 +78,7 @@ module Anorexic
 			def find_template template, type = "", extention = "haml"
 				# get all haml files in 'views' folder
 				root = Root if defined? Root
-				root ||= Pathname.new('.').expand_path
+				root ||= Pathname.new(Dir.pwd).expand_path
 				Dir["#{root.join('app', 'views').to_s}**/**/*.#{extention}"].each do |file|
 					return file if file.split(/[\\\/]/).last[0..(0-2-extention.length)].include?(template.to_s + "." + type)
 				end

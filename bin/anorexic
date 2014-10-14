@@ -54,7 +54,7 @@ class AppTemplate
 
 		#set up I18n stub
 		app_tree["locales"] ||= {}
-		app_tree["locales"]["en.yml"] ||= {}
+		app_tree["locales"]["en.yml"] ||= IO.read ::File.expand_path(File.join("..", "..", "resources" ,"en.yml"),  __FILE__)
 
 		# set up config files
 		app_tree["config"] ||= {}
