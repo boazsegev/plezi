@@ -1,12 +1,6 @@
 #!/usr/bin/env ruby
 # encoding: UTF-8
 
-# Using pathname extentions for setting public folder
-require 'pathname'
-
-#set up root object, it will be used by the environment and\or the anorexic extension gems.
-Root ||= Pathname.new(File.dirname(__FILE__)).expand_path
-
 # load all framework and gems
 require ::File.expand_path(File.join("..", "environment.rb"),  __FILE__)
 

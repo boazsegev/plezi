@@ -6,6 +6,8 @@
 Encoding.default_internal = 'utf-8'
 Encoding.default_external = 'utf-8'
 
+# Using pathname extentions for setting public folder
+require 'pathname'
 #set up root object, it will be used by the environment and\or the anorexic extension gems.
 Root ||= Pathname.new(File.dirname(__FILE__)).expand_path
 
