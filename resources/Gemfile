@@ -55,6 +55,7 @@ gem 'thin'
 ## this seems greate, but we left out any auto-config for this one... seems to work out of the box.
 # gem 'sequel'
 
-## if you want to use ActiveRecord, uncomment the following line(s):
+## if you want to use ActiveRecord, uncomment the following line(s)...
+## but first, please remember that AcriveRecord has known issues with multiple threads.
 # gem 'activerecord', :require => 'active_record'
 # gem 'bcrypt', '~> 3.1.7'
