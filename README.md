@@ -144,8 +144,9 @@ One of the best things about the Anorexic is it's ability to take in any class a
 		route "/users" , Controller
 		route "/" , Controller
 
-Controllers can even be nested (order matters) or have advanced uses that are definitly worth exploring. here's some food for thought:
-here's some food for thought:
+Controllers can even be nested (order matters) or have advanced uses that are definitly worth exploring.
+
+Here's some food for thought - code similar to something actually used in the framework app:
 
 		require 'pry'
 		require 'anorexic'

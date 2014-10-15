@@ -6,7 +6,7 @@ module Anorexic
 		# this class holds the route and matching logic
 		class Route
 			# the Regexp 
-			attr_accessor :path
+			attr_reader :path
 			def initialize path
 				@fill_paramaters = {}
 				if path.is_a? Regexp

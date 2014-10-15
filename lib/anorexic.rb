@@ -159,6 +159,7 @@ module Anorexic
 		end
 
 		def add_server(port, params = {})
+			puts "WARNING: port aleady in use! excpect initialization to fail!" if (@servers.select { |s| s.port == port})[0]
 			@servers << @server_class.new(port, params)
 			@servers.last
 		end
