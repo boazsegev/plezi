@@ -94,7 +94,11 @@ Anorexic allows your code to choose it's routes dynamically, in the order they a
     # this route never sees the light of day
     route('/') { |request, response| response.body << "Help Me!" }
 
-Anorexic accepts Regexp routes as well as string routes and defines a short cut for a catch-all route:
+Anorexic supports magic routes, in similar formats found in other systems, such as: `route "/:required/(:optional)/(:optional_with_format){[\\d]*}", Controler` -  **please see the `route` documentation for more information on routes**.
+
+Anorexic assummes all simple string routes to be RESTful routes ( `"/user" == "/user/(:id)"` ).
+
+Anorexic accepts Regexp routes as well as string and magic routes and defines a short cut for a catch-all route:
 
     require 'anorexic'
     listen
