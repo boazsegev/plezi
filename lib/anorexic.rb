@@ -345,15 +345,31 @@ end
 # path:: the path for the route
 # config:: options for the default behaviour of the route.
 #
-# the current options for the config depend on the active server.
-# for the default server ( Anorexic::WEBrickServer ), the are:
+# `path` paramaters has a few options:
 #
-# Content-Type:: the key should be the string 'Content-Type'. defaults to 'Content-Type' => 'text/html'.
-# file_root:: sets a root folder to serve files. defaults to nil (no root).
-# allow_indexing:: if a root folder is set, this sets th indexing option. defaults to false.
+# * `path` can be a Regexp object, forcing the all the logic into controller (typically using the before method).
+#
+# * simple String paths are assumed to be basic RESTful paths:
+#
+#     route "/users", Controller => route "/users/(:id)", Controller
+#
+# * routes can define their own parameters, for their own logic:
+#
+#     route "/path/:required_paramater_foo/(:optional_paramater_bar)"
+#
+# * routes can define optional routes with regular expressions in them:
+#
+#     route "(:locale){en|ru}/path"
+#
+# magic routes make for difficult debugging - the smarter the routes, the more difficult the debugging.
+# use with care and avoid complex routes when possible. RESTful routes are recommended when possible.
+# jason serving apps are advised to use required paramaters, empty sections indicating missing required paramaters (i.e. /path///foo/bar///).
+#
+# 
+#
+# the current options for the config depend on the active server.
+# for the default server ( Anorexic::RackServer ), the are:
 # debug:: ONLY FOR RackServer: set's detailed exeption output, using Rack::ShowExceptions
-# servlet:: ONLY FOR WEBrickServer: set a servlet instead of a Proc, see WEBRick documentation for more info. defaults to nil.
-# servlet_args:: ONLY FOR WEBrickServer: if a servlet is set, attempts to send arguments to the constructor. defaults to [] (no arguments).
 #
 def route(path, config = {}, &block)
 	Anorexic::Application.instance.add_route path, config, &block

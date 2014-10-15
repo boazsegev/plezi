@@ -1,6 +1,58 @@
 #Change Log
 
-Change log v.0.3.3 (not published - worksheet)
+Change log v.0.4.0 (not published - worksheet)
+
+This is a strong update that might break old code.
+
+the following features are added
+
+- magic routes:
+
+I found a way to move sme of the heavier "magic routes" parsing into the app-initializetion, so that magic routes can be less costly.
+
+it is now possible to set required paramaters inside the route:
+```ruby
+route "/version/:number/", Controller
+# => accepts only paths styled "/version/foo".
+# => if no version paramater exists, path will not be called and paramaters will not be set.
+# => (this: "/version" fails).
+```
+
+it is now possible to set optional paramaters inside the route:
+```ruby
+route "/user/(:id)/(:visitor_id)", Controller
+# => accepts any of the following paths:
+# => "/user"
+# => "/user/foo"
+# => "/user/foo/bar"
+```
+
+it is now possible to disregard any excess path data:
+```ruby
+route "/user/(:id)/*", Controller
+# => accepts any of the following paths:
+# => "/user"
+# => "/user/foo"
+# => "/user/foo/bar"
+```
+
+- re-write routes:
+
+re-write routes allow us to extract paramaters from the route without any controller, rewriting the request's path.
+
+they can be extreamly powerful in fairly rare but interesting circumstances.
+
+for example:
+```ruby
+route "/(:foo)/*", false
+# for the request "/bar/path":
+# => params[:foo] = "bar"
+# => request.path_info == "/path"
+```
+
+**feature**: magic routes.
+
+**feature**: re-write routes.
 
 **update**: new Web App templates save the process id (pid) to the tmp folder (architecture only).
 

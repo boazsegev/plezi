@@ -35,8 +35,11 @@ module Anorexic
 
 				return_value = false
 				# compare routes
+				request.path_info.chomp!('/')
 				@routes.each do |route|
-					next unless self.class.match request.path_info.chomp('/'), route[0], request.params
+					match = route[0].match request.path_info
+					next unless match
+					request.params.update match
 					if route[1].is_a? Class
 						break if return_value = route[1].new(env, request, response)._route_path_to_methods_and_set_the_response_
 					elsif route[1].public_methods.include? :call
@@ -44,38 +47,22 @@ module Anorexic
 							return_value = response.finish
 							break 
 						end
+					elsif route[1] == false
+						match.each {|k,v| request.path_info.gsub!( /\/#{Regexp.quote v}(\/|$)/, "/"); request.path_info.to_s.chomp!('/')}
 					end
 				end
 				return_value
 			end
 			# adds a route to the router - used by the Anorexic framework.
 			def add_route path = "", controller = nil, &block
-				unless (controller && (controller.is_a?( Class ) || controller.is_a?( Proc ) ) ) || block
+				unless (controller && (controller.is_a?( Class ) || controller.is_a?( Proc ) ) ) || block || (controller == false)
 					raise "Counldn't add an empty route! Routes must have either a Controller class or a block statement!"
 				end
 				if controller.is_a?(Class)
 					# add controller magic
 					controller = self.class.make_magic controller
 				end
-				path.chomp!('/') if path.is_a?(String)
-				@routes << [path, block || controller]
-			end
-
-			# checks for a match between a requested path and a route's path, while setting the "id" in params (when implied).
-			def self.match path_requested, path, params
-				if path.is_a? Regexp
-					return !(!(path.match path_requested))
-				end
-				return true if path == '*'
-				return true if path == path_requested
-				# should this piece of magic stay?
-				path, path_requested = path.split('/'), path_requested.split('/')
-				path.unshift "" if path.empty?
-				if path_requested[0..-2] == path
-					params["id"] = path_requested[-1]
-					return true
-				end
-				return false
+				@routes << [Route.new(path), block || controller]
 			end
 
 			# tweeks the params and cookie's hash object to accept :symbols in addition to strings (similar to Rails but without ActiveSupport).
@@ -185,6 +172,81 @@ module Anorexic
 				ret
 			end
 		end
-	end
 
+		#####
+		# this class holds the actual route
+		class Route
+			attr_accessor :path
+			def initialize path
+				@fill_paramaters = {}
+				if path.is_a? Regexp
+					@path = path
+				elsif path.is_a? String
+					if path == '*'
+						@path = /.*/
+					else
+						param_num = 0
+						section_search = "(\/[^\/]*)"
+						optional_section_search = "(\/[^\/]*)?"
+						@path = '^'
+						path = path.gsub(/(^\/)|(\/$)/, '').split '/'
+						path.each do |section|
+							if section == '*'
+								# create catch all
+								@path << ".*"
+								# finish
+								@path = /#{@path}$/
+								return
+
+							# check for routes formatted: /:paramater - required paramaters
+							elsif section.match /^\:([\w]*)$/
+								#create a simple section catcher
+							 	@path << section_search
+							 	# add paramater recognition value
+							 	@fill_paramaters[param_num += 1] = section.match(/^\:([\w]*)$/)[1]
+
+
+							# check for routes formatted: /(:paramater) - optional paramaters
+							elsif section.match /^\(\:([\w]*)\)$/
+								#create a optional section catcher
+							 	@path << optional_section_search
+							 	# add paramater recognition value
+							 	@fill_paramaters[param_num += 1] = section.match(/^\(\:([\w]*)\)$/)[1]
+
+							# check for routes formatted: /(:paramater){options} - optional paramaters
+							elsif section.match /^\(\:([\w]*)\)\{([^\/\{\}]*)}$/
+								#create a optional section catcher
+							 	@path << (  "(\/(" +  section.match(/^\(\:([\w]*)\)\{([^\/\{\}]*)}$/)[2] + "))?"  )
+							 	# add paramater recognition value
+							 	@fill_paramaters[param_num += 1] = section.match(/^\(\:([\w]*)\)\{([^\/\{\}]*)}$/)[1]
+							 	param_num += 1 # we are using to spaces
+
+							else
+								@path << "\/"
+								@path << section
+							end
+						end
+						if @fill_paramaters.empty?
+							@path << optional_section_search
+							@fill_paramaters[param_num += 1] = "id"
+						end
+						@path = /#{@path}$/
+					end
+				else
+					raise "Path cannot be initialized - path must be either a string or a regular experssion."
+				end	
+				return
+			end
+			def match path
+				m = @path.match path
+				return false unless m
+				hash = {}
+				@fill_paramaters.each { |k, v|  hash[v] = m[k][1..-1] if m[k] && m[k] != '/' }
+				hash
+			end
+		end
+
+
+
+	end
 end
