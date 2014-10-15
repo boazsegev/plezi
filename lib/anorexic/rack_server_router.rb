@@ -245,8 +245,5 @@ module Anorexic
 				hash
 			end
 		end
-
-
-
 	end
 end
