@@ -1,6 +1,6 @@
 #Change Log
 
-Change log v.0.4.0 (not published - worksheet)
+Change log v.0.4.0
 
 This is a strong update that might break old code.
 
