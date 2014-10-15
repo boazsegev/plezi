@@ -8,8 +8,6 @@ the following features are added
 
 - magic routes:
 
-I found a way to move sme of the heavier "magic routes" parsing into the app-initializetion, so that magic routes can be less costly.
-
 it is now possible to set required paramaters inside the route:
 ```ruby
 route "/version/:number/", Controller
@@ -48,6 +46,12 @@ route "/(:foo)/*", false
 # for the request "/bar/path":
 # => params[:foo] = "bar"
 # => request.path_info == "/path"
+```
+
+in a more worldly sense...
+```ruby
+route ":proc/(:version){v-[\\w\\d\\.]*}/:func/*", false
+# look at http://www.rubydoc.info path for /gems/anorexic/0.3.2/frames ...
 ```
 
 **feature**: magic routes.

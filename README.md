@@ -67,10 +67,10 @@ Here's a simple web server, complete with SSL (supported on Thin and webrick ser
 		require 'anorexic'
 
 		# set up a non-secure service on port 3000
-		listen 3000, file_root: File.expand_path(Dir.pwd, 'public')
+		listen 3000, file_root: File.expand_path(File.join(Dir.pwd , 'public'))
 
 		# set up a encrypted service on port 8080, works only with some servers (i.e. thin, webrick)
-		listen 8080, ssl_self: true, file_root: File.expand_path(Dir.pwd, 'public') 
+		listen 8080, ssl_self: true, file_root: File.expand_path(File.join(Dir.pwd , 'public')) 
 
 		shared_route('/people') { |req, res| res.body << "I made this :-)" }
 
