@@ -1,5 +1,16 @@
 #Change Log
 
+***
+
+Change log v.0.4.1
+
+**template change**: changed mvc configuration file name to db_config.
+
+**fix**: fixed template code for Sequel integration (still very basic).
+
+
+***
+
 Change log v.0.4.0
 
 This is a strong update that might break old code.

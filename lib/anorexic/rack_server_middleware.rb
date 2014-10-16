@@ -8,7 +8,7 @@ module Anorexic
 	# NotFound:: milddleware to redirect 404 not found errors to the local 404.html file (or Haml).
 	# Exceptions:: milddleware to redirect 500 internal server errors to the local 500.html file (or Haml).
 	# ServeIndex:: milddleware to serve folder index files (the :index option for Rack::Static was causing issues).
-	# Router:: this is the final middleware / actual application for the RackServer class.
+	# Router:: this is the final middleware / actual application for the RackServer class. This class routes the requests to the controllers.
 	#
 	module AnoRack
 

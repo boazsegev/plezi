@@ -320,6 +320,7 @@ end
 # The different keys in the params hash control the server's behaviour, as follows:
 #
 # ssl_self:: sets an SSL server with a self assigned certificate (changes with every restart). defaults to false.
+# debug:: set's detailed exeption output, using Rack::ShowExceptions
 # server_params:: a hash of paramaters to be passed directly to the server - architecture dependent.
 # middleware:: a middleray array of arras of type [Middleware, paramater, paramater], if using RackServer.
 #
@@ -345,7 +346,7 @@ end
 # adds a route to the last server object
 #
 # path:: the path for the route
-# config:: options for the default behaviour of the route.
+# controller:: The controller class which will accept the route.
 #
 # `path` paramaters has a few options:
 #
@@ -367,14 +368,8 @@ end
 # use with care and avoid complex routes when possible. RESTful routes are recommended when possible.
 # jason serving apps are advised to use required paramaters, empty sections indicating missing required paramaters (i.e. /path///foo/bar///).
 #
-# 
-#
-# the current options for the config depend on the active server.
-# for the default server ( Anorexic::RackServer ), the are:
-# debug:: ONLY FOR RackServer: set's detailed exeption output, using Rack::ShowExceptions
-#
-def route(path, config = {}, &block)
-	Anorexic::Application.instance.add_route path, config, &block
+def route(path, controller = nil, &block)
+	Anorexic::Application.instance.add_route path, controller, &block
 end
 
 # adds a route to the all the previous server objects
