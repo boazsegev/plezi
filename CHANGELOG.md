@@ -4,6 +4,10 @@
 
 Change log v.0.4.1
 
+**template feature**: the I18n path detection (for paths `"/:locale/..."`) is now totally automated and limited to available locales (only if I18n gem is included in the gem file).
+
+**fix/template**: corrected javascripts folder name in app generator (was singular, now plural).
+
 **template change**: changed mvc configuration file name to db_config.
 
 **fix**: fixed template code for Sequel integration (still very basic).

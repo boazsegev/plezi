@@ -93,7 +93,7 @@ class AppTemplate
 		app_tree["public"]["500.html"] ||= IO.read(::File.expand_path(File.join("..", "..", "resources" ,"500.html"),  __FILE__))
 		app_tree["public"]["assets"] ||= {}		
 		app_tree["public"]["stylesheets"] ||= {}		
-		app_tree["public"]["javascript"] ||= {}		
+		app_tree["public"]["javascripts"] ||= {}		
 		app_tree["public"]["images"] ||= {}		
 
 	end
