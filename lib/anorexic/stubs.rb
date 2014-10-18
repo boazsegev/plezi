@@ -2,6 +2,8 @@ module Anorexic
 
 	# this class is a stub used to merge a file Logger with STDOUT (double output)
 	class CustomIO
+		
+		#initializes a new CustomIO object for the specified targets.
 		def initialize *targets
 			@targets = targets
 		end

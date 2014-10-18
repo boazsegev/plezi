@@ -31,6 +31,7 @@ module Anorexic
 		attr_reader :routes
 
 		# creates a new WEBRick server instance, used by the `listen` method.
+		# accepts the same paramaters as the `listen` method (pass through).
 		def initialize(port = 3000, params = {})
 			@routes = []
 			params[:server_params] ||= {}
