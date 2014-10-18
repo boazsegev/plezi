@@ -1,4 +1,6 @@
 # Anorexic
+[![Gem Version](https://badge.fury.io/rb/anorexic.svg)](http://badge.fury.io/rb/anorexic)
+[![Inline docs](http://inch-ci.org/github/boazsegev/anorexic.svg?branch=master)](http://inch-ci.org/github/boazsegev/anorexic)
 
 A thin, lightweight, barebones, mutli-threaded Ruby alternative to Rails (ROR) and Sinatra frameworks... so thin, it's anorexic!
 
@@ -118,7 +120,7 @@ Anorexic accepts Regexp routes as well as string and magic routes and defines a 
 
 ## Anorexic Controller classes
 
-One of the best things about the Anorexic is it's ability to take in any class as a controller class and route to the classes methods with special support for RESTful methods (index, show, save, update, before, after):
+One of the best things about the Anorexic is it's ability to take in any class as a controller class and route to the classes methods with special support for RESTful methods (index, show, save, update, delete, before and after):
 
 		require 'pry'
 		require 'anorexic'
@@ -197,6 +199,7 @@ Here's some food for thought - code similar to something actually used in the fr
 		route "/" , Controller
 
 try:
+
 * http://localhost:3000/
 * http://localhost:3000/users
 * http://localhost:3000/users/hello
