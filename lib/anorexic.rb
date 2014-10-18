@@ -141,6 +141,7 @@ module Anorexic
 		# gets/sets the default encoding used to encode (from binary) any incoming requests.
 		attr_accessor :default_encoding
 
+		# initializes the one and only application instance.
 		def initialize
 			@servers = []
 			@threads = []
@@ -150,6 +151,8 @@ module Anorexic
 			@default_encoding = "utf-8"
 			@default_middleware = []
 		end
+
+		# sets the anorexic application logger
 		def set_logger log_file, copy_to_stdout = true
 			@logger = ::Logger.new(log_file)
 			if log_file != STDOUT && copy_to_stdout
@@ -158,12 +161,14 @@ module Anorexic
 			@logger
 		end
 
+		# adds a server (performs the action required by the listen method).
 		def add_server(port, params = {})
 			puts "WARNING: port aleady in use! excpect initialization to fail!" if (@servers.select { |s| s.port == port})[0]
 			@servers << @server_class.new(port, params)
 			@servers.last
 		end
 
+		# checks that the server array is not empty before trying to perform any actions on servers.
 		def check_server_array
 			if @servers.empty?
 				raise "ERROR: use `listen` first! must define a listening service before setting it's routes."
@@ -171,20 +176,24 @@ module Anorexic
 			true
 		end
 
+		# adds a route to the last server created
 		def add_route(path, config = {}, &block)
 			check_server_array
 			add_route_to_server @servers.last, path, config, &block
 		end
 
+		# adds a route to all existing servers
 		def add_shared_route(path, config = {}, &block)
 			check_server_array
 			@servers.each { |s| add_route_to_server(s, path, config, &block) }
 		end
 
+		# adds a route to a specific server
 		def add_route_to_server(server, path, config = {}, &block)
 			server.add_route path, config, &block
 		end
 
+		# starts the service
 		def start deamon = false, wait_for_load = 3
 			# attempt to name the process as Anorexic Services
 			$0="Anorexic Services"
@@ -211,6 +220,8 @@ module Anorexic
 			# return the application object (used when demonized).
 			self
 		end
+
+		# shuts all services down
 		def shutdown
 			@servers.each {|s| s.shutdown }
 		end
