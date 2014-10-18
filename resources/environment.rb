@@ -14,8 +14,8 @@ Root ||= Pathname.new(File.dirname(__FILE__)).expand_path
 # ensure development mode? (comment before production, environment dependent)
 ENV["RACK_ENV"] ||= "development"
 
-# save the process id (pid) to file
-IO.write Root.join('tmp','pid').to_s, Process.pid unless ENV["DYNO"] # heroku doesn't allow to write files.
+# save the process id (pid) to file - notice Heroku doesn't allow to write files.
+(IO.write Root.join('tmp','pid').to_s, Process.pid unless ENV["DYNO"]) rescue true
 
 # using bundler to load gems (including the anorexic gem)
 require 'bundler'
