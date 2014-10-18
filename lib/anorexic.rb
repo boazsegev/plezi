@@ -131,10 +131,15 @@ module Anorexic
 	class Application
 		include Singleton
 
-		attr_reader :logger, :servers
+		# gets the logger for the application - same as `Anorexic.logger`.
+		attr_reader :logger
+		# gets the servers array for the application - (all the servers created by the `listen` call).
+		attr_reader :servers
+		# sets/gets the class to be used for new servers (`listen` calls).
 		attr_accessor :server_class
 		# an array for middleware specs
 		attr_accessor :default_middleware
+
 		# gets/sets the default content type for the application
 		# attr_accessor :default_content_type
 
