@@ -18,10 +18,13 @@ module Anorexic
 		#
 		class ReEncoder
 
+			# creates a new ecoder object, which re-encodes the data sent by the client to the requested encoding.
 			def initialize app, encoding = "utf-8"
 				@encoding = encoding
 				@app = app
 			end
+
+			# the actual middleware method
 			def call env
 				# re-encode to utf-8, as it's all BINARY encoding at first
 				if @encoding
@@ -42,13 +45,16 @@ module Anorexic
 
 		# Middleware to report 404 not found errors or render the local 404.haml / 404.html file
 		class NotFound
+			# initializes a new middleware object
 			def initialize app, root = nil
 				@root = (root == false) || root || ::File.expand_path(File.join(Dir.pwd , 'public') )
 				@app = app
 			end
+			# the actual middleware method
 			def call env
 				@app.call(env) || file_not_found(env)
 			end
+			# returns the 404 error (file) if a 404 error occured.
 			def file_not_found env
 				########################
 				# 404 not found
@@ -76,10 +82,12 @@ module Anorexic
 
 		# Middleware to report internal errors or render the local 500.haml / 500.html file
 		class Exceptions
+			# initializes a new middleware object
 			def initialize app, root = nil
 				@root = (root == false) || root || ::File.expand_path(File.join(Dir.pwd , 'public') )
 				@app = app
 			end
+			# the actual middleware method
 			def call env
 				begin
 					@app.call env
@@ -87,6 +95,7 @@ module Anorexic
 					exception_thrown e, env
 				end
 			end
+			# returns the 500 error (file) response in case of exception
 			def exception_thrown e, env
 				if Anorexic.logger
 					Anorexic.logger.error e
@@ -120,11 +129,13 @@ module Anorexic
 		# This was written because the :index option in Rack::Static breaks the code.
 		# instead we deffer to Rack::File after some testing.
 		class ServeIndex
+			# initializes a new middleware object
 			def initialize app, root, index_file = 'index.html'
 				@index_name = index_file
 				@root = root
 				@app = app
 			end
+			# the actual middleware method - sends static files if they exist.
 			def call env
 				file_requested = env["PATH_INFO"].to_s.split('/')
 				unless file_requested.include? ".."

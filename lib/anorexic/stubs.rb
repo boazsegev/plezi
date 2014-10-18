@@ -6,12 +6,16 @@ module Anorexic
 			@targets = targets
 		end
 
+		# sends the write message to the targets
 		def write(*args, &block)
 			send_to_targets(:write, *args, &block)
 		end
+
+		# sends the close message to the targets
 		def close(*args, &block)
 			send_to_targets(:close, *args, &block)
 		end
+		# sends messages to the targets
 		def send_to_targets(sym, *args, &block)
 			ret = []
 			if block
@@ -21,7 +25,7 @@ module Anorexic
 			end
 			return *ret
 		end
-
+		# attempts to send any message to the targets.
 		def method_missing(sym, *args, &block)
 			send_to_targets sym, *args, &block
 		end
@@ -44,6 +48,7 @@ module Anorexic
 	#
 	class StubController
 
+		# every request that routes to this controller will create a new instance
 		def initialize
 		end
 

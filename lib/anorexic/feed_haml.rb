@@ -75,6 +75,7 @@ module Anorexic
 				end
 			end
 
+			# an inner method, used by `render` to find the location of the template or layout files.
 			def find_template template, type = "", extention = "haml"
 				# get all haml files in 'views' folder
 				Dir["#{(defined?( Root) ? Root : Pathname.new(Dir.pwd).expand_path).join('app', 'views').to_s}**/**/*.#{extention}"].each do |file|
@@ -83,6 +84,7 @@ module Anorexic
 				false
 			end
 
+			# an inner method, used by `render` to render the Haml into HTML, using the Haml::Engine and the relevant options.
 			def render_engine view, options
 				return false unless view
 				if options[:inline]

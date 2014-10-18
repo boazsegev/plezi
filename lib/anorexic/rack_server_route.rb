@@ -4,9 +4,18 @@ module Anorexic
 
 		#####
 		# this class holds the route and matching logic
+		# it is used internally and documentation is present for
+		# edge users.
 		class Route
-			# the Regexp 
+			# the Regexp that will be used to match the request
 			attr_reader :path
+
+			# the initialize method accepts a Regexp or a String and creates the path object.
+			#
+			# Regexp paths will be left unchanged
+			#
+			# a string can be either a simple string `"/users"` or a string with paramaters:
+			# `"/static/:required/(:optional)/(:optional_with_format){[\d]*}/:optional_2"`
 			def initialize path
 				@fill_paramaters = {}
 				if path.is_a? Regexp
@@ -67,6 +76,8 @@ module Anorexic
 				end	
 				return
 			end
+
+			# this performs the match and assigns the paramaters, if required.
 			def match path
 				m = @path.match path
 				return false unless m
