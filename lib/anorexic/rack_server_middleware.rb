@@ -49,9 +49,11 @@ module Anorexic
 			def initialize app, root = nil
 				@root = (root == false) || root || ::File.expand_path(File.join(Dir.pwd , 'public') )
 				@app = app
+				@original_path = false
 			end
 			# the actual middleware method
 			def call env
+				@original_path = env["PATH_INFO"].dup
 				@app.call(env) || file_not_found(env)
 			end
 			# returns the 404 error (file) if a 404 error occured.
@@ -59,6 +61,7 @@ module Anorexic
 				########################
 				# 404 not found
 				# routes finished. if we got all the way here, need to return a 404.
+				env["PATH_INFO"] = @original_path if @original_path
 
 				not_found = nil
 				unless @root == true

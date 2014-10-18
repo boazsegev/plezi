@@ -4,6 +4,8 @@
 
 Change log v.0.4.2
 
+**fix**: 404 error handler should now be immune to path rewrites (display originally requested path).
+
 **fix/template**: fixed for Heroku - Anorexic will not write the pid file if under Heroku Dyno (Heroku apps crash when trying to write data to files).
 
 ***
