@@ -25,7 +25,9 @@ module Anorexic
 	# each item is also an Array of [MiddlewareClass, arguments, to, use] to be placed in the `params[:middleware]` Array.
 	#
 	class WEBrickServer
+		# the actual raw server object
 		attr_reader :server
+		# the webrick routes
 		attr_reader :routes
 
 		# creates a new WEBRick server instance, used by the `listen` method.
