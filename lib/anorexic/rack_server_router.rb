@@ -4,6 +4,8 @@ module Anorexic
 
 		# the router - this is the actual application object for the RackServer
 		class Router
+			# gets/sets the array for the routes to be searched. it is better not to use this object directly.
+			# but rather add routes through the add_route method.
 			attr_accessor :routes
 			def initialize
 				@routes = []

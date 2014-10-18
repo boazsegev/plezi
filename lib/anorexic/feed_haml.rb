@@ -31,14 +31,13 @@ module Anorexic
 			# layout:: a layout template that has at least one `yield` statement where the template will be rendered.
 			# locals:: a Hash of local variables and their values. i.e. `locals: {a: 1}` .defaults to {}.
 			# locale:: the I18n locale for the render.
-			# raw:: will pass the content as is, no rendering. can be used with :inline. defaults to false.
+			# raw:: will pass the content as is, without rendering, to the Haml layout. can be used with :inline. defaults to false.
 			# inline:: will render the template inline. requires a String template. defaults to false.
 			#
 			# if template is a string, it will assume the string is an
 			# absolute path to a template file. it will NOT search for the template but might raise exceptions.
 			#
 			# returns false if the template or layout files cannot be found.
-			#
 			def render template, options = {}
 				# set basics
 				options[:locals] ||= {}

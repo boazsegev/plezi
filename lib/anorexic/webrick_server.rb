@@ -28,6 +28,7 @@ module Anorexic
 		attr_reader :server
 		attr_reader :routes
 
+		# creates a new WEBRick server instance, used by the `listen` method.
 		def initialize(port = 3000, params = {})
 			@routes = []
 			params[:server_params] ||= {}
@@ -65,6 +66,7 @@ module Anorexic
 			self
 		end
 
+		# adds a route to the WEBRick server instance, used by the `route` and `shared_route` methods.
 		def add_route path, config, &block
 			# add route to server
 			if config[:servlet]
@@ -87,13 +89,15 @@ module Anorexic
 			end
 		end
 
+		# starts the WEBrick service
 		def start
 			# start the server
 			@server.start
 		end
 
+		# shuts the WEBrick service down
 		def shutdown
-			# start the server
+			# stop the server
 			@server.shutdown
 		end
 	end

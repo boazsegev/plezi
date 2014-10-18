@@ -325,6 +325,7 @@ end
 # fix the Ruby Logger class (used by Anorexic) to fit Rack and WEBrick:
 # (Rack uses `write`, which Logger doesn't define)
 class ::Logger
+	# this is a naming fix in order to use the Logger class for logging in Rack.
 	alias_method :write, :<<
 end
 
