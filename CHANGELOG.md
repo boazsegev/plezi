@@ -4,6 +4,8 @@
 
 Change log v.0.4.2
 
+**error-detection**: Anorexic will check that the same port isn't used for to services and will return a warning. a `listen` call with `RackServer` will return an existing router object if a service is already assigned to the requested port.
+
 **notice!:** v.0.5.0 will break any code using the `listen :vhost => "foo.bar.com"` format. hosts and aliases will be restructured. 
 
 **fix**: 404 error handler should now be immune to path rewrites (displays originally requested path).

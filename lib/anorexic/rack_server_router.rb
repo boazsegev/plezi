@@ -9,6 +9,12 @@ module Anorexic
 				@routes = []
 			end
 
+			# do nothing - this will only be called by the system if the router was directly returned.
+			# (a double listen call to the same port)
+			def start
+				true
+			end
+
 			# the actual Rack handler - acts as Rack middleware
 			def call env
 				# set response object
@@ -55,6 +61,7 @@ module Anorexic
 				end
 				return_value
 			end
+
 			# adds a route to the router - used by the Anorexic framework.
 			def add_route path = "", controller = nil, &block
 				unless (controller && (controller.is_a?( Class ) || controller.is_a?( Proc ) ) ) || block || (controller == false)
@@ -65,6 +72,7 @@ module Anorexic
 					controller = self.class.make_magic controller
 				end
 				@routes << [Route.new(path), block || controller]
+				@routes.last
 			end
 
 			# tweeks the params and cookie's hash object to accept :symbols in addition to strings (similar to Rails but without ActiveSupport).

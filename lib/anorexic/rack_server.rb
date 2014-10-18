@@ -36,6 +36,19 @@ module Anorexic
 			@rack_handlers = params[:server] || self.class.default_server
 		end
 
+		# overrides the `Class.new` method to avoid double ports
+		def self.new *args
+			port = args[0] if args[0].is_a? Fixnum
+			port ||= args[0][:port] if args[0].is_a? Hash
+			raise "Requested port couldn't be found - couldn't create server." unless port
+			s = (Anorexic::Application.instance.servers.select {|s| s.port == port})[0]
+			if s
+				puts "WARNING: service already created for port #{port} - returning the existing router."
+				return s.router
+			end
+			super
+		end
+
 		# sets the default server
 		def self.default_server= def_serv
 			@@default_server = def_serv
@@ -60,7 +73,6 @@ module Anorexic
 		def add_route path, config, &block
 			# add route to server
 			@router.add_route path, config, &block
-			@router.routes.last
 		end
 
 		# starts the server - runs only once, on boot
