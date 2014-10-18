@@ -2,6 +2,12 @@
 
 ***
 
+Change log v.0.4.2
+
+**fix/template**: fixed for Heroku - Anorexic will not write the pid file if under Heroku Dyno (Heroku apps crash when trying to write data to files).
+
+***
+
 Change log v.0.4.1
 
 **template feature**: the I18n path detection (for paths `"/:locale/..."`) is now totally automated and limited to available locales (only if I18n gem is included in the gem file).
