@@ -154,14 +154,12 @@ module Anorexic
 						return false if available_methods.include?(:before) && before == false
 						got_from_action = false
 						if params && params["id"]
-							if (request.delete? || params["_method"].to_s.upcase == 'DELETE') && available_methods.include?(:delete) && !available_public_methods.include?(params["id"].to_sym)
-								got_from_action = delete
-							elsif request.get?
-								if params["id"].to_s[0] != "_" && available_public_methods.include?(params["id"].to_sym)
+							if params["id"].to_s[0] != "_" && available_public_methods.include?(params["id"].to_sym)
 									got_from_action = self.send params["id"].to_sym
-								elsif available_methods.include?(:show)
-									got_from_action = show
-								end
+							elsif (request.delete? || params["_method"].to_s.upcase == 'DELETE') && available_methods.include?(:delete) && !available_public_methods.include?(params["id"].to_sym)
+								got_from_action = delete
+							elsif request.get? && available_methods.include?(:show)
+								got_from_action = show
 							elsif (request.put? || request.post? ) && available_methods.include?(:update)
 								got_from_action = update
 							end

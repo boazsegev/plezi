@@ -2,6 +2,14 @@
 
 ***
 
+Change log v.0.4.3
+
+**fix**: an issue with the router was discovered, where non-RESTful Controller methods weren't called for POST, PUT or DELETE http requests. this issue is now fixed, so that non-RESTful methods will be attempted and will exclude ID's with the same value from being created...
+
+... in other words, it is now easier to create non-RESTful apps, should there be a need to do so.
+
+***
+
 Change log v.0.4.2
 
 **error-detection**: Anorexic will check that the same port isn't used for to services and will return a warning. a `listen` call with `RackServer` will return an existing router object if a service is already assigned to the requested port.
