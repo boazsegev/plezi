@@ -10,7 +10,7 @@ Gem::Specification.new do |spec|
   spec.email         = ["boaz@2be.co.il"]
   spec.summary       = %q{ A small, pure Ruby, web app DSL/framework... so small - it's anorexic! }
   spec.description   = %q{this is a small and barebones framework that allows easy set up for multi-threaded web services. It's the small alternative to the heavier Rails and Sinatra - It's so small, it's anorexic!}
-  spec.homepage      = "https://github.com/boazsegev/anorexic"
+  spec.homepage      = "http://boazsegev.github.io/anorexic/"
   spec.license       = "MIT"
 
   spec.files         = `git ls-files -z`.split("\x0")
