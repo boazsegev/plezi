@@ -42,7 +42,7 @@ module Anorexic
 
 			# handles any requests
 			def call(env)
-				@app(env) 
+				@app.call(env) 
 			end
 
 			# this method sets up the server's paramaters and creates the server Proc that will be passed to the rack server.
