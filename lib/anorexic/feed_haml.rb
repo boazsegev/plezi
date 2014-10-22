@@ -1,7 +1,7 @@
 require 'pathname'
 module Anorexic
 
-	# the module FeedHaml implements easy rendering for HAML templates.
+	# the module FeedHaml implements easy rendering for HAML templates into String objcts.
 	#
 	# this is NOT a default module. to use this module use:
 	#
