@@ -23,16 +23,20 @@ module Anorexic
 		attr_reader :port
 		# holds any paramaters used for the server
 		attr_reader :params
-		# holds the array of routs
-		attr_reader :router
+		# holds the hosts dictionary
+		attr_reader :hosts
+		# holds the active host
+		attr_reader :active_host
 		# holds the rack handler's name (defaults to 'thin')
 		attr_reader :rack_handlers
 
 		# this is called by the Anorexic framework to initialize the server and set it's parameters.
 		def initialize(port = 3000, params = {})
-			@server = nil
 			@port, @params = port, params
-			@router = Anorexic::AnoRack::Router.new
+			@hosts = {}
+			@active_host = Anorexic::AnoRack::RackHost.new params
+			@server = nil
+			@hosts[@params[:vhost] || :any] = @active_host
 			@rack_handlers = params[:server] || self.class.default_server
 		end
 
@@ -44,7 +48,7 @@ module Anorexic
 			s = (Anorexic::Application.instance.servers.select {|s| s.port == port})[0]
 			if s
 				puts "WARNING: service already created for port #{port} - returning the existing router."
-				return s.router
+				return @active_host
 			end
 			super
 		end
@@ -69,13 +73,31 @@ module Anorexic
 		# an optional block can be used instead of the controller:
 		def add_route path, controller, &block
 			# add route to server
-			@router.add_route path, controller, &block
+			@active_host.add_route path, controller, &block
+		end
+
+		def add_alias host_alias
+			raise "Cannot add an alias if no host is active" unless @active_host
+			@hosts[host_alias] = @hosts[@active_host]
+		end
+		def call env
+			if @hosts.is_a? Hash
+				if @hosts[env["SERVER_NAME"]]
+					@hosts[env["SERVER_NAME"]].call env
+				elsif @hosts[:any]
+					@hosts[:any].call env
+				else
+					return [404, {}, ["No server found for host name - error 404"]]	
+				end
+			else
+				@hosts.call env
+			end
 		end
 
 		# starts the server - runs only once, on boot
 		def start
 			options = make_server_paramaters
-			Rack::Handler.get(options.delete :server).run(options.delete(:app), options ) do |server|
+			Rack::Handler.get(options.delete :server).run(self, options ) do |server|
 				if defined?(Thin::Server) && server.is_a?(Thin::Server)
 					if options[:SSLEnable] && options[:SSLCertificate] && options[:SSLPrivateKey]
 						server.ssl = true
@@ -100,71 +122,26 @@ module Anorexic
 			options[:server_params] ||= {}
 
 			#######
-			# set up middleware array
-			options[:middleware] ||= []
-
-			options[:middleware].push *Anorexic.default_middleware
-
-			if options[:file_root]
-				options[:middleware].unshift [Anorexic::AnoRack::ServeIndex, options[:file_root]]
-			end
-
-			if options[:debug]
-				options[:middleware].unshift [Rack::ShowExceptions]
-			else
-				options[:middleware].unshift [Anorexic::AnoRack::Exceptions, options[:file_root]]
-			end
-
-			options[:middleware].unshift [Rack::ContentLength] unless options[:middleware].include? [Rack::ContentLength]
-			# will not be using this gem after all
-			# options[:middleware].unshift [Rack::UTF8Sanitizer] if ::Anorexic.default_encoding.to_s.downcase == 'utf-8'
-			options[:middleware].unshift [Anorexic::AnoRack::ReEncoder, ::Anorexic.default_encoding]
-
-			if Anorexic.logger
-				options[:middleware].unshift [Rack::CommonLogger, Anorexic.logger]
-			end
-			options[:middleware] << [Anorexic::AnoRack::NotFound, options[:file_root]]
-
-			#######
 			# set up server paramaters
-			if options[:vhost]
-				server_params[:Host] = options[:vhost]
-				server_params[:ServerAlias] = options[:s_alias]				
-			end
 			if options[:ssl_self]
 
-				if options[:vhost]
-					cert, rsa = Anorexic.create_self_signed_cert 1024, "CN=#{options[:vhost]}"
-				else
-					cert, rsa = Anorexic.create_self_signed_cert
-				end
+				hosts_names = "CN=#{WEBrick::Utils::getservername}"
+				hosts_names_list = @hosts.keys
+				hosts_names_list.delete :any
+				hosts_names_list.each_index {|i| hosts_names << ";#{i}.CN=#{hosts_names_list[i]}"}
+
+				cert, rsa = Anorexic.create_self_signed_cert
 				server_params[:SSLEnable] = true
 				server_params[:SSLVerifyClient] = OpenSSL::SSL::VERIFY_NONE
 				server_params[:SSLCertificate] = cert
 				server_params[:SSLPrivateKey] = rsa
-				server_params[:SSLCertName] = [ [ "CN",(options[:vhost] || WEBrick::Utils::getservername) ] ]
+				server_params[:SSLCertName] = [ [ "CN",(WEBrick::Utils::getservername) ] ]
 
 			elsif options[:ssl_cert] && options[:ssl_pkey]
 				server_params[:SSLEnable] = true
 				server_params[:SSLVerifyClient] = OpenSSL::SSL::VERIFY_NONE
 				server_params[:SSLCertificate] = options[:ssl_cert]
 				server_params[:SSLPrivateKey] = options[:ssl_pkey]
-			end
-
-			#######
-			# Builde the Rack server
-
-			# look at: http://rubydoc.info/github/rack/rack/master/Rack/Server
-			# also: http://rubydoc.info/github/rack/rack/file/SPEC
-			server_params[:app] = Rack::Builder.new(@router) do
-
-				options[:middleware].each do |middleware|
-					if middleware.is_a? Array
-						use *middleware
-					end
-					
-				end
-
 			end
 
 			server_params.update(options[:server_params])

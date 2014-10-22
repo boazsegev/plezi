@@ -16,6 +16,11 @@ module Anorexic
 			def start
 				true
 			end
+			# do nothing - this will only be called by the system if the router was directly returned.
+			# (a double listen call to the same port)
+			def shutdown
+				true
+			end
 
 			# the actual Rack handler - acts as Rack middleware
 			def call env

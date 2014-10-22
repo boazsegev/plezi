@@ -33,4 +33,4 @@ Dir.chdir working_dir
 
 first_server = Anorexic::Application.instance.servers[0]
 
-run first_server.make_server_paramaters[:app]
+run first_server
