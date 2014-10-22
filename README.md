@@ -100,6 +100,13 @@ Anorexic supports magic routes, in similar formats found in other systems, such 
 
 Anorexic assummes all simple string routes to be RESTful routes ( `"/user" == "/user/(:id)"` ).
 
+    require 'anorexic'
+    listen
+
+    # this route demos a route for listing/showing posts,
+    # with or without revision numbers or page-control....
+    route "/post/(:id)/(:revision){[\d]*}/(:page_number)", Anorexic::StubController
+
 Anorexic accepts Regexp routes as well as string and magic routes and defines a short cut for a catch-all route:
 
     require 'anorexic'
@@ -117,6 +124,37 @@ Anorexic accepts Regexp routes as well as string and magic routes and defines a 
     # this route catches everything else.
     route('*') { |request, response| response.body << "Gotcha!" }
 
+## Anorexic Virtual Hosts
+
+The Anorexic `listen` command can be used to create virtual hosts:
+
+    require 'anorexic'
+
+    # sets a virtuls host on localhost 1 (saving the server object to use it's port)
+    server = listen host: 'localhost'
+
+    route('/welcome') { |req, res| res.body << "Welcome to Localhost." }
+
+    # sets a virtuls host on admin.localhost1
+    # (using the same port creates a virtual host instead of a new service)
+    admin_host = listen server.port, host: '127.0.0.1'
+
+    route('/welcome') { |req, res| res.body << "Administrate Localhost." }
+
+    # sets a global router for the same service
+    # (for any host NOT localhost1 or admin.localhost1 )
+    listen server.port
+    route('/welcome') { |req, res| res.body << "Welcome to the global namespace" }
+
+    # virtual hosts support shared routes, just like real services
+    shared_route('/people') { |req, res| res.body << "we made this!" }
+
+    # it's possible to directly add routes to an "older" host, if you saved it.
+    # (this works also as live route adding)
+    admin_host.add_route('/secret') { |req, res| res.body << "Shhhh!" }
+
+    # shared routes can be catch-all (careful).
+    shared_route('*') { |req, res| res.body << "Gotcha!" }
 
 ## Anorexic Controller classes
 

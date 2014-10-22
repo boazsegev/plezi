@@ -24,9 +24,13 @@ module Anorexic
 			# holds the router object
 			attr_reader :router
 
+			# stub for the class to dress up as a server
+			attr_reader :port
+
 			# this is called by the Anorexic framework to initialize the server and set it's parameters.
 			def initialize(params = {})
 				@router = Anorexic::AnoRack::Router.new
+				@port = -1
 				make_service_app params
 			end
 
@@ -35,7 +39,7 @@ module Anorexic
 			# path:: the path for the route
 			# controller:: a Class representing the Controller or a Hash options for the default behaviour of the route.
 			#
-			def add_route path, controller, &block
+			def add_route path, controller = nil, &block
 				# add route to server
 				@router.add_route path, controller, &block
 			end

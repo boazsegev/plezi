@@ -2,6 +2,14 @@
 
 ***
 
+Change log v.0.5.0
+
+**feature:** Multiple (virtual) hosts on the same port are now available `listen port, host: 'foo', file_root: 'public/'`, each host holds it's own route stack, file_root and special paramaters (i.e. `:debug` etc'). greate for different namespaces (admin.foo.com, www.foo.com, etc').
+
+**fix**: Magic params have full featured Regex capabilities for the optional routes (`(:optional){(regex)|([7]{3})}`).
+
+***
+
 Change log v.0.4.3
 
 **notice!:** v.0.5.0 might break any code using the `listen :vhost => "foo.bar.com"` format. hosts and aliases will be restructured. 

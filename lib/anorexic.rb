@@ -100,7 +100,7 @@ Encoding.default_external = 'utf-8'
 #    # client requests: /1
 #    #  =>  Anorexic::StubController.new.show() # where params[:id] == 1
 #
-# to handle inline paramaters (/path/:id/:time), set the appropriate paramaters within the `before` method of the Conltroller.
+# it is possible to use "magic" routes (i.e. `/resource/:type/(:id)/(:date){/[0-9]{8}}/:foo`) , set the appropriate paramaters within the `before` method of the Conltroller.
 #
 # RackServer routes are handled in the order they are created. If overlapping routes exist, the first will execute first:
 #
@@ -169,7 +169,7 @@ module Anorexic
 
 		# adds a server (performs the action required by the listen method).
 		def add_server(port, params = {})
-			puts "WARNING: port aleady in use! excpect initialization to fail!" if (@servers.select { |s| s.port == port})[0]
+			puts "WARNING: port aleady in use!" if (@servers.select { |s| defined?(s.port) && s.port == port})[0]
 			@servers << @server_class.new(port, params)
 			@servers.last
 		end
@@ -337,6 +337,7 @@ end
 #
 # The different keys in the params hash control the server's behaviour, as follows:
 #
+# host:: sets a host for virtal hosts / namespaces. defaults to the global host (`:any`).
 # ssl_self:: sets an SSL server with a self assigned certificate (changes with every restart). defaults to false.
 # debug:: set's detailed exeption output, using Rack::ShowExceptions
 # server_params:: a hash of paramaters to be passed directly to the server - architecture dependent.

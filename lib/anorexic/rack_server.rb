@@ -36,7 +36,7 @@ module Anorexic
 			@hosts = {}
 			@active_host = Anorexic::AnoRack::RackHost.new params
 			@server = nil
-			@hosts[@params[:vhost] || :any] = @active_host
+			@hosts[@params[:host] || :any] = @active_host
 			@rack_handlers = params[:server] || self.class.default_server
 		end
 
@@ -45,12 +45,25 @@ module Anorexic
 			port = args[0] if args[0].is_a? Fixnum
 			port ||= args[0][:port] if args[0].is_a? Hash
 			raise "Requested port couldn't be found - couldn't create server." unless port
-			s = (Anorexic::Application.instance.servers.select {|s| s.port == port})[0]
-			if s
-				puts "WARNING: service already created for port #{port} - returning the existing router."
-				return @active_host
+			s = (Anorexic::Application.instance.servers.select {|s| s.is_a?(RackServer) && defined?(s.port) && s.port == port})[0]
+			return super *args unless s
+			listen_params = args[1] if args[1].is_a?(Hash)
+			listen_params ||= args[0] if args[0].is_a?(Hash)
+			listen_params ||= Hash.new
+			if listen_params[:host]
+				if s.hosts[ listen_params[:host] ]
+					puts "Virtual Host exists on #{ listen_params[:host] }, returning existing host (server specific paramaters will be ignored)."					
+				else
+					puts "Creating Virtual Host on #{ listen_params[:host] } - server specific paramaters will be ignored."
+					s.hosts[ listen_params[:host] ] = Anorexic::AnoRack::RackHost.new(listen_params)
+				end
+				return s.hosts[listen_params[:host]]
 			end
-			super
+			puts "WARNING: service already created for port #{port} - returning the global host."
+			unless s.hosts[:any]
+				s.hosts[:any] = Anorexic::AnoRack::RackHost.new(listen_params)
+			end
+			return s.hosts[:any]
 		end
 
 		# sets the default server

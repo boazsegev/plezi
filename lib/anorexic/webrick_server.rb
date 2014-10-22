@@ -53,6 +53,8 @@ module Anorexic
 				server_params[:DocumentRootOptions][:FancyIndexing] ||= options[:allow_indexing]
 			end
 
+			options[:vhost] ||= options[:host]
+
 			if options[:vhost]
 				server_params[:ServerName] = options[:vhost]
 				server_params[:ServerAlias] = options[:s_alias]

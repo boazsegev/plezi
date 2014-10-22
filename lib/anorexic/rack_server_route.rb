@@ -53,11 +53,11 @@ module Anorexic
 							 	@fill_paramaters[param_num += 1] = section.match(/^\(\:([\w]*)\)$/)[1]
 
 							# check for routes formatted: /(:paramater){options} - optional paramaters
-							elsif section.match /^\(\:([\w]*)\)\{([^\/\{\}]*)}$/
+							elsif section.match /^\(\:([\w]*)\)\{(.*)\}$/
 								#create a optional section catcher
-							 	@path << (  "(\/(" +  section.match(/^\(\:([\w]*)\)\{([^\/\{\}]*)}$/)[2] + "))?"  )
+							 	@path << (  "(\/(" +  section.match(/^\(\:([\w]*)\)\{(.*)\}$/)[2] + "))?"  )
 							 	# add paramater recognition value
-							 	@fill_paramaters[param_num += 1] = section.match(/^\(\:([\w]*)\)\{([^\/\{\}]*)}$/)[1]
+							 	@fill_paramaters[param_num += 1] = section.match(/^\(\:([\w]*)\)\{(.*)\}$/)[1]
 							 	param_num += 1 # we are using to spaces
 
 							else
