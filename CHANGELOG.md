@@ -4,6 +4,8 @@
 
 Change log v.0.4.3
 
+**notice!:** v.0.5.0 might break any code using the `listen :vhost => "foo.bar.com"` format. hosts and aliases will be restructured. 
+
 **fix**: an issue with the router was discovered, where non-RESTful Controller methods weren't called for POST, PUT or DELETE http requests. this issue is now fixed, so that non-RESTful methods will be attempted and will exclude ID's with the same value from being created...
 
 ... in other words, it is now easier to create non-RESTful apps, should there be a need to do so.
