@@ -5,6 +5,7 @@ require "anorexic/webrick_server.rb"
 require "anorexic/rack_server_middleware.rb"
 require "anorexic/rack_server_route.rb"
 require "anorexic/rack_server_router.rb"
+require "anorexic/rack_server_host.rb"
 require "anorexic/rack_server.rb"
 
 # require 'thin'
