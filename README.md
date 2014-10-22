@@ -126,7 +126,7 @@ Anorexic accepts Regexp routes as well as string and magic routes and defines a 
 
 ## Anorexic Virtual Hosts
 
-The Anorexic `listen` command can be used to create virtual hosts:
+The Anorexic `listen` command can be used to create virtual hosts for the same service, by supplying a port that is already assigned:
 
     require 'anorexic'
 
