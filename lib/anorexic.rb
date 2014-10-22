@@ -182,20 +182,20 @@ module Anorexic
 		end
 
 		# adds a route to the last server created
-		def add_route(path, config = {}, &block)
+		def add_route(path, controller = nil, &block)
 			check_server_array
-			add_route_to_server @servers.last, path, config, &block
+			add_route_to_server @servers.last, path, controller, &block
 		end
 
 		# adds a route to all existing servers
-		def add_shared_route(path, config = {}, &block)
+		def add_shared_route(path, controller = nil, &block)
 			check_server_array
-			@servers.each { |s| add_route_to_server(s, path, config, &block) }
+			@servers.each { |s| add_route_to_server(s, path, controller, &block) }
 		end
 
 		# adds a route to a specific server
-		def add_route_to_server(server, path, config = {}, &block)
-			server.add_route path, config, &block
+		def add_route_to_server(server, path, controller, &block)
+			server.add_route path, controller, &block
 		end
 
 		# starts the service

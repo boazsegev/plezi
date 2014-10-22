@@ -64,15 +64,12 @@ module Anorexic
 		# this is called by the Anorexic framework to add a route to the server
 		#
 		# path:: the path for the route
-		# config:: a Class representing the Controller or a Hash options for the default behaviour of the route.
+		# controller:: a Class representing the Controller or a Hash options for the default behaviour of the route.
 		#
-		# the current options for the config are:
-		#
-		# file_root:: sets a root folder to serve files. defaults to nil (no root).
-		# allow_indexing:: if a root folder is set, this sets th indexing option. defaults to false.
-		def add_route path, config, &block
+		# an optional block can be used instead of the controller:
+		def add_route path, controller, &block
 			# add route to server
-			@router.add_route path, config, &block
+			@router.add_route path, controller, &block
 		end
 
 		# starts the server - runs only once, on boot
