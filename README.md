@@ -218,7 +218,7 @@ Here's some food for thought - code similar to something actually used in the fr
 				true
 			end
 			def delete
-				"Mon Dieu! Mon français est mauvais!" if params[:locale] == :fr
+				return "Mon Dieu! Mon français est mauvais!" if params[:locale] == :fr
 				"did you try /#{params["id"]}/?_method=delete"
 			end
 		end
