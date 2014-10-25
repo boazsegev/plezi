@@ -2,6 +2,14 @@
 
 ***
 
+Change log v.0.5.1
+
+**pro-feature**: route's with Proc values are now unsafe (if value isn't `response` or `true`, the value will be passed on - might raise exceptions (error 500), but could be used for future streaming support.
+
+**pro-feature**: Controller return values are now unsafe (if value isn't a `String` or a `true`/`false`, the value will be passed on as is instead of the original response object - might raise exceptions (error 500), but could be used for future streaming support.
+
+***
+
 Change log v.0.5.0
 
 **feature:** Multiple (virtual) hosts on the same port are now available `listen port, host: 'foo', file_root: 'public/'`, each host holds it's own route stack, file_root and special paramaters (i.e. `:debug` etc'). greate for different namespaces (admin.foo.com, www.foo.com, etc').

@@ -59,7 +59,11 @@ module Anorexic
 						break if return_value = route[1].new(env, request, response)._route_path_to_methods_and_set_the_response_
 					elsif route[1].public_methods.include? :call
 						if return_value = route[1].call(request, response)
-							return_value = response.finish
+							if return_value.is_a?(Rack::Response)
+								return_value = return_value.finish
+							elsif return_value == true
+								return_value = response.finish
+							end
 							break 
 						end
 					elsif route[1] == false
@@ -179,8 +183,14 @@ module Anorexic
 							return false
 						end
 						return false if (available_methods.include?(:after) && after == false)
-						response.write got_from_action if got_from_action != true
-						response.finish
+						if got_from_action.is_a?(String)
+							response.write got_from_action
+							return response.finish
+						elsif got_from_action == true
+							return response.finish
+						else
+							return got_from_action
+						end
 					end
 				end
 				Object.const_set(new_class_name, ret)

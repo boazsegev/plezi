@@ -71,9 +71,9 @@ module Anorexic
 					options[:middleware].unshift [Anorexic::AnoRack::Exceptions, options[:file_root]]
 				end
 
+				# Should we use the Rack::ContentLength ? it might be better to move this to the controller...
 				options[:middleware].unshift [Rack::ContentLength] unless options[:middleware].include? [Rack::ContentLength]
-				# will not be using this gem after all
-				# options[:middleware].unshift [Rack::UTF8Sanitizer] if ::Anorexic.default_encoding.to_s.downcase == 'utf-8'
+
 				options[:middleware].unshift [Anorexic::AnoRack::ReEncoder, ::Anorexic.default_encoding]
 
 				if Anorexic.logger

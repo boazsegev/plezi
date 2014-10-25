@@ -158,7 +158,7 @@ The Anorexic `listen` command can be used to create virtual hosts for the same s
 
 ## Anorexic Controller classes
 
-One of the best things about the Anorexic is it's ability to take in any class as a controller class and route to the classes methods with special support for RESTful methods (index, show, save, update, delete, before and after):
+One of the best things about the Anorexic is it's ability to take in any class as a controller class and route to the classes methods with special support for RESTful methods (`index`, `show`, `save`, `update`, `delete`, `before` and `after`):
 
 		require 'pry'
 		require 'anorexic'
@@ -176,13 +176,15 @@ One of the best things about the Anorexic is it's ability to take in any class a
 				true
 			end
 			def delete
-				"did you try /#{params["id"]}/?_method=delete"
+				"did you try /#{params["id"]}/?_method=delete or does your server support a native DELETE method?"
 			end
 		end
 
 		listen
 		route "/users" , Controller
 		route "/" , Controller
+
+Returning a String will automatically add the string to the response before sending the response - which makes for cleaner code. It's also possible to send the response as it is (by returning true) or to create your own response (careful, you need to know what you're doing there...).
 
 Controllers can even be nested (order matters) or have advanced uses that are definitly worth exploring.
 
