@@ -3,12 +3,14 @@ module Anorexic
 	# the methods defined in this module will be injected into the Controller class passed to the MVC
 	# and will be available for the controller to use.
 	#
-	module ControllerMagic
+	module RackControllerMagic
 		module_function
 
 		public
 
-		# the ::env variable is the env passed over from the Raack server and contains lot's of almost parsed info.
+		# the ::env variable is the env passed over from the Rack server and contains lot's of almost parsed info.
+		#
+		# if a rack server isn't used, the `env` variable might be empty (or architecture dependent).
 		attr_reader :env
 		# the request object, class: Rack::Request.
 		attr_reader :request
@@ -16,16 +18,20 @@ module Anorexic
 		#
 		# there's a bit of magic access there - the params can be accessed using symbols as well as strings: params[:id] == params["id"]
 		attr_reader :params
-		# this is a magical hash representing the cookies hash set in the request variables
+		# this is a magical hash representing the cookies hash set in the request variables.
 		#
 		# the magic, you ask?
 		#
 		# the cookies hash is writable - calling `cookies[:new_cookie_name] = value` will set the cookie in the current response object.
+		#
+		# if a rack server isn't used, the `cookies` variable might be empty (or architecture dependent).
 		attr_reader :cookies
 		# a Rack::Response object, which sets the response to be sent.
 		attr_accessor :response
 		# the ::flash is a little bit of a magic hash that sets and reads temporary cookies.
 		# these cookies will live for one successful request to a Controller and will then be removed.
+		#
+		# if a rack server isn't used, the `flash` variable might be unusable (or architecture dependent).
 		attr_reader :flash
 
 		# this method does two things.

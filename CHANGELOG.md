@@ -4,9 +4,9 @@
 
 Change log v.0.5.1
 
-**pro-feature**: route's with Proc values are now unsafe (if value isn't `response` or `true`, the value will be passed on - might raise exceptions (error 500), but could be used for future streaming support.
+**pro-feature**: route's with Proc values are now unsafe (if value isn't `response` or `true`, the value will be passed on - might raise exceptions (error 500), but could be used for lazy content (careful - rack's lazy content might crash your server).
 
-**pro-feature**: Controller return values are now unsafe (if value isn't a `String` or a `true`/`false`, the value will be passed on as is instead of the original response object - might raise exceptions (error 500), but could be used for future streaming support.
+**pro-feature**: Controller return values are now unsafe (if value isn't a `String` or a `true`/`false`, the value will be passed on as is instead of the original response object - might raise exceptions (error 500), but could be used for lazy content (careful - rack's lazy content might crash your server).
 
 ***
 

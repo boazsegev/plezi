@@ -1,4 +1,3 @@
-
 module Anorexic
 
 	# require 'rack/utf8_sanitizer' # will not be using this after all
@@ -120,7 +119,7 @@ module Anorexic
 					end
 				elsif defined?(WEBrick::HTTPServer) &&  server.is_a?( WEBrick::HTTPServer)
 				else
-					Anorexic.logger.error "Could not start SSL service for this server class #{server.class}. not yet supported by Anorexic. SERVICE WILL BE UN-ENCRYPTED."
+					Anorexic.logger.error "Could not start SSL service for this server class #{server.class}. not yet supported by Anorexic. SERVICE MIGHT BE UN-ENCRYPTED." if options[:SSLEnable]
 				end
 			end
 		end

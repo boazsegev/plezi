@@ -115,7 +115,7 @@ module Anorexic
 				new_class_name = "AnorexicMegicRuntimeController_#{controller.name.gsub /[\:\-]/, '_'}"
 				return Module.const_get new_class_name if Module.const_defined? new_class_name
 				ret = Class.new(controller) do
-					include Anorexic::ControllerMagic
+					include Anorexic::RackControllerMagic
 
 					def initialize env, request, response
 						@env, @request, @params = env, request, request.params
