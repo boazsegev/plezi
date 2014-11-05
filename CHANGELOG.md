@@ -2,6 +2,24 @@
 
 ***
 
+Change log v.0.6.0
+
+**RACK SUPPORT DROPPED!**
+
+This version is a major re-write for the whole anorexic framework.
+
+Rack support is dropped in favor of a native server that will allow switching protocols and handler mid-stream...
+
+This re-write is a major step into the future. Anorexic is no longer an alternative to Rails or Sinatra - rather, it aspires to be an alternative to Node.js, with native support for websocket, callbacks and asynchronous responses.
+
+***
+
+Change log v.0.5.2
+
+**deprecation-notice**: Rack will not be supported on Anorexic v. 0.6.0 and above. Major code changes expected!
+
+***
+
 Change log v.0.5.1
 
 **pro-feature**: route's with Proc values are now unsafe (if value isn't `response` or `true`, the value will be passed on - might raise exceptions, but could be used for lazy content (careful - rack's lazy content might crash your service).

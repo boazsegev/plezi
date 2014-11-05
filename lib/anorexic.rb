@@ -204,6 +204,7 @@ module Anorexic
 			# attempt to name the process as Anorexic Services
 			$0="Anorexic Services"
 			Anorexic.logger.info "starting up Anorexic and waiting for load compleation (count to #{wait_for_load})." if @servers.length > 1
+			Anorexic.logger.warn("Deprecation Notice") {"\n\nDeprecation(!) - Rack will not be supported on Anorexic v. 0.6.0 and above.\nMajor code changes expected!\n\n"}
 			#start each of the services in their own thread.
 			@servers.each do |s|
 				@threads << Thread.new do
