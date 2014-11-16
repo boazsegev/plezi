@@ -2,7 +2,7 @@
 
 ***
 
-Change log v.0.6.0 -** WebSockets are here!**
+Change log v.0.6.0 - **WebSockets are here!**
 
 This version is a major re-write for the whole anorexic framework.
 
