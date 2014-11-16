@@ -1,4 +1,4 @@
-# Anorexic (framework\server) - a revelution in the making
+# Anorexic - a r/evolution
 [![Gem Version](https://badge.fury.io/rb/anorexic.svg)](http://badge.fury.io/rb/anorexic)
 [![Inline docs](http://inch-ci.org/github/boazsegev/anorexic.svg?branch=master)](http://inch-ci.org/github/boazsegev/anorexic)
 
@@ -6,7 +6,7 @@ People who are serious about their frameworks, should make their own servers...
 
 (if to para-phrase "People who are serious about their software, should make their own hardware.")
 
-## About Anorexic
+## About the Anorexic framework \ server
 
 A thin, lightweight, barebones, mutli-threaded Ruby alternative to Rack/Rails/Sintra.
 
