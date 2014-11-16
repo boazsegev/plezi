@@ -2,6 +2,10 @@
 
 Here we will list known issues and weather or not a solution is being persued.
 
+## Haml
+
+Haml doesn't play well with multiple concurrent requests... looking into that. Should we cache the templates (is it file access)?
+
 ## Assetes/Sass
 Anorexic/server/http_host ::
 

@@ -97,6 +97,9 @@ if defined? Haml
 		end
 	end
 
+	# set some options
+	Haml::Options.defaults[:format] = :html5
+
 
 end
 

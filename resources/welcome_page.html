@@ -81,24 +81,15 @@
 Welcome to the amazing world of <a href='https://github.com/boazsegev/anorexic'>Anorexic</a> - an agnostic Ruby framework that's hungry to eat up your code.
 </p>
 <p>
-The <a href='https://github.com/boazsegev/anorexic'>Anorexic</a> framework can even serve multiple services (ports), which is great for having some routes work only on SSL <span style='font-size:0.9em'>(*disclaimer, not all Rack servers SSL setting are supported. Thin and WEBrick are)</span>:
+The <a href='https://github.com/boazsegev/anorexic'>Anorexic</a> framework can even serve multiple services (ports), which is great for having some routes work only on SSL <span style='font-size:0.9em'>(*disclaimer, SSL service has issues and only works with certificates. SSL is still being worked on)</span>:
 </p>
-<pre><code>    require 'anorexic'
-
-    listen 3000 
-    route('/') { |request, response| response.body &lt;&lt; "Hello World from 3000!" }
-
-    listen 8080, ssl_self: true
-    route('/') { |request, response| response.body &lt;&lt; "SSL Hello World from 8080!" }
-
-    shared_route('/people') { |request, response| response.body &lt;&lt; "Hello People!" }
+<pre><code>     require 'anorexic'
+    listen
+    route(/.?/) { |request, response| response &lt;&lt; "Hello World!" }
 </code></pre>
 <p>
 <a href='https://github.com/boazsegev/anorexic'>Anorexic</a> is thin, light and built for lego-block world of open-source. If you want to learn more, <a href='http://rubydoc.info/gems/anorexic/frames'>read the documentation</a>. We actually tried to write some for you to enjoy...
 </p>
-
-</p>
-
 <h2>Building with Gems</h2>
 <p>
 	The <b>first</b> think you should do, is open your Gemfile and decide which gems you want to put in.
@@ -122,11 +113,11 @@ Since <a href='https://github.com/boazsegev/anorexic'>Anorexic</a> uses the Anor
 <pre><code>    require 'anorexic'
     listen
     # this route declines to answer
-    route('/') { |req, res| res.body &lt;&lt; "I Give Up!"; false }
+    route('/') { |req, res| res &lt;&lt; "I Give Up!"; false }
     # this route wins
-    route('/') { |req, res| res.body &lt;&lt; "I Win!" }
+    route('/') { |req, res| res &lt;&lt; "I Win!" }
     # this route never sees the light of day
-    route('/') { |request, response| response.body &lt;&lt; "Help Me!" }
+    route('/') { |request, response| response &lt;&lt; "Help Me!" }
 </code></pre>
 <p>
 	 <a href='https://github.com/boazsegev/anorexic'>Anorexic</a> accepts Regexp routes and defines a short cut for a catch-all route:
@@ -135,31 +126,31 @@ Since <a href='https://github.com/boazsegev/anorexic'>Anorexic</a> uses the Anor
     listen
 
     # this route accepts paths that start with a number (i.e.: /nonumber)
-    route(/^\/[\d]+[\D]+/) { |req, res| res.body &lt;&lt; "Give me more numbers :)" }
+    route(/^\/[\d]+[\D]+/) { |req, res| res &lt;&lt; "Give me more numbers :)" }
 
     # this route accepts paths that are just numbers (i.e.: /87652)
-    route(/^\/[\d]+$/) { |req, res| res.body &lt;&lt; "I Love Numbers!" }
+    route(/^\/[\d]+$/) { |req, res| res &lt;&lt; "I Love Numbers!" }
 
     # this route accepts paths that don't have any number (i.e.: /nonumber)
-    route(/^\/[\D]+$/) { |req, res| res.body &lt;&lt; "Where're my numbers :(" }
+    route(/^\/[\D]+$/) { |req, res| res &lt;&lt; "Where're my numbers :(" }
 
     # this route catches everything else.
-    route('*') { |request, response| response.body &lt;&lt; "Gotcha!" }
+    route('*') { |request, response| response &lt;&lt; "Gotcha!" }
 </code></pre>
 
 <h2>Controllers</h2>
 <p>
-Controllers are `special` classes.
+Controllers are 'special' classes.
 </p>
 <p>
-In fact, Controllers are so special, they are the reason the Anorexic project started - to build light efficient controllers that can replace the heavy core experienced while using Rails or Sinatra based frameworks.
+In fact, Controllers are so special, they are one of the reasons the Anorexic project started - to build light efficient controllers that can handle WebSockets as well as HTTP requests.
 </p>
 <p>
 Although Controllers can be any class, they have a lot of advantages over defining routes using blocks of code. look at this:
 </p>
 <pre><code>    require 'anorexic'
     listen
-    route "/", Anorexic::StubController
+    route "/", Anorexic::StubRESTCtrl
 </code></pre>
 <p>
 Building our own controller is as easy as defining a class:

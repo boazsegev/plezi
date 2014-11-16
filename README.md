@@ -52,7 +52,7 @@ this example is basic, useless, but required for every doc out there...
 
 		require 'anorexic'
 		listen
-		route(/.?/) { |req, res| res.body << "Hello World!" }
+		route(/.?/) { |req, res| res << "Hello World!" }
 
 After you exited irb, the Anorexic server started up. go to http://localhost:3000/ and see it run :)
 
@@ -195,7 +195,7 @@ Here's some food for thought - code similar to something actually used in the fr
     # (calculator)
     route /^\/[\d\+\-\*\/\(\)\.]+$/ do |request, response|
         message = (request.params[:locale] == 'fr') ? "La solution est" : "My Answer is"
-        response.body << "#{message}: #{eval(request.path[1..-1])}"
+        response << "#{message}: #{eval(request.path[1..-1])}"
     end
 
     route "/users" , Controller
