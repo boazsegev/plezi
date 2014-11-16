@@ -1,4 +1,6 @@
-# Anorexic(framework-server) - a revelution in the making
+# Anorexic (framework\server) - a revelution in the making
+[![Gem Version](https://badge.fury.io/rb/anorexic.svg)](http://badge.fury.io/rb/anorexic)
+[![Inline docs](http://inch-ci.org/github/boazsegev/anorexic.svg?branch=master)](http://inch-ci.org/github/boazsegev/anorexic)
 
 People who are serious about their frameworks, should make their own servers...
 
@@ -6,11 +8,11 @@ People who are serious about their frameworks, should make their own servers...
 
 ## About Anorexic
 
-This is an Asynchronous Web Server/Framework that is a Rack/Rails/Sintra alternative all in one.
+A thin, lightweight, barebones, mutli-threaded Ruby alternative to Rack/Rails/Sintra.
 
-Anorexic contains an object-oriented server, divided into parts that can be changed/updated and removed easily. The Anorexic framework runs HTTP and WeSockets, but could as easily be extended to run SMTP, SPDY or any other Protocol (including custom made protocols).
+Anorexic contains an object-oriented server, divided into parts that can be changed/updated and removed easily and dynamically. The Anorexic framework runs HTTP and WeSockets, but could as easily be extended to run SMTP, SPDY or any other Protocol (including custom made protocols).
 
-This will allow - much like Node.js, native WebSocket support (and, if you would like to write your own Protocol or Handler, native SMPT or any other custom protocol you might wish to implement).
+This allows - much like Node.js - native WebSocket support (and, if you would like to write your own Protocol or Handler, native SMPT or any other custom protocol you might wish to implement).
 
 ## Installation
 
@@ -34,7 +36,7 @@ That's it, now you have a ready to use basic web server (with some demo code), j
     $ cd appname
     $ ./appname.rb # ( or: anorexic s )
 
-now go, in your browser, to: http://localhost:3000/
+now go, in your browser, to: [http://localhost:3000/](http://localhost:3000/)
 
 the default first port for the app is 3000. you can set the first port to listen to by using the `-p ` option (make sure you have permissions for the requested port):
 
@@ -70,8 +72,8 @@ Anorexic assummes all simple string routes to be RESTful routes ( `"/user" == "/
 
 now visit:
 
-* http://localhost:3000/post/12/1.3/1
-* http://localhost:3000/post/12/1
+* [http://localhost:3000/post/12/1.3/1](http://localhost:3000/post/12/1.3/1)
+* [http://localhost:3000/post/12/1](http://localhost:3000/post/12/1)
 
 **please see the `route` documentation for more information on routes**.
 
@@ -202,12 +204,12 @@ Here's some food for thought - code similar to something actually used in the fr
 
 try:
 
-* http://localhost:3000/
-* http://localhost:3000/fr
-* http://localhost:3000/users/hello
-* http://localhost:3000/(5+5*20-15)/9
-* (http://localhost:3000/fr/(5+5*20-15)/9)
-* (http://localhost:3000/users/hello?_method=delete)
+* [http://localhost:3000/](http://localhost:3000/)
+* [http://localhost:3000/fr](http://localhost:3000/fr)
+* [http://localhost:3000/users/hello](http://localhost:3000/users/hello)
+* [http://localhost:3000/(5+5*20-15)/9](http://localhost:3000/(5+5*20-15)/9)
+* [http://localhost:3000/fr/(5+5*20-15)/9](http://localhost:3000/fr/(5+5*20-15)/9)
+* [http://localhost:3000/users/hello?_method=delete](http://localhost:3000/users/hello?_method=delete)
 
 ## Anorexic Helpers and Logging
 
