@@ -12,7 +12,7 @@ if defined? Haml
 
 	# take a template string or symbol and format it into a file name
 	def parse_template_to_name template, sub_type = nil, extention = "haml"
-		(defined?(Root) ? Root : Pathname.new(Dir.pwd).expand_path).join('app', 'views', *template.to_s.split('_')) + (sub_type ? ".#{sub_type}" : '') + ".#{extention}"
+		(defined?(Root) ? Root : Pathname.new(Dir.pwd).expand_path).join('app', 'views', *template.to_s.split('_')).to_s + (sub_type ? ".#{sub_type}" : '') + ".#{extention}"
 	end
 
 	# returns a string representing the rendered Haml template given, after searching for it in the `app/views` folder.
