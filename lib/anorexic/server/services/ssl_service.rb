@@ -2,11 +2,11 @@ module Anorexic
 
 # test connections with: openssl s_client -connect localhost:3000
 
-	# this class is a basic TCP socket service.
+	# this class is a basic TCP socket service with SSL.
 	#
 	# a protocol should be assigned, or the service will fall back to an echo service.
 	#
-	# to-do: fix logging, fix reading (reads only oneline at a time...)
+	# to-do: fix self certificate issue (fails).
 	class SSLService < BasicService
 
 		# create a listener (io) - will create an SSLServer socket
@@ -69,7 +69,7 @@ module Anorexic
 
 		#closes the connection
 		def _close
-			ssl_socket.flush
+			ssl_socket.flush rescue true
 			ssl_socket.close
 		end
 

@@ -5,8 +5,17 @@
 # the methods are added to the top level, so that they are accessible
 # within any controller and within the Haml files themselves.
 if defined? Haml
-	
-	# returns a string representing th rendered Haml template given, after searching for it in the `app/views` folder.
+
+
+	# set some options
+	Haml::Options.defaults[:format] = :html5
+
+	# take a template string or symbol and format it into a file name
+	def parse_template_to_name template, sub_type = nil, extention = "haml"
+		(defined?(Root) ? Root : Pathname.new(Dir.pwd).expand_path).join('app', 'views', *template.to_s.split('_')) + (sub_type ? ".#{sub_type}" : '') + ".#{extention}"
+	end
+
+	# returns a string representing the rendered Haml template given, after searching for it in the `app/views` folder.
 	#
 	# for example, to render the file `body.html.haml` with the layout `main_layout.html.haml`:
 	#   render :body, layout: :main_layout => "<html><body></body></html>"
@@ -31,76 +40,44 @@ if defined? Haml
 		options[:locals] ||= {}
 		options[:type] ||= "html"
 		I18n.locale = options[:locale] if defined?(I18n) && options[:locale]
-		# find and open template
+		# find template
 		view = nil
 		if template.is_a? Symbol
-			view = find_template template, options[:type]
+			view = parse_template_to_name template, options[:type]
+			raise "Cannot fine template file #{view}" unless Anorexic.file_exists? view
 		elsif template.is_a? String
 			view = template
 		end
 		return false unless view
 
-		# render using HAML
-		if options[:layout]
-			# find layout
-			if options[:layout].is_a? Symbol
-				layout = find_template options[:layout], options[:type]
-				return false unless File.exists? layout
-				layout = IO.read layout
-			elsif options[:layout].is_a? String
-				layout = options[:layout] 
-			end
-			return false unless layout
-
-			# render
-			view = render_engine view, options unless options[:raw]
-			return false unless view
-			return Haml::Engine.new( layout ).render(self, options[:locals]) {  view }
-		else
-			return render_engine view, options unless options[:raw]
-			view
-		end
-	end
-
-	# an inner method, used by `render` to find the location of the template or layout files.
-	#
-	# template:: the name of the template (base file name).
-	# type:: template type (HTML/XML etc').
-	# extention:: template extention (defaulte to: haml).
-	def find_template template, type = "", extention = "haml", root = (defined?(Root) ? Root : Pathname.new(Dir.pwd).expand_path)
-		# get all haml files in 'views' folder
-		Dir["#{root.join('app', 'views').to_s}**/**/*.#{extention}"].each do |file|
-			return file if file.split(/[\\\/]/).last[0..(0-2-extention.length)].include?(template.to_s + "." + type)
-		end
-		false
-	end
-
-	# an inner method, used by `render` to render the Haml into HTML, using the Haml::Engine and the relevant options.
-	#
-	# view:: the haml text/file to be rendered (assumes file exists).
-	# options:: specific options related to the render mode.
-	def render_engine view, options
-		return false unless view
+		# load and render template file, if relevant
 		if options[:inline]
-			if options[:raw]
-				view
-			else
-				Haml::Engine.new(view).render self, options[:locals]
-			end
+			view = Haml::Engine.new(view).render self, options[:locals] unless options[:raw]
 		else
 			if options[:raw]
-				IO.read view
+				view = Anorexic.load_file view
 			else
-				return false unless File.exists? view
-				Haml::Engine.new(IO.read view).render self, options[:locals]
+				view = Haml::Engine.new(Anorexic.load_file view).render self, options[:locals]
 			end
 		end
+		return false unless view
+		return view unless options[:layout]
+
+		#render layout, if relevant
+
+		# find layout
+		if options[:layout].is_a? Symbol
+			layout = parse_template_to_name options[:layout], options[:type]
+			raise "Cannot fine layout file #{layout}" unless Anorexic.file_exists? layout
+			layout = Anorexic.load_file layout
+		elsif options[:layout].is_a? String
+			layout = options[:layout] 
+		end
+		return false unless layout
+
+		# render
+		return Haml::Engine.new( layout ).render(self, options[:locals]) {  view }
 	end
-
-	# set some options
-	Haml::Options.defaults[:format] = :html5
-
-
 end
 
 # still working on ActiveView stand alone...

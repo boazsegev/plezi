@@ -130,7 +130,7 @@ module Anorexic
 		end
 	end
 
-	# creates an asynchronous call to a method, with an optional callback:
+	# Public API. creates an asynchronous call to a method, with an optional callback:
 	# demo use:
 	# `callback( Kernel, :sleep, 1 ) { puts "this is a demo" }`
 	# callback sets an asynchronous method call with a callback.
@@ -153,7 +153,7 @@ module Anorexic
 		push_event object.method(method), *args, &block
 	end
 
-	# adds a callback to be called once the services were shut down. see: callback for more info.
+	# Public API. adds a callback to be called once the services were shut down. see: callback for more info.
 	def on_shutdown object=nil, method=nil, *args, &block
 		if block && !object && !method
 			LOCKER.synchronize {SHUTDOWN_CALLBACKS << [block, args]}
@@ -164,7 +164,7 @@ module Anorexic
 		end
 	end
 
-	# pulls an event from the event's stack and processes it.
+	# Anorexic Engine, DO NOT CALL. pulls an event from the event's stack and processes it.
 	def fire_event
 		event = LOCKER.synchronize {EVENTS.shift}
 		return false unless event
@@ -177,7 +177,7 @@ module Anorexic
 		true
 	end
 
-	# creates the thread pool and starts cycling through the events.
+	# Anorexic Engine, DO NOT CALL. creates the thread pool and starts cycling through the events.
 	def start_services
 		# prepare threads
 		exit_flag = false
@@ -225,7 +225,7 @@ module Anorexic
 		0
 	end
 
-	# runs one thread cycle
+	# Anorexic Engine, DO NOT CALL. runs one thread cycle
 	def self.thread_cycle flag = 0
 		@flags[flag].synchronize { fire_event } if @flags
 		return true if events?
@@ -281,7 +281,7 @@ module Anorexic
 		true
 	end
 
-	# stops all services - active connection will remain open until completion.
+	# Anorexic Engine, DO NOT CALL. stops all services - active connection will remain open until completion.
 	def stop_services
 		log 'stopping services'
 		S_LOCKER.synchronize {SERVICES.each {|s| s.close rescue true}; SERVICES.clear }
@@ -289,13 +289,13 @@ module Anorexic
 
 	CONNECTIONS = []
 
-	# disconnectes all active connections
+	# Anorexic Engine, DO NOT CALL. disconnectes all active connections
 	def stop_connections
 		log 'stopping connections'
 		S_LOCKER.synchronize {CONNECTIONS.each {|c| callback c, :on_disconnect unless c.disconnected?} ; CONNECTIONS.clear}
 	end
 
-	# adds a new connection to the connection stack
+	# Anorexic Engine, DO NOT CALL. adds a new connection to the connection stack
 	def add_connection io, params
 		S_LOCKER.synchronize {CONNECTIONS << params[:service_type].new(io, params)}
 	end
@@ -304,6 +304,8 @@ module Anorexic
 		S_LOCKER.synchronize {CONNECTIONS.delete connection}
 	end
 
+	# Anorexic Engine, DO NOT CALL. itirates the connections and creates reading events.
+	# returns false if there are no connections.
 	def fire_connections
 		# it might be cool to add a GC.start here...?
 		S_LOCKER.synchronize { SERVICES.delete_if { |s| s.closed? }; CONNECTIONS.each{|c| callback c, :on_message} }

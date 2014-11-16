@@ -73,7 +73,7 @@ module Anorexic
 			# set headers
 			content_disposition = "attachment"
 
-			options[:type] ||= MIME_DICTIONARY[::File.extname(options[:filename])] if options[:filename]
+			options[:type] ||= MimeTypeHelper::MIME_DICTIONARY[::File.extname(options[:filename])] if options[:filename]
 
 			if options[:type]
 				response["content-type"] = options[:type]
@@ -150,7 +150,7 @@ module Anorexic
 
 		# this method handles the protocol and handler transition between the HTTP connection
 		# (with a protocol instance of HTTPProtocol and a handler instance of HTTPRouter)
-		# and the WebSockets protocol
+		# and the WebSockets connection
 		# (with a protocol instance of WSProtocol and an instance of the Controller class set as a handler)
 		def pre_connect
 			# call the controller's original method, if exists.

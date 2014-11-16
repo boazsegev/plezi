@@ -1,5 +1,7 @@
 # encoding: UTF-8
 
+
+
 module Anorexic
 
 	# includes general helper methods for HTTP protocol and related (url encoding etc')

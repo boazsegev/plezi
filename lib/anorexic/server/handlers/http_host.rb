@@ -88,43 +88,37 @@ module Anorexic
 			else
 				source_file = IO.read source_file
 			end
-			return true if render_asset(request, target_file, source_file)
-			false
+			render_asset(request, target_file, source_file)
 		end
 
 		def asset_needs_render? source_file, target_file
-			return true unless File.exists?(target_file)
+			return true unless Anorexic.file_exists?(target_file)
 			raise 'asset verification failed - no such file?!' unless File.exists?(source_file)
-			File.mtime(source_file) > File.mtime(target_file)
+			File.mtime(source_file) > Anorexic.file_mtime(target_file)
 		end
 
 		def force_sass_refresh? source_file, target_file
-			return false unless File.exists?(source_file) && File.exists?(target_file) && defined?(::Sass)
+			return false unless File.exists?(source_file) && Anorexic.file_exists?(target_file) && defined?(::Sass)
 			Sass::Engine.for_file(source_file, cache_store: @sass_cache).dependencies.each {|e| return true if File.exists?(e.options[:filename]) && (File.mtime(e.options[:filename]) > File.mtime(target_file))} # fn = File.join( e.options[:load_paths][0].root, e.options[:filename]) 
 			false
 		end
 
 		# returns true if data was send
 		#
-		# returns false if the data was not sent (only saved to disk).
+		# always returns false (data wasn't sent, only saved to disk).
 		def render_asset request, target, data
-			begin
-				IO.write target, data
-			rescue Exception => e
-				# send_raw_data request, data, MIME_DICTIONARY[File.extname(target)]
-				Anorexic.warn "Performance Hit: assets are send dynamically for every request. fix this by pre-rendering the assets before serving them from this write protected system."
-				return true
-			end
-			return false
+			Anorexic.save_file(target, data)
+			false
 		end
 
+		# sends a response for an error code, rendering the relevent file (if exists).
 		def send_by_code request, code, headers = {}
 			begin
 				if params[:root]
-					if defined?(::Haml) && File.exists?(File.join(params[:root], "#{code}.haml"))
-						return send_raw_data request, Haml::Engine.new(IO.read File.join(params[:root], "#{code}.haml")).render( self, request: request), 'text/html', code, headers
-					elsif defined?(::ERB) && File.exists?(File.join(params[:root], "#{code}.erb"))
-						return send_raw_data request, ERB.new(IO.read(File.join(params[:root], "#{code}.erb"))).result(binding), 'text/html', code, headers
+					if defined?(::Haml) && Anorexic.file_exists?(File.join(params[:root], "#{code}.haml"))
+						return send_raw_data request, Haml::Engine.new( Anorexic.load_file( File.join( params[:root], "#{code}.haml" ) ) ).render( self, request: request), 'text/html', code, headers
+					elsif defined?(::ERB) && Anorexic.file_exists?(File.join(params[:root], "#{code}.erb"))
+						return send_raw_data request, ERB.new( Anorexic.load_file( File.join(params[:root], "#{code}.erb") ) ).result(binding), 'text/html', code, headers
 					elsif send_file(request, File.join(params[:root], "#{code}.html"), code, headers)
 						return true
 					end
@@ -148,8 +142,8 @@ module Anorexic
 		end
 
 		def send_file request, filename, status_code = 200, headers = {}
-			if File.exists?(filename) && !::File.directory?(filename)
-				return send_raw_data request, IO.read(filename), MIME_DICTIONARY[::File.extname(filename)], status_code, headers
+			if Anorexic.file_exists?(filename) && !::File.directory?(filename)
+				return send_raw_data request, Anorexic.load_file(filename), MimeTypeHelper::MIME_DICTIONARY[::File.extname(filename)], status_code, headers
 			end
 			return false
 		end
