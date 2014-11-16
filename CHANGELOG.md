@@ -2,15 +2,15 @@
 
 ***
 
-Change log v.0.6.0
-
-**RACK SUPPORT DROPPED!**
+Change log v.0.6.0 -** WebSockets are here!**
 
 This version is a major re-write for the whole anorexic framework.
 
-Rack support is dropped in favor of a native server that will allow switching protocols and handler mid-stream...
+**RACK SUPPORT DROPPED!**
 
-This re-write is a major step into the future. Anorexic is no longer an alternative to Rails or Sinatra - rather, it aspires to be an alternative to Node.js, with native support for websocket, callbacks and asynchronous responses.
+Rack support is dropped in favor of a native server that allowa protocol switching mid-stream...
+
+This re-write is a major step into the future. Anorexic is no longer an alternative to Rails or Sinatra - rather, it aspires to be an alternative to Rack and Node.js, with native support for websocket, callbacks and asynchronous responses.
 
 ***
 
