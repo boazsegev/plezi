@@ -4,17 +4,17 @@ Here we will list known issues and weather or not a solution is being persued.
 
 ## Haml
 
-Haml doesn't play well with multiple concurrent requests... looking into that. Should we cache the templates (is it file access)?
+Haml doesn't play well with multiple concurrent requests... looking into that. caching templates did not solve the issue (not file access).
 
-## Assetes/Sass
-Anorexic/server/http_host ::
+## Benchmarks hang for chuncked data and missing mimetypes?
 
-Sass assets refresh takes more resources then expected. the memory usage is unexplained.
-Maybe the Assets system should be revisited, maybe a bug with the Sass Engine...?
+the Apache benchmark hangs some requests, when chuncked data and missing mimetypes are introduced...
 
-at the moment, Sass refresh will only observe the root Sass file and ignore any included files.
+is this a server or benchmark error?
 
-observing the root file (without the included files) is done using mtime with Anorexic and doesn't cause noticable delays.
+## Assetes
+
+non-cachable assests (images etc') fail with 404 instead of being rendered from the file itself.
 
 ## Assetes/WSProtocol (WebSockets)
 

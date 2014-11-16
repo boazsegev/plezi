@@ -151,7 +151,7 @@ module Anorexic
 				end
 			end
 			body.close if body.methods.include?(:close)
-			@body = []
+			@body.is_a?(Array) ? @body.clear : ( @body = [] )
 		end
 
 		# sends the response and flags the response as complete. future data should not be sent. the flag will only be enforced be the Anorexic router. your code might attempt sending data (which would probbaly be ignored by the client or raise an exception).
