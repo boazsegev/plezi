@@ -13,19 +13,19 @@ require 'irb'
 #		if defined? BUILDING_ANOREXIC_TEMPLATE
 #			class AppTemplate
 #				alias :my_new_gem_old_init :initialize
-#				def initialize(appname = ARGV[1])
+#				def initialize
 #					# start with the old initialize, to set the template up
 #					my_new_gem_old_init appname
 #					# add your gem to the gemfile
-#					@gemfile_template << "\n# feed GEMNAME to anorexic"
-#					@gemfile_template << "\ngem 'GEMNAME'"
+#					app_tree["Gemfile"] << "\n# feed GEMNAME to anorexic"
+#					app_tree["Gemfile"] << "\ngem 'GEMNAME'"
 #					# make sure your folder exists, but don't overwrite!!!
 #					# if you overwrite!!! you might destroy other gems additions.
 #					app_tree["lib"] ||= {}
 #					app_tree["MY_SPECIAL_GEM"] ||= {}
 #					# once your folder exists, create your file
-#					app_tree["lib]["MY_SPECIAL_GEM"]["filename.rb"] = "data"
-#					app_tree["file_without_folder"] ||= "data"
+#					app_tree["lib]["MY_SPECIAL_GEM"]["filename.rb"] = "# code goes here..."
+#					app_tree["file_without_folder.rb"] ||= "# more code goes here..."
 #				end
 #			end
 #		end
@@ -44,9 +44,9 @@ class AppTemplate
 		app_tree["Procfile"] << "\nweb: bundle exec ./#{ARGV[1]}.rb -p $PORT\n"
 		app_tree["Gemfile"] ||= IO.read ::File.expand_path(File.join("..", "..", "resources" ,"Gemfile"),  __FILE__)
 
-		#set up the extras folder, to be filled with future goodies.
-		app_tree["extras"] ||= {}
-		app_tree["extras"]["config.ru"] ||= IO.read ::File.expand_path(File.join("..", "..", "resources" ,"config.ru"),  __FILE__)
+		# #set up the extras folder, to be filled with future goodies.
+		# app_tree["extras"] ||= {}
+		# app_tree["extras"]["config.ru"] ||= IO.read ::File.expand_path(File.join("..", "..", "resources" ,"config.ru"),  __FILE__)
 
 		#set up database stub folders
 		app_tree["db"] ||= {}
@@ -61,7 +61,6 @@ class AppTemplate
 		app_tree["config"]["db_config.rb"] = IO.read(::File.expand_path(File.join("..", "..", "resources" ,"db_config.rb"),  __FILE__))
 		app_tree["config"]["haml_config.rb"] = IO.read(::File.expand_path(File.join("..", "..", "resources" ,"haml_config.rb"),  __FILE__))
 		app_tree["config"]["i18n_config.rb"] = IO.read(::File.expand_path(File.join("..", "..", "resources" ,"i18n_config.rb"),  __FILE__))
-		app_tree["config"]["sass_coffee.rb"] = IO.read(::File.expand_path(File.join("..", "..", "resources" ,"sass_config.rb"),  __FILE__))
 
 		# create library, log and tmp folders
 		app_tree["logs"] ||= {}
@@ -78,8 +77,6 @@ class AppTemplate
 		#set the views forlder for all HAML files and templates
 		app_tree["app"] ||= {}
 		app_tree["app"]["views"] ||= {}
-		app_tree["app"]["views"]["404.html.haml"] ||= IO.read(::File.expand_path(File.join("..", "..", "resources" ,"404.html.haml"),  __FILE__))
-		app_tree["app"]["views"]["500.html.haml"] ||= IO.read(::File.expand_path(File.join("..", "..", "resources" ,"500.html.haml"),  __FILE__))
 
 		# set up the assets folder, which will be used in the future for compiling assets using rake
 		app_tree["assets"] ||= {}
@@ -91,6 +88,10 @@ class AppTemplate
 		app_tree["public"]["index.html"] ||= IO.read(::File.expand_path(File.join("..", "..", "resources" ,"welcome_page.html"),  __FILE__)).gsub('appname', ARGV[1])
 		app_tree["public"]["404.html"] ||= IO.read(::File.expand_path(File.join("..", "..", "resources" ,"404.html"),  __FILE__))
 		app_tree["public"]["500.html"] ||= IO.read(::File.expand_path(File.join("..", "..", "resources" ,"500.html"),  __FILE__))
+		app_tree["public"]["404.erb"] ||= IO.read(::File.expand_path(File.join("..", "..", "resources" ,"404.erb"),  __FILE__))
+		app_tree["public"]["500.erb"] ||= IO.read(::File.expand_path(File.join("..", "..", "resources" ,"500.erb"),  __FILE__))
+		app_tree["public"]["404.haml"] ||= IO.read(::File.expand_path(File.join("..", "..", "resources" ,"404.html.haml"),  __FILE__))
+		app_tree["public"]["500.haml"] ||= IO.read(::File.expand_path(File.join("..", "..", "resources" ,"500.html.haml"),  __FILE__))
 		app_tree["public"]["assets"] ||= {}		
 		app_tree["public"]["stylesheets"] ||= {}		
 		app_tree["public"]["javascripts"] ||= {}		

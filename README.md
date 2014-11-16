@@ -1,22 +1,29 @@
-# Anorexic
-[![Gem Version](https://badge.fury.io/rb/anorexic.svg)](http://badge.fury.io/rb/anorexic)
-[![Inline docs](http://inch-ci.org/github/boazsegev/anorexic.svg?branch=master)](http://inch-ci.org/github/boazsegev/anorexic)
+# Anorexic(framework-server) - a revelution in the making
 
-A thin, lightweight, barebones, mutli-threaded Ruby alternative to Rails (ROR) and Sinatra frameworks... so thin, it's anorexic!
+People who are serious about their frameworks, should make their own servers...
 
-The philosophy is simple - pristine, simple and dedicated gems for each functionality allow for a custom made framework that is exactly the right size during runtime.
+(if to para-phrase "People who are serious about their software, should make their own hardware.")
 
-Anorexic is a barebones DLS that can run with or without Rack and offers single-port as well as multi-port service for basic and advanced web services alike.
+## About Anorexic
 
-...and since it's all pure Ruby, it's as easy as it gets.
+This is an Asynchronous Web Server/Framework that is a Rack/Rails/Sintra alternative all in one.
+
+Anorexic contains an object-oriented server, divided into parts that can be changed/updated and removed easily. The Anorexic framework runs HTTP and WeSockets, but could as easily be extended to run SMTP, SPDY or any other Protocol (including custom made protocols).
+
+This will allow - much like Node.js, native WebSocket support (and, if you would like to write your own Protocol or Handler, native SMPT or any other custom protocol you might wish to implement).
 
 ## Installation
 
-install it using:
+Add this line to your application's Gemfile:
+
+```ruby
+gem 'anorexic'
+```
+Or install it yourself as:
 
     $ gem install anorexic
 
-## Framework Usage
+## Creating an Anorexic Application
 
 to create a new barebones app using the Anorexic framework, run from terminal:
 
@@ -27,24 +34,15 @@ That's it, now you have a ready to use basic web server (with some demo code), j
     $ cd appname
     $ ./appname.rb # ( or: anorexic s )
 
-this is a smart framework app that comes very skinny and will happily eat any gem you feed it. it responds extra well to Thin and Haml, which you can enable in it's Gemfile.
-
 now go, in your browser, to: http://localhost:3000/
 
 the default first port for the app is 3000. you can set the first port to listen to by using the `-p ` option (make sure you have permissions for the requested port):
 
     $ ./appname.rb -p 80
 
+you now have a smart framework app that will happily eat any gem you feed it. it responds extra well to Haml, Sass and Coffee-Script, which you can enable in it's Gemfile.
+
 ## Barebones Web Service
-
-Anorexic contains a simple single-use DSL (all the DLS methods are removed once the server starts running - less clutter while running).
-
-you can run anorexic from your favorite Ruby terminal :) - Anorexic starts the moment you exit the terminal.
-
-Anorexic creates a whole web service with three commands that speek for themselves:
-- listen
-- route
-- shared_route
 
 this example is basic, useless, but required for every doc out there...
 
@@ -56,47 +54,9 @@ this example is basic, useless, but required for every doc out there...
 
 After you exited irb, the Anorexic server started up. go to http://localhost:3000/ and see it run :)
 
-if more then one `listen` call was made, ports will be sequential (3000, 3001, 3002...) unless explicitly set(`listen 443`).
-
-*btw*: did you notice the catch-all regular-expression? you can write it like this too:
-
-		require 'anorexic'
-		listen
-		route('*') { |req, res| res.body << "Hello World!" }
-
-Here's a simple web server, complete with SSL (supported on Thin and webrick servers), in three (+1) lines of code, serving static pages from the `public` folder::
-
-		require 'anorexic'
-
-		# set up a non-secure service on port 3000
-		listen 3000, file_root: File.expand_path(File.join(Dir.pwd , 'public'))
-
-		# set up a encrypted service on port 8080, works only with some servers (i.e. thin, webrick)
-		listen 8080, ssl_self: true, file_root: File.expand_path(File.join(Dir.pwd , 'public')) 
-
-		shared_route('/people') { |req, res| res.body << "I made this :-)" }
-
 ## Anorexic Routes
 
-Routes have paths that tell the application which code to run for every request it recieves. when you set your browser to: `http://www.server.com/the/stuff/they/request?paramaters=params[:paramaters]` , this is the routes path: `/the/stuff/they/request`
-
-As long as Anorexic uses the Anorexic::RackServer class (we could change that, but why would we?), the routes will work the same for all the listening ports.
-
-Anorexic allows your code to choose it's routes dynamically, in the order they are created. like so:
-
-    require 'anorexic'
-    listen
-
-    # this route declines to answer
-    route('/') { |req, res| res.body << "I Give Up!"; false }
-
-    # this route wins
-    route('/') { |req, res| res.body << "I Win!" }
-
-    # this route never sees the light of day
-    route('/') { |request, response| response.body << "Help Me!" }
-
-Anorexic supports magic routes, in similar formats found in other systems, such as: `route "/:required/(:optional)/(:optional_with_format){[\\d]*}", Controler` -  **please see the `route` documentation for more information on routes**.
+Anorexic supports magic routes, in similar formats found in other systems, such as: `route "/:required/(:optional)/(:optional_with_format){[\\d]*}", Controler`.
 
 Anorexic assummes all simple string routes to be RESTful routes ( `"/user" == "/user/(:id)"` ).
 
@@ -105,176 +65,199 @@ Anorexic assummes all simple string routes to be RESTful routes ( `"/user" == "/
 
     # this route demos a route for listing/showing posts,
     # with or without revision numbers or page-control....
-    route "/post/(:id)/(:revision){[\d]*}/(:page_number)", Anorexic::StubController
+    # notice the single quotes (otherwise the '\' would need to be escaped).
+    route '/post/(:id)/(:revision){[\d]+\.[\d]+}/(:page_number)', Anorexic::StubRESTCtrl
 
-Anorexic accepts Regexp routes as well as string and magic routes and defines a short cut for a catch-all route:
+now visit:
 
-    require 'anorexic'
-    listen
+* http://localhost:3000/post/12/1.3/1
+* http://localhost:3000/post/12/1
 
-    # this route accepts paths that start with a number (i.e.: /nonumber)
-    route(/^\/[\d]+[\D]+/) { |req, res| res.body << "Give me more numbers :)" }
-
-    # this route accepts paths that are just numbers (i.e.: /87652)
-    route(/^\/[\d]+$/) { |req, res| res.body << "I Love Numbers!" }
-
-    # this route accepts paths that don't have any number (i.e.: /nonumber)
-    route(/^\/[\D]+$/) { |req, res| res.body << "Where're my numbers :(" }
-
-    # this route catches everything else.
-    route('*') { |request, response| response.body << "Gotcha!" }
+**please see the `route` documentation for more information on routes**.
 
 ## Anorexic Virtual Hosts
 
-The Anorexic `listen` command can be used to create virtual hosts for the same service, by supplying a port that is already assigned:
+Anorexic can be used to create virtual hosts for the same service:
 
     require 'anorexic'
+    listen
+    host 'localhost', alias: 'localhost2'
 
-    # sets a virtuls host on localhost 1 (saving the server object to use it's port)
-    server = listen host: 'localhost'
+    shared_route '/people' do |req, res|
+        res << "we are people - shared by all routes."
+    end
 
-    route('/welcome') { |req, res| res.body << "Welcome to Localhost." }
+    host
 
-    # sets a virtuls host on admin.localhost1
-    # (using the same port creates a virtual host instead of a new service)
-    admin_host = listen server.port, host: '127.0.0.1'
+    route('*') do |req, res|
+        res << "this is a 'catch-all' host. you got here by putting in the IP adderess."
+    end
 
-    route('/welcome') { |req, res| res.body << "Administrate Localhost." }
+    host 'localhost'
 
-    # sets a global router for the same service
-    # (for any host NOT localhost1 or admin.localhost1 )
-    listen server.port
-    route('/welcome') { |req, res| res.body << "Welcome to the global namespace" }
+    route('*') do |req, res|
+        res << "this is localhost or localhost 2"
+    end
 
-    # virtual hosts support shared routes, just like real services
-    shared_route('/people') { |req, res| res.body << "we made this!" }
+Now visit:
 
-    # it's possible to directly add routes to an "older" host, if you saved it.
-    # (this works also as live route adding)
-    admin_host.add_route('/secret') { |req, res| res.body << "Shhhh!" }
-
-    # shared routes can be catch-all (careful).
-    shared_route('*') { |req, res| res.body << "Gotcha!" }
+* (http://127.0.0.1:3000/)
+* (http://localhost:3000/)
+* (http://127.0.0.1:3000/people)
+* (http://localhost:3000/people)
 
 ## Anorexic Controller classes
 
-One of the best things about the Anorexic is it's ability to take in any class as a controller class and route to the classes methods with special support for RESTful methods (`index`, `show`, `save`, `update`, `delete`, `before` and `after`):
+One of the best things about the Anorexic is it's ability to take in any class as a controller class and route to the classes methods with special support for RESTful methods (`index`, `show`, `new`, `save`, `update`, `delete`, `before` and `after`) and for WebSockets (`pre_connect`, `on_connect`, `on_message`, `on_disconnect`, `broadcast`):
 
-		require 'pry'
 		require 'anorexic'
-		require 'thin' # will change the default server to thin automatically.
 
 		class Controller
 			def index
 				"Hello World!"
 			end
-			def show
-				"You're looking for: #{params[:id]}"
-			end
-			def debug
-				binding.pry
-				true
-			end
-			def delete
-				"did you try /#{params["id"]}/?_method=delete or does your server support a native DELETE method?"
-			end
 		end
 
 		listen
-		route "/users" , Controller
-		route "/" , Controller
+		route '*' , Controller
 
-Returning a String will automatically add the string to the response before sending the response - which makes for cleaner code. It's also possible to send the response as it is (by returning true) or to create your own response (careful, you need to know what you're doing there...).
+Except for WebSockets, returning a String will automatically add the string to the response before sending the response - which makes for cleaner code. It's also possible to send the response as it is (by returning true).
 
 Controllers can even be nested (order matters) or have advanced uses that are definitly worth exploring.
 
+**please read the demo code for Anorexic::StubRESTCtrl and Anorexic::StubWSCtrl to learn more.**
+
 Here's some food for thought - code similar to something actually used in the framework app:
 
-		require 'pry'
-		require 'anorexic'
-		require 'thin'
+    require 'anorexic'
 
-		class ReWriteController
-			# using the before filter and regular expressions to make some changes.
-			def before
-				result = request.path.match /^\/(en|fr)($|\/.*)/
-				if result
-					params["locale"] = result[1].to_sym
-					request.path_info = result[2]
-				end
-				return false
-			end
-		end
+    # this controller will re-write the request to extract data,
+    # and then it will fail, so that routing continues.
+    #
+    # this is here just for the demo.
+    #
+    class ReWriteController
+        # using the before filter and regular expressions to make some changes.
+        def before
+            # extract the fr and en locales.
+            result = request.path.match /^\/(en|fr)($|\/.*)/
 
-		class Controller
-			def index
-				return "Bonjour le monde!" if params[:locale] == :fr
-				"Hello World!"
-			end
-			def show
-				return "Vous êtes à la recherche d' : #{params[:id]}" if params[:locale] == :fr
-				"You're looking for: #{params[:id]}"
-			end
-			def debug
-				binding.pry
-				true
-			end
-			def delete
-				return "Mon Dieu! Mon français est mauvais!" if params[:locale] == :fr
-				"did you try /#{params["id"]}/?_method=delete"
-			end
-		end
+            if result
+                params[:locale] = result[1]
+                request.path = result[2]
+            end
 
-		listen
+            # let the routing continue.
+            return false
+        end
+    end
 
-		route "*" , ReWriteController
+    class Controller
+        def index
+            return "Bonjour le monde!" if params[:locale] == 'fr'
+            "Hello World!\n #{params}"
+        end
+        def show
+            return "Vous êtes à la recherche d' : #{params[:id]}" if params[:locale] == 'fr'
+            "You're looking for: #{params[:id]}"
+        end
+        def debug
+            # binding.pry
+            # do you use pry for debuging?
+            # no? oh well, let's ignore this.
+            false
+        end
+        def delete
+            return "Mon Dieu! Mon français est mauvais!" if params[:locale] == 'fr'
+            "did you try /#{params["id"]}/?_method=delete or does your server support a native DELETE method?"
+        end
+    end
 
-		route /^\/[\d\+\-\*\/\(\)\.]+$/ do |request, response|
-			message = (request.params[:locale] == :fr) ? "La solution est" : "My Answer is"
-			response.body << "#{message}: #{eval(request.path[1..-1])}"
-		end
+    listen
 
-		route "/users" , Controller
+    # we run the ReWriteController first, to rewrite the path for all the remaining routes.
+    #
+    # this is here just for the demo...
+    #
+    # ...in this specific case, it is possible to dispense with the ReWriteController class
+    # and write:
+    #
+    # route '/(:locale){fr|en}/*', false
+    #
+    # the false controller acts as a simple path re-write that
+    # deletes everything before the '*' sign (the catch-all).
+    #
+    route '*' , ReWriteController
 
-		route "/" , Controller
+    # this route takes a regular expression that is a simple math calculation
+    # (calculator)
+    route /^\/[\d\+\-\*\/\(\)\.]+$/ do |request, response|
+        message = (request.params[:locale] == 'fr') ? "La solution est" : "My Answer is"
+        response.body << "#{message}: #{eval(request.path[1..-1])}"
+    end
+
+    route "/users" , Controller
+
+    route "/" , Controller
 
 try:
 
 * http://localhost:3000/
-* http://localhost:3000/users
+* http://localhost:3000/fr
 * http://localhost:3000/users/hello
 * http://localhost:3000/(5+5*20-15)/9
+* (http://localhost:3000/fr/(5+5*20-15)/9)
+* (http://localhost:3000/users/hello?_method=delete)
 
-## Anorexic is hungry for pristine yummy gems
+## Anorexic Helpers and Logging
 
-This is the "Pristine chunks" phylosophy.
+The Anorexic module (also `AN`) has methods to help with logging, asynchronous callbacks, dynamic routes, dynamic services and more.
 
-Our needs are totally different for each project. An XML web service for an iPhone native app is a very different animal then a book-store web app (please, not another book store app...).
+Logging:
 
-Together we can write add-ons and features and beautifuls gems that we will use when (and if) we need them - so our apps are always happy and never overweight!
+    require 'anorexic'
 
-## What about Ruby on Rails or Sinatra?
+    # simple logging of strings
+    AN.info 'log info'
+    AN.warn 'log warning'
+    AN.error 'log error'
+    AN.fatal "log a fatal error (shuoldn't be needed)."
+    AN.log_raw "Write raw strings to the logger."
 
-I love the Ruby community and I know that we are realy good at writing gems and plug-ins that save a lot of time and code. But we don't need all the plug-ins all the time.
+    # the logger accepts exceptions as well.
+    begin
+        raise "hell"
+    rescue Exception => e
+        AN.error e
+    end
 
-Ruby on Rails became too bloated and big for some projects... It's full of great features that some of them are sometimes used... but at the end of the day, it's HEAVY.
+Asynchronous callbacks (works only while services are active and running):
 
-Looking into Sinatra benchmarks on the web showed that Rails and Sinatra frameworks perform on a similar level. The added 'lightness' just wasn't light enough.
+    require 'anorexic'
 
-Some of us started reverting to pure Rack, and a lot of code kept being written over and over again... Actually, Anorexic is just a smart wrapper to Rack, to make routing and MVC (Model-View-Controller) programming easier.
+    def my_shutdown_proc time_start
+        puts "Services were running for #{Time.now - time_start} seconds."
+    end
 
-So sure, you can use Rails or Sinatra, they're great, but we Love to feed Anorexic our code, it just eats it up so nicely.
+    # shutdown callbacks
+    AN.on_shutdown(Kernel, :my_shutdown_proc, Time.now) { puts "this will run after shutdown." }
+    AN.on_shutdown() { puts "this will run too." }
 
-# Feed the Anorexic framework
+    AN.callback(Kernel, :puts, "Please tell me your name?") do
+        AN.callback(Kernel, :gets) {|name| puts "hello #{name}"}
+    end
 
-The whole of the Anorexic framework philosophy is about community, sharing and feeding the anorexic framework with small and pristine gems.
+    puts "Anorexic will start eating our code once we exit terminal."
 
-Please, feel free to contribute, push any changes on the github project and create your own gems to feed the Anorexic open framework.
+## Anorexic Settings
+
+Anorexic is ment to be very flexible. please take a look at the Anorexic Module for settings you might want to play with (max_threads, thread_timeout, idle_sleep) or any monkey patching you might enjoy.
+
+Feel free to fork or contribute. right now I am one person, but together we can make something exciting that will help us enjoy Ruby in this brave new world.
 
 ## Contributing
 
-
-1. Fork it ( https://github.com/boazsegev/anorexic/fork )
+1. Fork it ( https://github.com/boazsegev/anorexic-server/fork )
 2. Create your feature branch (`git checkout -b my-new-feature`)
 3. Commit your changes (`git commit -am 'Add some feature'`)
 4. Push to the branch (`git push origin my-new-feature`)

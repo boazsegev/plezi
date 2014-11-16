@@ -3,13 +3,8 @@ source "https://rubygems.org"
 ####################
 # core gems
 
-# include the basic anorexic library
+# include the basic anorexic framework and server
 gem 'anorexic'
-gem 'rack'
-
-# sets the default server to thin
-gem 'thin'
-# gem 'puma'
 
 ####################
 # development gems
@@ -30,6 +25,9 @@ gem 'thin'
 ####################
 # gems for easy markup
 
+## erb for HTML fanatics:
+# gem 'erb'
+
 ## we love Haml:
 # gem 'haml'
 
@@ -37,7 +35,7 @@ gem 'thin'
 # gem "sass"
 
 ## and maybe coffee (although, we just use javascript, really)
-# gem "rack-coffee"
+# gem "coffee-script"
 
 ## we also like I18n:
 # gem 'i18n'

@@ -37,12 +37,12 @@ if defined? I18n
 			# this will create a string formatted like this: "en|fr|ru" , depending on available locales:
 			#       I18n.available_locales.join "|"
 			# we will use it in a regular expression to check if the route starts with a locale
-			result = request.path_info.match /^\/(#{   I18n.available_locales.join "|"   })($|\/.*)/
+			result = request.path.match /^\/(#{   I18n.available_locales.join "|"   })($|\/.*)/
 			if result
 				# set the locale
 				params["locale"] = I18n.locale = result[1].to_sym
 				# rewrite the request path, extracting the locale
-				request.path_info = result[2].to_s
+				request.path = result[2].to_s
 			end
 			return false
 		end

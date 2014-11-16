@@ -47,8 +47,7 @@ class SampleController
 
 	# called when request is GET and there's no "id" in quary
 	def index
-		# returning false will make the routes continue to the next target route - the static file service.
-		false
+		"Hello World."
 	end
 
 	def fail
@@ -58,11 +57,12 @@ class SampleController
 
 	# called when request is GET and quary defines "id"
 	def show
-		if defined? Anorexic::FeedHaml
-			false
-		else
-			"#{request.path} -  Anorexic Thin-MVC path telss me you're looking for ID: #{params[:id]}..."
-		end
+		"I'd love to show you object with id: #{params[:id]}"
+	end
+
+	# called when the request is GET and the params[:id] == "new"
+	def new
+		"let's make something new."
 	end
 
 	# called when request is POST or PUT and there's no "id" in quary

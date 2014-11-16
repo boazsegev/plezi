@@ -8,28 +8,27 @@ Encoding.default_external = 'utf-8'
 
 # Using pathname extentions for setting public folder
 require 'pathname'
-#set up root object, it will be used by the environment and\or the anorexic extension gems.
+#set up root object, it might be used by the environment and\or the anorexic extension gems.
 Root ||= Pathname.new(File.dirname(__FILE__)).expand_path
 
 # ensure development mode? (comment before production, environment dependent)
 ENV["RACK_ENV"] ||= "development"
 
 # save the process id (pid) to file - notice Heroku doesn't allow to write files.
-(IO.write Root.join('tmp','pid').to_s, Process.pid unless ENV["DYNO"]) rescue true
+(IO.write File.expand_path(File.join 'tmp','pid'), Process.pid unless ENV["DYNO"]) rescue true
 
 # using bundler to load gems (including the anorexic gem)
 require 'bundler'
 Bundler.require
 
 # set up Anorexic logs - Heroku logs to STDOUT, this machine logs to log file
-Anorexic.create_logger (ENV['DYNO']) ? STDOUT : Root.join('logs','server.log')
-
+Anorexic.create_logger File.expand_path(File.join 'logs','server.log'), ENV["RACK_ENV"]=="development" unless ENV['DYNO']
 
 # load all config files
-Dir[File.join "{config}", "**" , "*.rb"].each {|file| load Pathname.new(file).expand_path}
+Dir[File.join "{config}", "**" , "*.rb"].each {|file| load File.expand_path(file)}
 
 # load all library files
-Dir[File.join "{lib}", "**" , "*.rb"].each {|file| load Pathname.new(file).expand_path}
+Dir[File.join "{lib}", "**" , "*.rb"].each {|file| load File.expand_path(file)}
 
 # load all application files
-Dir[File.join "{app}", "**" , "*.rb"].each {|file| load Pathname.new(file).expand_path}
+Dir[File.join "{app}", "**" , "*.rb"].each {|file| load File.expand_path(file)}
