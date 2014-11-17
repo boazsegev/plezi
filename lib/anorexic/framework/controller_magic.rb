@@ -106,29 +106,21 @@ module Anorexic
 		# the value returned is invalid and will remain 'stuck' on :pre_connect
 		# (which is the last method called before the protocol is switched from HTTP to WebSockets).
 		def requested_method
-			available_methods = self.methods
-			available_public_methods = (self.class.superclass.public_instance_methods - Object.public_instance_methods) - [:before, :after, :save, :show, :update, :delete, :new, :initialize, :on_message, :pre_connect, :on_connect, :on_disconnect]
-			return :pre_connect if request['upgrade'] && request['upgrade'].downcase == 'websocket' &&  request['connection'].to_s.downcase == 'upgrade' && available_methods.include?(:on_message)
-			if params && params[:id] && params[:id].to_s != "new"
-				if params[:id].to_s[0] != "_" && available_public_methods.include?(params[:id].to_sym)
-						return params[:id].to_sym
-				elsif (request.delete? || params[:_method].to_s.upcase == 'DELETE') && available_methods.include?(:delete) # && !available_public_methods.include?(params[:id].to_sym)
-					return :delete
-				elsif request.get? && available_methods.include?(:show)
-					return :show
-				elsif (request.put? || request.post? )  && available_methods.include?(:update)
-					return :update
-				end
-			else
-				if request.get? && params && params[:id].to_s == "new" && available_methods.include?(:new)
-					return :new
-				elsif request.get? && available_methods.include?(:index)
-					return :index
-				elsif (request.put? || request.post?) && available_methods.include?(:save)
-					return :save
-				end
+			@@___available_public_methods___ ||= (self.class.superclass.public_instance_methods - Object.public_instance_methods) - [:before, :after, :save, :show, :update, :delete, :new, :initialize, :on_message, :pre_connect, :on_connect, :on_disconnect]
+			request.method = 'DELETE' if params[:_method].to_s.downcase == 'delete'
+			return :pre_connect if request['upgrade'] && request['upgrade'].to_s.downcase == 'websocket' &&  request['connection'].to_s.downcase == 'upgrade'
+			case request.method
+			when 'GET'
+				return :index unless params[:id]
+				return params[:id].to_sym if params && @@___available_public_methods___.include?(params[:id].to_sym) && params[:id].to_s[0] != "_"
+				return :show
+			when 'POST', 'PUT'
+				return :save if params[:id].nil? || params[:id] == 'new'
+				return :update
+			when 'DELETE'
+				return :delete
 			end
-			return false
+			false
 		end
 
 		## WebSockets Magic
@@ -156,6 +148,7 @@ module Anorexic
 			# call the controller's original method, if exists.
 			# return false if defined? super && super == false
 			# complete handshake
+			return false unless self.public_instance_methods.include?(:on_message)
 			return false unless WSProtocol.new( request.service, request.service.parameters).http_handshake request, response, self
 			@response = WSResponse.new request
 		end

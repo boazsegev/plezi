@@ -152,16 +152,15 @@ module Anorexic
 				end
 
 				def _route_path_to_methods_and_set_the_response_
-					return false if self.methods.include?(:before) && before == false
-					got_from_action = requested_method
-					got_from_action = self.method(got_from_action).call if got_from_action
-
+					return false unless before rescue false
+					got_from_action = false
+					got_from_action = self.method(requested_method).call rescue false
 					unless got_from_action
 						return false
 					end
-
-					return false if self.methods.include?(:after) && after == false
+					return false unless after rescue false
 					if got_from_action.is_a?(String)
+						response['content-length'] = got_from_action.bytesize if response.body.empty? && !response.headers_sent?
 						response << got_from_action
 					end
 					return true
