@@ -154,7 +154,11 @@ module Anorexic
 				def _route_path_to_methods_and_set_the_response_
 					return false unless before rescue false
 					got_from_action = false
-					got_from_action = self.method(requested_method).call rescue false
+					begin
+						got_from_action = self.method(requested_method).call
+					rescue NameError => e
+						false #raise unless self.method(requested_method).nil?
+					end
 					unless got_from_action
 						return false
 					end

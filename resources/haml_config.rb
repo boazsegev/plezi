@@ -10,9 +10,11 @@ if defined? Haml
 	# set some options
 	Haml::Options.defaults[:format] = :html5
 
-	# take a template string or symbol and format it into a file name
-	def parse_template_to_name template, sub_type = nil, extention = "haml"
-		(defined?(Root) ? Root : Pathname.new(Dir.pwd).expand_path).join('app', 'views', *template.to_s.split('_')).to_s + (sub_type ? ".#{sub_type}" : '') + ".#{extention}"
+	# loads a Haml Engine from the Cache if exists. creates a new Haml Engine if there is no Engine available
+	def load_haml template, sub_type = nil, extention = "haml"
+		filename = File.join(*template.to_s.split('_')) + (sub_type ? ".#{sub_type}" : '') + ".#{extention}"
+		return Anorexic.get_cached filename if Anorexic.cached? filename
+		Anorexic.cache_data filename, Haml::Engine.new( IO.read(filename) )
 	end
 
 	# returns a string representing the rendered Haml template given, after searching for it in the `app/views` folder.
@@ -42,41 +44,37 @@ if defined? Haml
 		I18n.locale = options[:locale] if defined?(I18n) && options[:locale]
 		# find template
 		view = nil
-		if template.is_a? Symbol
-			view = parse_template_to_name template, options[:type]
-			raise "Cannot fine template file #{view}" unless Anorexic.file_exists? view
-		elsif template.is_a? String
+		if template.is_a?(Symbol) || ( template.is_a?(String) && !options[:raw] && !options[:inline] )
+			begin
+				view = load_haml(template, options[:type]).render(self, options[:locals])
+			rescue Exception => e
+				raise "Cannot find template file #{view}"
+			end
+		elsif template.is_a?(String)
 			view = template
+			view = Anorexic.load_file view if options[:raw]
+			view = Haml::Engine.new(view).render self, options[:locals] if options[:inline] && !options[:raw]
 		end
 		return false unless view
 
-		# load and render template file, if relevant
-		if options[:inline]
-			view = Haml::Engine.new(view).render self, options[:locals] unless options[:raw]
-		else
-			if options[:raw]
-				view = Anorexic.load_file view
-			else
-				view = Haml::Engine.new(Anorexic.load_file view).render self, options[:locals]
-			end
-		end
-		return false unless view
 		return view unless options[:layout]
 
 		#render layout, if relevant
 
 		# find layout
 		if options[:layout].is_a? Symbol
-			layout = parse_template_to_name options[:layout], options[:type]
-			raise "Cannot fine layout file #{layout}" unless Anorexic.file_exists? layout
-			layout = Anorexic.load_file layout
+			begin
+				layout = load_haml options[:layout], options[:type]
+			rescue Exception => e
+				raise "Cannot find layout file #{layout}"
+			end			
 		elsif options[:layout].is_a? String
-			layout = options[:layout] 
+			layout = Haml::Engine.new( options[:layout] )
 		end
 		return false unless layout
 
 		# render
-		return Haml::Engine.new( layout ).render(self, options[:locals]) {  view }
+		return  layout.render(self, options[:locals]) {  view }
 	end
 end
 
