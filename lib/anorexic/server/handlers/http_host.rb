@@ -116,7 +116,8 @@ module Anorexic
 			begin
 				if params[:root]
 					if defined?(::Haml) && Anorexic.file_exists?(File.join(params[:root], "#{code}.haml"))
-						return send_raw_data request, Haml::Engine.new( Anorexic.load_file( File.join( params[:root], "#{code}.haml" ) ) ).render( self, request: request), 'text/html', code, headers
+						Anorexic.cache_data File.join(params[:root], "#{code}.haml"), Haml::Engine.new( Anorexic.load_file( File.join( params[:root], "#{code}.haml" ) ) ) unless Anorexic.cached? File.join(params[:root], "#{code}.haml")
+						return send_raw_data request, Anorexic.get_cached( File.join(params[:root], "#{code}.haml") ).render( self, request: request), 'text/html', code, headers
 					elsif defined?(::ERB) && Anorexic.file_exists?(File.join(params[:root], "#{code}.erb"))
 						return send_raw_data request, ERB.new( Anorexic.load_file( File.join(params[:root], "#{code}.erb") ) ).result(binding), 'text/html', code, headers
 					elsif send_file(request, File.join(params[:root], "#{code}.html"), code, headers)
