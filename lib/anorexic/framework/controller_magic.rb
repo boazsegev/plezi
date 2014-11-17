@@ -110,7 +110,7 @@ module Anorexic
 			request.method = 'DELETE' if params[:_method].to_s.downcase == 'delete'
 			return :pre_connect if request['upgrade'] && request['upgrade'].to_s.downcase == 'websocket' &&  request['connection'].to_s.downcase == 'upgrade'
 			case request.method
-			when 'GET'
+			when 'GET', 'HEAD'
 				return :index unless params[:id]
 				return params[:id].to_sym if params && @@___available_public_methods___.include?(params[:id].to_sym) && params[:id].to_s[0] != "_"
 				return :show
