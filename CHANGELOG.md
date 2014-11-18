@@ -1,4 +1,9 @@
 #Change Log
+***
+
+Change log v.0.6.2
+
+**fix**: v.0.6.1 broke the WebSockets. WebSockets are back.
 
 ***
 

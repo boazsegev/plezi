@@ -64,7 +64,7 @@ require "anorexic/framework/dsl"
 #
 #    require 'anorexic'
 #    listen
-#    route('*') {|request, response| response.body << "Your request, master: #{request.path}."}
+#    route('*') {|request, response| response << "Your request, master: #{request.path}."}
 #
 #
 # Anorexic accepts an optional class object that can be passed using the `route` command. Passing a class object is especially useful for RESTful and WebSocket applications.

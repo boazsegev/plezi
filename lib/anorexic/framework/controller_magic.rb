@@ -148,7 +148,7 @@ module Anorexic
 			# call the controller's original method, if exists.
 			# return false if defined? super && super == false
 			# complete handshake
-			return false unless self.public_instance_methods.include?(:on_message)
+			return false unless self.class.public_instance_methods.include?(:on_message)
 			return false unless WSProtocol.new( request.service, request.service.parameters).http_handshake request, response, self
 			@response = WSResponse.new request
 		end
