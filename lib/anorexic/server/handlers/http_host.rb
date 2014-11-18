@@ -8,6 +8,10 @@ module Anorexic
 		# the routing array
 		attr_reader :routes
 
+		# initializes an HTTP host with the parameters for the specific host.
+		#
+		# parameters are the same (almost) as `add_service` and include `root` for file root, `assets`
+		# and other non service related options.
 		def initialize params = {}
 			@params = params
 			@routes = []
@@ -19,10 +23,15 @@ module Anorexic
 			# @sass_cache_lock = Mutex.new
 		end
 
+		# adds a route under the specific host
 		def add_route path, controller, &block
 			routes << Route.new(path, controller, &block)
 		end
 
+		# handles requests sent to the host. returns true if the host delt with the request.
+		#
+		# since hosts are required to handle the requests (send 404 errors if resources arrn't found),
+		# this method always returns true.
 		def on_request request
 			begin
 				# render any assets?
@@ -48,6 +57,7 @@ module Anorexic
 			true
 		end
 
+		# renders assets, if necessary, and places the rendered result in the cache and in the public folder.
 		def render_assets request
 			# contine only if assets are defined and called for
 			return false unless @params[:assets] && request.path.match(/^#{params[:assets_public]}\/.+/)
@@ -91,21 +101,23 @@ module Anorexic
 			render_asset(request, target_file, source_file)
 		end
 
+		# returns true if an asset needs to be rendered.
 		def asset_needs_render? source_file, target_file
 			return true unless Anorexic.file_exists?(target_file)
 			raise 'asset verification failed - no such file?!' unless File.exists?(source_file)
 			File.mtime(source_file) > Anorexic.file_mtime(target_file)
 		end
 
+		# checks sass dependecies, if a referesh is required (isn't in use, bacause of performance issues).
 		def force_sass_refresh? source_file, target_file
 			return false unless File.exists?(source_file) && Anorexic.file_exists?(target_file) && defined?(::Sass)
 			Sass::Engine.for_file(source_file, cache_store: @sass_cache).dependencies.each {|e| return true if File.exists?(e.options[:filename]) && (File.mtime(e.options[:filename]) > File.mtime(target_file))} # fn = File.join( e.options[:load_paths][0].root, e.options[:filename]) 
 			false
 		end
 
-		# returns true if data was send
+		# renders an asset to the cache an attempt to save it to the file system.
 		#
-		# always returns false (data wasn't sent, only saved to disk).
+		# always returns false (data wasn't sent).
 		def render_asset request, target, data
 			Anorexic.save_file(target, data)
 			false
@@ -131,6 +143,9 @@ module Anorexic
 			false
 		end
 
+		# attempts to send a static file by the request path (using `send_file` and `send_raw_data`).
+		#
+		# returns true if data was sent.
 		def send_static_file request
 			return false unless params[:root]
 			file_requested = request[:path].to_s.split('/')
@@ -142,12 +157,14 @@ module Anorexic
 			return false
 		end
 
+		# sends a file/cacheed data if it exists. otherwise returns false.
 		def send_file request, filename, status_code = 200, headers = {}
 			if Anorexic.file_exists?(filename) && !::File.directory?(filename)
 				return send_raw_data request, Anorexic.load_file(filename), MimeTypeHelper::MIME_DICTIONARY[::File.extname(filename)], status_code, headers
 			end
 			return false
 		end
+		# sends raw data through the connection. always returns true (data send).
 		def send_raw_data request, data, mime, status_code = 200, headers = {}
 			response = HTTPResponse.new request, status_code, headers
 			response['cache-control'] = 'public, max-age=86400'					

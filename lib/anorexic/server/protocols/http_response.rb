@@ -26,6 +26,10 @@ module Anorexic
 		#the http version header
 		attr_accessor :http_version
 
+		# the response object responds to a specific request on a specific service.
+		# hence, to initialize a response object, a request must be set.
+		#
+		# use, at the very least `HTTPResponse.new request`
 		def initialize request, status = 200, headers = {}, body = []
 			@request, @status, @headers, @body, @service = request, status, headers, body, request.service
 			@http_version = 'HTTP/1.1' # request.version
