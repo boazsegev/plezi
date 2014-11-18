@@ -270,7 +270,8 @@ module Anorexic
 			log "started listening on port #{port}."
 			begin
 				io = nil
-				callback(self, :add_connection, io, params) if io while(io = s.accept)
+				# callback(self, :add_connection, io, params, Time.now) if io while(io = s.accept)
+				add_connection io, params if io while(io = s.accept)
 			rescue Exception => e
 				fatal e unless s.closed?
 			ensure
@@ -297,7 +298,9 @@ module Anorexic
 
 	# Anorexic Engine, DO NOT CALL. adds a new connection to the connection stack
 	def add_connection io, params
-		S_LOCKER.synchronize {CONNECTIONS << params[:service_type].new(io, params)}
+		connection = params[:service_type].new(io, params)
+		S_LOCKER.synchronize {CONNECTIONS << connection}
+		callback(connection, :on_message)
 	end
 	# adds a new connection to the connection stack
 	def remove_connection connection

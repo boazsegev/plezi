@@ -157,6 +157,7 @@ module Anorexic
 		# sends the response and flags the response as complete. future data should not be sent. the flag will only be enforced be the Anorexic router. your code might attempt sending data (which would probbaly be ignored by the client or raise an exception).
 		def finish
 			throw 'HTTPResponse SERVICE MISSING: cannot send http response without a service.' unless service
+			@headers['content-length'] ||= body[0].bytesize if !headers_sent? && body.is_a?(Array) && body.length == 1
 			self.send
 			service.send_nonblock "0\r\n\r\n" if headers["transfer-encoding"] == "chunked"
 			@finished = true

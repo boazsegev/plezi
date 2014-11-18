@@ -73,6 +73,7 @@ module Anorexic
 
 		def on_message
 			# return false if locker.locked?
+			return false if locker.locked?
 			if (_disconnected? rescue true) || (@timeout && (Time.now - @active_time) > @timeout && true) #implement check that all content was sent
 				Anorexic.callback self, :on_disconnect
 			end
@@ -99,7 +100,6 @@ module Anorexic
 					Anorexic.callback self, :on_disconnect if @in_que[-1].to_s.match /^bye[\r\n]*$/
 				end
 			end
-			# IO.write 'request.txt', @in_que.join
 		end
 
 		def on_disconnect

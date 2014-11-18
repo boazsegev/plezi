@@ -4,7 +4,7 @@
 
 Change log v.0.6.1
 
-**performance** - Caching and other tweeks to help performance. noticable improvements for controller routes, Haml (framework template code), assets (Sass, Scss, Coffee-Script).
+**performance** - Caching and other tweeks to help performance. noticable improvements for controller routes, Haml (404.haml, 500.haml and framework template code), assets (Sass, Scss, Coffee-Script).
 
 **known-issues** - (rare - occures only when files are misplaced) non cachable files aren't served from the assets folder unless file system is writable (Heroku is an example where this issue of misplaced files might occure).
 
