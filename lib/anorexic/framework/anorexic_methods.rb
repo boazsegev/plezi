@@ -186,21 +186,22 @@ module Anorexic
 		(max_threads).times {@flags << Mutex.new}
 		(max_threads-1).times do |i|
 			threads << Thread.start(i+1) do |flag|
-				trap('INT'){ exit_flag = true }
+				# trap('INT'){ exit_flag = true }
 				until exit_flag
 					sleep thread_timeout until (@flags[flag-1].locked? && events?) || exit_flag
 					thread_cycle(flag)
 				end
 			end
 		end
+		Thread.new { thread_cycle until exit_flag }
 		# Thread.new { check_connections until SERVICES.empty? }
 		#...
-		#set tarps
-		trap('INT'){ exit_flag = true }
-		trap('TERM'){ exit_flag = true }
+		# set signal tarps
+		trap('INT'){ exit_flag = true; raise "close Anorexic" }
+		trap('TERM'){ exit_flag = true; raise "close Anorexic" }
 		puts 'Services running. Press ^C to stop'
 		# cycle until trap raises exception
-		thread_cycle until exit_flag || SERVICES.empty?
+		(sleep unless SERVICES.empty?) rescue true
 		# start shutdown.
 		exit_flag = true
 		# set new tarps

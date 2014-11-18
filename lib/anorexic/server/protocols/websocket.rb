@@ -44,16 +44,14 @@ module Anorexic
 			# cancel service timeout? (for now, reset to 60 seconds)
 			Anorexic.callback service, :set_timeout, @timeout_interval
 			Anorexic.callback @service.handler, :on_connect if @service.handler.methods.include?(:on_connect)
+			Anorexic.info "Upgraded HTTP to WebSockets. Logging only errors."
 		end
 
 		# called when data is recieved
 		# returns an Array with any data not yet processed (to be returned to the in-que).
 		def on_message(service, data)
 			# parse the request
-			# binding.pry
-			require 'benchmark'
-			AN.info ("WebSocket message with #{data.bytes.length} bytes parsed in: " + (Benchmark.measure {  @locker.synchronize {extract_message data.bytes} }).to_s)
-			# return @locker.synchronize {extract_message data.bytes}
+			return @locker.synchronize {extract_message data.bytes}
 			true
 		end
 
@@ -121,20 +119,33 @@ module Anorexic
 					@parser_data[:len] = data[0] & 0b01111111
 					data.shift
 					if @parser_data[:len] == 126
-						@parser_data[:len] = merge_bytes(data.shift ,data.shift) # should be = ?
+						@parser_data[:len] = merge_bytes( *(data.slice!(0,2)) ) # should be = ?
 					elsif @parser_data[:len] == 127
 						len = 0
-						@parser_data[:len] = merge_bytes(data.shift ,data.shift,data.shift ,data.shift,data.shift ,data.shift,data.shift ,data.shift) # should be = ?
+						@parser_data[:len] = merge_bytes( *(data.slice!(0,8)) ) # should be = ?
 					end
+					@parser_data[:step] = 0
 					@parser_stage += 1
 				end
-				if @parser_stage == 2 && data[0..3].count == 4 && @parser_data[:mask] == 1
-					@parser_data[:mask_key] = [data.shift ,data.shift, data.shift ,data.shift]
+				if @parser_stage == 2 && @parser_data[:mask] == 1
+					@parser_data[:mask_key] = data.slice!(0,4)
+					@parser_stage += 1
+				elsif  @parser_data[:mask] != 1
+					@parser_stage += 1
 				end
-				if @parser_stage == 2 && @parser_data[:step] < @parser_data[:len]
-					data.length.times {|i| data[0] = data[0] ^ @parser_data[:mask_key][@parser_data[:step] % 4] if @parser_data[:mask_key]; @parser_data[:step] += 1; @parser_data[:body] << data.shift; break if @parser_data[:step] == @parser_data[:len]}
+				if @parser_stage == 3 && @parser_data[:step] < @parser_data[:len]
+					# data.length.times {|i| data[0] = data[0] ^ @parser_data[:mask_key][@parser_data[:step] % 4] if @parser_data[:mask_key]; @parser_data[:step] += 1; @parser_data[:body] << data.shift; break if @parser_data[:step] == @parser_data[:len]}
+					slice_length = [data.length, (@parser_data[:len]-@parser_data[:step])].min
+					if @parser_data[:mask_key]
+						masked = data.slice!(0, slice_length)
+						masked.map!.with_index {|b, i|  b ^ @parser_data[:mask_key][ ( i + @parser_data[:step] ) % 4]  }
+						@parser_data[:body].concat masked
+					else
+						@parser_data[:body].concat data.slice!(0, slice_length)
+					end
+					@parser_data[:step] += slice_length
 				end
-				complete_frame if @parser_data[:step] == @parser_data[:len]
+				complete_frame unless @parser_data[:step] < @parser_data[:len]
 			end
 			true
 		end
@@ -147,18 +158,16 @@ module Anorexic
 
 		# handles the completed frame and sends a message to the handler once all the data has arrived.
 		def complete_frame
-			# binding.pry
 			@extentions.each {|ex| SUPPORTED_EXTENTIONS[ex[0]][1].call(@parser_data[:body], ex[1..-1]) if SUPPORTED_EXTENTIONS[ex[0]]}
 
 			case @parser_data[:op_code]
-			when 9
+			when 9, 10
 				# handle @parser_data[:op_code] == 9 (ping) / @parser_data[:op_code] == 10 (pong)
-				@service.send_nonblock WSResponse.frame_data(@parser_data[:body].pack('C*'), 10)
+				Anorexic.callback @service, :send_nonblock, WSResponse.frame_data(@parser_data[:body].pack('C*'), 10)
 				@parser_op_code = nil if @parser_op_code == 9 || @parser_op_code == 10
 			when 8
 				# handle @parser_data[:op_code] == 8 (close)
-				@service.send_nonblock WSResponse.frame_data('', 8)
-				@service.disconnect
+				Anorexic.callback( @service, :send_nonblock, WSResponse.frame_data('', 8) ) { @service.disconnect }
 				@parser_op_code = nil if @parser_op_code == 8
 			else
 				@message << @parser_data[:body].pack('C*')

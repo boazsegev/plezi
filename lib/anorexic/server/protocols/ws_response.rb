@@ -33,6 +33,12 @@ module Anorexic
 			service.send_nonblock self.class.frame_data(str)
 		end
 
+		# sends any pending data and closes the connection.
+		def close
+			service.send_nonblock self.class.frame_data('', 8)
+			service.disconnect
+		end
+
 		# formats the data as one or more WebSocket frames.
 		def self.frame_data data, op_code = nil, fin = true
 			# set up variables

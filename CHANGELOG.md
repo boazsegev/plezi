@@ -1,6 +1,16 @@
 #Change Log
 ***
 
+Change log v.0.6.4
+
+**fix/performance**: faster websocket parsing... finaly :-)
+
+**fix**: Websocket close signal now correctly disconnects socket.
+
+**fix**: Trap (^C signal) might fail if main thread was hanging. Fixed by putting main thread to sleep and waking it on signal.
+
+***
+
 Change log v.0.6.3
 
 **fix**: There was a bug transcoding utf-8 data (non ASCII) in the websocket response. WebSockets now sends unicode and UTF-8 text correctly.
