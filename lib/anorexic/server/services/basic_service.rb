@@ -49,10 +49,11 @@ module Anorexic
 		# sends data immidiately - forcing the data to be sent before any other messages in the que
 		def send data = nil
 			locker.synchronize do
-				@active_time = Time.now
-				if @out_que.empty?
-					_send data if data rescue Anorexic.callback self, :on_disconnect
+				if @out_que.empty? && data
+					@active_time = Time.now
+					_send data rescue Anorexic.callback self, :on_disconnect
 				else
+					@active_time = Time.now
 					@out_que << data if data
 					@out_que.each { |d| @active_time = Time.now; _send d rescue Anorexic.callback self, :on_disconnect}
 					@out_que.clear		
@@ -70,37 +71,65 @@ module Anorexic
 
 		# notice: since it is all async evet base - multipart messages might be garbled up...?
 		# todo: protect from garbeling.
-
 		def on_message
 			# return false if locker.locked?
 			return false if locker.locked?
 			if (_disconnected? rescue true) || (@timeout && (Time.now - @active_time) > @timeout && true) #implement check that all content was sent
-				Anorexic.callback self, :on_disconnect
+				return Anorexic.callback self, :on_disconnect
 			end
-			begin
-				locker.lock
-				read_size = socket.stat.size
-				data = _read(read_size) unless read_size == 0
-			rescue Exception => e
-				return false
-			ensure
-				locker.unlock
-			end
-			if data && !data.empty?
-				@active_time = Time.now
-				if protocol
-					begin
-						protocol.on_message(self, data)
-					rescue Exception => e
-						locker.unlock if locker.locked?
-						Anorexic.callback protocol, :on_exception, self, e
+			locker.synchronize do
+				begin
+					read_size = socket.stat.size
+					data = _read(read_size) unless read_size == 0
+					if data && !data.empty?
+						@active_time = Time.now
+						if protocol
+							begin
+								protocol.on_message(self, data)
+							rescue Exception => e
+								Anorexic.callback protocol, :on_exception, self, e
+							end
+						else # if there's no protocol - fall back on echo.
+							send "echo #{Time.now.utc.to_s}: #{data}"
+							Anorexic.callback self, :on_disconnect if @in_que[-1].to_s.match /^bye[\r\n]*$/
+						end
 					end
-				else # if there's no protocol - fall back on echo.
-					send "echo #{Time.now.utc.to_s}: #{data}"
-					Anorexic.callback self, :on_disconnect if @in_que[-1].to_s.match /^bye[\r\n]*$/
+				rescue Exception => e
+					return Anorexic.callback self, :on_disconnect
 				end
 			end
 		end
+
+		# def on_message
+		# 	# return false if locker.locked?
+		# 	return false if locker.locked?
+		# 	if (_disconnected? rescue true) || (@timeout && (Time.now - @active_time) > @timeout && true) #implement check that all content was sent
+		# 		Anorexic.callback self, :on_disconnect
+		# 	end
+		# 	begin
+		# 		locker.lock
+		# 		read_size = socket.stat.size
+		# 		data = _read(read_size) unless read_size == 0
+		# 	rescue Exception => e
+		# 		return false
+		# 	ensure
+		# 		locker.unlock
+		# 	end
+		# 	if data && !data.empty?
+		# 		@active_time = Time.now
+		# 		if protocol
+		# 			begin
+		# 				protocol.on_message(self, data)
+		# 			rescue Exception => e
+		# 				locker.unlock if locker.locked?
+		# 				Anorexic.callback protocol, :on_exception, self, e
+		# 			end
+		# 		else # if there's no protocol - fall back on echo.
+		# 			send "echo #{Time.now.utc.to_s}: #{data}"
+		# 			Anorexic.callback self, :on_disconnect if @in_que[-1].to_s.match /^bye[\r\n]*$/
+		# 		end
+		# 	end
+		# end
 
 		def on_disconnect
 			Anorexic.callback Anorexic, :remove_connection, self			

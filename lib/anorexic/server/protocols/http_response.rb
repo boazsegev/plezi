@@ -159,13 +159,12 @@ module Anorexic
 			throw 'HTTPResponse SERVICE MISSING: cannot send http response without a service.' unless service
 			@headers['content-length'] ||= body[0].bytesize if !headers_sent? && body.is_a?(Array) && body.length == 1
 			self.send
-			service.send_nonblock "0\r\n\r\n" if headers["transfer-encoding"] == "chunked"
+			service.send( (headers["transfer-encoding"] == "chunked") ? "0\r\n\r\n" : nil)
 			@finished = true
-			service.send
 			# update logger to produce:
 			# 127.0.0.1 - - [04/Nov/2014 22:43:28] "GET  HTTP/1.1" 200 18686 0.6049
 			# IP - SEVERITY - [TIME] "REQUEST" RESOPNSE LENGTH MS 
-			Anorexic.log_raw "#{request[:client_ip]} [#{Time.now.utc}] \"#{request[:method]} #{request[:original_path]} #{request[:requested_protocol]}\/#{request[:version]}\" #{status} #{bytes_sent.to_s} #{((Time.now - request[:time_recieved])*1000).to_i}ms\n"
+			Anorexic.log_raw "#{request[:client_ip]} [#{Time.now.utc}] \"#{request[:method]} #{request[:original_path]} #{request[:requested_protocol]}\/#{request[:version]}\" #{status} #{bytes_sent.to_s} #{"%0.3f" % ((Time.now - request[:time_recieved])*1000)}ms\n"
 		end
 
 		# attempts to finish the response - if it was not flaged as completed.

@@ -1,6 +1,12 @@
 #Change Log
 ***
 
+Change log v.0.6.3
+
+**fix**: There was a bug transcoding utf-8 data (non ASCII) in the websocket response. WebSockets now sends unicode and UTF-8 text correctly.
+
+***
+
 Change log v.0.6.2
 
 **fix**: v.0.6.1 broke the WebSockets. WebSockets are back.

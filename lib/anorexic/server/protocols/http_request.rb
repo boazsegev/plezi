@@ -11,7 +11,6 @@ module Anorexic
 		def initialize service
 			super()
 			self[:anorexic_service] = service
-			self[:time_recieved] = Time.now
 			######
 			# set global variables
 			self[:client_ip] = service.socket.remote_address.ip_address rescue false

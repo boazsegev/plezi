@@ -38,6 +38,7 @@ module Anorexic
 			# set up variables
 			frame = ''.force_encoding('binary')
 			op_code ||= data.encoding.name == 'UTF-8' ? 1 : 2
+			data.force_encoding('binary')
 
 			# fragment big data chuncks into smaller frames
 			[frame << frame_data(data.slice!(0..1048576), op_code, false), op_code = 0] while data.length > 1048576

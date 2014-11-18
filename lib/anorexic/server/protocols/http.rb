@@ -19,18 +19,11 @@ module Anorexic
 
 		# called when connection is initialized.
 		def on_connect service
-			Anorexic.callback service, :set_timeout
 		end
 
 		# called when data is recieved
 		# typically returns an Array with any data not yet processed (to be returned to the in-que)... but here it always processes (or discards) the data.
 		def on_message(service, data)
-			# reset service timeout
-			Anorexic.callback service, :set_timeout
-			unless service.handler
-				@echo ||= ''
-				@echo << data
-			end
 			# parse the request
 			@locker.synchronize { parse_message service, data.lines }
 			unless @parser_stage == 0 || @parser_data[:version] < 1.1
@@ -72,6 +65,7 @@ module Anorexic
 		# parses the method request (the first line in the HTTP request).
 		def parse_method service, data
 			return false unless data[0] && data[0].match(/^#{HTTP_METHODS.join('|')}/)
+			@parser_data[:time_recieved] = Time.now
 			@parser_data[:params] = {}
 			@parser_data[:cookies] = Cookies.new
 			@parser_data[:method] = ''
@@ -194,23 +188,11 @@ module Anorexic
 				return true
 			end
 
-			#pass it to the handler or echo.
-			if service.handler && service.handler.methods.include?(:on_request)
+			#pass it to the handler or decler error.
+			if service.handler
 				Anorexic.callback service.handler, :on_request, request
 			else
-				AN.warn "No Handler for request:\n#{@echo}"
-				response = HTTPResponse.new request
-				response << "raw request:\n\n"
-				response << @echo.dup
-				response << "\n\nparsed request:\n"
-				request.each {|k,v| response << "#{k}: #{v.to_s}\n"}
-				size = 0
-				response.body.each {|s| size += s.bytesize}
-				response["access-control-allow-origin"] = "*"
-				response['content-type'] = 'text/plain'
-				response['content-length'] = size
-				response.finish
-				@echo.clear
+				AN.error "No Handler for this HTTP service."
 			end
 		end
 
@@ -230,7 +212,7 @@ module Anorexic
 				JSON.parse(HTTP.make_utf8! @parser_data[:body]).each {|k, v| HTTP.add_param_to_hash k, v, @parser_data[:params]}
 			else
 				@parser_data[:body] = @parser_body.dup
-				Anorexic.error "POST body type (#{@parser_data["content-type"]}) cannot be parsed. raw body is kept in the request's data as request[:body]: #{@parser_body}\n request:\n #{@echo}"
+				Anorexic.error "POST body type (#{@parser_data["content-type"]}) cannot be parsed. raw body is kept in the request's data as request[:body]: #{@parser_body}"
 			end
 		end
 
