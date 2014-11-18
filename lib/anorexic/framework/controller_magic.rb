@@ -106,18 +106,20 @@ module Anorexic
 		# the value returned is invalid and will remain 'stuck' on :pre_connect
 		# (which is the last method called before the protocol is switched from HTTP to WebSockets).
 		def requested_method
-			@@___available_public_methods___ ||= (self.class.superclass.public_instance_methods - Object.public_instance_methods) - [:before, :after, :save, :show, :update, :delete, :new, :initialize, :on_message, :pre_connect, :on_connect, :on_disconnect]
+			@@___available_public_methods___ ||= ((self.class.superclass.public_instance_methods - Object.public_instance_methods) - [:before, :after, :save, :show, :update, :delete, :new, :initialize, :on_message, :pre_connect, :on_connect, :on_disconnect])
 			request.method = 'DELETE' if params[:_method].to_s.downcase == 'delete'
 			return :pre_connect if request['upgrade'] && request['upgrade'].to_s.downcase == 'websocket' &&  request['connection'].to_s.downcase == 'upgrade'
 			case request.method
 			when 'GET', 'HEAD'
 				return :index unless params[:id]
-				return params[:id].to_sym if params && @@___available_public_methods___.include?(params[:id].to_sym) && params[:id].to_s[0] != "_"
+				return params[:id].to_sym if @@___available_public_methods___.include?(params[:id].to_sym) && params[:id].to_s[0] != "_"
 				return :show
 			when 'POST', 'PUT'
+				return params[:id] && params[:id].to_sym if @@___available_public_methods___.include?(params[:id].to_sym) && params[:id].to_s[0] != "_"
 				return :save if params[:id].nil? || params[:id] == 'new'
 				return :update
 			when 'DELETE'
+				return params[:id] && params[:id].to_sym if @@___available_public_methods___.include?(params[:id].to_sym) && params[:id].to_s[0] != "_"
 				return :delete
 			end
 			false

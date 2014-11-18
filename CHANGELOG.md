@@ -5,6 +5,8 @@ Change log v.0.6.3
 
 **fix**: There was a bug transcoding utf-8 data (non ASCII) in the websocket response. WebSockets now sends unicode and UTF-8 text correctly.
 
+**fix**: special routing fixed for POST requests. v.0.6.1 brought changes to the router, so that non restful routes were refused except for GET requets. now the expected behaviour of params[:id] => :method (if :method exists) is restored also for POST and DELETE.
+
 ***
 
 Change log v.0.6.2
