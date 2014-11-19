@@ -25,7 +25,7 @@ module Anorexic
 		# typically returns an Array with any data not yet processed (to be returned to the in-que)... but here it always processes (or discards) the data.
 		def on_message(service, data)
 			# parse the request
-			@locker.synchronize { parse_message service, data.lines }
+			@locker.synchronize { parse_message service, data.lines.to_a }
 			unless @parser_stage == 0 || @parser_data[:version] < 1.1
 				# send 100 continue message
 				service.send_nonblock "100 Continue\r\n\r\n"

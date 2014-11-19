@@ -85,23 +85,15 @@ module Anorexic
 
 	# Anorexic event cycle settings: gets/sets how many worker threads Anorexic will run.
 	def max_threads
-		@max_threads ||= 20
+		@max_threads ||= 16
 	end
 	def max_threads= value
 		@max_threads = value
 	end
 
-	# Anorexic event cycle settings: gets/sets how long to wait for a thread to complete before giving the task to the next worker thread
-	# (only if there are more then one working threads).
-	def thread_timeout
-		@thread_timeout ||= 0.20
-	end
-	def thread_timeout= value
-		@thread_timeout = value
-	end
 	# Anorexic event cycle settings: how long to sleep during idle time, before forcing another cycle.
 	def idle_sleep
-		@idle_sleep ||= 0.025
+		@idle_sleep ||= 0.024
 	end
 	def idle_sleep= value
 		@idle_sleep = value
@@ -182,18 +174,9 @@ module Anorexic
 		# prepare threads
 		exit_flag = false
 		threads = []
-		@flags = []
-		(max_threads).times {@flags << Mutex.new}
-		(max_threads-1).times do |i|
-			threads << Thread.start(i+1) do |flag|
-				# trap('INT'){ exit_flag = true }
-				until exit_flag
-					sleep thread_timeout until (@flags[flag-1].locked? && events?) || exit_flag
-					thread_cycle(flag)
-				end
-			end
-		end
-		Thread.new { thread_cycle until exit_flag }
+		(max_threads).times {  Thread.new { sleep 0.001; ( sleep(idle_sleep) && thread_cycle ) until exit_flag }  }
+		
+
 		# Thread.new { check_connections until SERVICES.empty? }
 		#...
 		# set signal tarps
@@ -216,7 +199,7 @@ module Anorexic
 		threads.each {|t| t.join if t.alive?}
 
 		# rundown any active events
-		true while thread_cycle
+		thread_cycle while events?
 
 		# call shutdown callbacks
 		SHUTDOWN_CALLBACKS.each {|s| s[0].call(*s[1]) }
@@ -228,19 +211,18 @@ module Anorexic
 
 	# Anorexic Engine, DO NOT CALL. runs one thread cycle
 	def self.thread_cycle flag = 0
-		@flags[flag].synchronize { fire_event } if @flags
-		return true if events?
-		# GC.start
-		fire_connections
-		sleep(idle_sleep).nil?
-		events?
+		true while fire_event
+		accept_connections
+		fire_connections # unless events?
 	end
 
 
 	#######################
 	## Services pooling and calling
 
+	# the services store
 	SERVICES = []
+	#the services and connections mutex
 	S_LOCKER = Mutex.new
 
 	# public API to add a service to the framework.
@@ -264,36 +246,46 @@ module Anorexic
 	#
 	# assets support will render `.sass`, `.scss` and `.coffee` and save them as local files (`.css`, `.css`, and `.js` respectively) before sending them as static files. if it is impossible to write the files, they will be rendered dynamically for every request (it would be better to render them before-hand).
 	def add_service port, paramaters = {}
+		paramaters[:port] ||= port
 		paramaters[:service_type] ||= ( paramaters[:ssl] ? SSLService : BasicService)
 		service = paramaters[:service_type].create_service(port, paramaters)
-		S_LOCKER.synchronize {SERVICES << service}
-		Thread.start(service, paramaters, port) do |s, params, port|
-			log "started listening on port #{port}."
-			begin
-				io = nil
-				# callback(self, :add_connection, io, params, Time.now) if io while(io = s.accept)
-				add_connection io, params if io while(io = s.accept)
-			rescue Exception => e
-				fatal e unless s.closed?
-			ensure
-				s.close rescue true
-				log "stoped listening on port #{port}"
-			end
-		end
+		S_LOCKER.synchronize {SERVICES << [service, paramaters]}
+		info "Started listening on port #{port}."
 		true
 	end
 
 	# Anorexic Engine, DO NOT CALL. stops all services - active connection will remain open until completion.
 	def stop_services
-		log 'stopping services'
-		S_LOCKER.synchronize {SERVICES.each {|s| s.close rescue true}; SERVICES.clear }
+		info 'Stopping services'
+		S_LOCKER.synchronize {SERVICES.each {|s| s[0].close rescue true; info "Stoped listening on port #{s[1][:port]}"}; SERVICES.clear }
 	end
 
+	# checks for pending connections and accepts any pending connections
+	def accept_connections
+		ret = false
+		SERVICES.each do |s|
+			begin
+				loop do
+					io = s[0].accept_nonblock
+					add_connection io, s[1]
+					ret = true
+				end
+			rescue Errno::EWOULDBLOCK => e
+
+			rescue Exception => e
+				# error e
+				S_LOCKER.synchronize { SERVICES.delete_if { |s| s[0].closed? } }
+			end
+		end
+		ret
+	end
+
+	# the connections store
 	CONNECTIONS = []
 
 	# Anorexic Engine, DO NOT CALL. disconnectes all active connections
 	def stop_connections
-		log 'stopping connections'
+		log 'Stopping connections'
 		S_LOCKER.synchronize {CONNECTIONS.each {|c| callback c, :on_disconnect unless c.disconnected?} ; CONNECTIONS.clear}
 	end
 
@@ -311,9 +303,9 @@ module Anorexic
 	# Anorexic Engine, DO NOT CALL. itirates the connections and creates reading events.
 	# returns false if there are no connections.
 	def fire_connections
-		# it might be cool to add a GC.start here...?
-		S_LOCKER.synchronize { SERVICES.delete_if { |s| s.closed? }; CONNECTIONS.each{|c| callback c, :on_message} }
-		!CONNECTIONS.empty?
+		return if S_LOCKER.locked?
+		S_LOCKER.synchronize { CONNECTIONS.each{|c| callback c, :on_message} }
+		# !CONNECTIONS.empty?
 	end
 
 	# def check_connections
