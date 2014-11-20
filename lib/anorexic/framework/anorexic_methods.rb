@@ -214,7 +214,8 @@ module Anorexic
 		true while fire_event
 		sleep(idle_sleep) unless accept_connections
 		fire_connections
-		GC.start unless events?
+		# GC.start unless events? # forcing GC caused CPU to work overtime with MRI.
+		true
 	end
 
 
