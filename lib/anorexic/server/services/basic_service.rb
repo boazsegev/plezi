@@ -74,7 +74,7 @@ module Anorexic
 		def on_message
 			# return false if locker.locked?
 			return false if locker.locked?
-			if (_disconnected? rescue true) || (@timeout && (Time.now - @active_time) > @timeout && true) #implement check that all content was sent
+			if (_disconnected? rescue true) || (@timeout && (Time.now - @active_time) > @timeout) #implement check that all content was sent
 				return Anorexic.callback self, :on_disconnect
 			end
 			locker.synchronize do

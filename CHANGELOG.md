@@ -1,6 +1,12 @@
 #Change Log
 ***
 
+Change log v.0.6.5
+
+**engine**: Anorexic idling engine tweeks. As of yet, Anorexic never really sleeps... (new events can be created by either existing events, existing connections or new connections, so IO.select cannot be used)... idle time costs CPU cycles which were as minimized as possible for now.
+
+***
+
 Change log v.0.6.4
 
 **fix/performance**: faster websocket parsing... finaly :-)

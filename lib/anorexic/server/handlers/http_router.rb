@@ -44,7 +44,7 @@ module Anorexic
 		
 		# handles requests send by the HTTP Protocol (HTTPRequest objects)
 		def on_request request
-			request.service.timeout = false
+			request.service.timeout = 300
 			if request[:host_name] && hosts[request[:host_name].downcase]
 				hosts[request[:host_name]].on_request request
 			elsif hosts[:default]
