@@ -182,8 +182,9 @@ module Anorexic
 			file_requested = request[:path].to_s.split('/')
 			unless file_requested.include? ".."
 				file_requested.shift
-				return true if send_file request, File.join(params[:root], *file_requested)
-				return true if send_file request, File.join(params[:root], *file_requested, params[:index_file])
+				file_requested = File.join(params[:root], *file_requested)
+				return send_file request, file_requested if Anorexic.file_exists?(file_requested) && !File.directory?(file_requested)
+				return send_file request, File.join(file_requested, params[:index_file])
 			end
 			return false
 		end
