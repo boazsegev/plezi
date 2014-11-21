@@ -46,13 +46,23 @@ module Anorexic
 		def on_request request
 			request.service.timeout = 300
 			if request[:host_name] && hosts[request[:host_name].downcase]
-				hosts[request[:host_name]].on_request request
+				hosts[request[:host_name].downcase].on_request request
 			elsif hosts[:default]
 				hosts[:default].on_request request
 			else
 				HTTPResponse.new( request, 404, {"content-type" => "text/plain", "content-length" => "15"}, ["host not found."]).finish
 			end
 			request.service.timeout = 5
+		end
+		# handles requests send by Rack - dresses up as Middleware, for Rack (if you're don't like WebSockets, go ahead...)
+		def call env
+			if env["HOST"] && hosts[env["HOST"].downcase]
+				hosts[env["HOST"].downcase].call env
+			elsif hosts[:default]
+				hosts[:default].call env
+			else
+				[404, {"content-type" => "text/plain", "content-length" => "15"}, ["host not found."] ]
+			end
 		end
 	end
 

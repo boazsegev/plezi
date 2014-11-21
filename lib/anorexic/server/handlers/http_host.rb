@@ -43,7 +43,7 @@ module Anorexic
 				# return if a route answered the request
 				routes.each {|r| return true if r.on_request(request) }
 
-				# send folder listing if root is set, directoty listing is set and it exists
+				# send folder listing if root is set, directory listing is set and folder exists
 
 				#to-do
 
@@ -53,6 +53,36 @@ module Anorexic
 				# return 500 internal server error.
 				Anorexic.error e
 				send_by_code request, 500
+			end
+			true
+		end
+
+		# Dresses up as a Rack app (If you don't like WebSockets, it's a reasonable aaproach).
+		def call request
+			request = Rack::Request.new request if defined? Rack
+			ret = nil
+			begin
+				# render any assets?
+				ret = render_assets request
+				return ret if ret
+
+				# send static file, if exists and root is set.
+				ret = send_static_file request
+				return ret if ret
+
+				# return if a route answered the request
+				routes.each {|r| ret = r.call(request); return ret if ret }
+
+				# send folder listing if root is set, directory listing is set and folder exists
+
+				#to-do
+
+				#return error code or 404 not found
+				return send_by_code request, 404			
+			rescue Exception => e
+				# return 500 internal server error.
+				Anorexic.error e
+				return send_by_code request, 500
 			end
 			true
 		end
@@ -120,6 +150,7 @@ module Anorexic
 		# always returns false (data wasn't sent).
 		def render_asset request, target, data
 			Anorexic.save_file(target, data)
+			return HTTPResponse.new( request, 200, {'content-type' => MimeTypeHelper::MIME_DICTIONARY[File.extname(target)] }, [data]).finish unless Anorexic.cached?(target)
 			false
 		end
 
@@ -132,8 +163,8 @@ module Anorexic
 						return send_raw_data request, Anorexic.get_cached( File.join(params[:root], "#{code}.haml") ).render( self, request: request), 'text/html', code, headers
 					elsif defined?(::ERB) && Anorexic.file_exists?(File.join(params[:root], "#{code}.erb"))
 						return send_raw_data request, ERB.new( Anorexic.load_file( File.join(params[:root], "#{code}.erb") ) ).result(binding), 'text/html', code, headers
-					elsif send_file(request, File.join(params[:root], "#{code}.html"), code, headers)
-						return true
+					elsif Anorexic.file_exists?(File.join(params[:root], "#{code}.html"))
+						return send_file(request, File.join(params[:root], "#{code}.html"), code, headers)
 					end
 				end
 				return true if send_raw_data(request, HTTPResponse::STATUS_CODES[code], "text/plain", code, headers)
@@ -171,7 +202,6 @@ module Anorexic
 			response << data
 			response['content-length'] = data.bytesize
 			response.finish
-			true
 		end
 
 	end

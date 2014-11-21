@@ -10,6 +10,7 @@ module Anorexic
 		# the proc that answers the request on this path (if exists).
 		attr_reader :proc
 
+		# lets the route answer the request. returns false if no response has been sent.
 		def on_request request
 			fill_paramaters = match request.path
 			return false unless fill_paramaters
@@ -25,6 +26,26 @@ module Anorexic
 				return ret
 			elsif controller == false
 				request.path = path.match(request.path).to_a.last
+			end
+			return false
+		end
+
+		# handles Rack requests (dresses up as Rack).
+		def call request
+			fill_paramaters = match request.path_info
+			return false unless fill_paramaters
+			fill_paramaters.each {|k,v| HTTP.add_param_to_hash k, v, request.params }
+			response = HTTPResponse.new request
+			if controller
+				ret = controller.new(request, response)._route_path_to_methods_and_set_the_response_
+				return response.try_finish if ret
+				return ret
+			elsif proc
+				ret = proc.call(request, response)
+				return response.try_finish if ret
+				return ret
+			elsif controller == false
+				request.path_info = path.match(request.path_info).to_a.last
 			end
 			return false
 		end
@@ -153,19 +174,19 @@ module Anorexic
 
 				def _route_path_to_methods_and_set_the_response_
 					return false unless before rescue false
-					got_from_action = false
+					ret = false
 					begin
-						got_from_action = self.method(requested_method).call
+						ret = self.method(requested_method).call
 					rescue NameError => e
 						false #raise unless self.method(requested_method).nil?
 					end
-					unless got_from_action
+					unless ret
 						return false
 					end
 					return false unless after rescue false
-					if got_from_action.is_a?(String)
-						response['content-length'] = got_from_action.bytesize if response.body.empty? && !response.headers_sent?
-						response << got_from_action
+					if ret.is_a?(String)
+						response['content-length'] = ret.bytesize if response.body.empty? && !response.headers_sent?
+						response << ret
 					end
 					return true
 				end

@@ -46,17 +46,22 @@ module Anorexic
 			@timeout = timeout
 		end
 
-		# sends data immidiately - forcing the data to be sent before any other messages in the que
+		# resets the timer for the connection timeout
+		def touch
+			@active_time = Time.now
+		end
+
+		# sends data immidiately - forcing the data to be sent, flushing any pending messages in the que
 		def send data = nil
+			return if @out_que.empty? && data.nil?
+			@active_time = Time.now
 			locker.synchronize do
-				if @out_que.empty? && data
-					@active_time = Time.now
-					_send data rescue Anorexic.callback self, :on_disconnect
+				if @out_que.empty?
+					_send data rescue Anorexic.callback(self, :on_disconnect)
 				else
-					@active_time = Time.now
-					@out_que << data if data
-					@out_que.each { |d| @active_time = Time.now; _send d rescue Anorexic.callback self, :on_disconnect}
-					@out_que.clear		
+					@out_que.each { |d| _send d rescue Anorexic.callback self, :on_disconnect}
+					@out_que.clear
+					_send data rescue Anorexic.callback(self, :on_disconnect)
 				end
 			end
 		end

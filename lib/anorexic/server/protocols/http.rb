@@ -15,6 +15,10 @@ module Anorexic
 			@parser_chunk = ''
 			@parser_length = 0
 			@locker = Mutex.new
+			@@rack_dictionary ||= {"HOST".freeze => :host, 'REQUEST_METHOD'.freeze => :method,
+								'PATH_INFO'.freeze => :path, 'QUERY_STRING'.freeze => :query,
+								'SERVER_NAME'.freeze => :host, 'SERVER_PORT'.freeze => :port,
+								'rack.url_scheme'.freeze => :requested_protocol}
 		end
 
 		# called when connection is initialized.
@@ -72,6 +76,13 @@ module Anorexic
 			@parser_data[:query] = ''
 			@parser_data[:original_path] = ''
 			@parser_data[:path] = ''
+			if defined? Rack
+				@parser_data['rack.version'] = Rack::VERSION
+				@parser_data['rack.multithread'] = true
+				@parser_data['rack.multiprocess'] = false
+				@parser_data['rack.hijack?'] = false
+				@parser_data['rack.logger'] = Anorexic.logger
+			end
 			@parser_data[:method], @parser_data[:query], @parser_data[:version] = data.shift.split(/[\s]+/)
 			@parser_data[:version] = (@parser_data[:version] || 'HTTP/1.1').match(/[0-9\.]+/).to_s.to_f
 			data.shift while data[0].to_s.match /^[\r\n]+/
@@ -163,6 +174,8 @@ module Anorexic
 
 			HTTP.make_utf8! @parser_data[:host_name] if @parser_data[:host_name]
 			HTTP.make_utf8! @parser_data[:query]
+
+			@@rack_dictionary.each {|k,v| @parser_data[k] = @parser_data[v]}
 
 			#create request
 			request = HTTPRequest.new service

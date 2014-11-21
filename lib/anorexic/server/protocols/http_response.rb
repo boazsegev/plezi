@@ -15,7 +15,7 @@ module Anorexic
 		attr_reader :headers
 		#the flash cookie-jar (single-use cookies, that survive only one request)
 		attr_reader :flash
-		#the response's body container (defaults to an array, but can be replaces by any obect that supports `each` and an optional `close`, such as a file).
+		#the response's body container (defaults to an array, but can be replaces by any obect that supports `each` - `close` is NOT supported - call `close` as a callback block after `send` if you need to close the object).
 		attr_accessor :body
 		#bytes sent to the asynchronous que so far - excluding headers (only the body object).
 		attr_reader :bytes_sent
@@ -31,7 +31,8 @@ module Anorexic
 		#
 		# use, at the very least `HTTPResponse.new request`
 		def initialize request, status = 200, headers = {}, body = []
-			@request, @status, @headers, @body, @service = request, status, headers, body, request.service
+			@request, @status, @headers, @body = request, status, headers, body
+			defined?(ANOREXIC_ON_RACK) ? (@service = true) : (@service = request.service)
 			@http_version = 'HTTP/1.1' # request.version
 			@bytes_sent = 0
 			@finished = false
@@ -104,7 +105,7 @@ module Anorexic
 			else
 				value << ("; Expires=%s" % params[:expires].httpdate)
 			end
-			value << "; Path=#{params[:path]}" if params[:path]
+			value << "; Path=#{params[:path]}"
 			value << "; Domain=#{params[:domain]}" if params[:domain]
 			value << "; Secure" if params[:secure]
 			value << "; HttpOnly" if params[:http_only]
@@ -132,29 +133,28 @@ module Anorexic
 			throw 'HTTPResponse SERVICE MISSING: cannot send http response without a service.' unless service
 			unless @headers.frozen?
 				fix_headers
-				str = "#{@http_version} #{status} #{STATUS_CODES[status] || 'unknown'}\r\n"
-				headers.each {|k,v| h_name = k.to_s.downcase.gsub(/(^|[^a-z])([a-z])/) {|m| $1 + $2.upcase}; str << "#{h_name}: #{v}\r\n"}
-				@cookies.each {|k,v| str << "Set-Cookie: #{k.to_s}=#{v.to_s}\r\n"}
-				str << "\r\n"
-				service.send_nonblock str
+				service.send "#{@http_version} #{status} #{STATUS_CODES[status] || 'unknown'}\r\n"
+				headers.each {|k,v| h_name = k.to_s.downcase.gsub(/(^|[^a-z])([a-z])/) {|m| $1 + $2.upcase}; service.send "#{h_name}: #{v}\r\n"}
+				@cookies.each {|k,v| service.send "Set-Cookie: #{k.to_s}=#{v.to_s}\r\n"}
+				service.send "\r\n"
 				@headers.freeze
 				# @cookies.freeze
 			end
 			return if request.head?
 			if headers["transfer-encoding"] == "chunked"
 				body.each do |s|
-					service.send_nonblock "#{s.bytesize.to_s(16)}\r\n"
-					service.send_nonblock s
-					service.send_nonblock "\r\n"
+					service.send "#{s.bytesize.to_s(16)}\r\n"
+					service.send s
+					service.send "\r\n"
 					@bytes_sent += s.bytesize
 				end
 			else
 				body.each do |s|
-					service.send_nonblock s
+					service.send s
 					@bytes_sent += s.bytesize
 				end
 			end
-			body.close if body.methods.include?(:close)
+			# body.close rescue true
 			@body.is_a?(Array) ? @body.clear : ( @body = [] )
 		end
 
@@ -162,13 +162,14 @@ module Anorexic
 		def finish
 			throw 'HTTPResponse SERVICE MISSING: cannot send http response without a service.' unless service
 			@headers['content-length'] ||= body[0].bytesize if !headers_sent? && body.is_a?(Array) && body.length == 1
+			return [status, headers, body] if defined?(ANOREXIC_ON_RACK)
 			self.send
 			service.send( (headers["transfer-encoding"] == "chunked") ? "0\r\n\r\n" : nil)
-			@finished = true
 			# update logger to produce:
 			# 127.0.0.1 - - [04/Nov/2014 22:43:28] "GET  HTTP/1.1" 200 18686 0.6049
 			# IP - SEVERITY - [TIME] "REQUEST" RESOPNSE LENGTH MS 
 			Anorexic.log_raw "#{request[:client_ip]} [#{Time.now.utc}] \"#{request[:method]} #{request[:original_path]} #{request[:requested_protocol]}\/#{request[:version]}\" #{status} #{bytes_sent.to_s} #{"%0.3f" % ((Time.now - request[:time_recieved])*1000)}ms\n"
+			@finished = true
 		end
 
 		# attempts to finish the response - if it was not flaged as completed.
