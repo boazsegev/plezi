@@ -255,7 +255,7 @@ module Anorexic
 		paramaters[:port] ||= port
 		paramaters[:service_type] ||= ( paramaters[:ssl] ? SSLService : BasicService)
 		service = nil
-		service = paramaters[:service_type].create_service(port, paramaters) unless ( defined?(NO_ANOREXIC_AUTO_START) || defined?(BUILDING_ANOREXIC_TEMPLATE) || defined?(ANOREXIC_ON_RACK) )
+		service = paramaters[:service_type].create_service(port, paramaters) unless ( defined?(BUILDING_ANOREXIC_TEMPLATE) || defined?(ANOREXIC_ON_RACK) )
 		S_LOCKER.synchronize {SERVICES << [service, paramaters]}
 		info "Started listening on port #{port}."
 		true
@@ -271,7 +271,7 @@ module Anorexic
 	def accept_connections
 		return false if S_LOCKER.locked?
 		S_LOCKER.synchronize do
-			IO.select((SERVICES.map {|s| s[0]} ), (SERVICES.map {|s| s[0]} ), nil, 2)
+			IO.select((SERVICES.map {|s| s[0]} ), (SERVICES.map {|s| s[0]} ), (SERVICES.map {|s| s[0]} ), 1)
 			SERVICES.each do |s|
 				begin
 					loop do
@@ -314,7 +314,7 @@ module Anorexic
 	# returns false if there are no connections.
 	def fire_connections
 		return false if CO_LOCKER.locked?
-		CO_LOCKER.synchronize { IO.select((CONNECTIONS.map {|c| c.socket} ), nil, nil, 0.25); C_LOCKER.synchronize { CONNECTIONS.each{|c| callback c, :on_message} } }
+		CO_LOCKER.synchronize { io_ar = IO.select((CONNECTIONS.map {|c| c.socket} ), nil, nil, 0.25); C_LOCKER.synchronize { CONNECTIONS.each{|c| callback c, :on_message} } }
 		true
 	end
 
