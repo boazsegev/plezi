@@ -189,7 +189,7 @@ module Anorexic
 			@parser_stage = 0
 
 			#check for server-responses
-			case request.method
+			case request.request_method
 			when "TRACE"
 				return true
 			when "OPTIONS"

@@ -38,12 +38,10 @@ module Anorexic
 			response = HTTPResponse.new request
 			if controller
 				ret = controller.new(request, response)._route_path_to_methods_and_set_the_response_
-				return response.try_finish if ret
-				return ret
+				return response if ret
 			elsif proc
 				ret = proc.call(request, response)
-				return response.try_finish if ret
-				return ret
+				return response if ret
 			elsif controller == false
 				request.path_info = path.match(request.path_info).to_a.last
 			end

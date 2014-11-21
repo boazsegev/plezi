@@ -254,7 +254,8 @@ module Anorexic
 	def add_service port, paramaters = {}
 		paramaters[:port] ||= port
 		paramaters[:service_type] ||= ( paramaters[:ssl] ? SSLService : BasicService)
-		service = paramaters[:service_type].create_service(port, paramaters)
+		service = nil
+		service = paramaters[:service_type].create_service(port, paramaters) unless ( defined?(NO_ANOREXIC_AUTO_START) || defined?(BUILDING_ANOREXIC_TEMPLATE) || defined?(ANOREXIC_ON_RACK) )
 		S_LOCKER.synchronize {SERVICES << [service, paramaters]}
 		info "Started listening on port #{port}."
 		true

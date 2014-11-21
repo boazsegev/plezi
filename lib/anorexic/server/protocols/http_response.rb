@@ -25,14 +25,15 @@ module Anorexic
 		attr_accessor :request
 		#the http version header
 		attr_accessor :http_version
+		#Danger Zone! direct access to cookie headers - don't use this unless you know what you're doing!
+		attr_reader :cookies
 
 		# the response object responds to a specific request on a specific service.
 		# hence, to initialize a response object, a request must be set.
 		#
 		# use, at the very least `HTTPResponse.new request`
 		def initialize request, status = 200, headers = {}, body = []
-			@request, @status, @headers, @body = request, status, headers, body
-			defined?(ANOREXIC_ON_RACK) ? (@service = true) : (@service = request.service)
+			@request, @status, @headers, @body, @service = request, status, headers, body, (defined?(ANOREXIC_ON_RACK) ? false : request.service)
 			@http_version = 'HTTP/1.1' # request.version
 			@bytes_sent = 0
 			@finished = false
@@ -130,7 +131,7 @@ module Anorexic
 		#
 		# the response will remain open for more data to be sent through (using `response << data` and `response.send`).
 		def send
-			throw 'HTTPResponse SERVICE MISSING: cannot send http response without a service.' unless service
+			raise 'HTTPResponse SERVICE MISSING: cannot send http response without a service.' unless service
 			unless @headers.frozen?
 				fix_headers
 				service.send "#{@http_version} #{status} #{STATUS_CODES[status] || 'unknown'}\r\n"
@@ -160,9 +161,9 @@ module Anorexic
 
 		# sends the response and flags the response as complete. future data should not be sent. the flag will only be enforced be the Anorexic router. your code might attempt sending data (which would probbaly be ignored by the client or raise an exception).
 		def finish
-			throw 'HTTPResponse SERVICE MISSING: cannot send http response without a service.' unless service
 			@headers['content-length'] ||= body[0].bytesize if !headers_sent? && body.is_a?(Array) && body.length == 1
-			return [status, headers, body] if defined?(ANOREXIC_ON_RACK)
+			return self if defined?(ANOREXIC_ON_RACK)
+			raise 'HTTPResponse SERVICE MISSING: cannot send http response without a service.' unless service
 			self.send
 			service.send( (headers["transfer-encoding"] == "chunked") ? "0\r\n\r\n" : nil)
 			# update logger to produce:
@@ -238,9 +239,7 @@ module Anorexic
 			511=>"Network Authentication Required"
 		}
 
-		protected
-
-		# fix response's headers (date, connection and transfer-coding).
+		# Danger Zone (internally used method, use with care): fix response's headers before sending them (date, connection and transfer-coding).
 		def fix_headers
 			headers['connection'] ||= "Keep-Alive"
 			headers['date'] = Time.now.httpdate

@@ -18,7 +18,7 @@ module Anorexic
 
 		# adds a host to the router (or activates an existing host to add new routes). accepts a host name and any parameters not related to the service (see `Anorexic.add_service`)
 		def add_host host_name, params
-			host_name = host_name ? host_name.downcase : :default
+			host_name = (host_name ? host_name.to_s.downcase : :default)
 			@hosts[host_name] ||= HTTPHost.new params
 			add_alias host_name, *params[:alias] if params[:alias]
 			@active_host = @hosts[host_name]
@@ -26,7 +26,7 @@ module Anorexic
 		# adds an alias to an existing host name (normally through the :alias parameter in the `add_host` method).
 		def add_alias host_name, *aliases
 			return false unless @hosts[host_name]
-			aliases.each {|a| @hosts[a] = @hosts[host_name]}
+			aliases.each {|a| @hosts[a.to_s.downcase] = @hosts[host_name]}
 			true
 		end
 
@@ -45,7 +45,7 @@ module Anorexic
 		# handles requests send by the HTTP Protocol (HTTPRequest objects)
 		def on_request request
 			request.service.timeout = 300
-			if request[:host_name] && hosts[request[:host_name].downcase]
+			if request[:host_name] && hosts[request[:host_name].to_s.downcase]
 				hosts[request[:host_name].downcase].on_request request
 			elsif hosts[:default]
 				hosts[:default].on_request request

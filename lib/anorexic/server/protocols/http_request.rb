@@ -23,8 +23,12 @@ module Anorexic
 			self[:headers]
 		end
 		# the request's method (GET, POST... etc').
-		def method
+		def request_method
 			self[:method]
+		end
+		# set request's method (GET, POST... etc').
+		def request_method= value
+			self[:method] = value
 		end
 		# the parameters sent by the client.
 		def params

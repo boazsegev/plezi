@@ -148,7 +148,7 @@ end
 # it is recommended that you DO NOT CALL this method.
 # if any post shut-down actions need to be performed, use Anorexic.on_shutdown instead.
 def start_services
-	return 0 if ( defined?(NO_ANOREXIC_AUTO_START) || defined?(BUILDING_ANOREXIC_TEMPLATE) )
+	return 0 if ( defined?(NO_ANOREXIC_AUTO_START) || defined?(BUILDING_ANOREXIC_TEMPLATE) || defined?(ANOREXIC_ON_RACK) )
 	Object.const_set "NO_ANOREXIC_AUTO_START", true
 	undef listen
 	undef host
@@ -159,7 +159,7 @@ def start_services
 end
 
 # sets to start the services once dsl script is finished loading.
-at_exit { start_services } unless ( defined?(NO_ANOREXIC_AUTO_START) || defined?(BUILDING_ANOREXIC_TEMPLATE) )
+at_exit { start_services } unless ( defined?(NO_ANOREXIC_AUTO_START) || defined?(BUILDING_ANOREXIC_TEMPLATE) || defined?(ANOREXIC_ON_RACK) )
 
 # sets a name for the process (on some systems).
 $0="Anorexic (Ruby)"

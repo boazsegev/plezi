@@ -48,6 +48,10 @@ require "anorexic/framework/anorexic_methods"
 require "anorexic/framework/dsl"
 
 
+### optional Rack
+require "anorexic/framework/rack_app"
+
+
 
 ##############################################################################
 # To make something new, we leap to the unknown.
