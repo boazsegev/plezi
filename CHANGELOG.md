@@ -5,6 +5,12 @@ Change log v.0.6.5
 
 **engine**: Anorexic idling engine tweeks. As of yet, Anorexic never really sleeps... (new events can be created by either existing events, existing connections or new connections, so IO.select cannot be used)... idle time costs CPU cycles which were as minimized as possible for now.
 
+**feature**: very basic Rack support is back (brought back mainly for testing)... BUT:
+
+Rack code and Anorexic code are NOT fully compatible. for example: Rack's parameters aren't always fully decoded. Also, Rack's file upload contains tmporary files, where Anorexic's request object contains the binary data in a binary String object.
+
+Also, Rack does NOT support native WebSocket Controllers (you will need middle ware for that). 
+
 ***
 
 Change log v.0.6.4
