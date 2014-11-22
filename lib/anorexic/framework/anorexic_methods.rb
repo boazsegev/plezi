@@ -215,6 +215,11 @@ module Anorexic
 		sleep(idle_sleep) unless accept_connections
 		fire_connections
 		# GC.start unless events? # forcing GC caused CPU to work overtime with MRI.
+		# @time_since_output ||= Time.now
+		# if Time.now - @time_since_output >= 1
+		# 	@time_since_output = Time.now
+		# 	info "#{CONNECTIONS.length} active connections"
+		# end
 		true
 	end
 
@@ -243,6 +248,7 @@ module Anorexic
 	# assets:: the assets root folder. defaults to nil (no assets support). if the path is defined, assets will be served from `/assets/...` (or the public_asset path defined) before any static files. assets will not be served if the file in the /public/assets folder if up to date (a rendering attempt will be made for systems that allow file writing).
 	# assets_public:: the assets public uri location (uri format, NOT a file path). defaults to `/assets`. assets will be saved (or rendered) to the assets public folder and served as static files.
 	# assets_callback:: a method that accepts one parameters: `request` and renders any custom assets. the method should return `false` unless it has created a response object (`response = Anorexic::HTTPResponse.new(request)`) and sent a response to the client using `response.finish`.
+	# save_assets:: saves the rendered assets to the filesystem, under the public folder. defaults to false.
 	# templates:: the templates root folder. defaults to nil (no template support). templates can be rendered by a Controller class, using the `render` method.
 	# ssl:: if true, an SSL service will be attempted. if no certificate is defined, an attempt will be made to create a self signed certificate.
 	# ssl_key:: the public key for the SSL service.
@@ -322,6 +328,11 @@ module Anorexic
 		return false if CO_LOCKER.locked?
 		CO_LOCKER.synchronize { io_ar = IO.select((CONNECTIONS.map {|c| c.socket} ), nil, nil, 0.25); C_LOCKER.synchronize { CONNECTIONS.each{|c| callback c, :on_message} } }
 		true
+	end
+
+	# clears closed connections from the stack
+	def clear_connections
+		C_LOCKER.synchronize { CONNECTIONS.delete_if {|c| [true, (callback c, :on_disconnect)] if c.disconnected? } }
 	end
 
 	# def check_connections

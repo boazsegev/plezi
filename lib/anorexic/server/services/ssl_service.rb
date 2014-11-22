@@ -57,7 +57,7 @@ module Anorexic
 			ssl_socket.write data
 		end
 		# reads from the connection
-		def _read size
+		def _read size = 1048576
 			data = ''
 			begin
 				loop { data << ssl_socket.read_nonblock( size) }

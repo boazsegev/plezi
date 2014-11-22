@@ -6,7 +6,9 @@ module Anorexic
 	# contains the cached data, in the format: CACHE_STORE["filename"] = CacheObject
 	CACHE_STORE = {}
 	LOCK = Mutex.new
-	CACHABLE = %w{haml css js html scss sass coffee txt xml json yaml rb}
+	CACHABLE = %w{cache object haml css map js html scss sass coffee txt xml json yaml rb}
+
+	@cache_to_disk = true
 
 	# this class holds cached objects (data and modification times)
 	class CacheObject
@@ -39,10 +41,10 @@ module Anorexic
 		end
 	end
 	# places data into the cache, and attempts to save the data to a file name.
-	def save_file filename, data
-		cache_data filename, data
+	def save_file filename, data, save_to_disk = false
+		cache_data filename, data if CACHABLE.include? filename.match(/\.([^\.]+)$/)[1]
 		begin
-			IO.write filename, data
+			IO.write filename, data if save_to_disk
 		rescue Exception => e
 			Anorexic.warn("File couldn't be written (#{filename}) - file system error?")
 		end
@@ -69,15 +71,10 @@ module Anorexic
 		File.exists?(filename)
 	end
 
-	# refreshes the cache
-	def refresh_cache
-		LOCK.synchronize do
-			CACHE_STORE.each do |k,v|
-				if File.exists?(k) && v.mtime < File.mtime(k)
-					v.data = IO.read k ; v.mtime = File.mtime(k)
-				end
-			end
-		end
-		true
+	# returns true if the file has been update since data was last cached.
+	def cache_needs_update? filename
+		return true if CACHE_STORE[filename].nil?
+		return true if CACHE_STORE[filename].mtime < File.mtime(filename)
+		false
 	end
 end

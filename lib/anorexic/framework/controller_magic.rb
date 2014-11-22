@@ -127,13 +127,14 @@ module Anorexic
 			# set up basics
 			options[:type] ||= 'html'
 			options[:locals] ||= {}
+			I18n.locale = options[:locale] || params[:locale].to_sym if defined? I18n
 			return false if host_params[:templates].nil?
 			(return render(options.delete(:layout), options) { render template, options, &block }) if options[:layout]
 			# find template and create template object
 			filename = template.is_a?(String) ? template : (File.join(host_params[:templates], *template.to_s.split('_')) + (options[:type].empty? ? '': ".#{options[:type]}") + '.haml')
-			return ( Anorexic.cached?(filename) ? (Anorexic.get_cached filename) : Anorexic.cache_data( filename, ( Haml::Engine.new( IO.read(filename) ) ) ) ).render(self, options[:locals], &block) if defined?(::Haml) && Anorexic.file_exists?(filename)
+			return ( Anorexic.cache_needs_update?(filename) ? Anorexic.cache_data( filename, ( Haml::Engine.new( IO.read(filename) ) ), Anorexic.file_mtime(filename) )  : (Anorexic.get_cached filename) ).render(self, options[:locals], &block) if defined?(::Haml) && Anorexic.file_exists?(filename)
 			filename.gsub! /\.haml$/, '.erb'
-			return ( Anorexic.cached?(filename) ? (Anorexic.get_cached filename) : Anorexic.cache_data( filename, ( ERB.new( IO.read(filename) ) ) ) ).result(binding, &block) if defined?(::ERB) && Anorexic.file_exists?(filename)
+			return ( Anorexic.cache_needs_update?(filename) ? Anorexic.cache_data( filename, ( ERB.new( IO.read(filename) ) ), Anorexic.file_mtime(filename) )  : (Anorexic.get_cached filename) ).result(binding, &block) if defined?(::ERB) && Anorexic.file_exists?(filename)
 			return false
 		end
 

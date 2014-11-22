@@ -15,6 +15,7 @@ module Anorexic
 		def initialize params = {}
 			@params = params
 			@routes = []
+			# params[:save_assets] = true unless params[:save_assets] == false
 			params[:index_file] ||= 'index.html'
 			params[:assets_public] ||= '/assets'
 			params[:assets_public].chomp! '/'
@@ -115,7 +116,7 @@ module Anorexic
 			when /\.scss$/, /\.sass$/
 				if defined? ::Sass
 					source_file, map = Sass::Engine.for_file(source_file, cache_store: @sass_cache).render_with_sourcemap(params[:assets_public])
-					render_asset request, (target_file + '.map'), source_file rescue false
+					Anorexic.save_file((target_file + '.map'), data, params[:save_assets]) rescue false
 				else
 					return false
 				end
@@ -149,7 +150,7 @@ module Anorexic
 		#
 		# always returns false (data wasn't sent).
 		def render_asset request, target, data
-			Anorexic.save_file(target, data)
+			Anorexic.save_file(target, data, params[:save_assets])
 			return HTTPResponse.new( request, 200, {'content-type' => MimeTypeHelper::MIME_DICTIONARY[File.extname(target)] }, [data]).finish unless Anorexic.cached?(target)
 			false
 		end

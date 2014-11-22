@@ -30,9 +30,10 @@ module Anorexic
 		def on_message(service, data)
 			# parse the request
 			@locker.synchronize { parse_message service, data.lines.to_a }
-			unless @parser_stage == 0 || @parser_data[:version] < 1.1
-				# send 100 continue message
-				service.send_nonblock "100 Continue\r\n\r\n"
+			if (@parser_stage == 1) && @parser_data[:version] >= 1.1
+				# send 100 continue message????? doesn't work! both Crome and Safari go crazy if this is sent after the request was sent (but before all the packets were recieved... msgs over 1 Mb).
+				# Anorexic.push_event Proc.new { Anorexic.info "sending continue signal."; service.send_nonblock "100 Continue\r\n\r\n" }
+				# service.send_unsafe_interrupt "100 Continue\r\n\r\n" # causes double lock on service
 			end
 			true
 		end
@@ -193,11 +194,13 @@ module Anorexic
 			when "TRACE"
 				return true
 			when "OPTIONS"
-				response = HTTPResponse.new request
-				response[:Allow] = "GET,HEAD,POST,PUT,DELETE,OPTIONS"
-				response["access-control-allow-origin"] = "*"
-				response['content-length'] = 0
-				response.finish
+				Anorexic.push_event Proc.new do
+					response = HTTPResponse.new request
+					response[:Allow] = "GET,HEAD,POST,PUT,DELETE,OPTIONS"
+					response["access-control-allow-origin"] = "*"
+					response['content-length'] = 0
+					response.finish
+				end
 				return true
 			end
 

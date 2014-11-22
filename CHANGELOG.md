@@ -3,8 +3,11 @@
 
 Change log v.0.6.6
 
-**feature**: Both rendering of ERB and Haml moved into the magic controller - now, both ERB and Haml rendering is as easy as can be. (Haml's performance is still slow for concurrent connections. ERB seems faster).
+**feature**: Both rendering of ERB and Haml moved into the magic controller - now, both ERB and Haml rendering is as easy as can be. (Haml's performance is still slow for concurrent connections. ERB seems almost 4 times faster when under stress).
 
+**change**: rendered assets are no longer saved to disk by defaulte. use `listen ... save_assets: true` to save rendered assets to the public folder.
+
+**fix**: fixed an issue where the socket data wasn't read on systems that refues to report the unread buffer size (i.e. Heroku). Now, reading wil be attempted without any regards to the reported unread buffer.
 ***
 
 Change log v.0.6.5

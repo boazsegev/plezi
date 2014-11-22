@@ -66,6 +66,11 @@ module Anorexic
 			end
 		end
 
+		# sends data immidiately, interrupting any pending que and ignoring thread safety.
+		def send_unsafe_interrupt data = nil
+			_send data rescue false
+		end
+
 		# sends data without waiting - data might be sent in a different order then intended.
 		def send_nonblock data
 			locker.synchronize {@out_que << data}
@@ -84,8 +89,7 @@ module Anorexic
 			end
 			locker.synchronize do
 				begin
-					read_size = socket.stat.size
-					data = _read(read_size) unless read_size == 0
+					data = _read
 					if data && !data.empty?
 						@active_time = Time.now
 						if protocol
@@ -137,7 +141,7 @@ module Anorexic
 		# end
 
 		def on_disconnect
-			Anorexic.callback Anorexic, :remove_connection, self			
+			Anorexic.callback Anorexic, :remove_connection, self
 			locker.synchronize do
 				@out_que.each { |d| _send d rescue true}
 				@out_que.clear
@@ -198,8 +202,8 @@ module Anorexic
 		end
 		# this is a protected method, it should be used by child classes to implement each
 		# read(_nonblock) action. accepts one argument ::size for buffer size to be read.
-		def _read size
-			@socket.recv_nonblock(size)
+		def _read size = 1048576
+			@socket.recv_nonblock( size ) rescue false
 		end
 		# this is a protected method, it should be used by child classes to implement each
 		# close action. doesn't accept any arguments.
