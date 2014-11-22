@@ -9,6 +9,8 @@ module Anorexic
 		attr_reader :controller
 		# the proc that answers the request on this path (if exists).
 		attr_reader :proc
+		# the parameters for the router and service that were used to create the service, router and host.
+		attr_reader :params
 
 		# lets the route answer the request. returns false if no response has been sent.
 		def on_request request
@@ -17,7 +19,7 @@ module Anorexic
 			fill_paramaters.each {|k,v| HTTP.add_param_to_hash k, v, request.params }
 			response = HTTPResponse.new request
 			if controller
-				ret = controller.new(request, response)._route_path_to_methods_and_set_the_response_
+				ret = controller.new(request, response, params)._route_path_to_methods_and_set_the_response_
 				response.try_finish if ret
 				return ret
 			elsif proc
@@ -37,7 +39,7 @@ module Anorexic
 			fill_paramaters.each {|k,v| HTTP.add_param_to_hash k, v, request.params }
 			response = HTTPResponse.new request
 			if controller
-				ret = controller.new(request, response)._route_path_to_methods_and_set_the_response_
+				ret = controller.new(request, response, params)._route_path_to_methods_and_set_the_response_
 				return response if ret
 			elsif proc
 				ret = proc.call(request, response)
@@ -54,8 +56,8 @@ module Anorexic
 		#
 		# a string can be either a simple string `"/users"` or a string with paramaters:
 		# `"/static/:required/(:optional)/(:optional_with_format){[\d]*}/:optional_2"`
-		def initialize path, controller, &block
-			@path_sections = false
+		def initialize path, controller, params, &block
+			@path_sections , @params = false, params
 			initialize_path path
 			initialize_controller controller, block
 		end
@@ -159,8 +161,8 @@ module Anorexic
 			ret = Class.new(controller) do
 				include Anorexic::ControllerMagic
 
-				def initialize request, response
-					@request, @params, @flash = request, request.params, response.flash
+				def initialize request, response, host_params
+					@request, @params, @flash, @host_params = request, request.params, response.flash, host_params
 					@response = response
 					# @response["content-type"] ||= ::Anorexic.default_content_type
 

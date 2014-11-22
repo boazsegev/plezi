@@ -25,7 +25,7 @@ module Anorexic
 
 		# adds a route under the specific host
 		def add_route path, controller, &block
-			routes << Route.new(path, controller, &block)
+			routes << Route.new(path, controller, params, &block)
 		end
 
 		# handles requests sent to the host. returns true if the host delt with the request.

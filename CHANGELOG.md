@@ -1,6 +1,12 @@
 #Change Log
 ***
 
+Change log v.0.6.6
+
+**feature**: Both rendering of ERB and Haml moved into the magic controller - now, both ERB and Haml rendering is as easy as can be. (Haml's performance is still slow for concurrent connections. ERB seems faster).
+
+***
+
 Change log v.0.6.5
 
 **engine**: Anorexic idling engine tweeks. As of yet, Anorexic never really sleeps... (new events can be created by either existing events, existing connections or new connections, so IO.select cannot be used)... idle time costs CPU cycles which were as minimized as possible for now.

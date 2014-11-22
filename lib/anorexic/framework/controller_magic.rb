@@ -24,6 +24,8 @@ module Anorexic
 		# the ::flash is a little bit of a magic hash that sets and reads temporary cookies.
 		# these cookies will live for one successful request to a Controller and will then be removed.
 		attr_reader :flash
+		# the parameters used to create the host (the parameters passed to the `listen` / `add_service` call).
+		attr_reader :host_params
 
 		# this method does two things.
 		#
@@ -94,6 +96,45 @@ module Anorexic
 			response["content-disposition"] = content_disposition
 			response.finish
 			true
+		end
+
+		# renders a template file (.erb/.haml) or an html file (.html) to text
+		# for example, to render the file `body.html.haml` with the layout `main_layout.html.haml`:
+		#   render :body, layout: :main_layout
+		#
+		# or, for example, to render the file `json.js.haml`
+		#   render :json, type: 'js'
+		#
+		# or, for example, to render the file `template.haml`
+		#   render :template, type: ''
+		#
+		# template:: a Symbol for the template to be used.
+		# options:: a Hash for any options such as `:layout` or `locale`.
+		# block:: an optional block, in case the template has `yield`, the block will be passed on to the template and it's value will be used inplace of the yield statement.
+		#
+		# options aceept the following keys:
+		# type:: the types for the `:layout' and 'template'. can be any extention, such as `"json"`. defaults to `"html"`.
+		# layout:: a layout template that has at least one `yield` statement where the template will be rendered.
+		# locale:: the I18n locale for the render. (defaults to params[:locale]) - only if the I18n gem namespace is defined (`require 'i18n'`).
+		#
+		# if template is a string, it will assume the string is an
+		# absolute path to a template file. it will NOT search for the template but might raise exceptions.
+		#
+		# if the template is a symbol, the '_' caracters will be used to destinguish sub-folders (NOT a partial template).
+		#
+		# returns false if the template or layout files cannot be found.
+		def render template, options = {}, &block
+			# set up basics
+			options[:type] ||= 'html'
+			options[:locals] ||= {}
+			return false if host_params[:templates].nil?
+			(return render(options.delete(:layout), options) { render template, options, &block }) if options[:layout]
+			# find template and create template object
+			filename = template.is_a?(String) ? template : (File.join(host_params[:templates], *template.to_s.split('_')) + (options[:type].empty? ? '': ".#{options[:type]}") + '.haml')
+			return ( Anorexic.cached?(filename) ? (Anorexic.get_cached filename) : Anorexic.cache_data( filename, ( Haml::Engine.new( IO.read(filename) ) ) ) ).render(self, options[:locals], &block) if defined?(::Haml) && Anorexic.file_exists?(filename)
+			filename.gsub! /\.haml$/, '.erb'
+			return ( Anorexic.cached?(filename) ? (Anorexic.get_cached filename) : Anorexic.cache_data( filename, ( ERB.new( IO.read(filename) ) ) ) ).result(binding, &block) if defined?(::ERB) && Anorexic.file_exists?(filename)
+			return false
 		end
 
 		# returns the initial method called (or about to be called) by the router for the HTTP request.
