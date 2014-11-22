@@ -1,6 +1,12 @@
 #Change Log
 ***
 
+Change log v.0.6.7
+
+**fix**: fixed an issue where rendering (Haml/ERB) would fail if I18n was defined, but no locale was specified in render or in request parameters.
+
+***
+
 Change log v.0.6.6
 
 **feature**: Both rendering of ERB and Haml moved into the magic controller - now, both ERB and Haml rendering is as easy as can be. (Haml's performance is still slow for concurrent connections. ERB seems almost 4 times faster when under stress).

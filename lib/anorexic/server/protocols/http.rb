@@ -15,9 +15,9 @@ module Anorexic
 			@parser_chunk = ''
 			@parser_length = 0
 			@locker = Mutex.new
-			@@rack_dictionary ||= {"HOST".freeze => :host, 'REQUEST_METHOD'.freeze => :method,
+			@@rack_dictionary ||= {"HOST".freeze => :host_name, 'REQUEST_METHOD'.freeze => :method,
 								'PATH_INFO'.freeze => :path, 'QUERY_STRING'.freeze => :query,
-								'SERVER_NAME'.freeze => :host, 'SERVER_PORT'.freeze => :port,
+								'SERVER_NAME'.freeze => :host_name, 'SERVER_PORT'.freeze => :port,
 								'rack.url_scheme'.freeze => :requested_protocol}
 		end
 
@@ -163,7 +163,7 @@ module Anorexic
 			@parser_data[:host_name] = m[4] || (@parser_data['host'] ? @parser_data['host'].match(/^[^:]*/).to_s : nil)
 			@parser_data[:port] = m[6] || (@parser_data['host'] ? @parser_data['host'].match(/:[0-9]*/).to_s : nil)
 			@parser_data[:original_path] = HTTP.decode(m[7], :uri) || '/'
-			@parser_data['host'] ||= "#{@parser_data[:host]}:#{@parser_data[:port]}"
+			@parser_data['host'] ||= "#{@parser_data[:host_name]}:#{@parser_data[:port]}"
 			# parse query for params - m[9] is the data part of the query
 			if m[9]
 				HTTP.extract_data m[9].split(/[&;]/), @parser_data[:params]

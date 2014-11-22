@@ -127,7 +127,7 @@ module Anorexic
 			# set up basics
 			options[:type] ||= 'html'
 			options[:locals] ||= {}
-			I18n.locale = options[:locale] || params[:locale].to_sym if defined? I18n
+			I18n.locale = options[:locale] || params[:locale].to_sym if (defined?(I18n) && params[:locale])
 			return false if host_params[:templates].nil?
 			(return render(options.delete(:layout), options) { render template, options, &block }) if options[:layout]
 			# find template and create template object
