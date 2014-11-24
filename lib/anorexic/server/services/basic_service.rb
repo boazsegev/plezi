@@ -61,7 +61,7 @@ module Anorexic
 				else
 					@out_que.each { |d| _send d rescue Anorexic.callback self, :on_disconnect}
 					@out_que.clear
-					_send data rescue Anorexic.callback(self, :on_disconnect)
+					(_send data rescue Anorexic.callback(self, :on_disconnect)) if data
 				end
 			end
 		end
@@ -193,7 +193,7 @@ module Anorexic
 		# this is a protected method, it should be used by child classes to implement each
 		# send action.
 		def _send data
-			data.force_encoding "BINARY"
+			data.force_encoding "binary"
 			len = data.bytesize
 			act = @socket.send data, 0
 			while len > act

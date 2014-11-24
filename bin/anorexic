@@ -37,6 +37,18 @@ class AppTemplate
 		@end_comments = []
 		@app_tree ||= {}
 
+		# set up application files
+		app_tree["app"] ||= {}
+		app_tree["app"]["controllers"] ||= {}
+		app_tree["app"]["controllers"]["sample_controller.rb"] ||= IO.read(::File.expand_path(File.join("..", "..", "resources" ,"controller.rb"),  __FILE__))
+		app_tree["app"]["models"] ||= {}
+		app_tree["app"]["views"] ||= {}
+
+		# set up the assets folder
+		app_tree["assets"] ||= {}
+		app_tree["assets"]["stylesheets"] ||= {}
+		app_tree["assets"]["javascripts"] ||= {}
+
 		# app core files.
 		app_tree["environment.rb"] ||= IO.read ::File.expand_path(File.join("..", "..", "resources" ,"environment.rb"),  __FILE__)
 		app_tree["rakefile.rb"] ||= IO.read ::File.expand_path(File.join("..", "..", "resources" ,"rakefile.rb"),  __FILE__)
@@ -44,48 +56,29 @@ class AppTemplate
 		app_tree["Procfile"] << "\nweb: bundle exec ./#{ARGV[1]}.rb -p $PORT\n"
 		app_tree["Gemfile"] ||= IO.read ::File.expand_path(File.join("..", "..", "resources" ,"Gemfile"),  __FILE__)
 
-		# #set up the extras folder, to be filled with future goodies.
-		# app_tree["extras"] ||= {}
-		# app_tree["extras"]["config.ru"] ||= IO.read ::File.expand_path(File.join("..", "..", "resources" ,"config.ru"),  __FILE__)
-
-		#set up database stub folders
-		app_tree["db"] ||= {}
-		app_tree["db"]["migrate"] ||= {}
-
-		#set up I18n stub
-		app_tree["locales"] ||= {}
-		app_tree["locales"]["en.yml"] ||= IO.read ::File.expand_path(File.join("..", "..", "resources" ,"en.yml"),  __FILE__)
-
 		# set up config files
 		app_tree["config"] ||= {}
 		app_tree["config"]["db_config.rb"] = IO.read(::File.expand_path(File.join("..", "..", "resources" ,"db_config.rb"),  __FILE__))
 		app_tree["config"]["haml_config.rb"] = IO.read(::File.expand_path(File.join("..", "..", "resources" ,"haml_config.rb"),  __FILE__))
 		app_tree["config"]["i18n_config.rb"] = IO.read(::File.expand_path(File.join("..", "..", "resources" ,"i18n_config.rb"),  __FILE__))
 
-		# set up extra files
+		#set up database stub folders
+		app_tree["db"] ||= {}
+		app_tree["db"]["migrate"] ||= {}
+
+		#set up the extras folder, to be filled with future goodies.
 		app_tree["extras"] ||= {}
-		app_tree["extras"]["config.ru"] = IO.read(::File.expand_path(File.join("..", "..", "resources" ,"config.ru"),  __FILE__))
+		app_tree["extras"]["config.ru"] ||= IO.read ::File.expand_path(File.join("..", "..", "resources" ,"config.ru"),  __FILE__)
+
+		#set up I18n stub
+		app_tree["locales"] ||= {}
+		app_tree["locales"]["en.yml"] ||= IO.read ::File.expand_path(File.join("..", "..", "resources" ,"en.yml"),  __FILE__)
 
 		# create library, log and tmp folders
 		app_tree["logs"] ||= {}
 		app_tree["lib"] ||= {}
 		app_tree["tmp"] ||= {}
-		app_tree["tmp"]["sass-cache"] ||= {}
 
-		# set up application files
-		app_tree["app"] ||= {}
-		app_tree["app"]["controllers"] ||= {}
-		app_tree["app"]["models"] ||= {}
-		app_tree["app"]["controllers"]["sample_controller.rb"] ||= IO.read(::File.expand_path(File.join("..", "..", "resources" ,"controller.rb"),  __FILE__))
-
-		#set the views forlder for all HAML files and templates
-		app_tree["app"] ||= {}
-		app_tree["app"]["views"] ||= {}
-
-		# set up the assets folder, which will be used in the future for compiling assets using rake
-		app_tree["assets"] ||= {}
-		app_tree["assets"]["sass"] ||= {}
-		app_tree["assets"]["coffee"] ||= {}
 
 		# set up a public folder for static file service
 		app_tree["public"] ||= {}		
@@ -97,8 +90,8 @@ class AppTemplate
 		app_tree["public"]["404.haml"] ||= IO.read(::File.expand_path(File.join("..", "..", "resources" ,"404.html.haml"),  __FILE__))
 		app_tree["public"]["500.haml"] ||= IO.read(::File.expand_path(File.join("..", "..", "resources" ,"500.html.haml"),  __FILE__))
 		app_tree["public"]["assets"] ||= {}		
-		app_tree["public"]["stylesheets"] ||= {}		
-		app_tree["public"]["javascripts"] ||= {}		
+		app_tree["public"]["assets"]["stylesheets"] ||= {}		
+		app_tree["public"]["assets"]["javascripts"] ||= {}		
 		app_tree["public"]["images"] ||= {}		
 		app_tree["public"]["images"]['anorexic_gray.png'] ||= IO.read(::File.expand_path(File.join("..", "..", "resources" ,"anorexic_gray.png"),  __FILE__))	
 
@@ -124,10 +117,10 @@ class AppTemplate
 		write_files app_tree
 		File.chmod 0775, "#{ARGV[1]}.rb"
 		puts "tried to update execution permissions. this probably failed.".pink
-		puts "use: chmod +x ./#{ARGV[1]}.rb to set execution permissions."
+		puts "use: chmod +x ./#{ARGV[1]}.rb to set execution permissions on Unix machines."
 		puts ""
 		puts "done."
-		puts "\n#{@end_comments.join("\n")}"
+		puts "\n#{@end_comments.join("\n")}" unless @end_comments.empty?
 		puts ""
 		puts "please change directory into the app directory: cd #{ARGV[1]}"
 		puts ""
@@ -158,7 +151,7 @@ class AppTemplate
 							# puts "    #{parent}/#{k} PLEASE REVIEW.".pink
 							# @end_comments << "#{parent}/#{k} WAS OVERWRITTEN, old data was preserved by comenting it out. PLEASE REVIEW."
 						else
-							puts "    exists #{parent}/#{k}".red
+							puts "    EXISTS(!) #{parent}/#{k}".red
 						end
 					else
 						IO.write k, v
@@ -210,7 +203,7 @@ if ARGV[0] == 'new' || ARGV[0] == 'n' || ARGV[0] == "force"
 	BUILDING_ANOREXIC_TEMPLATE = true
 	if Dir.exists?(ARGV[1]) && ARGV[0] != "force"
 		puts ""
-		puts "WARNING: app/folder alread exists, use `anorexic fource #{ARGV[1]}` to attempt rebuild (no overwrite).".red
+		puts "WARNING: app/folder alread exists, use `anorexic fource #{ARGV[1]}` to attempt rebuild (no files will be overwritten).".red
 		puts ""
 		exit
 	end

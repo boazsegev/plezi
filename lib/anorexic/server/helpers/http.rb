@@ -94,21 +94,20 @@ module Anorexic
 				when :form
 					object.gsub!('+', '%20')
 					object.gsub!(/\%[0-9a-fA-F][0-9a-fA-F]/) {|m| m[1..2].to_i(16).chr}					
-					object.gsub!(/&#([0-9]{4});/) {|m| [m.match(/[0-9]+/)[0].to_i].pack 'U'}
 				when :uri, :url
 					object.gsub!(/\%[0-9a-fA-F][0-9a-fA-F]/) {|m| m[1..2].to_i(16).chr}
-					object.gsub!(/&#([0-9]{4});/) {|m| [m.match(/[0-9]+/)[0].to_i].pack 'U'}
 				when :html
 					object.gsub!(/&amp;/i, '&')
 					object.gsub!(/&quot;/i, '"')
 					object.gsub!(/&gt;/i, ">")
 					object.gsub!(/&lt;/i, "<")
-					object.gsub!(/&#([0-9]{4});/) {|m| [m.match(/[0-9]+/)[0].to_i].pack 'U'}
 				when :utf8
-					object.gsub!(/&#([0-9]{4});/) {|m| [m.match(/[0-9]+/)[0].to_i].pack 'U'}
+
 				else
 
 				end
+				object.gsub!(/&#([0-9a-fA-F]{2});/) {|m| m.match(/[0-9a-fA-F]{2}/)[0].hex.chr}
+				object.gsub!(/&#([0-9]{4});/) {|m| [m.match(/[0-9]+/)[0].to_i].pack 'U'}
 				make_utf8! object
 				return object
 			elsif object.is_a?(Symbol)

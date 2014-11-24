@@ -56,7 +56,7 @@ module Anorexic
 		#
 		# a string can be either a simple string `"/users"` or a string with paramaters:
 		# `"/static/:required/(:optional)/(:optional_with_format){[\d]*}/:optional_2"`
-		def initialize path, controller, params, &block
+		def initialize path, controller, params={}, &block
 			@path_sections , @params = false, params
 			initialize_path path
 			initialize_controller controller, block

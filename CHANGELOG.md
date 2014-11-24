@@ -1,6 +1,14 @@
 #Change Log
 ***
 
+Change log v.0.6.8
+
+**fix**: fixed an issue where WebSocket connections would get disconnected after sending data (an update in v. 0.6.6 introduced a bug that caused connections to close once data was sent).
+
+**updates**: quick web app template updates. now you get better code when you run `$ anorexic new myapp`...
+
+***
+
 Change log v.0.6.7
 
 **fix**: fixed an issue where rendering (Haml/ERB) would fail if I18n was defined, but no locale was specified in render or in request parameters.

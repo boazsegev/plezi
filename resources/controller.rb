@@ -82,12 +82,12 @@ class SampleController
 
 	def before
 		# some actions before the request is parsed
-		# you can remove this, ofcourse. the base class is enough
+		# you can remove this, ofcourse. the router doesn't require the method to exist.
 		true
 	end
 	def after
 		# some actions after the request is parsed
-		# you can remove this, ofcourse. the base class is enough
+		# you can remove this, ofcourse. the router doesn't require the method to exist.
 		true
 	end
 end
