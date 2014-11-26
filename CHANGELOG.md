@@ -1,6 +1,19 @@
 #Change Log
 ***
 
+Change log v.0.6.9
+
+**update**: now magic routes accept array and hash parameters - i.e. '/posts/(:id)/(:user[name])/(:user[email])/(:response)/(:args[])/(:args[])/(:args[])'
+
+**update**: tweeks to the socket event engine, to allow for more concurrent connections.
+
+**fix**: RESTful routing to `new` and `index` had issues.
+
+**fix**: WebSockets - sending data through multiple connections could cause data corruption. this is now fixed by duplicating the data before framing it.
+
+
+***
+
 Change log v.0.6.8
 
 **fix**: fixed an issue where WebSocket connections would get disconnected after sending data (an update in v. 0.6.6 introduced a bug that caused connections to close once data was sent).

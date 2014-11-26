@@ -148,7 +148,7 @@ module Anorexic
 		# the value returned is invalid and will remain 'stuck' on :pre_connect
 		# (which is the last method called before the protocol is switched from HTTP to WebSockets).
 		def requested_method
-			@@___available_public_methods___ ||= ((self.class.superclass.public_instance_methods - Object.public_instance_methods) - [:before, :after, :save, :show, :update, :delete, :new, :initialize, :on_message, :pre_connect, :on_connect, :on_disconnect])
+			@@___available_public_methods___ ||= ((self.class.superclass.public_instance_methods - Object.public_instance_methods) - [:before, :after, :save, :show, :update, :delete, :initialize, :on_message, :pre_connect, :on_connect, :on_disconnect])
 			request.request_method = 'DELETE' if params[:_method].to_s.downcase == 'delete'
 			return :pre_connect if request['upgrade'] && request['upgrade'].to_s.downcase == 'websocket' &&  request['connection'].to_s.downcase == 'upgrade'
 			case request.request_method
@@ -157,8 +157,8 @@ module Anorexic
 				return params[:id].to_sym if @@___available_public_methods___.include?(params[:id].to_sym) && params[:id].to_s[0] != "_"
 				return :show
 			when 'POST', 'PUT'
-				return params[:id] && params[:id].to_sym if @@___available_public_methods___.include?(params[:id].to_sym) && params[:id].to_s[0] != "_"
 				return :save if params[:id].nil? || params[:id] == 'new'
+				return params[:id] && params[:id].to_sym if @@___available_public_methods___.include?(params[:id].to_sym) && params[:id].to_s[0] != "_"
 				return :update
 			when 'DELETE'
 				return params[:id] && params[:id].to_sym if @@___available_public_methods___.include?(params[:id].to_sym) && params[:id].to_s[0] != "_"
@@ -179,7 +179,8 @@ module Anorexic
 		#
 		# the method will be called asynchrnously for each sibling instance of this Controller class.
 		def broadcast method_name, *args, &block
-			 ObjectSpace.each_object(self.class) { |controller|
+			object_count = 0
+			 object_count += ObjectSpace.each_object(self.class) { |controller|
 			 	Anorexic.callback controller, method_name, *args, &block if controller.class.superclass.public_instance_methods.include?(method_name) && (controller.object_id != self.object_id)
 			 }
 		end
@@ -189,10 +190,13 @@ module Anorexic
 		# and the WebSockets connection
 		# (with a protocol instance of WSProtocol and an instance of the Controller class set as a handler)
 		def pre_connect
-			# call the controller's original method, if exists.
-			# return false if defined? super && super == false
-			# complete handshake
+			# make sure this is a websocket controller
 			return false unless self.class.public_instance_methods.include?(:on_message)
+			# call the controller's original method, if exists, and check connection.
+			return false if (defined?(super) && !super) 
+			# finish if the response was sent
+			return true if response.headers_sent?
+			# complete handshake
 			return false unless WSProtocol.new( request.service, request.service.parameters).http_handshake request, response, self
 			@response = WSResponse.new request
 		end

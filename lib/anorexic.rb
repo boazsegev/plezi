@@ -51,6 +51,13 @@ require "anorexic/framework/dsl"
 ### optional Rack
 require "anorexic/framework/rack_app"
 
+## erb templating
+begin
+	require 'erb'
+rescue Exception => e
+	
+end
+
 
 
 ##############################################################################

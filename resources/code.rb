@@ -5,7 +5,7 @@
 require ::File.expand_path(File.join("..", "environment.rb"),  __FILE__)
 
 # start a web service to listen on the first default port (3000 or the port set by the command-line).
-listen root: Root.join('public').to_s, assets: Root.join('assets').to_s, assets_public: '/assets', templates: Root.join('views').to_s
+listen root: Root.join('public').to_s, assets: Root.join('assets').to_s, assets_public: '/assets', templates: Root.join('app','views').to_s
 
 
 # This is an optional re-write route for I18n.

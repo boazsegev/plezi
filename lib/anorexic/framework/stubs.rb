@@ -85,7 +85,7 @@ module Anorexic
 
 		# called before the protocol is swithed from HTTP to WebSockets.
 		#
-		# this allows setting oh headers, cookies and other data (such as authentication)
+		# this allows setting headers, cookies and other data (such as authentication)
 		# prior to opening a WebSocket.
 		#
 		# if the method returns false, the connection will be refused and the remaining routes will be attempted.
@@ -111,7 +111,10 @@ module Anorexic
 		end
 
 		# a demo event method that recieves a broadcast from instance siblings.
-		# (methods that are protected and methods that start with an underscore are hidden from the router)
+		#
+		# methods that are protected and methods that start with an underscore are hidden from the router
+		# BUT, broadcasted methods must be public (or the broadcast will quietly fail)... so we have to use
+		# the _underscore for this method.
 		def _tell_firends data
 			response << "Someone said #{data}"			
 		end

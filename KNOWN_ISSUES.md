@@ -12,10 +12,6 @@ the Apache benchmark hangs some requests, when chuncked data and missing mimetyp
 
 is this a server or benchmark error?
 
-## Assetes
-
-non-cachable assests (images etc') fail with 404 instead of being rendered from the file itself.
-
 ## Idle CPU usage
 
-Anorexic never really sleeps... idling uses some CPU (more on MRI, less on JRuby)... looking for solutions that don't block.
+Anorexic never really sleeps... (protection against certain contingencies relates tothe HTTP-WebSocket mix). idling uses some CPU (more on MRI, less on JRuby)... looking for solutions that don't block.

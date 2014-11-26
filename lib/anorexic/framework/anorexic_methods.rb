@@ -116,7 +116,7 @@ module Anorexic
 	# if a block is passed along, it will be used as a callback: the block will be called with the values returned by the handler's `call` method.
 	def push_event handler, *args, &block
 		if block
-			LOCKER.synchronize {EVENTS << [(Proc.new {|*a| Anorexic.push_event block, handler.call(*a)} ), args]}
+			LOCKER.synchronize {EVENTS << [(Proc.new {|a| Anorexic.push_event block, handler.call(*a)} ), args]}
 		else
 			LOCKER.synchronize {EVENTS << [handler, args]}
 		end
@@ -212,13 +212,12 @@ module Anorexic
 	# Anorexic Engine, DO NOT CALL. runs one thread cycle
 	def self.thread_cycle flag = 0
 		true while fire_event
-		sleep(idle_sleep) unless accept_connections
-		fire_connections
+		sleep(idle_sleep) unless (accept_connections ^ fire_connections)
 		# GC.start unless events? # forcing GC caused CPU to work overtime with MRI.
 		# @time_since_output ||= Time.now
 		# if Time.now - @time_since_output >= 1
 		# 	@time_since_output = Time.now
-		# 	info "#{CONNECTIONS.length} active connections"
+		# 	info "#{CONNECTIONS.length} active connections (#{IO_CONNECTION_DIC.length})"
 		# end
 		true
 	end
@@ -228,7 +227,7 @@ module Anorexic
 	## Services pooling and calling
 
 	# the services store
-	SERVICES = []
+	SERVICES = {}
 	#the services mutex
 	S_LOCKER = Mutex.new
 	#the connections mutex
@@ -268,7 +267,7 @@ module Anorexic
 		paramaters[:service_type] ||= ( paramaters[:ssl] ? SSLService : BasicService)
 		service = nil
 		service = paramaters[:service_type].create_service(port, paramaters) unless ( defined?(BUILDING_ANOREXIC_TEMPLATE) || defined?(ANOREXIC_ON_RACK) )
-		S_LOCKER.synchronize {SERVICES << [service, paramaters]}
+		S_LOCKER.synchronize {SERVICES[service] = paramaters}
 		info "Started listening on port #{port}."
 		true
 	end
@@ -276,26 +275,26 @@ module Anorexic
 	# Anorexic Engine, DO NOT CALL. stops all services - active connection will remain open until completion.
 	def stop_services
 		info 'Stopping services'
-		S_LOCKER.synchronize {SERVICES.each {|s| s[0].close rescue true; info "Stoped listening on port #{s[1][:port]}"}; SERVICES.clear }
+		S_LOCKER.synchronize {SERVICES.each {|s, p| s.close rescue true; info "Stoped listening on port #{p[:port]}"}; SERVICES.clear }
 	end
 
 	# Anorexic Engine, DO NOT CALL. checks for pending connections and accepts any pending connections
 	def accept_connections
 		return false if S_LOCKER.locked?
 		S_LOCKER.synchronize do
-			IO.select((SERVICES.map {|s| s[0]} ), (SERVICES.map {|s| s[0]} ), (SERVICES.map {|s| s[0]} ), 1)
-			SERVICES.each do |s|
+			IO.select(SERVICES.keys, SERVICES.keys, SERVICES.keys, 1)
+			SERVICES.each do |s, p|
 				begin
 					loop do
-						io = s[0].accept_nonblock
-						add_connection io, s[1]
+						io = s.accept_nonblock
+						add_connection io, p
 						ret = true
 					end
 				rescue Errno::EWOULDBLOCK => e
 
 				rescue Exception => e
 					# error e
-					SERVICES.delete_if { |s| s[0].closed? } 
+					SERVICES.delete s if s.closed?
 				end
 			end
 		end
@@ -304,35 +303,37 @@ module Anorexic
 
 	# the connections store
 	CONNECTIONS = []
+	IO_CONNECTION_DIC = {}
 
 	# Anorexic Engine, DO NOT CALL. disconnectes all active connections
 	def stop_connections
 		log 'Stopping connections'
-		C_LOCKER.synchronize {CONNECTIONS.each {|c| callback c, :on_disconnect unless c.disconnected?} ; CONNECTIONS.clear}
+		C_LOCKER.synchronize {CONNECTIONS.each {|c| callback c, :on_disconnect unless c.disconnected?} ; CONNECTIONS.clear; IO_CONNECTION_DIC.clear}
 	end
 
 	# Anorexic Engine, DO NOT CALL. adds a new connection to the connection stack
 	def add_connection io, params
 		connection = params[:service_type].new(io, params)
-		C_LOCKER.synchronize {CONNECTIONS << connection}
+		C_LOCKER.synchronize {CONNECTIONS << connection; IO_CONNECTION_DIC[connection.socket] = connection}
 		callback(connection, :on_message)
 	end
-	# adds a new connection to the connection stack
+	# Anorexic Engine, DO NOT CALL. removes a connection from the connection stack
 	def remove_connection connection
-		C_LOCKER.synchronize {CONNECTIONS.delete connection}
+		C_LOCKER.synchronize {CONNECTIONS.delete connection; IO_CONNECTION_DIC.delete connection.socket}
 	end
 
 	# Anorexic Engine, DO NOT CALL. itirates the connections and creates reading events.
 	# returns false if there are no connections.
 	def fire_connections
 		return false if CO_LOCKER.locked?
-		CO_LOCKER.synchronize { io_ar = IO.select((CONNECTIONS.map {|c| c.socket} ), nil, nil, 0.25); C_LOCKER.synchronize { CONNECTIONS.each{|c| callback c, :on_message} } }
+		# CO_LOCKER.synchronize { io_ar = IO.select((CONNECTIONS.map {|c| c.socket} ), nil, nil, 0.25); C_LOCKER.synchronize { CONNECTIONS.each{|c| callback c, :on_message} } }
+		CO_LOCKER.synchronize { io_r = IO.select(IO_CONNECTION_DIC.keys, nil, IO_CONNECTION_DIC.keys, 0.25) rescue nil; C_LOCKER.synchronize { (io_r[0] + io_r[2]).uniq.each{ |c| callback IO_CONNECTION_DIC[c], :on_message if IO_CONNECTION_DIC[c] } } if io_r  }
 		true
 	end
 
 	# clears closed connections from the stack
 	def clear_connections
-		C_LOCKER.synchronize { CONNECTIONS.delete_if {|c| [true, (callback c, :on_disconnect)] if c.disconnected? } }
+		C_LOCKER.synchronize { IO_CONNECTION_DIC.values.each {|c| callback c, :on_disconnect if c.disconnected? } }
 	end
 
 	# def check_connections

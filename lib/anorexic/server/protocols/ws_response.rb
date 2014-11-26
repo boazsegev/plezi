@@ -23,14 +23,14 @@ module Anorexic
 
 		# pushes data to the body of the response. this is the preffered way to add data to the response.
 		def << str
-			service.send_nonblock self.class.frame_data(str)
+			service.send_nonblock self.class.frame_data(str.dup)
 		end
 
 		# sends the response object. headers will be frozen (they can only be sent at the head of the response).
 		#
 		# the response will remain open for more data to be sent through (using `response << data` and `response.send`).
 		def send str
-			service.send_nonblock self.class.frame_data(str)
+			service.send_nonblock self.class.frame_data(str.dup)
 		end
 
 		# sends any pending data and closes the connection.
@@ -39,7 +39,7 @@ module Anorexic
 			service.disconnect
 		end
 
-		# formats the data as one or more WebSocket frames.
+		# Dangerzone! ()alters the string, use `send` instead: formats the data as one or more WebSocket frames.
 		def self.frame_data data, op_code = nil, fin = true
 			# set up variables
 			frame = ''.force_encoding('binary')
