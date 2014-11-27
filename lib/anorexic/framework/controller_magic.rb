@@ -44,7 +44,6 @@ module Anorexic
 			raise 'Cannot redirect after headers were sent' if response.headers_sent?
 			url = "#{request.base_url}/#{url.to_s.gsub('_', '/')}" if url.is_a?(Symbol)
 			# redirect
-			response.clear
 			response.status = options.delete(:status) || 302
 			response['Location'] = url
 			response['content-length'] ||= 0
