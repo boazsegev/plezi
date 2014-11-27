@@ -161,7 +161,7 @@ module Anorexic
 			m = @parser_data[:query].match /(([a-z0-9A-Z]+):\/\/)?(([^\/\:]+))?(:([0-9]+))?([^\?\#]*)(\?([^\#]*))?/
 			@parser_data[:requested_protocol] = m[1] || (service.ssl? ? 'https' : 'http')
 			@parser_data[:host_name] = m[4] || (@parser_data['host'] ? @parser_data['host'].match(/^[^:]*/).to_s : nil)
-			@parser_data[:port] = m[6] || (@parser_data['host'] ? @parser_data['host'].match(/:[0-9]*/).to_s : nil)
+			@parser_data[:port] = m[6] || (@parser_data['host'] ? @parser_data['host'].match(/:([0-9]*)/).to_a[1] : nil)
 			@parser_data[:original_path] = HTTP.decode(m[7], :uri) || '/'
 			@parser_data['host'] ||= "#{@parser_data[:host_name]}:#{@parser_data[:port]}"
 			# parse query for params - m[9] is the data part of the query

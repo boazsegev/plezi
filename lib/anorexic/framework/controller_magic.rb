@@ -47,7 +47,9 @@ module Anorexic
 			response.clear
 			response.status = options.delete(:status) || 302
 			response['Location'] = url
+			response['content-length'] ||= 0
 			flash.update options
+			response.finish
 			true
 		end
 
@@ -179,8 +181,7 @@ module Anorexic
 		#
 		# the method will be called asynchrnously for each sibling instance of this Controller class.
 		def broadcast method_name, *args, &block
-			object_count = 0
-			 object_count += ObjectSpace.each_object(self.class) { |controller|
+			ObjectSpace.each_object(self.class) { |controller|
 			 	Anorexic.callback controller, method_name, *args, &block if controller.class.superclass.public_instance_methods.include?(method_name) && (controller.object_id != self.object_id)
 			 }
 		end

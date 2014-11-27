@@ -3,7 +3,9 @@
 
 Change log v.0.6.9
 
-**update**: now magic routes accept array and hash parameters - i.e. '/posts/(:id)/(:user[name])/(:user[email])/(:response)/(:args[])/(:args[])/(:args[])'
+**fix**: redirect_to could would fail when a custom port (such as 3000) was in use. the issue was cause by a parsing error in the port recognition (the ':' was passed on to the port variable under some circumstances). This was fixed by correction the parser.
+
+**update**: now routes can assign array and hash parameter - i.e. '/posts/(:id)/(:user[name])/(:user[email])/(:response)/(:args[])/(:args[])/(:args[])'
 
 **update**: tweeks to the socket event engine, to allow for more concurrent connections.
 
