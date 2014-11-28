@@ -163,7 +163,7 @@ module Anorexic
 		begin
 			event[0].call(*event[1])
 		rescue Exception => e
-			raise if e.is_a?(SignalException)
+			raise if e.is_a?(SignalException) || e.is_a?(SystemExit)
 			error e
 		end
 		true
@@ -188,8 +188,8 @@ module Anorexic
 		# start shutdown.
 		exit_flag = true
 		# set new tarps
-		trap('INT'){ puts 'Forced exit.'; Kernel.exit rescue true}
-		trap('TERM'){ puts 'Forced exit.'; Kernel.exit rescue true }
+		trap('INT'){ puts 'Forced exit.'; Kernel.exit }#rescue true}
+		trap('TERM'){ puts 'Forced exit.'; Kernel.exit }#rescue true }
 		puts 'Started shutdown process. Press ^C to force quit.'
 		# shut down listening sockets
 		stop_services
@@ -217,7 +217,7 @@ module Anorexic
 		# @time_since_output ||= Time.now
 		# if Time.now - @time_since_output >= 1
 		# 	@time_since_output = Time.now
-		# 	info "#{CONNECTIONS.length} active connections (#{IO_CONNECTION_DIC.length})"
+		# 	info "#{IO_CONNECTION_DIC.length} active connections ( #{ IO_CONNECTION_DIC.select{|k,v| v.protocol.is_a?(WSProtocol)} .length } websockets)."
 		# end
 		true
 	end
@@ -302,31 +302,29 @@ module Anorexic
 	end
 
 	# the connections store
-	CONNECTIONS = []
 	IO_CONNECTION_DIC = {}
 
 	# Anorexic Engine, DO NOT CALL. disconnectes all active connections
 	def stop_connections
 		log 'Stopping connections'
-		C_LOCKER.synchronize {CONNECTIONS.each {|c| callback c, :on_disconnect unless c.disconnected?} ; CONNECTIONS.clear; IO_CONNECTION_DIC.clear}
+		C_LOCKER.synchronize {IO_CONNECTION_DIC.values.each {|c| callback c, :on_disconnect unless c.disconnected?} ; IO_CONNECTION_DIC.clear}
 	end
 
 	# Anorexic Engine, DO NOT CALL. adds a new connection to the connection stack
 	def add_connection io, params
 		connection = params[:service_type].new(io, params)
-		C_LOCKER.synchronize {CONNECTIONS << connection; IO_CONNECTION_DIC[connection.socket] = connection}
+		C_LOCKER.synchronize {IO_CONNECTION_DIC[connection.socket] = connection}
 		callback(connection, :on_message)
 	end
 	# Anorexic Engine, DO NOT CALL. removes a connection from the connection stack
 	def remove_connection connection
-		C_LOCKER.synchronize {CONNECTIONS.delete connection; IO_CONNECTION_DIC.delete connection.socket}
+		C_LOCKER.synchronize { IO_CONNECTION_DIC.delete connection.socket }
 	end
 
 	# Anorexic Engine, DO NOT CALL. itirates the connections and creates reading events.
 	# returns false if there are no connections.
 	def fire_connections
 		return false if CO_LOCKER.locked?
-		# CO_LOCKER.synchronize { io_ar = IO.select((CONNECTIONS.map {|c| c.socket} ), nil, nil, 0.25); C_LOCKER.synchronize { CONNECTIONS.each{|c| callback c, :on_message} } }
 		CO_LOCKER.synchronize { io_r = IO.select(IO_CONNECTION_DIC.keys, nil, IO_CONNECTION_DIC.keys, 0.25) rescue nil; C_LOCKER.synchronize { (io_r[0] + io_r[2]).uniq.each{ |c| callback IO_CONNECTION_DIC[c], :on_message if IO_CONNECTION_DIC[c] } } if io_r  }
 		true
 	end

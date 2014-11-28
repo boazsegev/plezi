@@ -174,7 +174,7 @@ module Anorexic
 				# handle @parser_data[:op_code] == 0 / fin == false (continue a frame that hasn't ended yet)
 				if @parser_data[:fin]
 					HTTP.make_utf8! @message if @parser_op_code == 1
-					Anorexic.callback @service.handler, :on_message, @message if @service.handler.methods.include?(:on_message)
+					Anorexic.callback @service.handler, :on_message, @message
 					@message = ''
 					@parser_op_code = nil
 				end

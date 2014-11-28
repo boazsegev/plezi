@@ -173,6 +173,8 @@ module Anorexic
 					@response = response
 					# @response["content-type"] ||= ::Anorexic.default_content_type
 
+					@_accepts_broadcast = false
+
 					# create magical cookies
 					@cookies = request.cookies
 					@cookies.set_controller self

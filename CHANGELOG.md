@@ -1,6 +1,16 @@
 #Change Log
 ***
 
+Change log v.0.6.10
+
+**features**: more websocket controller features for operating on websocket siblings. see the ControllerMagic documentation for more details.
+
+**fix**: fixed the force exit. exception handling prevented forced exit from taking place. it was fixed by creating an allowance for the force exit exception to pass through.
+
+**fix**: `broadcast` and `collect` are now limited to active websocket connections (closed connections and active HTTP connections will be ignored).
+
+***
+
 Change log v.0.6.9
 
 **fix**: redirect_to could would fail when a custom port (such as 3000) was in use. the issue was cause by a parsing error in the port recognition (the ':' was passed on to the port variable under some circumstances). This was fixed by correction the parser.

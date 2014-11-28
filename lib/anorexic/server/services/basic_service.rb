@@ -147,7 +147,7 @@ module Anorexic
 				@out_que.clear
 			end
 			if protocol
-				Anorexic.callback protocol, :on_disconnect, self if protocol.methods.include?(:on_disconnect)
+				Anorexic.callback protocol, :on_disconnect, self
 			end
 			close
 		end

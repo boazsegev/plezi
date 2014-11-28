@@ -40,8 +40,8 @@ module Anorexic
 
 		# # called when a disconnect is fired
 		# # (socket was disconnected / service should be disconnected / shutdown / socket error)
-		# def on_disconnect service
-		# end
+		def on_disconnect service
+		end
 
 		# called when an exception was raised
 		# (socket was disconnected / service should be disconnected / shutdown / socket error)

@@ -27,6 +27,11 @@ module Anorexic
 		# the parameters used to create the host (the parameters passed to the `listen` / `add_service` call).
 		attr_reader :host_params
 
+		# checks whether this instance accepts broadcasts (WebSocket instances).
+		def accepts_broadcast?
+			@_accepts_broadcast
+		end
+
 		# this method does two things.
 		#
 		# 1. sets redirection headers for the response.
@@ -181,10 +186,45 @@ module Anorexic
 		# the method will be called asynchrnously for each sibling instance of this Controller class.
 		def broadcast method_name, *args, &block
 			ObjectSpace.each_object(self.class) { |controller|
-			 	Anorexic.callback controller, method_name, *args, &block if controller.class.superclass.public_instance_methods.include?(method_name) && (controller.object_id != self.object_id)
+			 	Anorexic.callback controller, method_name, *args, &block if controller.class.superclass.public_instance_methods.include?(method_name) && controller.accepts_broadcast? && (controller.object_id != self.object_id)
 			 }
 		end
 
+
+		# WebSockets.
+		#
+		# Use this to collect data from all 'sibling' websockets (websockets that have been created using the same Controller class).
+		#
+		# This method will call the requested method on all instance siblings and return an Array of the returned values (including nil values).
+		#
+		# This method will block the excecution unless a block is passed to the method - in which case
+		#  the block will used as a callback and recieve the Array as a parameter.
+		#
+		# i.e.
+		#
+		# this will block: `collect :_get_id`
+		#
+		# this will not block: `collect(:_get_id) {|a| puts "got #{a.length} responses."; a.each { |id| puts "#{id}"} }
+		#
+		# accepts:
+		# method_name:: a Symbol with the method's name that should respond to the broadcast.
+		# *args:: any arguments that should be passed to the method.
+		# &block:: an optional block to be used as a callback.
+		#
+		# the method will be called asynchrnously for each sibling instance of this Controller class.
+		def collect method_name, *args, &block
+			if block
+				Anorexic.push_event((Proc.new() {r = []; ObjectSpace.each_object(self.class) { |controller|  r << controller.method(method_name).call(*args) if controller.accepts_broadcast?  && (controller.object_id != self.object_id)} ; r } ), &block)
+				return true
+			else
+				r = []
+				ObjectSpace.each_object(self.class) { |controller|  r << controller.method(method_name).call(*args) if controller.accepts_broadcast?  && (controller.object_id != self.object_id) }
+				return r
+			end
+		end
+
+		# WebSockets.
+		#
 		# this method handles the protocol and handler transition between the HTTP connection
 		# (with a protocol instance of HTTPProtocol and a handler instance of HTTPRouter)
 		# and the WebSockets connection
@@ -199,6 +239,16 @@ module Anorexic
 			# complete handshake
 			return false unless WSProtocol.new( request.service, request.service.parameters).http_handshake request, response, self
 			@response = WSResponse.new request
+			@_accepts_broadcast = true
+		end
+
+
+		# WebSockets.
+		#
+		# stops broadcasts from being called on closed sockets that havn't been collected by the garbage collector.
+		def on_disconnect
+			@_accepts_broadcast = false
+			super if defined? super
 		end
 
 
