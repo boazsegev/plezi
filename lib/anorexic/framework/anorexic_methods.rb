@@ -162,6 +162,8 @@ module Anorexic
 		return false unless event
 		begin
 			event[0].call(*event[1])
+		rescue OpenSSL::SSL::SSLError => e
+			# info "SSL Bump"
 		rescue Exception => e
 			raise if e.is_a?(SignalException) || e.is_a?(SystemExit)
 			error e
@@ -287,11 +289,14 @@ module Anorexic
 				begin
 					loop do
 						io = s.accept_nonblock
-						add_connection io, p
+						callback Anorexic, :add_connection, io, p
 						ret = true
 					end
 				rescue Errno::EWOULDBLOCK => e
 
+				# rescue OpenSSL::SSL::SSLError => e
+				# 	log "SSL connection bump"
+				# 	# retry
 				rescue Exception => e
 					# error e
 					SERVICES.delete s if s.closed?
@@ -313,7 +318,7 @@ module Anorexic
 	# Anorexic Engine, DO NOT CALL. adds a new connection to the connection stack
 	def add_connection io, params
 		connection = params[:service_type].new(io, params)
-		C_LOCKER.synchronize {IO_CONNECTION_DIC[connection.socket] = connection}
+		C_LOCKER.synchronize {IO_CONNECTION_DIC[connection.socket] = connection} if connection
 		callback(connection, :on_message)
 	end
 	# Anorexic Engine, DO NOT CALL. removes a connection from the connection stack

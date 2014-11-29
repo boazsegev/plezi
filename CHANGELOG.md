@@ -1,6 +1,12 @@
 #Change Log
 ***
 
+Change log v.0.6.11
+
+**fix**: the long awaited fix for the ssl support is here. notice that most of the time, SSL will be handled by the proxy calling on Anorexic and we won't need it.
+
+***
+
 Change log v.0.6.10
 
 **features**: more websocket controller features for operating on websocket siblings. see the ControllerMagic documentation for more details.
