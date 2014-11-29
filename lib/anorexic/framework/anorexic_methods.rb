@@ -93,7 +93,7 @@ module Anorexic
 
 	# Anorexic event cycle settings: how long to sleep during idle time, before forcing another cycle.
 	def idle_sleep
-		@idle_sleep ||= 0.024
+		@idle_sleep ||= 0.1
 	end
 	def idle_sleep= value
 		@idle_sleep = value
@@ -163,7 +163,7 @@ module Anorexic
 		begin
 			event[0].call(*event[1])
 		rescue OpenSSL::SSL::SSLError => e
-			# info "SSL Bump"
+			warn "SSL Bump - SSL Certificate refused?"
 		rescue Exception => e
 			raise if e.is_a?(SignalException) || e.is_a?(SystemExit)
 			error e
@@ -176,7 +176,7 @@ module Anorexic
 		# prepare threads
 		exit_flag = false
 		threads = []
-		(max_threads).times {  Thread.new { sleep 0.001; (thread_cycle until exit_flag) }  }
+		(max_threads).times {  Thread.new { thread_cycle until exit_flag }  }
 		
 
 		# Thread.new { check_connections until SERVICES.empty? }
@@ -185,7 +185,7 @@ module Anorexic
 		trap('INT'){ exit_flag = true; raise "close Anorexic" }
 		trap('TERM'){ exit_flag = true; raise "close Anorexic" }
 		puts 'Services running. Press ^C to stop'
-		# cycle until trap raises exception
+		# sleep until trap raises exception (cycling might cause the main thread to ignor signals and lose attention)
 		(sleep unless SERVICES.empty?) rescue true
 		# start shutdown.
 		exit_flag = true
@@ -197,6 +197,9 @@ module Anorexic
 		stop_services
 		# disconnect active connections
 		stop_connections
+		# signal thread flags
+		IO_FLAG_WRITE.puts (IO_FLAG_C * max_threads * 3)
+
 		# cycle down threads
 		threads.each {|t| t.join if t.alive?}
 
@@ -211,10 +214,23 @@ module Anorexic
 		0
 	end
 
+	# flags for threads to run (IO.getc blocks threads until flags get input to run)
+	IO_FLAG_READ, IO_FLAG_WRITE = IO.pipe
+	IO_FLAG_C = 'c'
+	# blocks the thread until an IO flag is accepted
+	def wait_for_flag
+		IO_FLAG_READ.getc rescue true
+	end
+	# raises an IO flag to restart threads
+	def raise_flag
+		IO_FLAG_WRITE.putc IO_FLAG_C
+	end
+
 	# Anorexic Engine, DO NOT CALL. runs one thread cycle
 	def self.thread_cycle flag = 0
 		true while fire_event
-		sleep(idle_sleep) unless (accept_connections ^ fire_connections)
+		wait_for_flag unless (accept_connections | fire_connections)
+		# 	was, before flags: sleep(idle_sleep) unless (accept_connections | fire_connections)
 		# GC.start unless events? # forcing GC caused CPU to work overtime with MRI.
 		# @time_since_output ||= Time.now
 		# if Time.now - @time_since_output >= 1
@@ -284,13 +300,13 @@ module Anorexic
 	def accept_connections
 		return false if S_LOCKER.locked?
 		S_LOCKER.synchronize do
-			IO.select(SERVICES.keys, SERVICES.keys, SERVICES.keys, 1)
+			IO.select(SERVICES.keys, SERVICES.keys, SERVICES.keys, idle_sleep)
 			SERVICES.each do |s, p|
 				begin
 					loop do
 						io = s.accept_nonblock
 						callback Anorexic, :add_connection, io, p
-						ret = true
+						raise_flag
 					end
 				rescue Errno::EWOULDBLOCK => e
 
@@ -305,6 +321,36 @@ module Anorexic
 		end
 		true
 	end
+
+	# def io_reactor
+	# 	return false if S_LOCKER.locked?
+	# 	S_LOCKER.synchronize do
+	# 		io_r = (IO.select((SERVICES.keys + IO_CONNECTION_DIC.keys), SERVICES.keys, (SERVICES.keys + IO_CONNECTION_DIC.keys), idle_sleep) rescue false)
+	# 		if io_r
+	# 			(io_r[0] + io_r[1] + io_r[2]).uniq.each do |io|
+	# 				if SERVICES[io]
+	# 					begin
+	# 						connection = io.accept_nonblock
+	# 						callback Anorexic, :add_connection, connection, SERVICES[io]
+	# 					rescue Errno::EWOULDBLOCK => e
+
+	# 					rescue Exception => e
+	# 						error e
+	# 						# SERVICES.delete s if s.closed?
+	# 					end
+	# 				elsif IO_CONNECTION_DIC[io]
+	# 					callback(IO_CONNECTION_DIC[c], :on_message)
+	# 				end
+	# 				raise_flag	
+	# 			end
+	# 			info "io flare"
+	# 		else
+	# 			info "no io"
+	# 		end
+	# 	end
+	# 	raise_flag
+	# 	true
+	# end
 
 	# the connections store
 	IO_CONNECTION_DIC = {}
@@ -330,7 +376,7 @@ module Anorexic
 	# returns false if there are no connections.
 	def fire_connections
 		return false if CO_LOCKER.locked?
-		CO_LOCKER.synchronize { io_r = IO.select(IO_CONNECTION_DIC.keys, nil, IO_CONNECTION_DIC.keys, 0.25) rescue nil; C_LOCKER.synchronize { (io_r[0] + io_r[2]).uniq.each{ |c| callback IO_CONNECTION_DIC[c], :on_message if IO_CONNECTION_DIC[c] } } if io_r  }
+		CO_LOCKER.synchronize { io_r = IO.select(IO_CONNECTION_DIC.keys, nil, IO_CONNECTION_DIC.keys, idle_sleep) rescue nil; C_LOCKER.synchronize { (io_r[0] + io_r[2]).uniq.each{ |c| raise_flag; callback(IO_CONNECTION_DIC[c], :on_message) if IO_CONNECTION_DIC[c] } } if io_r  }
 		true
 	end
 

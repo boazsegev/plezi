@@ -1,9 +1,12 @@
 #Change Log
+
 ***
 
 Change log v.0.6.11
 
-**fix**: the long awaited fix for the ssl support is here. notice that most of the time, SSL will be handled by the proxy calling on Anorexic and we won't need it.
+**fix**: the long awaited fix for ssl services is here. notice that most of the time, SSL should be handled by the proxy calling on Anorexic and SSL services should be disabled.
+
+**performance**: minor performance improvements and a better, greener Anorexic (less CPU load while idling).
 
 ***
 
