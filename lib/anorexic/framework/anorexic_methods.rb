@@ -230,7 +230,8 @@ module Anorexic
 	def self.thread_cycle flag = 0
 		true while fire_event
 		wait_for_flag unless (accept_connections | fire_connections)
-		# 	was, before flags: sleep(idle_sleep) unless (accept_connections | fire_connections)
+		# 	was, before flags:
+		#	sleep(idle_sleep) unless (accept_connections | fire_connections)
 		# GC.start unless events? # forcing GC caused CPU to work overtime with MRI.
 		# @time_since_output ||= Time.now
 		# if Time.now - @time_since_output >= 1
