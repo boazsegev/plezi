@@ -368,26 +368,6 @@ module Anorexic
 		C_LOCKER.synchronize { IO_CONNECTION_DIC.values.each {|c| callback c, :on_disconnect if c.disconnected? } }
 	end
 
-	# def check_connections
-	# 	# ret = false
-	# 	# S_LOCKER.synchronize do 
-	# 	# 	CONNECTIONS.delete_if do |k, connection|
-	# 	# 		if connection.disconnected?
-	# 	# 			callback connection, :on_disconnect
-	# 	# 			ret = true
-	# 	# 		else
-	# 	# 			callback(connection, :on_message) if connection.has_incoming_data?
-	# 	# 		end
-	# 	# 	end
-	# 	# end
-	# 	# ret
-	# 	active = S_LOCKER.synchronize { IO.select CONNECTIONS.map{|c| c.socket}, nil, nil, 0.01 rescue false }
-	# 	if active
-	# 		puts "#{SERVICES.length} services, #{active[0].length} active"
-	# 		active[0].each {|io| callback CONNECTIONS[io], :on_message} rescue true			
-	# 	end
-	# end
-
 end
 
 AN = Anorexic
