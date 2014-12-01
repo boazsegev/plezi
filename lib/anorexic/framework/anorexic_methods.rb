@@ -198,6 +198,7 @@ module Anorexic
 		# disconnect active connections
 		stop_connections
 		# cycle down threads
+		info "Waiting for workers to cycle down"
 		threads.each {|t| t.join if t.alive?}
 
 		# rundown any active events
@@ -213,8 +214,8 @@ module Anorexic
 
 	# Anorexic Engine, DO NOT CALL. runs one thread cycle
 	def self.thread_cycle flag = 0
-		true while fire_event
 		io_reactor
+		true while fire_event
 		# 	was, before reactor:
 		#	sleep(idle_sleep) unless (accept_connections | fire_connections)
 		# GC.start unless events? # forcing GC caused CPU to work overtime with MRI.
@@ -236,8 +237,8 @@ module Anorexic
 	S_LOCKER = Mutex.new
 	#the connections mutex
 	C_LOCKER = Mutex.new
-	#the connections observance mutex
-	CO_LOCKER = Mutex.new
+	#the io reactor mutex
+	IO_LOCKER = Mutex.new
 
 	# public API to add a service to the framework.
 	# accepts:
@@ -282,35 +283,44 @@ module Anorexic
 		S_LOCKER.synchronize {SERVICES.each {|s, p| s.close rescue true; info "Stoped listening on port #{p[:port]}"}; SERVICES.clear }
 	end
 
-	def accept_connections
-		return false if S_LOCKER.locked?
-		S_LOCKER.synchronize do
-			IO.select(SERVICES.keys, SERVICES.keys, SERVICES.keys, idle_sleep)
-			SERVICES.each do |s, p|
-				begin
-					loop do
-						io = s.accept_nonblock
-						callback Anorexic, :add_connection, io, p
-					end
-				rescue Errno::EWOULDBLOCK => e
+	# def accept_connections
+	# 	return false if S_LOCKER.locked?
+	# 	S_LOCKER.synchronize do
+	# 		IO.select(SERVICES.keys, SERVICES.keys, SERVICES.keys, idle_sleep)
+	# 		SERVICES.each do |s, p|
+	# 			begin
+	# 				loop do
+	# 					io = s.accept_nonblock
+	# 					callback Anorexic, :add_connection, io, p
+	# 				end
+	# 			rescue Errno::EWOULDBLOCK => e
 
-				# rescue OpenSSL::SSL::SSLError => e
-				# 	log "SSL connection bump"
-				# 	# retry
-				rescue Exception => e
-					# error e
-					SERVICES.delete s if s.closed?
-				end
-			end
-		end
-		true
-	end
+	# 			# rescue OpenSSL::SSL::SSLError => e
+	# 			# 	log "SSL connection bump"
+	# 			# 	# retry
+	# 			rescue Exception => e
+	# 				# error e
+	# 				SERVICES.delete s if s.closed?
+	# 			end
+	# 		end
+	# 	end
+	# 	true
+	# end
+
+	# # Anorexic Engine, DO NOT CALL. itirates the connections and creates reading events.
+	# # returns false if there are no connections.
+	# def fire_connections
+	# 	return false if CO_LOCKER.locked?
+	# 	CO_LOCKER.synchronize { io_r = IO.select(IO_CONNECTION_DIC.keys, nil, IO_CONNECTION_DIC.keys, idle_sleep) rescue nil; C_LOCKER.synchronize { (io_r[0] + io_r[2]).uniq.each{ |c| callback(IO_CONNECTION_DIC[c], :on_message) if IO_CONNECTION_DIC[c] } } if io_r  }
+	# 	true
+	# end
 
 	# Anorexic Engine, DO NOT CALL. waits on IO and pushes events. all threads hang while reactor is active (unless events are already 'in the pipe'.)
 	def io_reactor
-		S_LOCKER.synchronize do
+		IO_LOCKER.synchronize do
 			return false unless EVENTS.empty?
 			united = SERVICES.keys + IO_CONNECTION_DIC.keys
+			return false if united.empty?
 			io_r = (IO.select(united, nil, united, idle_sleep) rescue false)
 			if io_r
 				(io_r[0] + io_r[2]).each do |io|
@@ -351,14 +361,6 @@ module Anorexic
 	# Anorexic Engine, DO NOT CALL. removes a connection from the connection stack
 	def remove_connection connection
 		C_LOCKER.synchronize { IO_CONNECTION_DIC.delete connection.socket }
-	end
-
-	# Anorexic Engine, DO NOT CALL. itirates the connections and creates reading events.
-	# returns false if there are no connections.
-	def fire_connections
-		return false if CO_LOCKER.locked?
-		CO_LOCKER.synchronize { io_r = IO.select(IO_CONNECTION_DIC.keys, nil, IO_CONNECTION_DIC.keys, idle_sleep) rescue nil; C_LOCKER.synchronize { (io_r[0] + io_r[2]).uniq.each{ |c| callback(IO_CONNECTION_DIC[c], :on_message) if IO_CONNECTION_DIC[c] } } if io_r  }
-		true
 	end
 
 	# clears closed connections from the stack
