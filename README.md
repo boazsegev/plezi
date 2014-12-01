@@ -2,9 +2,8 @@
 [![Gem Version](https://badge.fury.io/rb/anorexic.svg)](http://badge.fury.io/rb/anorexic)
 [![Inline docs](http://inch-ci.org/github/boazsegev/anorexic.svg?branch=master)](http://inch-ci.org/github/boazsegev/anorexic)
 
-People who are serious about their frameworks, should make their own servers...
-
-(if to para-phrase "People who are serious about their software, should make their own hardware.")
+> People who are serious about their frameworks, should make their own servers...
+_(if to para-phrase "People who are serious about their software, should make their own hardware.")_
 
 ## About the Anorexic framework \ server
 

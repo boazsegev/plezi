@@ -73,8 +73,7 @@ module Anorexic
 
 	# returns true if the file has been update since data was last cached.
 	def cache_needs_update? filename
-		return true if CACHE_STORE[filename].nil?
-		return true if CACHE_STORE[filename].mtime < File.mtime(filename)
+		return true if CACHE_STORE[filename].nil? || CACHE_STORE[filename].mtime < File.mtime(filename)
 		false
 	end
 end

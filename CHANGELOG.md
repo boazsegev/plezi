@@ -2,11 +2,16 @@
 
 ***
 
+Change log v.0.6.12
+
+
+***
+
 Change log v.0.6.11
 
 **fix**: the long awaited fix for ssl services is here. notice that most of the time, SSL should be handled by the proxy calling on Anorexic and SSL services should be disabled.
 
-**performance**: minor performance improvements and a better, greener Anorexic (less CPU load while idling).
+**performance**: performance improvements and a better, greener Anorexic (less CPU load while idling). performance improvements are even more noticable on JRuby... although, if you're looking for the fastest 'hello world', maybe this is not a perfect fit.
 
 ***
 
