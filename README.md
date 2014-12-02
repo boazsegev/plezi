@@ -13,7 +13,7 @@ Anorexic contains an object-oriented server, divided into parts that can be chan
 
 This allows - much like Node.js - native WebSocket support (and, if you would like to write your own Protocol or Handler, native SMPT or any other custom protocol you might wish to implement).
 
-You can follow our (tutorial to write your first Anorexic Chatroom)[http://boazsegev.github.io/anorexic/websockets.html].
+You can follow our [tutorial to write your first Anorexic Chatroom](http://boazsegev.github.io/anorexic/websockets.html).
 
 ## Installation
 
