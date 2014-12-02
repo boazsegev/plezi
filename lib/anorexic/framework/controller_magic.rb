@@ -5,6 +5,7 @@ module Anorexic
 	#
 	# to do: add HTTP encrypted authentication?
 	module ControllerMagic
+
 		module_function
 
 		public
@@ -131,13 +132,13 @@ module Anorexic
 		# returns false if the template or layout files cannot be found.
 		def render template, options = {}, &block
 			# set up defaults
-			options[:type] || 'html'
+			options[:type] ||= 'html'
 			# options[:locals] ||= {}
 			I18n.locale = options[:locale] || params[:locale].to_sym if (defined?(I18n) && params[:locale])
 			return false if host_params[:templates].nil?
 			(return render(options.delete(:layout), options) { render template, options, &block }) if options[:layout]
 			# find template and create template object
-			filename = template.is_a?(String) ? template : (File.join(host_params[:templates], *template.to_s.split('_')) + (options[:type].empty? ? '': ".#{options[:type]}") + '.haml')
+			filename = template.is_a?(String) ? template : (File.join( host_params[:templates].to_s, *template.to_s.split('_')) + (options[:type].empty? ? '': ".#{options[:type]}") + '.haml')
 			return ( Anorexic.cache_needs_update?(filename) ? Anorexic.cache_data( filename, ( Haml::Engine.new( IO.read(filename) ) ), Anorexic.file_mtime(filename) )  : (Anorexic.get_cached filename) ).render(self, &block) if defined?(::Haml) && Anorexic.file_exists?(filename)
 			filename.gsub! /\.haml$/, '.erb'
 			return ( Anorexic.cache_needs_update?(filename) ? Anorexic.cache_data( filename, ( ERB.new( IO.read(filename) ) ), Anorexic.file_mtime(filename) )  : (Anorexic.get_cached filename) ).result(binding, &block) if defined?(::ERB) && Anorexic.file_exists?(filename)
@@ -154,13 +155,13 @@ module Anorexic
 		# the value returned is invalid and will remain 'stuck' on :pre_connect
 		# (which is the last method called before the protocol is switched from HTTP to WebSockets).
 		def requested_method
-			@@___available_public_methods___ ||= ((self.class.superclass.public_instance_methods - Object.public_instance_methods) - [:before, :after, :save, :show, :update, :delete, :initialize, :on_message, :pre_connect, :on_connect, :on_disconnect])
+			@@___available_public_methods___ ||= (((self.class.superclass.public_instance_methods - Object.public_instance_methods) - [:before, :after, :save, :show, :update, :delete, :initialize, :on_message, :pre_connect, :on_connect, :on_disconnect]).delete_if {|m| m.to_s[0] == '_'})
 			request.request_method = 'DELETE' if params[:_method].to_s.downcase == 'delete'
 			return :pre_connect if request['upgrade'] && request['upgrade'].to_s.downcase == 'websocket' &&  request['connection'].to_s.downcase == 'upgrade'
 			case request.request_method
 			when 'GET', 'HEAD'
 				return :index unless params[:id]
-				return params[:id].to_sym if @@___available_public_methods___.include?(params[:id].to_sym) && params[:id].to_s[0] != "_"
+				return params[:id].to_sym if @@___available_public_methods___.include?(params[:id].to_sym)
 				return :show
 			when 'POST', 'PUT'
 				return :save if params[:id].nil? || params[:id] == 'new'

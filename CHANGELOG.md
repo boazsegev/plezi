@@ -4,6 +4,7 @@
 
 Change log v.0.6.12
 
+Mainly small engine and performance tweeks here and there.
 
 ***
 
