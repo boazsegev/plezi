@@ -11,16 +11,7 @@ parse chareset for incoming content-type in the multipart request body? (or leav
 
 HAML is slow
 
-# SSLService
-
-fix cert and closing...
-
 # HTTPHost
 
-Folder Listing::
-add folder listing option?
+Folder Listing:: add folder listing option?
 
-
-# WebSockets Controller
-
-broadcast's callbacks are now fired for each instance. It would be better if blocks would run only once, when all the broadcasted events have finished running.

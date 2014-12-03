@@ -12,13 +12,16 @@ both protocols and handlers can be changed mid-stream, allowing a service to swi
 
 this folder holds the different protocols that could be run over the each socket-service (HTTP / WebSockets etc' should be here).
 
-the protocols parse a request and return it as a Hash (or Hash-like) that can be passed on (with added socket info) to a handler.
+the protocols are devided into two different classes/object types:
+
+1. parsing input.
+2. formatting output.
 
 - handlers
 
 this folder holds the classes and modules used to actually handle the requests parsed by the protocol layer.
 
-these are the classes and modules the Anorexic framework users (developers) connect with when writing their web aps.
+these are the classes and modules the Anorexic framework users (developers) connect with when writing their web apps.
 
 ## servers, services and protocols ... what?
 
@@ -26,5 +29,5 @@ services are the part of the server that recieves and sends data - services run 
 
 this division allows the user to change protocols mid-stream when allowed (such as switching from HTTP to WebSockets).
 
-this abstruction to the sockets layer allows support for future or custom protocols without any changes to the abtruction layer.
+this abstraction to the sockets layer allows support for future or custom protocols without any changes to the abstraction layer.
 

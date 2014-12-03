@@ -178,6 +178,25 @@ module Anorexic
 			finish unless @finished
 		end
 
+		# Danger Zone (internally used method, use with care): fix response's headers before sending them (date, connection and transfer-coding).
+		def fix_headers
+			headers['connection'] ||= "Keep-Alive"
+			headers['date'] = Time.now.httpdate
+			headers['transfer-encoding'] ||= 'chunked' if !headers['content-length']
+			headers['cache-control'] ||= 'no-cache'
+			# remove old flash cookies
+			request.cookies.keys.each do |k|
+				if k.to_s.start_with? "anorexic_flash_"
+					set_cookie k, nil
+					flash.delete k
+				end
+			end
+			#set new flash cookies
+			@flash.each do |k,v|
+				set_cookie "anorexic_flash_#{k.to_s}", v
+			end
+		end
+		
 		# response status codes, as defined.
 		STATUS_CODES = {100=>"Continue",
 			101=>"Switching Protocols",
@@ -237,27 +256,7 @@ module Anorexic
 			508=>"Loop Detected",
 			510=>"Not Extended",
 			511=>"Network Authentication Required"
-		}
-
-		# Danger Zone (internally used method, use with care): fix response's headers before sending them (date, connection and transfer-coding).
-		def fix_headers
-			headers['connection'] ||= "Keep-Alive"
-			headers['date'] = Time.now.httpdate
-			headers["transfer-encoding"] ||= "chunked" if body && !(body.is_a?(Array) && body.empty?) && !headers['content-length']
-			headers['cache-control'] ||= 'no-cache'
-			# remove old flash cookies
-			request.cookies.keys.each do |k|
-				if k.to_s.start_with? "anorexic_flash_"
-					set_cookie k, nil
-					flash.delete k
-				end
-			end
-			#set new flash cookies
-			@flash.each do |k,v|
-				set_cookie "anorexic_flash_#{k.to_s}", v
-			end
-		end
-	end
+		}	end
 end
 
 

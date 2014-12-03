@@ -111,7 +111,7 @@ Now visit:
 
 ## Anorexic Controller classes
 
-One of the best things about the Anorexic is it's ability to take in any class as a controller class and route to the classes methods with special support for RESTful methods (`index`, `show`, `new`, `save`, `update`, `delete`, `before` and `after`) and for WebSockets (`pre_connect`, `on_connect`, `on_message`, `on_disconnect`, `broadcast`):
+One of the best things about the Anorexic is it's ability to take in any class as a controller class and route to the classes methods with special support for RESTful methods (`index`, `show`, `new`, `save`, `update`, `delete`, `before` and `after`) and for WebSockets (`pre_connect`, `on_connect`, `on_message(data)`, `on_disconnect`, `broadcast`, `collect`):
 
 		require 'anorexic'
 
@@ -130,7 +130,43 @@ Controllers can even be nested (order matters) or have advanced uses that are de
 
 **please read the demo code for Anorexic::StubRESTCtrl and Anorexic::StubWSCtrl to learn more.**
 
-Here's some food for thought - code similar to something actually used in the framework app:
+## Native Websocket support
+
+Anorexic Controllers have access to native websocket support through the `pre_connect`, `on_connect`, `on_message(data)`, `on_disconnect`, `broadcast` and `collect` methods.
+
+Here is some demo code for a simple Websocket broadcasting server, where messages sent to the server will be broadcasted back to all the **other** active connections (the connection sending the message will not recieve the broadcast).
+
+As a client side, we will use the WebSockets echo demo page - simply put it ws://localhost:3000/ instead of the default websocket server (ws://echo.websocket.org).
+
+```ruby
+    require 'anorexic'
+
+    class BroadcastCtrl
+        def index
+            redirect_to 'http://www.websocket.org/echo.html'
+        end
+        def on_message data
+            broadcast :_send_message, data
+            response << "sent."
+        end
+        def _send_message data
+            response << data
+        end
+        def people
+            'I made this :)'
+        end
+    end
+
+    listen 
+
+    route '/', BroadcastCtrl
+```
+
+method names starting with an underscore ('_') will NOT be made public by the router: so while '/people' is public ( [try it](http://localhost:3000/people) ), '/_send_message' will return a 404 not found error.
+
+## Food for thought - advanced controller uses
+
+Here's some food for thought - code similar to something actually used at some point while developing the applicatio template used by `anorexic new myapp`:
 
     require 'anorexic'
 
