@@ -13,7 +13,7 @@ Anorexic contains an object-oriented server, divided into parts that can be chan
 
 This allows - much like Node.js - native WebSocket support (and, if you would like to write your own Protocol or Handler, native SMPT or any other custom protocol you might wish to implement).
 
-You can follow our [tutorial to write your first Anorexic Chatroom](http://boazsegev.github.io/anorexic/websockets.html).
+You can follow our [tutorial to write your first Anorexic Chatroom](http://boazsegev.github.io/anorexic/websockets.html) - but first I advise to read this readme and explore the WebSockets example given here.
 
 ## Installation
 
@@ -166,6 +166,46 @@ Remember to connect to the service from at least two browser windows - to truly 
 
 method names starting with an underscore ('_') will NOT be made public by the router: so while '/people' is public ( [try it](http://localhost:3000/people) ), '/_send_message' will return a 404 not found error ( [try it](http://localhost:3000/_send_message) ).
 
+## Anorexic Helpers and Logging
+
+The Anorexic module (also `AN`) has methods to help with logging, asynchronous callbacks, dynamic routes, dynamic services and more.
+
+Logging:
+
+    require 'anorexic'
+
+    # simple logging of strings
+    AN.info 'log info'
+    AN.warn 'log warning'
+    AN.error 'log error'
+    AN.fatal "log a fatal error (shuoldn't be needed)."
+    AN.log_raw "Write raw strings to the logger."
+
+    # the logger accepts exceptions as well.
+    begin
+        raise "hell"
+    rescue Exception => e
+        AN.error e
+    end
+
+Asynchronous callbacks (works only while services are active and running):
+
+    require 'anorexic'
+
+    def my_shutdown_proc time_start
+        puts "Services were running for #{Time.now - time_start} seconds."
+    end
+
+    # shutdown callbacks
+    AN.on_shutdown(Kernel, :my_shutdown_proc, Time.now) { puts "this will run after shutdown." }
+    AN.on_shutdown() { puts "this will run too." }
+
+    AN.callback(Kernel, :puts, "Please tell me your name?") do
+        AN.callback(Kernel, :gets) {|name| puts "hello #{name}"}
+    end
+
+    puts "Anorexic will start eating our code once we exit terminal."
+
 ## Food for thought - advanced controller uses
 
 Here's some food for thought - code similar to something actually used at some point while developing the applicatio template used by `anorexic new myapp`:
@@ -250,51 +290,11 @@ try:
 * [http://localhost:3000/fr/(5+5*20-15)/9](http://localhost:3000/fr/(5+5*20-15)/9)
 * [http://localhost:3000/users/hello?_method=delete](http://localhost:3000/users/hello?_method=delete)
 
-## Anorexic Helpers and Logging
-
-The Anorexic module (also `AN`) has methods to help with logging, asynchronous callbacks, dynamic routes, dynamic services and more.
-
-Logging:
-
-    require 'anorexic'
-
-    # simple logging of strings
-    AN.info 'log info'
-    AN.warn 'log warning'
-    AN.error 'log error'
-    AN.fatal "log a fatal error (shuoldn't be needed)."
-    AN.log_raw "Write raw strings to the logger."
-
-    # the logger accepts exceptions as well.
-    begin
-        raise "hell"
-    rescue Exception => e
-        AN.error e
-    end
-
-Asynchronous callbacks (works only while services are active and running):
-
-    require 'anorexic'
-
-    def my_shutdown_proc time_start
-        puts "Services were running for #{Time.now - time_start} seconds."
-    end
-
-    # shutdown callbacks
-    AN.on_shutdown(Kernel, :my_shutdown_proc, Time.now) { puts "this will run after shutdown." }
-    AN.on_shutdown() { puts "this will run too." }
-
-    AN.callback(Kernel, :puts, "Please tell me your name?") do
-        AN.callback(Kernel, :gets) {|name| puts "hello #{name}"}
-    end
-
-    puts "Anorexic will start eating our code once we exit terminal."
-
 ## Anorexic Settings
 
-Anorexic is ment to be very flexible. please take a look at the Anorexic Module for settings you might want to play with (max_threads, thread_timeout, idle_sleep) or any monkey patching you might enjoy.
+Anorexic is ment to be very flexible. please take a look at the Anorexic Module for settings you might want to play with (max_threads, idle_sleep, create_logger) or any monkey patching you might enjoy.
 
-Feel free to fork or contribute. right now I am one person, but together we can make something exciting that will help us enjoy Ruby in this brave new world.
+Feel free to fork or contribute. right now I am one person, but together we can make something exciting that will help us enjoy Ruby in this brave new world and (hopefully) set an example that will induce progress in the popular mainstream frameworks such as Rails and Sinatra.
 
 ## Contributing
 
