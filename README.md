@@ -9,7 +9,7 @@ _(if to para-phrase "People who are serious about their software, should make th
 
 A thin, lightweight, barebones, mutli-threaded Ruby alternative to Rack/Rails/Sintra.
 
-Anorexic contains an object-oriented server, divided into parts that can be changed/updated and removed easily and dynamically. The Anorexic framework runs HTTP and WeSockets, but could as easily be extended to run SMTP, SPDY or any other Protocol (including custom made protocols).
+Anorexic contains an object-oriented server, divided into parts that can be changed/updated and removed easily and dynamically. The Anorexic framework runs HTTP and WebSockets, but could as easily be extended to run SMTP, SPDY or any other Protocol (including custom made protocols).
 
 This allows - much like Node.js - native WebSocket support (and, if you would like to write your own Protocol or Handler, native SMPT or any other custom protocol you might wish to implement).
 
@@ -164,7 +164,7 @@ Remember to connect to the service from at least two browser windows - to truly 
     route '/', BroadcastCtrl
 ```
 
-method names starting with an underscore ('_') will NOT be made public by the router: so while '/people' is public ( [try it](http://localhost:3000/people) ), '/_send_message' will return a 404 not found error.
+method names starting with an underscore ('_') will NOT be made public by the router: so while '/people' is public ( [try it](http://localhost:3000/people) ), '/_send_message' will return a 404 not found error ( [try it](http://localhost:3000/_send_message) ).
 
 ## Food for thought - advanced controller uses
 
