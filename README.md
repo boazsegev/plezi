@@ -136,7 +136,9 @@ Anorexic Controllers have access to native websocket support through the `pre_co
 
 Here is some demo code for a simple Websocket broadcasting server, where messages sent to the server will be broadcasted back to all the **other** active connections (the connection sending the message will not recieve the broadcast).
 
-As a client side, we will use the WebSockets echo demo page - simply put it ws://localhost:3000/ instead of the default websocket server (ws://echo.websocket.org).
+As a client side, we will use the WebSockets echo demo page - we will simply put in ws://localhost:3000/ as the server, instead of the default websocket server (ws://echo.websocket.org).
+
+Remember to connect to the service from at least two browser windows - to truly experience the `broadcast`ed websocket messages.
 
 ```ruby
     require 'anorexic'
