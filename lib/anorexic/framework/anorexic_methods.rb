@@ -202,7 +202,7 @@ module Anorexic
 		threads.each {|t| t.join if t.alive?}
 
 		# rundown any active events
-		thread_cycle while events?
+		thread_cycle
 
 		# call shutdown callbacks
 		SHUTDOWN_CALLBACKS.each {|s| s[0].call(*s[1]) }
