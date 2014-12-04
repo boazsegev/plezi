@@ -1,9 +1,10 @@
 module Anorexic
 
-	# the methods defined in this module will be injected into the Controller class passed to the MVC
-	# and will be available for the controller to use.
+	# the methods defined in this module will be injected into the Controller class passed to
+	# Anorexic (using the `route` or `shared_route` commands), and will be available
+	# for the controller to use within it's methods.
 	#
-	# to do: add HTTP encrypted authentication?
+	# to do: add HTTP encrypted authentication? - probably not.
 	module ControllerMagic
 
 		module_function
@@ -12,19 +13,24 @@ module Anorexic
 
 		# the request object, class: HTTPRequest.
 		attr_reader :request
+
 		# the ::params variable contains all the paramaters set by the request (/path?locale=he  => params["locale"] == "he").
 		attr_reader :params
+
 		# this is a magical hash representing the cookies hash set in the request variables.
 		#
 		# the magic, you ask?
 		#
 		# the cookies hash is writable - calling `cookies[:new_cookie_name] = value` will set the cookie in the response object.
 		attr_reader :cookies
+
 		# the HTTPResponse object, which sets the response to be sent.
 		attr_accessor :response
+
 		# the ::flash is a little bit of a magic hash that sets and reads temporary cookies.
 		# these cookies will live for one successful request to a Controller and will then be removed.
 		attr_reader :flash
+		
 		# the parameters used to create the host (the parameters passed to the `listen` / `add_service` call).
 		attr_reader :host_params
 
