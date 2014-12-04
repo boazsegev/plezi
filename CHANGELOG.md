@@ -6,7 +6,7 @@ Change log v.0.6.13
 
 **minor**: added a `flush` method to the HTTPResponse and WSResponse - to make sure all the data is sent before the code continues (blocks the thread).
 
-**minor**: fixes for documentation.
+**minor**: documentation fixes and updates.
 
 ***
 
