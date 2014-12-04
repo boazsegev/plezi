@@ -4,7 +4,15 @@ module Anorexic
 	# Anorexic (using the `route` or `shared_route` commands), and will be available
 	# for the controller to use within it's methods.
 	#
-	# to do: add HTTP encrypted authentication? - probably not.
+	# for some reason, the documentation ignors the following additional attributes:
+	#
+	# request:: the HTTPRequest object containing all the data from the HTTP request. If a WebSocket connection was established, the `request` object will continue to contain the request establishing the connection (cookies, parameters sent and other information).
+	# params:: any parameters sent with the request (short-cut for `request.params`), will contain any GET or POST form data sent (including file upload and JSON format support).
+	# cookies:: a cookie-jar to get and set cookies (set: `cookie[:name] = data` or get: `cookie[:name]`). Cookies and some other data must be set BEFORE the response's headers are sent.
+	# flash:: a temporary cookie-jar, good for one request. this is a short-cut for the `response.flash` which handles this magical cookie style.
+	# response:: the HTTPResponse **OR** the WSResponse object that formats the response and sends it. use `response << data`. This object can be used to send partial data (such as headers, or partial html content) in blocking mode as well as sending data in the default non-blocking mode.
+	# host_params:: a copy of the parameters used to create the host and service which accepted the request and created this instance of the controller class.
+	#
 	module ControllerMagic
 
 		module_function
@@ -30,7 +38,7 @@ module Anorexic
 		# the ::flash is a little bit of a magic hash that sets and reads temporary cookies.
 		# these cookies will live for one successful request to a Controller and will then be removed.
 		attr_reader :flash
-		
+
 		# the parameters used to create the host (the parameters passed to the `listen` / `add_service` call).
 		attr_reader :host_params
 

@@ -77,6 +77,12 @@ module Anorexic
 			Anorexic.callback(self, :send)
 		end
 
+		# makes sure any data in the que is send and calls `flush` on the socket, to make sure the buffer is sent.
+		def flush
+			send
+			socket.flush
+		end
+
 		# event based interface for messages.
 
 		# notice: since it is all async evet base - multipart messages might be garbled up...?

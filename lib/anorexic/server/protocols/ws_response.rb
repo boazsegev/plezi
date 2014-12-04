@@ -33,6 +33,11 @@ module Anorexic
 			service.send_nonblock self.class.frame_data(str.dup)
 		end
 
+		# makes sure any data held in the buffer is actually sent.
+		def flush
+			service.flush
+		end
+
 		# sends any pending data and closes the connection.
 		def close
 			service.send_nonblock self.class.frame_data('', 8)

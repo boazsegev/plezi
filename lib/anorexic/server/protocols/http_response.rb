@@ -40,7 +40,7 @@ module Anorexic
 			@cookies = {}
 			# propegate flash object
 			@flash = Hash.new do |hs,k|
-				hs["anorexic_flash_#{k}"] if hs.has_key? "anorexic_flash_#{k}"
+				hs["anorexic_flash_#{k.to_s}"] if hs.has_key? "anorexic_flash_#{k.to_s}"
 			end
 			request.cookies.each do |k,v|
 				@flash[k] = v if k.to_s.start_with? "anorexic_flash_"
