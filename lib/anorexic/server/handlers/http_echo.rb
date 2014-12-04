@@ -13,12 +13,12 @@ module Anorexic
 			response.finish
 		end
 
-		# does nothing - a simple stub for requires handlers
+		# does nothing - a simple stub as required from handlers
 		def add_route *args
 			self
 		end
 
-		# does nothing - a simple stub for requires handlers
+		# does nothing - a simple stub as required from handlers
 		def add_host *args
 			self
 		end
