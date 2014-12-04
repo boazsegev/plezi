@@ -1,15 +1,10 @@
 
 module Anorexic
 
-	# this is the main application object. only one can exist.
+	# this module contains the methods that are used as a DSL and sets up easy access to the Anorexic framework.
 	#
-	# this class collects the information from the `listen`, `route` and `start` functions and creates a server "lineup".
+	# use the`listen`, `host` and `route` functions rather then accessing this object.
 	#
-	# use the`listen`, `route` and `start` functions rather then accessing this object.
-	#
-	# It is better to make most settings using the listen paramaters.
-	#
-	# to-do: fix logger + rewrite + fix add_host to remember all historic hosts (for adding shared routes)
 	module DSL
 		module_function
 
