@@ -8,6 +8,8 @@ Change log v.0.6.13
 
 **minor**: documentation fixes and updates.
 
+**fix?**: removed a possible risk for an issue with WebSocket Controllers.
+
 ***
 
 Change log v.0.6.12
