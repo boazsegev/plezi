@@ -4,11 +4,11 @@ module Anorexic
 	# Anorexic (using the `route` or `shared_route` commands), and will be available
 	# for the controller to use within it's methods.
 	#
-	# for some reason, the documentation ignors the following additional attributes:
+	# for some reason, the documentation ignores the following additional attributes, which are listed here:
 	#
-	# request:: the HTTPRequest object containing all the data from the HTTP request. If a WebSocket connection was established, the `request` object will continue to contain the request establishing the connection (cookies, parameters sent and other information).
+	# request:: the HTTPRequest object containing all the data from the HTTP request. If a WebSocket connection was established, the `request` object will continue to contain the HTTP request establishing the connection (cookies, parameters sent and other information).
 	# params:: any parameters sent with the request (short-cut for `request.params`), will contain any GET or POST form data sent (including file upload and JSON format support).
-	# cookies:: a cookie-jar to get and set cookies (set: `cookie[:name] = data` or get: `cookie[:name]`). Cookies and some other data must be set BEFORE the response's headers are sent.
+	# cookies:: a cookie-jar to get and set cookies (set: `cookie\[:name] = data` or get: `cookie\[:name]`). Cookies and some other data must be set BEFORE the response's headers are sent.
 	# flash:: a temporary cookie-jar, good for one request. this is a short-cut for the `response.flash` which handles this magical cookie style.
 	# response:: the HTTPResponse **OR** the WSResponse object that formats the response and sends it. use `response << data`. This object can be used to send partial data (such as headers, or partial html content) in blocking mode as well as sending data in the default non-blocking mode.
 	# host_params:: a copy of the parameters used to create the host and service which accepted the request and created this instance of the controller class.
