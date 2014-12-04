@@ -61,16 +61,21 @@ module Anorexic
 			initialize_path path
 			initialize_controller controller, block
 		end
+
+		# initializes the controller,
+		# by inheriting the class into an Anorexic controller subclass (with the Anorexic::ControllerMagic injected).
+		#
+		# Proc objects are currently passed through without any change - as Proc routes are assumed to handle themselves correctly.
 		def initialize_controller controller, block
 			@controller, @proc = controller, block
 			if controller.is_a?(Class)
 				# add controller magic
-				if controller.methods(false).include?(:on_message)
-				else
-					@controller = self.class.make_controller_magic controller
-				end
+				@controller = self.class.make_controller_magic controller
 			end
 		end
+
+		# initializes the path by converting the string into a Regexp
+		# and noting any parameters that might need to be extracted for RESTful routes.
 		def initialize_path path
 			@fill_paramaters = {}
 			if path.is_a? Regexp

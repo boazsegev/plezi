@@ -13,6 +13,7 @@ module Anorexic
 
 		attr_reader :ssl_socket
 
+		# creates a new connection wrapper object for the new socket that was recieved from the `accept_nonblock` method call.
 		def initialize soc, parameters = {}
 			context = OpenSSL::SSL::SSLContext.new
 			context.set_params verify_mode: OpenSSL::SSL::VERIFY_NONE# OpenSSL::SSL::VERIFY_PEER #OpenSSL::SSL::VERIFY_NONE
@@ -73,11 +74,12 @@ module Anorexic
 
 		# SSL certificate
 
-		#creates a self-signed certificate
+		# returns the current self-signed certificate - or creates a new one, if there is no current certificate.
 		def self.self_cert bits=2048, cn=nil, comment='a self signed certificate for when we only need encryption and no more.'
 			@@self_cert ||= create_cert
 			return *@@self_cert
 		end
+		#creates a self-signed certificate
 		def self.create_cert bits=2048, cn=nil, comment='a self signed certificate for when we only need encryption and no more.'
 			unless cn
 				host_name = Socket::gethostbyname(Socket::gethostname)[0].split('.')

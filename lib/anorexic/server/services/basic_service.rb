@@ -26,6 +26,7 @@ module Anorexic
 		attr_reader :socket, :locker, :closed, :parameters
 		attr_accessor :protocol, :handler, :timeout
 
+		# creates a new connection wrapper object for the new socket that was recieved from the `accept_nonblock` method call.
 		def initialize socket, parameters = {}
 			@handler = parameters[:handler]
 			@socket = socket
@@ -146,6 +147,7 @@ module Anorexic
 		# 	end
 		# end
 
+		# called once a socket is disconnected or needs to be disconnected.
 		def on_disconnect
 			Anorexic.callback Anorexic, :remove_connection, self
 			locker.synchronize do

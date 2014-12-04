@@ -79,8 +79,12 @@ module Anorexic
 	## Event Engine (Callbacks) / Multi-tasking
 	protected
 	module_function
+
+	# DANGER ZONE - Anorexic Engine. an Array containing all the shutdown callbacks that need to be called.
 	SHUTDOWN_CALLBACKS = []
+	# DANGER ZONE - Anorexic Engine. an Array containing all the current events.
 	EVENTS = []
+	# DANGER ZONE - Anorexic Engine. the Mutex locker for the event machine.
 	LOCKER = Mutex.new
 
 	# Anorexic event cycle settings: gets/sets how many worker threads Anorexic will run.
@@ -91,7 +95,7 @@ module Anorexic
 		@max_threads = value
 	end
 
-	# Anorexic event cycle settings: how long to sleep during idle time, before forcing another cycle.
+	# Anorexic event cycle settings: how long to wait for IO activity before forcing another cycle.
 	def idle_sleep
 		@idle_sleep ||= 0.1
 	end
@@ -231,13 +235,13 @@ module Anorexic
 	#######################
 	## Services pooling and calling
 
-	# the services store
+	# DANGER ZONE - Anorexic Engine. the services store
 	SERVICES = {}
-	#the services mutex
+	# DANGER ZONE - Anorexic Engine. the services mutex
 	S_LOCKER = Mutex.new
-	#the connections mutex
+	# DANGER ZONE - Anorexic Engine. the connections mutex
 	C_LOCKER = Mutex.new
-	#the io reactor mutex
+	# DANGER ZONE - Anorexic Engine. the io reactor mutex
 	IO_LOCKER = Mutex.new
 
 	# public API to add a service to the framework.
@@ -315,6 +319,7 @@ module Anorexic
 	# 	true
 	# end
 
+
 	# Anorexic Engine, DO NOT CALL. waits on IO and pushes events. all threads hang while reactor is active (unless events are already 'in the pipe'.)
 	def io_reactor
 		IO_LOCKER.synchronize do
@@ -343,7 +348,7 @@ module Anorexic
 		true
 	end
 
-	# the connections store
+	# DANGER ZONE - Anorexic Engine. the connections store
 	IO_CONNECTION_DIC = {}
 
 	# Anorexic Engine, DO NOT CALL. disconnectes all active connections
@@ -370,4 +375,5 @@ module Anorexic
 
 end
 
+# Set a shortcut for the Anorexic module.
 AN = Anorexic

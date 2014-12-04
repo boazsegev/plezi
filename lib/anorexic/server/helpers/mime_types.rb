@@ -1,4 +1,5 @@
 module Anorexic
+	# This module holds the mime dictionary. 
 	module MimeTypeHelper
 		# thank you Apache group (and many more), for compiling mime-type list for me to search through.
 		MIME_DICTIONARY = {"123"=>"application/vnd.lotus-1-2-3",
