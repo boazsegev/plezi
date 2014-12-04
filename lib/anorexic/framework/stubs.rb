@@ -21,34 +21,34 @@ module Anorexic
 		def initialize
 		end
 
-		# called when request is GET and params[:id] isn't defined
+		# called when request is GET and params\[:id] isn't defined
 		def index
 			"Hello World!"
 		end
 
-		# called when request is GET and params[:id] exists
+		# called when request is GET and params\[:id] exists
 		def show
-			"nothing to show for id - #{params[:id]} - with parameters: #{params.to_s}"
+			"nothing to show for id - #{params\[:id]} - with parameters: #{params.to_s}"
 		end
 
-		# called when request is GET and params[:id] == "new" (used for the "create new object" form).
+		# called when request is GET and params\[:id] == "new" (used for the "create new object" form).
 		def new
 			"Should we make something new?"
 		end
 
-		# called when request is POST or PUT and params[:id] isn't defined params[:id] == "new" 
+		# called when request is POST or PUT and params\[:id] isn't defined params\[:id] == "new" 
 		def save
 			"save called - creating a new object."
 		end
 
-		# called when request is POST or PUT and params[:id] exists and isn't "new"
+		# called when request is POST or PUT and params\[:id] exists and isn't "new"
 		def update
-			"update called - updating #{params[:id]}"
+			"update called - updating #{params\[:id]}"
 		end
 
-		# called when request is DELETE (or params["_method"] == 'delete') and request.params[:id] exists
+		# called when request is DELETE (or params["_method"] == 'delete') and request.params\[:id] exists
 		def delete
-			"delete called - deleting object #{params[:id]}"
+			"delete called - deleting object #{params\[:id]}"
 		end
 
 		# called before request is called
@@ -123,20 +123,20 @@ module Anorexic
 		## It is possible to use RESTful methods to help emulate long XHR pulling.
 		## a RESTful controller can also be a WebSockets controller (these are not exclusive qualities).
 
-		# called when request is GET and params[:id] isn't defined
+		# called when request is GET and params\[:id] isn't defined
 		def index
 			{message: 'index', data: {id: nil, token: nil}}.to_json
 		end
 
-		# called when request is GET and params[:id] exists (unless params[:id] == "new").
+		# called when request is GET and params\[:id] exists (unless params\[:id] == "new").
 		def show
-			{message: 'read_chat', data: {id: params[:id], token: cookies['example_token'], example_data: 'we missed you.'}}.to_json
+			{message: 'read_chat', data: {id: params\[:id], token: cookies['example_token'], example_data: 'we missed you.'}}.to_json
 		end
-		# called when request is POST / PUT and params[:id] exists
+		# called when request is POST / PUT and params\[:id] exists
 		def update
 			# assumes body is JSON - more handling could be done using the params (which hold parsed JSON data).
-			broadcast :_tell_firends, request[:body] 
-			{message: 'write_chat', data: {id: params[:id], token: cookies['example_token'], example_data: 'message sent.'}}.to_json
+			broadcast :_tell_firends, request\[:body] 
+			{message: 'write_chat', data: {id: params\[:id], token: cookies['example_token'], example_data: 'message sent.'}}.to_json
 		end
 
 	end
