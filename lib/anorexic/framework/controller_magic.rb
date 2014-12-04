@@ -25,7 +25,7 @@ module Anorexic
 		# the ::params variable contains all the paramaters set by the request (/path?locale=he  => params["locale"] == "he").
 		attr_reader :params
 
-		# a cookie-jar to get and set cookies (set: `cookie[:name] = data` or get: `cookie[:name]`).
+		# a cookie-jar to get and set cookies (set: `cookie\[:name] = data` or get: `cookie\[:name]`).
 		#
 		# Cookies and some other data must be set BEFORE the response's headers are sent.
 		attr_reader :cookies
