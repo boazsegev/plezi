@@ -25,14 +25,12 @@ module Anorexic
 		# the ::params variable contains all the paramaters set by the request (/path?locale=he  => params["locale"] == "he").
 		attr_reader :params
 
-		# this is a magical hash representing the cookies hash set in the request variables.
+		# a cookie-jar to get and set cookies (set: `cookie[:name] = data` or get: `cookie[:name]`).
 		#
-		# the magic, you ask?
-		#
-		# the cookies hash is writable - calling `cookies[:new_cookie_name] = value` will set the cookie in the response object.
+		# Cookies and some other data must be set BEFORE the response's headers are sent.
 		attr_reader :cookies
 
-		# the HTTPResponse object, which sets the response to be sent.
+		# the HTTPResponse **OR** the WSResponse object that formats the response and sends it. use `response << data`. This object can be used to send partial data (such as headers, or partial html content) in blocking mode as well as sending data in the default non-blocking mode.
 		attr_accessor :response
 
 		# the ::flash is a little bit of a magic hash that sets and reads temporary cookies.
