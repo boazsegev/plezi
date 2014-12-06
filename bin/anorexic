@@ -51,6 +51,7 @@ class AppTemplate
 
 		# app core files.
 		app_tree["environment.rb"] ||= IO.read ::File.expand_path(File.join("..", "..", "resources" ,"environment.rb"),  __FILE__)
+		app_tree["routes.rb"] ||= IO.read ::File.expand_path(File.join("..", "..", "resources" ,"routes.rb"),  __FILE__)
 		app_tree["rakefile.rb"] ||= IO.read ::File.expand_path(File.join("..", "..", "resources" ,"rakefile.rb"),  __FILE__)
 		app_tree["Procfile"] ||= ""
 		app_tree["Procfile"] << "\nweb: bundle exec ./#{ARGV[1]}.rb -p $PORT\n"

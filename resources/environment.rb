@@ -2,10 +2,6 @@
 
 # this file sets up the basic framework.
 
-# set default strings to UTF-8
-Encoding.default_internal = 'utf-8'
-Encoding.default_external = 'utf-8'
-
 # Using pathname extentions for setting public folder
 require 'pathname'
 #set up root object, it might be used by the environment and\or the anorexic extension gems.
@@ -32,3 +28,11 @@ Dir[File.join "{lib}", "**" , "*.rb"].each {|file| load File.expand_path(file)}
 
 # load all application files
 Dir[File.join "{app}", "**" , "*.rb"].each {|file| load File.expand_path(file)}
+
+# start a web service to listen on the first default port (3000 or the port set by the command-line).
+# you can change some of the default settings here.
+listen 	root: Root.join('public').to_s,
+		assets: Root.join('assets').to_s,
+		assets_public: '/assets',
+		templates: Root.join('app','views').to_s,
+		ssl: false
