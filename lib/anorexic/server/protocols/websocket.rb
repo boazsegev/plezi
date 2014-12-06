@@ -73,6 +73,8 @@ module Anorexic
 		# perform the HTTP handshake for WebSockets. send a 400 Bad Request error if handshake fails.
 		def http_handshake request, response, handler
 			# review handshake (version, extentions)
+			# should consider adopting the websocket-ruby gem for handshake and framing:
+			# https://github.com/imanel/websocket-ruby
 			return request.service.handler.hosts[request[:host] || :default].send_by_code request, 400 , response.headers.merge('sec-websocket-extensions' => SUPPORTED_EXTENTIONS.keys.join(', ')) unless request['upgrade'].to_s.downcase == 'websocket' && 
 									request['sec-websocket-key'] &&
 									request['connection'].to_s.downcase == 'upgrade' &&

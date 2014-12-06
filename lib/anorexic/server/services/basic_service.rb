@@ -23,7 +23,7 @@ module Anorexic
 
 		# instance methods
 
-		attr_reader :socket, :locker, :closed, :parameters
+		attr_reader :socket, :locker, :closed, :parameters, :out_que
 		attr_accessor :protocol, :handler, :timeout
 
 		# creates a new connection wrapper object for the new socket that was recieved from the `accept_nonblock` method call.
@@ -76,6 +76,11 @@ module Anorexic
 		def send_nonblock data
 			locker.synchronize {@out_que << data}
 			Anorexic.callback(self, :send)
+		end
+
+		# adds data to the out buffer - but doesn't send the data until a send event is called.
+		def << data
+			locker.synchronize {@out_que << data}
 		end
 
 		# makes sure any data in the que is send and calls `flush` on the socket, to make sure the buffer is sent.
@@ -201,11 +206,11 @@ module Anorexic
 		# this is a protected method, it should be used by child classes to implement each
 		# send action.
 		def _send data
-			data.force_encoding "binary"
+			# data.force_encoding "binary" rescue false
 			len = data.bytesize
 			act = @socket.send data, 0
 			while len > act
-				act += @socket.send data[act..-1], 0
+				act += @socket.send data.byteslice(act..-1) , 0
 			end
 		end
 		# this is a protected method, it should be used by child classes to implement each

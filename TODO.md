@@ -15,3 +15,12 @@ HAML is slow
 
 Folder Listing:: add folder listing option?
 
+# Template
+
+Update welcome page.
+
+update gem file (remove erb).
+
+#Name?
+
+rename the project?

@@ -135,7 +135,7 @@ module Anorexic
 			unless @headers.frozen?
 				fix_headers
 				service.send "#{@http_version} #{status} #{STATUS_CODES[status] || 'unknown'}\r\n"
-				headers.each {|k,v| h_name = k.to_s.downcase.gsub(/(^|[^a-z])([a-z])/) {|m| $1 + $2.upcase}; service.send "#{h_name}: #{v}\r\n"}
+				headers.each {|k,v| service.send "#{k}: #{v}\r\n"}
 				@cookies.each {|k,v| service.send "Set-Cookie: #{k.to_s}=#{v.to_s}\r\n"}
 				service.send "\r\n"
 				@headers.freeze
@@ -180,9 +180,9 @@ module Anorexic
 
 		# Danger Zone (internally used method, use with care): fix response's headers before sending them (date, connection and transfer-coding).
 		def fix_headers
-			headers['connection'] ||= "Keep-Alive"
-			headers['date'] = Time.now.httpdate
-			headers['transfer-encoding'] ||= 'chunked' if !headers['content-length']
+			headers['Connection'] ||= "Keep-Alive"
+			headers['Date'] = Time.now.httpdate
+			headers['Transfer-Encoding'] ||= 'chunked' if !headers['content-length']
 			headers['cache-control'] ||= 'no-cache'
 			# remove old flash cookies
 			request.cookies.keys.each do |k|
@@ -256,9 +256,9 @@ module Anorexic
 			508=>"Loop Detected",
 			510=>"Not Extended",
 			511=>"Network Authentication Required"
-		}	end
+		}
+	end
 end
-
 
 ######
 ## example requests

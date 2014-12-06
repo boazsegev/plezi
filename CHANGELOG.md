@@ -2,6 +2,12 @@
 
 ***
 
+Change log v.0.6.14
+
+**performance**: the HTTPResponse engine has been tweeked a bit to improve the performance (~8% improvement for a simple 'Hello World').
+
+***
+
 Change log v.0.6.13
 
 **minor**: added a `flush` method to the HTTPResponse and WSResponse - to make sure all the data is sent before the code continues (blocks the thread).
