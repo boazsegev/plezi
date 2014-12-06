@@ -6,6 +6,8 @@ Change log v.0.6.14
 
 **performance**: the HTTPResponse engine has been tweeked a bit to improve the performance (~8% improvement for a simple 'Hello World').
 
+**template**: template code is now updated to seperate the service logic (in the `environment.rb`)  from the routing logic (in the new `routes.rb`).
+
 ***
 
 Change log v.0.6.13
