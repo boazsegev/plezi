@@ -135,7 +135,7 @@ module Anorexic
 			unless @headers.frozen?
 				fix_headers
 				service.send "#{@http_version} #{status} #{STATUS_CODES[status] || 'unknown'}\r\n"
-				headers.each {|k,v| service.send "#{k}: #{v}\r\n"}
+				headers.each {|k,v| service.send "#{k.to_s}: #{v}\r\n"}
 				@cookies.each {|k,v| service.send "Set-Cookie: #{k.to_s}=#{v.to_s}\r\n"}
 				service.send "\r\n"
 				@headers.freeze
