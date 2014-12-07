@@ -10,6 +10,8 @@ Change log v.0.6.14
 
 **fix**: `render` with a String template name (unlike symbol template names) now correctly relates to the template folder path rather then the application's root folder path.
 
+**fix**: fixed minor issue where errors would not be reported if caused by a no method error.
+
 **update**: updated the redirect_to to allow easier redirection to index (using an empty string).
 
 ***
