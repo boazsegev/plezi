@@ -5,7 +5,7 @@
 #
 #########################################
 #
-# this is a skelaton for a RESTful controller implementation.
+# this is a skelaton for a RESTful and WebSocket controller implementation.
 #
 # it can also be used for non RESTful requests by utilizing only the
 # index method or other, non-RESTful, named methods.
@@ -18,15 +18,19 @@
 #
 # no inheritance is required (the Anorexic framework inherits your code, not the other way around).
 #
-# has magic access to the following paramaters:
+# here are some of the available controller properties and methods:
 #
-#    attr_accessor :env, :params, :request, :response, :cookies
+#    attr_accessor :params, :request, :response, :cookies
 #
 # params:: short-cut for request.params
 # request:: the request object
 # response:: the response object.
 # cookies:: a magic cookie-jar (sets and gets cookies).
 # flash:: a hash used for one-time cookies (get and set). any added values will be available for the same client for this and the next connection, after which they are removed.
+#
+# redirect_to:: easily set up redirection.
+# send_data:: easily send data, setting the content-type and content-length headers.
+# render:: easily render Haml and IRB files into String text.
 #
 class SampleController
 
@@ -113,7 +117,7 @@ class SampleController
 	# the demo content simply broadcasts the message.
 	def on_message data
 		# broadcast sends an asynchronous message to all sibling instances, but not to self.
-		broadcast :_tell_firends, data
+		broadcast :_print_out, data
 	end
 
 	# called when a disconnect packet has been recieved or the connection has been cut
@@ -126,7 +130,7 @@ class SampleController
 	# methods that are protected and methods that start with an underscore are hidden from the router
 	# BUT, broadcasted methods must be public (or the broadcast will quietly fail)... so we have to use
 	# the _underscore for this method.
-	def _tell_firends data
+	def _print_out data
 		response << "Someone said #{data}"			
 	end
 
