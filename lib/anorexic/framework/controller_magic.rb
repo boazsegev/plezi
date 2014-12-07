@@ -60,7 +60,7 @@ module Anorexic
 		def redirect_to url, options = {}
 			return super *[] if defined? super
 			raise 'Cannot redirect after headers were sent' if response.headers_sent?
-			url = "#{request.base_url}/#{url.to_s.gsub('_', '/')}" if url.is_a?(Symbol)
+			url = "#{request.base_url}/#{url.to_s.gsub('_', '/')}" if url.is_a?(Symbol) || ( url.is_a?(String) && url.empty? )
 			# redirect
 			response.status = options.delete(:status) || 302
 			response['Location'] = url
