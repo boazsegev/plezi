@@ -192,7 +192,7 @@ module Anorexic
 					begin
 						ret = self.method(requested_method).call
 					rescue NameError => e
-						false #raise unless self.method(requested_method).nil?
+						raise unless self.method(requested_method).nil?
 					end
 					unless ret
 						return false
