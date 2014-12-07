@@ -21,6 +21,6 @@ Gem::Specification.new do |spec|
   spec.add_development_dependency "bundler", "~> 1.7"
   spec.add_development_dependency "rake", "~> 10.0"
 
-  spec.post_install_message = "deprecation warning!\nAnorexic dropped Rack support in favor of an internal server... (to allow protocol switching mid-stream, such as WebSockets).\nPLEASE REVIEW YOUR CODE."
+  spec.post_install_message = "Anorexic is hungry for your code - feed it!"
 
 end

@@ -168,7 +168,7 @@ module Anorexic
 		# flash:: an amazing Hash object that sets temporary cookies for one request only - greate for saving data between redirect calls.
 		#
 		def self.make_controller_magic(controller)
-			new_class_name = "AnorexicMagicController_#{controller.name.gsub /[\:\-]/, '_'}"
+			new_class_name = "Anorexic_#{controller.name.gsub /[\:\-]/, '_'}"
 			return Module.const_get new_class_name if Module.const_defined? new_class_name
 			ret = Class.new(controller) do
 				include Anorexic::ControllerMagic

@@ -148,6 +148,8 @@ Remember to connect to the service from at least two browser windows - to truly 
             redirect_to 'http://www.websocket.org/echo.html'
         end
         def on_message data
+            # the following two lines are the same as:
+            # self.class.broadcast :_send_message, data
             broadcast :_send_message, data
             response << "sent."
         end

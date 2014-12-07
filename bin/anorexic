@@ -114,18 +114,18 @@ class AppTemplate
 		Dir.chdir ARGV[1]
 		puts "starting to write template data...".red
 		puts ""
-		@app_tree["#{ARGV[1]}.rb"] ||= IO.read ::File.expand_path(File.join("..", "..", "resources" ,"code.rb"),  __FILE__)
+		@app_tree["#{ARGV[1]}"] ||= IO.read ::File.expand_path(File.join("..", "..", "resources" ,"code.rb"),  __FILE__)
 		write_files app_tree
-		File.chmod 0775, "#{ARGV[1]}.rb"
+		File.chmod 0775, "#{ARGV[1]}"
 		puts "tried to update execution permissions. this probably failed.".pink
-		puts "use: chmod +x ./#{ARGV[1]}.rb to set execution permissions on Unix machines."
+		puts "use: chmod +x ./#{ARGV[1]} to set execution permissions on Unix machines."
 		puts ""
 		puts "done."
 		puts "\n#{@end_comments.join("\n")}" unless @end_comments.empty?
 		puts ""
 		puts "please change directory into the app directory: cd #{ARGV[1]}"
 		puts ""
-		puts "run the #{ARGV[1]} app using: ./#{ARGV[1]}.rb or using: anorexic s"
+		puts "run the #{ARGV[1]} app using: ./#{ARGV[1]} or using: anorexic s"
 		puts ""
 	end
 
@@ -249,10 +249,10 @@ if ARGV[0] == 'new' || ARGV[0] == 'n' || ARGV[0] == "force"
 	template.build
 elsif ARGV[0] == 'server' || ARGV[0] == 'start' || ARGV[0] == 's'
 	ARGV.shift
-	load File.expand_path(Dir["."][0], (File.expand_path(Dir["."][0]).split(/[\\\/]/).last + ".rb") )
+	load File.expand_path(Dir["."][0], (File.expand_path(Dir["."][0]).split(/[\\\/]/).last) ) rescue load( File.expand_path(Dir["."][0], (File.expand_path(Dir["."][0]).split(/[\\\/]/).last + '.rb') ) )
 elsif ARGV[0] == 'console' || ARGV[0] == 'c'
 	NO_ANOREXIC_AUTO_START ||= true
-	require File.expand_path(Dir["."][0], (File.expand_path(Dir["."][0]).split(/[\\\/]/).last + ".rb") )
+	require File.expand_path(Dir["."][0], (File.expand_path(Dir["."][0]).split(/[\\\/]/).last) ) rescue load( File.expand_path(Dir["."][0], (File.expand_path(Dir["."][0]).split(/[\\\/]/).last + '.rb') ) )
 	ARGV.clear
 	IRB.setup nil
 	IRB.conf[:MAIN_CONTEXT] = IRB::Irb.new.context

@@ -7,6 +7,9 @@ require 'pathname'
 #set up root object, it might be used by the environment and\or the anorexic extension gems.
 Root ||= Pathname.new(File.dirname(__FILE__)).expand_path
 
+# make sure all file access and file loading is relative to the application's root folder
+Dir.chdir Root.to_s
+
 # ensure development mode? (comment before production, environment dependent)
 ENV["RACK_ENV"] ||= "development"
 
