@@ -329,11 +329,11 @@ module Anorexic
 			# the method will be called asynchrnously for each instance of this Controller class.
 			def collect method_name, *args, &block
 				if block
-					Anorexic.push_event((Proc.new() {r = []; ObjectSpace.each_object(self.class) { |controller|  r << controller.method(method_name).call(*args) if controller.accepts_broadcast?  && (controller.object_id != self.object_id)} ; r } ), &block)
+					Anorexic.push_event((Proc.new() {r = []; ObjectSpace.each_object(self.class) { |controller|  r << controller.method(method_name).call(*args) if controller.accepts_broadcast? } ; r } ), &block)
 					return true
 				else
 					r = []
-					ObjectSpace.each_object(self.class) { |controller|  r << controller.method(method_name).call(*args) if controller.accepts_broadcast?  && (controller.object_id != self.object_id) }
+					ObjectSpace.each_object(self.class) { |controller|  r << controller.method(method_name).call(*args) if controller.accepts_broadcast? }
 					return r
 				end
 			end
