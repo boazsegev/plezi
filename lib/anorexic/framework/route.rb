@@ -170,8 +170,8 @@ module Anorexic
 		def self.make_controller_magic(controller)
 			new_class_name = "Anorexic_#{controller.name.gsub /[\:\-]/, '_'}"
 			return Module.const_get new_class_name if Module.const_defined? new_class_name
+			controller.include Anorexic::ControllerMagic
 			ret = Class.new(controller) do
-				include Anorexic::ControllerMagic
 
 				def initialize request, response, host_params
 					@request, @params, @flash, @host_params = request, request.params, response.flash, host_params
@@ -192,7 +192,7 @@ module Anorexic
 					begin
 						ret = self.method(requested_method).call
 					rescue NameError => e
-						raise unless self.method(requested_method).nil?
+						raise if self.methods.include? requested_method
 					end
 					unless ret
 						return false

@@ -2,7 +2,6 @@
 $0="Anorexic Builder"
 # count lines of code with: ^[ \t]*[\w\d\"\(\{\@\[\]\}\)\:\'\.\*\&]+.*$
 
-require 'rubygems'
 require 'irb'
 
 ##########
@@ -33,6 +32,7 @@ require 'irb'
 class AppTemplate
 
 	def initialize
+		require 'rubygems'
 		# set end comments
 		@end_comments = []
 		@app_tree ||= {}
@@ -252,7 +252,7 @@ elsif ARGV[0] == 'server' || ARGV[0] == 'start' || ARGV[0] == 's'
 	load File.expand_path(Dir["."][0], (File.expand_path(Dir["."][0]).split(/[\\\/]/).last) ) rescue load( File.expand_path(Dir["."][0], (File.expand_path(Dir["."][0]).split(/[\\\/]/).last + '.rb') ) )
 elsif ARGV[0] == 'console' || ARGV[0] == 'c'
 	NO_ANOREXIC_AUTO_START ||= true
-	require File.expand_path(Dir["."][0], (File.expand_path(Dir["."][0]).split(/[\\\/]/).last) ) rescue load( File.expand_path(Dir["."][0], (File.expand_path(Dir["."][0]).split(/[\\\/]/).last + '.rb') ) )
+	load File.expand_path(Dir["."][0], (File.expand_path(Dir["."][0]).split(/[\\\/]/).last) ) rescue load( File.expand_path(Dir["."][0], (File.expand_path(Dir["."][0]).split(/[\\\/]/).last + '.rb') ) )
 	ARGV.clear
 	IRB.setup nil
 	IRB.conf[:MAIN_CONTEXT] = IRB::Irb.new.context

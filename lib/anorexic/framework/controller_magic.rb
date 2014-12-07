@@ -20,6 +20,7 @@ module Anorexic
 		end
 
 		module InstanceMethods
+			module_function
 			public
 
 			# the request object, class: HTTPRequest.
@@ -176,7 +177,7 @@ module Anorexic
 			# the value returned is invalid and will remain 'stuck' on :pre_connect
 			# (which is the last method called before the protocol is switched from HTTP to WebSockets).
 			def requested_method
-				@@___available_public_methods___ ||= (((self.class.superclass.public_instance_methods - Object.public_instance_methods) - [:before, :after, :save, :show, :update, :delete, :initialize, :on_message, :pre_connect, :on_connect, :on_disconnect]).delete_if {|m| m.to_s[0] == '_'})
+				@@___available_public_methods___ ||= (((self.class.public_instance_methods - Object.public_instance_methods) - [:before, :after, :save, :show, :update, :delete, :initialize, :on_message, :pre_connect, :on_connect, :on_disconnect] - Anorexic::ControllerMagic::InstanceMethods.instance_methods).delete_if {|m| m.to_s[0] == '_'})
 				request.request_method = 'DELETE' if params[:_method].to_s.downcase == 'delete'
 				return :pre_connect if request['upgrade'] && request['upgrade'].to_s.downcase == 'websocket' &&  request['connection'].to_s.downcase == 'upgrade'
 				case request.request_method

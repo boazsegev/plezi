@@ -2,6 +2,14 @@
 
 ***
 
+Change log v.0.6.15
+
+**feature**: the new Websocket class `broadcast` and `collect` allows broadcasting and colletion of data between different connection types!
+
+**fix**: error handling for missing methods was now excessive and informed of intentionally missing routes as well actual errors - fixed by correcting the if statement (hopefuly for the final time).
+
+***
+
 Change log v.0.6.14
 
 **performance**: the HTTPResponse engine has been tweeked a bit to improve the performance (~8% improvement for a simple 'Hello World').
