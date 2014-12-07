@@ -8,6 +8,8 @@ Change log v.0.6.14
 
 **template**: template code is now updated to seperate the service logic (in the `environment.rb`)  from the routing logic (in the new `routes.rb`).
 
+**fix**: `render` with a String template name (unlike symbol template names) now correctly relates to the template folder path rather then the application's root folder path.
+
 ***
 
 Change log v.0.6.13
