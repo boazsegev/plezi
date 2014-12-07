@@ -57,6 +57,12 @@ module Anorexic
 		#      redirect_to 'http://google.com'
 		#      # => redirects to 'http://google.com' with status 302 (default status)
 		#
+		# if the url is a symbol, the method will try to format it into a correct url, replacing any
+		# underscores ('_') with a backslash ('/').
+		#
+		# if the url is an empty string, the method will try to format it into a correct url
+		# representing the index of the application (http://server/)
+		#
 		def redirect_to url, options = {}
 			return super *[] if defined? super
 			raise 'Cannot redirect after headers were sent' if response.headers_sent?
