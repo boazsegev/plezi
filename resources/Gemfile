@@ -25,28 +25,32 @@ gem 'anorexic'
 ####################
 # gems for easy markup
 
+## Slim is very recommended for HTML markup, it's both easy and fast.
+# gem 'slim'
+
+## Sass makes CSS easy
+# gem "sass"
+
 ## erb for HTML fanatics:
 # gem 'erb'
-
-## Slim is great - we like the name as well ;) :
-# gem 'slim'
 
 ## we love Haml, even though it can be slow:
 # gem 'haml'
 
-## we love Sass
-# gem "sass"
-
 ## and maybe coffee script? (although, we just use javascript, really)
 # gem "coffee-script"
 
-## we also like I18n:
+####################
+# Internationalization
+
+## I18n is the only one I know of.
 # gem 'i18n'
 
 ####################
 # gems for databases and models
 
-## if you want to use a database, here are a two common enough options:
+## if you want to use a database, here are a few common enough options:
+# gem 'mysql2'
 # gem 'sqlite3'
 # gem 'pg'
 
@@ -57,6 +61,6 @@ gem 'anorexic'
 # gem 'sequel'
 
 ## if you want to use ActiveRecord, uncomment the following line(s)...
-## but first, please remember that AcriveRecord has known issues with multiple threads.
+## but first, please remember that AcriveRecord needs extra attention when multi-threading
 # gem 'activerecord', :require => 'active_record'
 # gem 'bcrypt', '~> 3.1.7'

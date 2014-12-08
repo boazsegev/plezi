@@ -59,9 +59,11 @@ class AppTemplate
 
 		# set up config files
 		app_tree["config"] ||= {}
-		app_tree["config"]["db_config.rb"] = IO.read(::File.expand_path(File.join("..", "..", "resources" ,"db_config.rb"),  __FILE__))
-		app_tree["config"]["haml_config.rb"] = IO.read(::File.expand_path(File.join("..", "..", "resources" ,"haml_config.rb"),  __FILE__))
-		app_tree["config"]["i18n_config.rb"] = IO.read(::File.expand_path(File.join("..", "..", "resources" ,"i18n_config.rb"),  __FILE__))
+		app_tree["config"]["db_ac_config.rb"] ||= IO.read(::File.expand_path(File.join("..", "..", "resources" ,"db_ac_config.rb"),  __FILE__))
+		app_tree["config"]["db_sequel_config.rb"] ||= IO.read(::File.expand_path(File.join("..", "..", "resources" ,"db_sequel_config.rb"),  __FILE__))
+		app_tree["config"]["db_dm_config.rb"] ||= IO.read(::File.expand_path(File.join("..", "..", "resources" ,"db_dm_config.rb"),  __FILE__))
+		app_tree["config"]["haml_config.rb"] ||= IO.read(::File.expand_path(File.join("..", "..", "resources" ,"haml_config.rb"),  __FILE__))
+		app_tree["config"]["i18n_config.rb"] ||= IO.read(::File.expand_path(File.join("..", "..", "resources" ,"i18n_config.rb"),  __FILE__))
 
 		#set up database stub folders
 		app_tree["db"] ||= {}
@@ -101,7 +103,7 @@ class AppTemplate
 	end
 
 	def app_tree
-		@app_tree
+		@app_tree ||= {}
 	end
 	def build
 		# require 'pry'
