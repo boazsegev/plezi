@@ -8,6 +8,8 @@ Change log v.0.6.16
 
 **fix?**: trying to fix a mysterious bug in the cache system.
 
+**template**: template structure updates, including changes in application file name and database configuration files.
+
 ***
 
 Change log v.0.6.15
