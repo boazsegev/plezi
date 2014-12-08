@@ -160,10 +160,12 @@ module Anorexic
 				return false if host_params[:templates].nil?
 				(return render(options.delete(:layout), options) { render template, options, &block }) if options[:layout]
 				# find template and create template object
-				filename = template.is_a?(String) ? File.join( host_params[:templates].to_s, template) : (File.join( host_params[:templates].to_s, *template.to_s.split('_')) + (options[:type].empty? ? '': ".#{options[:type]}") + '.haml')
-				return ( Anorexic.cache_needs_update?(filename) ? Anorexic.cache_data( filename, ( Haml::Engine.new( IO.read(filename) ) ), Anorexic.file_mtime(filename) )  : (Anorexic.get_cached filename) ).render(self, &block) if defined?(::Haml) && Anorexic.file_exists?(filename)
+				filename = template.is_a?(String) ? File.join( host_params[:templates].to_s, template) : (File.join( host_params[:templates].to_s, *template.to_s.split('_')) + (options[:type].empty? ? '': ".#{options[:type]}") + '.slim')
+				return ( Anorexic.cache_needs_update?(filename) ? Anorexic.cache_data( filename, ( Slim::Template.new() { IO.read filename } ) )  : (Anorexic.get_cached filename) ).render(self, &block) if defined?(::Slim) && Anorexic.file_exists?(filename)
+				filename.gsub! /\.slim$/, '.haml'
+				return ( Anorexic.cache_needs_update?(filename) ? Anorexic.cache_data( filename, ( Haml::Engine.new( IO.read(filename) ) ) )  : (Anorexic.get_cached filename) ).render(self, &block) if defined?(::Haml) && Anorexic.file_exists?(filename)
 				filename.gsub! /\.haml$/, '.erb'
-				return ( Anorexic.cache_needs_update?(filename) ? Anorexic.cache_data( filename, ( ERB.new( IO.read(filename) ) ), Anorexic.file_mtime(filename) )  : (Anorexic.get_cached filename) ).result(binding, &block) if defined?(::ERB) && Anorexic.file_exists?(filename)
+				return ( Anorexic.cache_needs_update?(filename) ? Anorexic.cache_data( filename, ( ERB.new( IO.read(filename) ) ) )  : (Anorexic.get_cached filename) ).result(binding, &block) if defined?(::ERB) && Anorexic.file_exists?(filename)
 				return false
 			end
 

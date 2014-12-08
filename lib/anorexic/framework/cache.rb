@@ -6,7 +6,7 @@ module Anorexic
 	# contains the cached data, in the format: CACHE_STORE["filename"] = CacheObject
 	CACHE_STORE = {}
 	LOCK = Mutex.new
-	CACHABLE = %w{cache object haml css map js html scss sass coffee txt xml json yaml rb}
+	CACHABLE = %w{cache object slim haml css map js html scss sass coffee txt xml json yaml rb}
 
 	@cache_to_disk = true
 

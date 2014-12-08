@@ -28,13 +28,16 @@ gem 'anorexic'
 ## erb for HTML fanatics:
 # gem 'erb'
 
-## we love Haml:
+## Slim is great - we like the name as well ;) :
+# gem 'slim'
+
+## we love Haml, even though it can be slow:
 # gem 'haml'
 
 ## we love Sass
 # gem "sass"
 
-## and maybe coffee (although, we just use javascript, really)
+## and maybe coffee script? (although, we just use javascript, really)
 # gem "coffee-script"
 
 ## we also like I18n:

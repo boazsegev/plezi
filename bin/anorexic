@@ -84,12 +84,14 @@ class AppTemplate
 		# set up a public folder for static file service
 		app_tree["public"] ||= {}		
 		app_tree["public"]["index.html"] ||= IO.read(::File.expand_path(File.join("..", "..", "resources" ,"welcome_page.html"),  __FILE__)).gsub('appname', ARGV[1])
+		app_tree["public"]["404.slim"] ||= IO.read(::File.expand_path(File.join("..", "..", "resources" ,"404.slim"),  __FILE__))
+		app_tree["public"]["500.slim"] ||= IO.read(::File.expand_path(File.join("..", "..", "resources" ,"500.slim"),  __FILE__))
 		app_tree["public"]["404.html"] ||= IO.read(::File.expand_path(File.join("..", "..", "resources" ,"404.html"),  __FILE__))
 		app_tree["public"]["500.html"] ||= IO.read(::File.expand_path(File.join("..", "..", "resources" ,"500.html"),  __FILE__))
 		app_tree["public"]["404.erb"] ||= IO.read(::File.expand_path(File.join("..", "..", "resources" ,"404.erb"),  __FILE__))
 		app_tree["public"]["500.erb"] ||= IO.read(::File.expand_path(File.join("..", "..", "resources" ,"500.erb"),  __FILE__))
-		app_tree["public"]["404.haml"] ||= IO.read(::File.expand_path(File.join("..", "..", "resources" ,"404.html.haml"),  __FILE__))
-		app_tree["public"]["500.haml"] ||= IO.read(::File.expand_path(File.join("..", "..", "resources" ,"500.html.haml"),  __FILE__))
+		app_tree["public"]["404.haml"] ||= IO.read(::File.expand_path(File.join("..", "..", "resources" ,"404.haml"),  __FILE__))
+		app_tree["public"]["500.haml"] ||= IO.read(::File.expand_path(File.join("..", "..", "resources" ,"500.haml"),  __FILE__))
 		app_tree["public"]["assets"] ||= {}		
 		app_tree["public"]["assets"]["stylesheets"] ||= {}		
 		app_tree["public"]["assets"]["javascripts"] ||= {}		

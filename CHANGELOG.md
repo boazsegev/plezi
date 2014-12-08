@@ -2,6 +2,14 @@
 
 ***
 
+Change log v.0.6.16
+
+**feature**: Slim template rendering is now part of the native render helper method (including template caching). In my testing, it's speed was much better then the Haml (especially for multi-threaded repeated concurrent requests, which can be the norm).
+
+**fix?**: trying to fix a mysterious bug in the cache system.
+
+***
+
 Change log v.0.6.15
 
 **feature**: the new Websocket class `broadcast` and `collect` allows broadcasting and colletion of data between different connection types!
