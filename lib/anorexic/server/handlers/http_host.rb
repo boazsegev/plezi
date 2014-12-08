@@ -98,7 +98,7 @@ module Anorexic
 			# stop if file name is reserved
 			return false if source_file.match(/(scss|sass|coffee|haml)$/)
 			target_file = false
-			target_file = File.join( params[:root], params[:assets_public], *request.path.match(/^#{params[:assets_public]}\/(.*)/)[1].split('/') )if params[:root]
+			target_file = File.join( params[:root], params[:assets_public], *request.path.match(/^#{params[:assets_public]}\/(.*)/)[1].split('/') ) if params[:root]
 			if !File.exists?(source_file)
 				case source_file
 				when /\.css$/
@@ -148,7 +148,7 @@ module Anorexic
 
 		# renders an asset to the cache an attempt to save it to the file system.
 		#
-		# always returns false (data wasn't sent).
+		# returns false (data wasn't sent) unless data was sent.
 		def render_asset request, target, data
 			Anorexic.save_file(target, data, params[:save_assets])
 			return HTTPResponse.new( request, 200, {'content-type' => MimeTypeHelper::MIME_DICTIONARY[File.extname(target)] }, [data]).finish unless Anorexic.cached?(target)

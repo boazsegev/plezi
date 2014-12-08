@@ -1,184 +1,72 @@
-<html>
-	<head>
-		<title>appname - Feed me!!!</title>
-		<style type="text/css">
-			body, html
-			{
-				background-color: #eee;
-				padding: 0; margin: 0;
-				width: 100%;
-				font-size: 1em;
-			}
-			body, html, h1, #wrapper, #wrapper h2
-			{
-				background-image: url(/images/anorexic_gray.png);
-				background-position: center top;
-				background-origin: inherit;
-				background-repeat: no-repeat;
-				background-size: 88% auto;
-				background-attachment: fixed;
+<!DOCTYPE html><head><title>appname - Feed Me!</title><style type="text/css">body, html
+{
+    background-color: #eee;
+    padding: 0; margin: 0;
+    width: 100%;
+    font-size: 1em;
+}
+body, html, h1, #wrapper, #wrapper h2
+{
+    background-image: url(/images/anorexic_gray.png);
+    background-position: center top;
+    background-origin: inherit;
+    background-repeat: no-repeat;
+    background-size: 88% auto;
+    background-attachment: fixed;
 
-			}
+}
 
-			h1
-			{
-				background-color: #ddd;
-				color: #00a;
-				text-align: center;
-				border-bottom: 1px solid #000;
-				margin: 0 0 1em 0;
-				padding: 0.5em 0;
-				width: 100%;
-			}
-			p
-			{
-				font-size: 1.2em;
-				padding: 0 1em;			
-			}
-			a
-			{
-				color: #a04;
-				text-decoration: none;
-			}
-			a:hover
-			{
-				color: #70f;
-				text-decoration: underline;
-			}
-			#wrapper
-			{
-				background-color: #fff;
-				margin: 1em 5%;
-				padding: 0 0 2%;
-				border-radius: 20px;
-				min-height: 50%;
-				color: #007;
-			}
-			#wrapper h2
-			{
-				background-color: #ddd;
-				color: #008;
-				text-align: left;
-				margin: 0 0 1em 0;
-				padding: 0.5em 5%;
-				border-radius: 20px;
-			}
-			#wrapper p{ padding: 0 2%;}
-			pre
-			{
-				border-radius: 20px;
-				padding: 0.5em 0;
-				background-color: #444;
-				color: #ddd;
-			}
-		</style>
-	</head>
-	<body>
-		<h1><a href='https://github.com/boazsegev/anorexic'>Anorexic</a> is hungry... feed it your code!</h1>
-		<div id='wrapper'>
-<h2>I installed <a href='https://github.com/boazsegev/anorexic'>Anorexic</a>, what now?</h2>
-<p>
-Welcome to the amazing world of <a href='https://github.com/boazsegev/anorexic'>Anorexic</a> - an agnostic Ruby framework that's hungry to eat up your code.
-</p>
-<p>
-The <a href='https://github.com/boazsegev/anorexic'>Anorexic</a> framework can even serve multiple services (ports), which is great for having some routes work only on SSL <span style='font-size:0.9em'>(*disclaimer, SSL service has issues and only works with certificates. SSL is still being worked on)</span>:
-</p>
-<pre><code>     require 'anorexic'
-    listen
-    route(/.?/) { |request, response| response &lt;&lt; "Hello World!" }
-</code></pre>
-<p>
-<a href='https://github.com/boazsegev/anorexic'>Anorexic</a> is thin, light and built for lego-block world of open-source. If you want to learn more, <a href='http://rubydoc.info/gems/anorexic/frames'>read the documentation</a>. We actually tried to write some for you to enjoy...
-</p>
-<h2>Building with Gems</h2>
-<p>
-	The <b>first</b> think you should do, is open your Gemfile and decide which gems you want to put in.
-</p>
-<p>
-	You already know what app you want to make - what does it need? does it need a database? maybe simplify html markup using haml?
-</p>
-<p>
-	<a href='https://github.com/boazsegev/anorexic'>Anorexic</a> takes the lego blocks approach - this framework is a wonderful clean slate. Now is the time to add the stuff you want.
-</p>
-<h2>Routes?</h2>
-<p>
-Routes have paths that tell the application which code to run for every request it recieves. The route's path is the part in bold: http://www.server.com<b>/the/stuff/they/request</b>?paramaters=params[:paramaters]
-</p>
-<p>
-Since <a href='https://github.com/boazsegev/anorexic'>Anorexic</a> uses the Anorexic::RackServer class (we could change that, but why would we?), the routes will work the same for all the listening ports.
-</p>
-<p>
-	 <a href='https://github.com/boazsegev/anorexic'>Anorexic</a> routes allows your code to choose it's routes dynamically, in the order they are created. like so:
-</p>
-<pre><code>    require 'anorexic'
-    listen
-    # this route declines to answer
-    route('/') { |req, res| res &lt;&lt; "I Give Up!"; false }
-    # this route wins
-    route('/') { |req, res| res &lt;&lt; "I Win!" }
-    # this route never sees the light of day
-    route('/') { |request, response| response &lt;&lt; "Help Me!" }
-</code></pre>
-<p>
-	 <a href='https://github.com/boazsegev/anorexic'>Anorexic</a> accepts Regexp routes and defines a short cut for a catch-all route:
-</p>
-<pre><code>    require 'anorexic'
-    listen
-
-    # this route accepts paths that start with a number (i.e.: /nonumber)
-    route(/^\/[\d]+[\D]+/) { |req, res| res &lt;&lt; "Give me more numbers :)" }
-
-    # this route accepts paths that are just numbers (i.e.: /87652)
-    route(/^\/[\d]+$/) { |req, res| res &lt;&lt; "I Love Numbers!" }
-
-    # this route accepts paths that don't have any number (i.e.: /nonumber)
-    route(/^\/[\D]+$/) { |req, res| res &lt;&lt; "Where're my numbers :(" }
-
-    # this route catches everything else.
-    route('*') { |request, response| response &lt;&lt; "Gotcha!" }
-</code></pre>
-
-<h2>Controllers</h2>
-<p>
-Controllers are 'special' classes.
-</p>
-<p>
-In fact, Controllers are so special, they are one of the reasons the Anorexic project started - to build light efficient controllers that can handle WebSockets as well as HTTP requests.
-</p>
-<p>
-Although Controllers can be any class, they have a lot of advantages over defining routes using blocks of code. look at this:
-</p>
-<pre><code>    require 'anorexic'
-    listen
-    route "/", Anorexic::StubRESTCtrl
-</code></pre>
-<p>
-Building our own controller is as easy as defining a class:
-</p>
-<pre><code>    class MyController
-        def index
-            "Hello World!"
-        end
-        def demo
-            "This is a demo path!"
-        end
-        def no
-            false
-        end
-
-        # show, update, save, defete, before and after are extra special.
-        def show
-            "Looking for the #{params[:id]} object?"
-        end
-    end
-
-	require 'anorexic'
-    listen
-    route "/", MyController
-</code></pre>
-<p>
-Read more about controllers <a href='http://rubydoc.info/gems/anorexic/frames'>on our documentation page</a>
-.</p>
-		</div>
-	</body>
-</html>
+h1
+{
+    background-color: #ddd;
+    color: #00a;
+    text-align: center;
+    border-bottom: 1px solid #000;
+    margin: 0 0 1em 0;
+    padding: 0.5em 0;
+    width: 100%;
+}
+p
+{
+    font-size: 1em;
+    padding: 0 1em;
+    margin: 0.5em 0;		
+}
+a
+{
+    color: #a04;
+    text-decoration: none;
+}
+a:hover
+{
+    color: #70f;
+    text-decoration: underline;
+}
+#wrapper
+{
+    background-color: #fff;
+    margin: 1em 5%;
+    padding: 0 0 2%;
+    border-radius: 20px;
+    min-height: 50%;
+    color: #007;
+}
+#wrapper h2
+{
+    background-color: #ddd;
+    color: #008;
+    text-align: left;
+    margin: 0 0 1em 0;
+    padding: 0.5em 5%;
+    border-radius: 20px;
+}
+#wrapper p{ padding: 0 2%;}
+.bold { font-weight: bold; }
+#wrapper ol li{ padding: 0 2%;}
+pre
+{
+    border-radius: 20px;
+    padding: 0.5em 0;
+    background-color: #444;
+    color: #ddd;
+}</style></head><body><h1>Welcome to  <a href="https://github.com/boazsegev/anorexic">AnoreXic</a></h1><div id="wrapper"><h2>Congratulations, appname is running - What's next?</h2><p><span class="bold">Congratulations</span>, you're now running appname and it has so much potential!</p><p>appname started out <a href="https://github.com/boazsegev/anorexic">AnoreXic</a> and it's your quest to feed it your code and make sure appname grows strong and happy.</p><p>You're the master of this quest, and your next steps might include:</p><ol><li><p class="bold">Deciding which gems to use:</p><ul><li>edit Gemfile in the appname folder.</li></ul></li><li><p class="bold">Reviewing the sample code and feeding <a href="https://github.com/boazsegev/anorexic">AnoreXic</a> your code:</p><ul><li>Review the 'sample_controller.rb' file in the appname/app/controllers folder.</li><li>Delete the 'sample_controller.rb' file and this file (appname/assets/welcome.html).</li><li>Write your own controller and code.</li><li>Edit the 'routes.rb' file to set up your routes.</li></ul></li><li><p><span class="bold">Having fun</span> and submitting any issues you discover to the <a href="https://github.com/boazsegev/anorexic">AnoreXic Github Project.</a></p></li></ol><p class="bold">Good Luck!</p></div></body>

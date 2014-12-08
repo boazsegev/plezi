@@ -59,7 +59,9 @@ class SampleController
 
 	# called when request is GET and there's no "id" in quary
 	def index
-		"Hello World."
+		# while using sym redirection (unlike string redirection),
+		# Anorexic will attempt to auto-format a valid URL. 
+		redirect_to "assets_welcome.html".to_sym
 	end
 
 	# called when the params[:id] == fail. this a demonstration for custom routing.

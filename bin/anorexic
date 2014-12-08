@@ -48,6 +48,7 @@ class AppTemplate
 		app_tree["assets"] ||= {}
 		app_tree["assets"]["stylesheets"] ||= {}
 		app_tree["assets"]["javascripts"] ||= {}
+		app_tree["assets"]["welcome.html"] ||= IO.read(::File.expand_path(File.join("..", "..", "resources" ,"welcome_page.html"),  __FILE__)).gsub('appname', ARGV[1])
 
 		# app core files.
 		app_tree["environment.rb"] ||= IO.read ::File.expand_path(File.join("..", "..", "resources" ,"environment.rb"),  __FILE__)
@@ -85,7 +86,6 @@ class AppTemplate
 
 		# set up a public folder for static file service
 		app_tree["public"] ||= {}		
-		app_tree["public"]["index.html"] ||= IO.read(::File.expand_path(File.join("..", "..", "resources" ,"welcome_page.html"),  __FILE__)).gsub('appname', ARGV[1])
 		app_tree["public"]["404.slim"] ||= IO.read(::File.expand_path(File.join("..", "..", "resources" ,"404.slim"),  __FILE__))
 		app_tree["public"]["500.slim"] ||= IO.read(::File.expand_path(File.join("..", "..", "resources" ,"500.slim"),  __FILE__))
 		app_tree["public"]["404.html"] ||= IO.read(::File.expand_path(File.join("..", "..", "resources" ,"404.html"),  __FILE__))
