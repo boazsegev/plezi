@@ -263,6 +263,7 @@ module Anorexic
 				return true if response.headers_sent?
 				# complete handshake
 				return false unless WSProtocol.new( request.service, request.service.parameters).http_handshake request, response, self
+				# set up controller as WebSocket handler
 				@response = WSResponse.new request
 				@_accepts_broadcast = true
 			end

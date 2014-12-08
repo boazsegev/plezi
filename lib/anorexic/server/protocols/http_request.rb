@@ -20,7 +20,7 @@ module Anorexic
 
 		# the request's headers
 		def headers
-			self[:headers]
+			self.select {|k,v| k.is_a? String }
 		end
 		# the request's method (GET, POST... etc').
 		def request_method
