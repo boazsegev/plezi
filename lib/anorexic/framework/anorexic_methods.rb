@@ -223,11 +223,11 @@ module Anorexic
 		# 	was, before reactor:
 		#	sleep(idle_sleep) unless (accept_connections | fire_connections)
 		# GC.start unless events? # forcing GC caused CPU to work overtime with MRI.
-		# @time_since_output ||= Time.now
-		# if Time.now - @time_since_output >= 1
-		# 	@time_since_output = Time.now
-		# 	info "#{IO_CONNECTION_DIC.length} active connections ( #{ IO_CONNECTION_DIC.select{|k,v| v.protocol.is_a?(WSProtocol)} .length } websockets)."
-		# end
+		@time_since_output ||= Time.now
+		if Time.now - @time_since_output >= 1
+			@time_since_output = Time.now
+			info "#{IO_CONNECTION_DIC.length} active connections ( #{ IO_CONNECTION_DIC.select{|k,v| v.protocol.is_a?(WSProtocol)} .length } websockets)."
+		end
 		true
 	end
 

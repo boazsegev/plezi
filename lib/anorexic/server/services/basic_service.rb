@@ -55,7 +55,7 @@ module Anorexic
 		# sends data immidiately - forcing the data to be sent, flushing any pending messages in the que
 		def send data = nil
 			return if @out_que.empty? && data.nil?
-			@active_time = Time.now
+			# @active_time = Time.now
 			locker.synchronize do
 				if @out_que.empty?
 					_send data rescue Anorexic.callback(self, :on_disconnect)
@@ -96,14 +96,14 @@ module Anorexic
 		def on_message
 			# return false if locker.locked?
 			return false if locker.locked?
-			if (_disconnected? rescue true) || (@timeout && (Time.now - @active_time) > @timeout) #implement check that all content was sent
+			if (_disconnected? rescue true) # || (@timeout && (Time.now - @active_time) > @timeout) #implement check that all content was sent
 				return Anorexic.callback self, :on_disconnect
 			end
 			locker.synchronize do
 				begin
 					data = _read
 					if data && !data.empty?
-						@active_time = Time.now
+						# @active_time = Time.now
 						if protocol
 							begin
 								protocol.on_message(self, data)

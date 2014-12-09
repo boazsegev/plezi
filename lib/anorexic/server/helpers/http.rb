@@ -125,9 +125,7 @@ module Anorexic
 				object.each {|v| encode v, decode_method}
 			elsif object.is_a?(String)
 				case decode_method
-				when :form
-					object.gsub!(/[^a-zA-Z0-9\*\.\_\-]/) {|m| m.ord <= 16 ? "%0#{m.ord.to_s(16)}" : "%#{m.ord.to_s(16)}"}
-				when :uri, :url
+				when :uri, :url, :form
 					object.gsub!(/[^a-zA-Z0-9\*\.\_\-]/) {|m| m.ord <= 16 ? "%0#{m.ord.to_s(16)}" : "%#{m.ord.to_s(16)}"}
 				when :html
 					object.gsub!('&', "&amp;")
