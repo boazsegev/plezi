@@ -10,6 +10,8 @@ Change log v.0.6.16
 
 **template**: template updates, including changes in application file name, welcome page and database configuration files.
 
+**performance**: minor framework engine tweeks (reducing the price of wrapping responses within controllers).
+
 ***
 
 Change log v.0.6.15

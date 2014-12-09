@@ -8,61 +8,61 @@ module Anorexic
 	module HTTP
 		module_function
 		# decode html form data stream
-		def decode_form_data encoded
-			scanner = StringScanner.new encoded.gsub('+', '%20')
-			decoded = ''
-			until scanner.eos? do
-				decoded << scanner.scan(/[^%]+/)
-				if scanner.scan(/\%[0-9a-fA-F][0-9a-fA-F]/)
-					decoded << scanner.matched[1,2].to_i(16).chr
-				elsif !scanner.eos?
-					decoded << scanner.scan(/./)
-				end
-			end
-			decoded
-		end
-		# encode html form data stream
-		def encode_form_data exposed
-			scanner = StringScanner.new exposed
-			encoded = ''
+		# def decode_form_data encoded
+		# 	scanner = StringScanner.new encoded.gsub('+', '%20')
+		# 	decoded = ''
+		# 	until scanner.eos? do
+		# 		decoded << scanner.scan(/[^%]+/)
+		# 		if scanner.scan(/\%[0-9a-fA-F][0-9a-fA-F]/)
+		# 			decoded << scanner.matched[1,2].to_i(16).chr
+		# 		elsif !scanner.eos?
+		# 			decoded << scanner.scan(/./)
+		# 		end
+		# 	end
+		# 	decoded
+		# end
+		# # encode html form data stream
+		# def encode_form_data exposed
+		# 	scanner = StringScanner.new exposed
+		# 	encoded = ''
 
-			# HTML form encoding
-			until scanner.eos? do
-				encoded << scanner.scan(/[a-zA-Z0-9\*\.\_\-]+/)				
-				encoded << "%#{scanner.matched.ord <= 16 ? "0" : ""} #{ scanner.matched.ord.to_s(16) }" if scanner.scan(/./)
-			end
+		# 	# HTML form encoding
+		# 	until scanner.eos? do
+		# 		encoded << scanner.scan(/[a-zA-Z0-9\*\.\_\-]+/)				
+		# 		encoded << "%#{scanner.matched.ord <= 16 ? "0" : ""} #{ scanner.matched.ord.to_s(16) }" if scanner.scan(/./)
+		# 	end
 
-			# HTTP encoding
-			# until scanner.eos? do
-			# 	encoded << scanner.scan(/[^\:\/\?\#\[\]\@\!\$\&\'\(\)\*\+\,\;\=]+/)
-			# 	encoded << "%#{scanner.matched.ord <= 16 ? "0" : ""} #{ scanner.matched.ord.to_s(16) }" if scanner.scan(/./)
-			# end
-			encoded
-		end
-		# decode HTTP URI data stream
-		def decode_uri encoded
-			scanner = StringScanner.new encoded.gsub('+', '%20') #? is this true here?
-			decoded = ''
-			until scanner.eos? do
-				decoded << scanner.scan(/[^%]+/)
-				if scanner.scan(/\%[0-9a-fA-F][0-9a-fA-F]/)
-					decoded << scanner.matched[1,2].to_i(16).chr
-				elsif !scanner.eos?
-					decoded << scanner.scan(/./)
-				end
-			end
-			decoded
-		end
-		# encode HTTP URI data stream
-		def encode_uri_data exposed
-			scanner = StringScanner.new exposed
-			encoded = ''
-			until scanner.eos? do
-				encoded << scanner.scan(/[^\:\/\?\#\[\]\@\!\$\&\'\(\)\*\+\,\;\=]+/)
-				encoded << "%#{scanner.matched.ord <= 16 ? "0" : ""} #{ scanner.matched.ord.to_s(16) }" if scanner.scan(/.|[\s]/)
-			end
-			encoded
-		end
+		# 	# HTTP encoding
+		# 	# until scanner.eos? do
+		# 	# 	encoded << scanner.scan(/[^\:\/\?\#\[\]\@\!\$\&\'\(\)\*\+\,\;\=]+/)
+		# 	# 	encoded << "%#{scanner.matched.ord <= 16 ? "0" : ""} #{ scanner.matched.ord.to_s(16) }" if scanner.scan(/./)
+		# 	# end
+		# 	encoded
+		# end
+		# # decode HTTP URI data stream
+		# def decode_uri encoded
+		# 	scanner = StringScanner.new encoded.gsub('+', '%20') #? is this true here?
+		# 	decoded = ''
+		# 	until scanner.eos? do
+		# 		decoded << scanner.scan(/[^%]+/)
+		# 		if scanner.scan(/\%[0-9a-fA-F][0-9a-fA-F]/)
+		# 			decoded << scanner.matched[1,2].to_i(16).chr
+		# 		elsif !scanner.eos?
+		# 			decoded << scanner.scan(/./)
+		# 		end
+		# 	end
+		# 	decoded
+		# end
+		# # encode HTTP URI data stream
+		# def encode_uri_data exposed
+		# 	scanner = StringScanner.new exposed
+		# 	encoded = ''
+		# 	until scanner.eos? do
+		# 		encoded << scanner.scan(/[^\:\/\?\#\[\]\@\!\$\&\'\(\)\*\+\,\;\=]+/)
+		# 		encoded << "%#{scanner.matched.ord <= 16 ? "0" : ""} #{ scanner.matched.ord.to_s(16) }" if scanner.scan(/.|[\s]/)
+		# 	end
+		# 	encoded
+		# end
 
 		# Based on the WEBRick source code, escapes &, ", > and < in a String object
 		def escape(string)

@@ -183,24 +183,25 @@ module Anorexic
 					# create magical cookies
 					@cookies = request.cookies
 					@cookies.set_controller self
+
 					super()
 				end
 
 				def _route_path_to_methods_and_set_the_response_
-					return false unless before rescue false
-					ret = false
-					begin
-						ret = self.method(requested_method).call
-					rescue NameError => e
-						raise if self.methods.include? requested_method
-					end
-					unless ret
-						return false
-					end
-					return false unless after rescue false
+					# set class global to improve performance while checking for supported methods
+					@@___available_public_methods___ ||= (((self.class.public_instance_methods - Object.public_instance_methods) - [:before, :after, :save, :show, :update, :delete, :initialize, :on_message, :pre_connect, :on_connect, :on_disconnect] - Anorexic::ControllerMagic::InstanceMethods.instance_methods).delete_if {|m| m.to_s[0] == '_'})
+					#run :before filter
+					return false if @@___available_public_methods___.include?(:before) && before == false 
+					#check request is valid and call requested method
+					ret = requested_method
+					return false unless @@___available_public_methods___.include?(ret)
+					return false unless (ret = self.method(ret).call)
+					#run :after filter
+					return false if @@___available_public_methods___.include?(:after) && after == false
+					# review returned type for adding String to response
 					if ret.is_a?(String)
-						response['content-length'] = ret.bytesize if response.body.empty? && !response.headers_sent?
 						response << ret
+						response['content-length'] = ret.bytesize if response.body.empty? && !response.headers_sent?
 					end
 					return true
 				end

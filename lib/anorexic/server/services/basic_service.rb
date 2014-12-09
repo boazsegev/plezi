@@ -43,7 +43,7 @@ module Anorexic
 		end
 
 		# sets a connection timeout
-		def set_timeout timeout = 5
+		def set_timeout timeout = 8
 			@timeout = timeout
 		end
 

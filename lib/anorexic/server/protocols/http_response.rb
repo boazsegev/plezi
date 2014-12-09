@@ -180,7 +180,7 @@ module Anorexic
 
 		# Danger Zone (internally used method, use with care): fix response's headers before sending them (date, connection and transfer-coding).
 		def fix_headers
-			headers['Connection'] ||= "Keep-Alive"
+			# headers['Connection'] ||= "Keep-Alive"
 			headers['Date'] = Time.now.httpdate
 			headers['Transfer-Encoding'] ||= 'chunked' if !headers['content-length']
 			headers['cache-control'] ||= 'no-cache'
