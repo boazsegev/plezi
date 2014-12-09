@@ -132,15 +132,7 @@ module Anorexic
 		# the response will remain open for more data to be sent through (using `response << data` and `response.send`).
 		def send
 			raise 'HTTPResponse SERVICE MISSING: cannot send http response without a service.' unless service
-			unless @headers.frozen?
-				fix_headers
-				service.send "#{@http_version} #{status} #{STATUS_CODES[status] || 'unknown'}\r\n"
-				headers.each {|k,v| service.send "#{k.to_s}: #{v}\r\n"}
-				@cookies.each {|k,v| service.send "Set-Cookie: #{k.to_s}=#{v.to_s}\r\n"}
-				service.send "\r\n"
-				@headers.freeze
-				# @cookies.freeze
-			end
+			send_headers
 			return if request.head?
 			if headers["transfer-encoding"] == "chunked"
 				body.each do |s|
@@ -155,7 +147,6 @@ module Anorexic
 					@bytes_sent += s.bytesize
 				end
 			end
-			# body.close rescue true
 			@body.is_a?(Array) ? @body.clear : ( @body = [] )
 		end
 
@@ -166,11 +157,9 @@ module Anorexic
 			raise 'HTTPResponse SERVICE MISSING: cannot send http response without a service.' unless service
 			self.send
 			service.send( (headers["transfer-encoding"] == "chunked") ? "0\r\n\r\n" : nil)
-			# update logger to produce:
-			# 127.0.0.1 - - [04/Nov/2014 22:43:28] "GET  HTTP/1.1" 200 18686 0.6049
-			# IP - SEVERITY - [TIME] "REQUEST" RESOPNSE LENGTH MS 
-			Anorexic.log_raw "#{request[:client_ip]} [#{Time.now.utc}] \"#{request[:method]} #{request[:original_path]} #{request[:requested_protocol]}\/#{request[:version]}\" #{status} #{bytes_sent.to_s} #{"%0.3f" % ((Time.now - request[:time_recieved])*1000)}ms\n"
 			@finished = true
+			# log
+			Anorexic.log_raw "#{request[:client_ip]} [#{Time.now.utc}] \"#{request[:method]} #{request[:original_path]} #{request[:requested_protocol]}\/#{request[:version]}\" #{status} #{bytes_sent.to_s} #{"%0.3f" % ((Time.now - request[:time_recieved])*1000)}ms\n"
 		end
 
 		# attempts to finish the response - if it was not flaged as completed.
@@ -195,6 +184,17 @@ module Anorexic
 			@flash.each do |k,v|
 				set_cookie "anorexic_flash_#{k.to_s}", v
 			end
+		end
+		# Danger Zone (internally used method, use with care): fix response's headers before sending them (date, connection and transfer-coding).
+		def send_headers
+			return false if @headers.frozen?
+			fix_headers
+			service.send "#{@http_version} #{status} #{STATUS_CODES[status] || 'unknown'}\r\n"
+			headers.each {|k,v| service.send "#{k.to_s}: #{v}\r\n"}
+			@cookies.each {|k,v| service.send "Set-Cookie: #{k.to_s}=#{v.to_s}\r\n"}
+			service.send "\r\n"
+			@headers.freeze
+			# @cookies.freeze
 		end
 		
 		# response status codes, as defined.

@@ -188,16 +188,14 @@ module Anorexic
 				end
 
 				def _route_path_to_methods_and_set_the_response_
-					# set class global to improve performance while checking for supported methods
-					@@___available_public_methods___ ||= (((self.class.public_instance_methods - Object.public_instance_methods) - [:before, :after, :save, :show, :update, :delete, :initialize, :on_message, :pre_connect, :on_connect, :on_disconnect] - Anorexic::ControllerMagic::InstanceMethods.instance_methods).delete_if {|m| m.to_s[0] == '_'})
 					#run :before filter
-					return false if @@___available_public_methods___.include?(:before) && before == false 
+					return false if available_public_methods.include?(:before) && before == false 
 					#check request is valid and call requested method
 					ret = requested_method
-					return false unless @@___available_public_methods___.include?(ret)
+					return false unless available_public_methods.include?(ret)
 					return false unless (ret = self.method(ret).call)
 					#run :after filter
-					return false if @@___available_public_methods___.include?(:after) && after == false
+					return false if available_public_methods.include?(:after) && after == false
 					# review returned type for adding String to response
 					if ret.is_a?(String)
 						response << ret

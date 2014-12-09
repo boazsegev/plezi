@@ -153,12 +153,15 @@ module Anorexic
 			#
 			# returns false if the template or layout files cannot be found.
 			def render template, options = {}, &block
+				# make sure templates are enabled
+				return false if host_params[:templates].nil?
+				# render layout by recursion, if exists
+				(return render(options.delete(:layout), options) { render template, options, &block }) if options[:layout]
 				# set up defaults
 				options[:type] ||= 'html'
+				options[:locale] ||= params[:locale].to_sym if params[:locale]
 				# options[:locals] ||= {}
-				I18n.locale = options[:locale] || params[:locale].to_sym if (defined?(I18n) && params[:locale])
-				return false if host_params[:templates].nil?
-				(return render(options.delete(:layout), options) { render template, options, &block }) if options[:layout]
+				I18n.locale = options[:locale] if defined?(I18n) && options[:locale]
 				# find template and create template object
 				filename = template.is_a?(String) ? File.join( host_params[:templates].to_s, template) : (File.join( host_params[:templates].to_s, *template.to_s.split('_')) + (options[:type].empty? ? '': ".#{options[:type]}") + '.slim')
 				return ( Anorexic.cache_needs_update?(filename) ? Anorexic.cache_data( filename, ( Slim::Template.new() { IO.read filename } ) )  : (Anorexic.get_cached filename) ).render(self, &block) if defined?(::Slim) && Anorexic.file_exists?(filename)
@@ -179,8 +182,6 @@ module Anorexic
 			# the value returned is invalid and will remain 'stuck' on :pre_connect
 			# (which is the last method called before the protocol is switched from HTTP to WebSockets).
 			def requested_method
-				# set class global to improve performance while checking for supported methods
-				@@___available_public_methods___ ||= (((self.class.public_instance_methods - Object.public_instance_methods) - [:before, :after, :save, :show, :update, :delete, :initialize, :on_message, :pre_connect, :on_connect, :on_disconnect] - Anorexic::ControllerMagic::InstanceMethods.instance_methods).delete_if {|m| m.to_s[0] == '_'})
 				# respond to websocket special case
 				return :pre_connect if request['upgrade'] && request['upgrade'].to_s.downcase == 'websocket' &&  request['connection'].to_s.downcase == 'upgrade'
 				# respond to save 'new' special case
@@ -188,7 +189,7 @@ module Anorexic
 				# set DELETE method if simulated
 				request.request_method = 'DELETE' if params[:_method].to_s.downcase == 'delete'
 				# respond to special :id routing
-				return params[:id].to_sym if params[:id] && @@___available_public_methods___.include?(params[:id].to_sym)
+				return params[:id].to_sym if params[:id] && available_public_methods.include?(params[:id].to_sym)
 				#review general cases
 				case request.request_method
 				when 'GET', 'HEAD'
@@ -200,6 +201,12 @@ module Anorexic
 					return :delete
 				end
 				false
+			end
+
+			# lists the available methods that will be exposed to HTTP requests
+			def available_public_methods
+				# set class global to improve performance while checking for supported methods
+				@@___available_public_methods___ ||= (((self.class.public_instance_methods - Object.public_instance_methods) - [:before, :after, :save, :show, :update, :delete, :initialize, :on_message, :pre_connect, :on_connect, :on_disconnect] - Anorexic::ControllerMagic::InstanceMethods.instance_methods).delete_if {|m| m.to_s[0] == '_'})
 			end
 
 			## WebSockets Magic
