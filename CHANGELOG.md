@@ -6,7 +6,7 @@ Change log v.0.6.16
 
 **feature**: Slim template rendering is now part of the native render helper method (including template caching). In my testing, it's speed was much better then the Haml (especially for multi-threaded repeated concurrent requests, which can be the norm).
 
-**fix?**: trying to fix a mysterious bug in the cache system.
+**fix?**: trying to fix a mysterious bug in the cache system. It seems okay now (had to do with the mtime for files).
 
 **template**: template updates, including changes in application file name, welcome page and database configuration files.
 
