@@ -1,3 +1,5 @@
+### Ruby core extentions
+
 require 'singleton'
 require 'pathname'
 require 'logger'
@@ -23,10 +25,6 @@ require "anorexic/server/protocols/http"
 require 'anorexic/server/protocols/http_request'
 require 'anorexic/server/protocols/http_response'
 
-require "anorexic/server/handlers/http_echo"
-require "anorexic/server/handlers/http_host"
-require "anorexic/server/handlers/http_router"
-
 require "anorexic/server/helpers/http"
 require "anorexic/server/helpers/mime_types"
 
@@ -34,22 +32,31 @@ require "anorexic/server/protocols/websocket"
 require 'anorexic/server/protocols/ws_response'
 
 ## Server-Framework Bridges
-require "anorexic/framework/controller_magic"
-require "anorexic/framework/magic_helpers"
-require "anorexic/framework/route"
+require "anorexic/handlers/http_echo"
+require "anorexic/handlers/http_host"
+require "anorexic/handlers/http_router"
 
+require "anorexic/handlers/controller_magic"
+require "anorexic/handlers/magic_helpers"
+require "anorexic/handlers/route"
+
+require "anorexic/handlers/stubs"
 
 ### Framework requirements
-require "anorexic/framework/stubs"
-require "anorexic/framework/cache"
-require "anorexic/framework/anorexic_methods"
+require "anorexic/base/events"
+require "anorexic/base/timers"
+require "anorexic/base/services"
+require "anorexic/base/connections"
+require "anorexic/base/logging"
+require "anorexic/base/io_reactor"
+require "anorexic/base/cache"
+require "anorexic/base/engine"
 
 ### DSL requirements
-require "anorexic/framework/dsl"
-
+require "anorexic/base/dsl"
 
 ### optional Rack
-require "anorexic/framework/rack_app"
+require "anorexic/base/rack_app"
 
 ## erb templating
 begin

@@ -23,7 +23,7 @@ module Anorexic
 
 		# instance methods
 
-		attr_reader :socket, :locker, :closed, :parameters, :out_que
+		attr_reader :socket, :locker, :closed, :parameters, :out_que, :active_time
 		attr_accessor :protocol, :handler, :timeout
 
 		# creates a new connection wrapper object for the new socket that was recieved from the `accept_nonblock` method call.
@@ -42,9 +42,14 @@ module Anorexic
 			# Anorexic.callback self, :on_message
 		end
 
-		# sets a connection timeout
-		def set_timeout timeout = 8
-			@timeout = timeout
+		# # sets a connection timeout
+		# def set_timeout timeout = 8
+		# 	@timeout = timeout
+		# end
+
+		# checks if a connection timed out
+		def timedout?
+			Time.now - @active_time > @timeout
 		end
 
 		# resets the timer for the connection timeout
@@ -54,8 +59,8 @@ module Anorexic
 
 		# sends data immidiately - forcing the data to be sent, flushing any pending messages in the que
 		def send data = nil
+			touch
 			return if @out_que.empty? && data.nil?
-			# @active_time = Time.now
 			locker.synchronize do
 				if @out_que.empty?
 					_send data rescue Anorexic.callback(self, :on_disconnect)
@@ -69,17 +74,20 @@ module Anorexic
 
 		# sends data immidiately, interrupting any pending que and ignoring thread safety.
 		def send_unsafe_interrupt data = nil
+			touch
 			_send data rescue false
 		end
 
 		# sends data without waiting - data might be sent in a different order then intended.
 		def send_nonblock data
+			touch
 			locker.synchronize {@out_que << data}
 			Anorexic.callback(self, :send)
 		end
 
 		# adds data to the out buffer - but doesn't send the data until a send event is called.
 		def << data
+			touch
 			locker.synchronize {@out_que << data}
 		end
 
@@ -96,14 +104,14 @@ module Anorexic
 		def on_message
 			# return false if locker.locked?
 			return false if locker.locked?
-			if (_disconnected? rescue true) # || (@timeout && (Time.now - @active_time) > @timeout) #implement check that all content was sent
+			if (_disconnected? rescue true)
 				return Anorexic.callback self, :on_disconnect
 			end
 			locker.synchronize do
 				begin
 					data = _read
 					if data && !data.empty?
-						# @active_time = Time.now
+						touch
 						if protocol
 							begin
 								protocol.on_message(self, data)
@@ -211,6 +219,7 @@ module Anorexic
 			act = @socket.send data, 0
 			while len > act
 				act += @socket.send data.byteslice(act..-1) , 0
+				touch
 			end
 		end
 		# this is a protected method, it should be used by child classes to implement each

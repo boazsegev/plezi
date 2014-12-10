@@ -74,6 +74,9 @@ end
 Encoding.default_internal = 'utf-8'
 Encoding.default_external = 'utf-8'
 
+# Set a shortcut for the Anorexic module.
+AN = Anorexic
+
 # creates a server object and waits for routes to be set.
 # 
 # port:: the port to listen to. the first port defaults to 3000 and increments by 1 with every `listen` call. it's possible to set the first port number by running the app with the -p paramater.

@@ -12,6 +12,12 @@ Change log v.0.6.16
 
 **performance**: minor framework engine tweeks (reducing the price of wrapping responses within controllers).
 
+**readability**: changed code structure to help readability and cooperation.
+
+**fix**: fixed some issues with socket timeouts.
+
+**feature**: timed events - It is now possible to add timed events to run once or every x seconds. timed events run only when server runs an idle cycle (during which it also accepts new connections) and timing isn't exact.
+
 ***
 
 Change log v.0.6.15
