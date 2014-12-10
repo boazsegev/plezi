@@ -192,7 +192,7 @@ module Anorexic
 					return false if available_public_methods.include?(:before) && before == false 
 					#check request is valid and call requested method
 					ret = requested_method
-					return false unless available_public_methods.include?(ret)
+					return false unless available_public_methods.include?(ret) || ret == :pre_connect
 					return false unless (ret = self.method(ret).call)
 					#run :after filter
 					return false if available_public_methods.include?(:after) && after == false

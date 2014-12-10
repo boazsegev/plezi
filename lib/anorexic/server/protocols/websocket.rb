@@ -42,7 +42,8 @@ module Anorexic
 		# called when connection is initialized.
 		def on_connect service
 			# cancel service timeout? (for now, reset to 60 seconds)
-			Anorexic.callback service, :set_timeout, @timeout_interval
+			service.timeout = @timeout_interval
+			# Anorexic.callback service, :timeout=, @timeout_interval
 			Anorexic.callback @service.handler, :on_connect if @service.handler.methods.include?(:on_connect)
 			Anorexic.info "Upgraded HTTP to WebSockets. Logging only errors."
 		end

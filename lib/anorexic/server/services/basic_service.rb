@@ -93,8 +93,12 @@ module Anorexic
 
 		# makes sure any data in the que is send and calls `flush` on the socket, to make sure the buffer is sent.
 		def flush
-			send
-			socket.flush
+			begin
+				send
+				socket.flush				
+			rescue Exception => e
+				
+			end
 		end
 
 		# event based interface for messages.
