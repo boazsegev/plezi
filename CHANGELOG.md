@@ -2,6 +2,12 @@
 
 ***
 
+Change log v.0.6.17
+
+**fix**: fixed an issue where JRuby treats the `include` method as private. Now the `include` is wrapped within an instance_eval block which allows private method calls.
+
+***
+
 Change log v.0.6.16
 
 **feature**: Slim template rendering is now part of the native render helper method (including template caching). In my testing, it's speed was much better then the Haml (especially for multi-threaded repeated concurrent requests, which can be the norm).

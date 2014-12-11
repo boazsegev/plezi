@@ -170,7 +170,8 @@ module Anorexic
 		def self.make_controller_magic(controller)
 			new_class_name = "Anorexic__#{controller.name.gsub /[\:\-]/, '_'}"
 			return Module.const_get new_class_name if Module.const_defined? new_class_name
-			controller.include Anorexic::ControllerMagic
+			# controller.include Anorexic::ControllerMagic
+			controller.instance_eval { include Anorexic::ControllerMagic }
 			ret = Class.new(controller) do
 
 				def initialize request, response, host_params
