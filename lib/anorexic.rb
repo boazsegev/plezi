@@ -21,7 +21,7 @@ require "anorexic/version"
 require "anorexic/server/services/basic_service"
 require "anorexic/server/services/ssl_service"
 
-require "anorexic/server/protocols/http"
+require "anorexic/server/protocols/http_protocol"
 require 'anorexic/server/protocols/http_request'
 require 'anorexic/server/protocols/http_response'
 

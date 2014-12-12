@@ -24,6 +24,7 @@ module Anorexic
 		# pushes data to the body of the response. this is the preffered way to add data to the response.
 		def << str
 			service.send_nonblock self.class.frame_data(str.dup)
+			self
 		end
 
 		# sends the response object. headers will be frozen (they can only be sent at the head of the response).

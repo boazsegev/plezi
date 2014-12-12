@@ -50,9 +50,9 @@ module Anorexic
 
 		# called when data is recieved
 		# returns an Array with any data not yet processed (to be returned to the in-que).
-		def on_message(service, data)
+		def on_message(service)
 			# parse the request
-			return @locker.synchronize {extract_message data.bytes}
+			return @locker.synchronize {extract_message service.read.bytes}
 			true
 		end
 

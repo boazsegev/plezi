@@ -25,11 +25,14 @@ module Anorexic
 		def on_connect service
 		end
 
-		# called when data is recieved
+		# called when data is recieved.
+		#
+		# this method is called within a lock on the service (Mutex) - craeful from double locking.
+		#
 		# typically returns an Array with any data not yet processed (to be returned to the in-que)... but here it always processes (or discards) the data.
-		def on_message(service, data)
+		def on_message(service)
 			# parse the request
-			@locker.synchronize { parse_message service, data.lines.to_a }
+			@locker.synchronize { parse_message service, service.read.to_s.lines.to_a }
 			if (@parser_stage == 1) && @parser_data[:version] >= 1.1
 				# send 100 continue message????? doesn't work! both Crome and Safari go crazy if this is sent after the request was sent (but before all the packets were recieved... msgs over 1 Mb).
 				# Anorexic.push_event Proc.new { Anorexic.info "sending continue signal."; service.send_nonblock "100 Continue\r\n\r\n" }

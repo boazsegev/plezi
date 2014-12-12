@@ -63,11 +63,11 @@ module Anorexic
 			return if @out_que.empty? && data.nil?
 			locker.synchronize do
 				if @out_que.empty?
-					_send data rescue Anorexic.callback(self, :on_disconnect)
+					_send data rescue disconnect
 				else
-					@out_que.each { |d| _send d rescue Anorexic.callback self, :on_disconnect}
+					@out_que.each { |d| _send d rescue disconnect }
 					@out_que.clear
-					(_send data rescue Anorexic.callback(self, :on_disconnect)) if data
+					(_send data rescue disconnect) if data
 				end
 			end
 		end
@@ -75,7 +75,7 @@ module Anorexic
 		# sends data immidiately, interrupting any pending que and ignoring thread safety.
 		def send_unsafe_interrupt data = nil
 			touch
-			_send data rescue false
+			_send data rescue disconnect
 		end
 
 		# sends data without waiting - data might be sent in a different order then intended.
@@ -108,27 +108,20 @@ module Anorexic
 		def on_message
 			# return false if locker.locked?
 			return false if locker.locked?
-			if (_disconnected? rescue true)
-				return Anorexic.callback self, :on_disconnect
-			end
+			return disconnect if (_disconnected? rescue true)
 			locker.synchronize do
 				begin
-					data = _read
-					if data && !data.empty?
-						touch
-						if protocol
-							begin
-								protocol.on_message(self, data)
-							rescue Exception => e
-								Anorexic.callback protocol, :on_exception, self, e
-							end
-						else # if there's no protocol - fall back on echo.
-							send "echo #{Time.now.utc.to_s}: #{data}"
-							Anorexic.callback self, :on_disconnect if @in_que[-1].to_s.match /^bye[\r\n]*$/
-						end
+					touch
+					if protocol
+						protocol.on_message self
+					else # if there's no protocol - fall back on echo.
+						data = read
+						send "echo #{Time.now.utc.to_s}: "
+						send data
+						disconnect if data.to_s.match /^bye[\r\n]*$/
 					end
 				rescue Exception => e
-					return Anorexic.callback self, :on_disconnect
+					return disconnect
 				end
 			end
 		end
@@ -210,10 +203,16 @@ module Anorexic
 			false
 		end
 
-		protected
-
 		#################
 		# overide the followind methods for any child class.
+
+		# this is a public method and it should be used by child classes to implement each
+		# read(_nonblock) action. accepts one argument ::size for an optional buffer size to be read.
+		def read size = 1048576
+			@socket.recv_nonblock( size ) rescue nil
+		end
+
+		protected
 
 		# this is a protected method, it should be used by child classes to implement each
 		# send action.
@@ -225,11 +224,6 @@ module Anorexic
 				act += @socket.send data.byteslice(act..-1) , 0
 				touch
 			end
-		end
-		# this is a protected method, it should be used by child classes to implement each
-		# read(_nonblock) action. accepts one argument ::size for buffer size to be read.
-		def _read size = 1048576
-			@socket.recv_nonblock( size ) rescue false
 		end
 		# this is a protected method, it should be used by child classes to implement each
 		# close action. doesn't accept any arguments.

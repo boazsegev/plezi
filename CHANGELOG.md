@@ -4,7 +4,7 @@
 
 Change log v.0.6.17
 
-**fix**: fixed an issue where JRuby treats the `include` method as private. Now the `include` is wrapped within an instance_eval block which allows private method calls.
+**fix**: (Controller methods injection issue) fixed an issue where JRuby treats the `include` method as private. Now the `include` is wrapped within an instance_eval block which allows private method calls.
 
 ***
 
