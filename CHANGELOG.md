@@ -10,7 +10,7 @@ Change log v.0.6.17
 
 **fix**: log recognition of client ip through proxy (X-Forwarded-For header)
 
-**change**: WARNING - Might effec code: empty files and data in multi-part forms are ignored (nil value and no key in the params hash, rather then an empty value).
+**change**: WARNING - Might effect code: empty files and data in multi-part forms are ignored (nil value and no key in the params hash, rather then an empty value).
 
 **core code updates**: the core code for the sockets and protocol classes was restructured, allowing more control to the protocol classes (preparing for possible changes in the protocol parsing engine, especially for websockets which might be updated to use the 'websocket' gem in order to support more websocket protocols).
 
