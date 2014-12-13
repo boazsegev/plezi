@@ -118,7 +118,6 @@ module Anorexic
 				
 				locker.synchronize do
 					return disconnect if _disconnected?
-					touch
 					protocol.on_message(self)
 				end
 
@@ -179,7 +178,9 @@ module Anorexic
 		# this is a public method and it should be used by child classes to implement each
 		# read(_nonblock) action. accepts one argument ::size for an optional buffer size to be read.
 		def read size = 1048576
-			return @socket.recv_nonblock( size )
+			data = @socket.recv_nonblock( size )
+			touch unless data.nil? || data.empty?
+			return data
 			rescue Exception => e
 				return ''
 		end

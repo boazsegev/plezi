@@ -53,9 +53,6 @@ module Anorexic
 				HTTPResponse.new( request, 404, {"content-type" => "text/plain", "content-length" => "15"}, ["host not found."]).finish
 			end
 			request.service.timeout = 5
-			rescue Exception => e
-			request.service.timeout = -1
-			request.service.disconnect			
 		end
 		# handles requests send by Rack - dresses up as Middleware, for Rack (if you're don't like WebSockets, go ahead...)
 		def call env

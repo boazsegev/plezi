@@ -18,4 +18,4 @@ is this a server or benchmark error?
 
 ## New?!
 
-**sometimes connections don't clear, causing CPU to run wild**
+**resolved**: sometimes connections don't clear, causing CPU to run wild... need to simplify the timeout process...?
