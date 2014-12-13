@@ -228,7 +228,7 @@ end
 ######
 ## example requests
 
-# GET / HTTP/1.1
+# GET /parsed_request HTTP/1.1
 # Host: localhost:2000
 # Accept: text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8
 # Cookie: user_token=2INa32_vDgx8Aa1qe43oILELpSdIe9xwmT8GTWjkS-w
@@ -236,3 +236,4 @@ end
 # Accept-Language: en-us
 # Accept-Encoding: gzip, deflate
 # Connection: keep-alive
+# X-Forwarded-For: 127.0.0.3

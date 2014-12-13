@@ -183,6 +183,8 @@ module Anorexic
 			HTTP.make_utf8! @parser_data[:host_name] if @parser_data[:host_name]
 			HTTP.make_utf8! @parser_data[:query]
 
+			@parser_data[:client_ip] = @parser_data['x-forwarded-for'].to_s.split(/,[\s]?/)[0] || (service.socket.remote_address.ip_address) rescue 'unknown IP'
+
 			@@rack_dictionary.each {|k,v| @parser_data[k] = @parser_data[v]}
 
 			#create request

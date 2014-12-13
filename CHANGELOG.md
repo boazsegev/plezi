@@ -6,6 +6,8 @@ Change log v.0.6.17
 
 **fix**: (Controller methods injection issue) fixed an issue where JRuby treats the `include` method as private. Now the `include` is wrapped within an instance_eval block which allows private method calls.
 
+**fix**: log recognition of client ip through proxy (X-Forwarded-For header)
+
 ***
 
 Change log v.0.6.16
