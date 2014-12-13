@@ -57,6 +57,7 @@ module Anorexic
 			rescue Exception => e
 				
 			end
+			touch unless data.empty?
 			data
 		end
 
@@ -75,7 +76,7 @@ module Anorexic
 
 		# checks if the connection is closed
 		def _disconnected?
-			ssl_socket.closed? || ssl_socket.io.closed? || ssl_socket.io.stat.mode == 0140222 rescue true # if mode is read only, it's the same as closed.
+			ssl_socket.closed? || ssl_socket.io.closed? rescue true #  || ssl_socket.io.stat.mode == 0140222  <= if mode is read only, it's the same as closed.
 		end
 
 

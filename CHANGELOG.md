@@ -6,7 +6,11 @@ Change log v.0.6.17
 
 **fix**: (Controller methods injection issue) fixed an issue where JRuby treats the `include` method as private. Now the `include` is wrapped within an instance_eval block which allows private method calls.
 
+**fix**: connection timeout could have been continuously reset on some connections. this issue was fixed by ensuring connection timeout is reset only when data was actually read.
+
 **fix**: log recognition of client ip through proxy (X-Forwarded-For header)
+
+**core code updates**: the core code for the sockets and protocol classes was restructured, allowing more control to the protocol classes (preparing for possible changes in the protocol parsing engine, especially for websockets which might be updated to use the 'websocket' gem in order to support more websocket protocols).
 
 ***
 

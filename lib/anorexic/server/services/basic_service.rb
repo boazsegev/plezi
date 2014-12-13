@@ -67,13 +67,11 @@ module Anorexic
 		def send data = nil
 			return if @out_que.empty? && data.nil?
 			locker.synchronize do
-				if @out_que.empty?
-					_send data rescue disconnect
-				else
+				unless @out_que.empty?
 					@out_que.each { |d| _send d rescue disconnect }
-					@out_que.clear
-					(_send data rescue disconnect) if data
+					@out_que.clear					
 				end
+				(_send data rescue disconnect) if data
 				touch
 			end
 		end
@@ -207,7 +205,7 @@ module Anorexic
 		# this is a protected method, it should be used by child classes to tell if the socket
 		# was closed (returns true/false).
 		def _disconnected?
-			socket.closed? || socket.stat.mode == 0140222 rescue true # if mode is read only, it's the same as closed.
+			socket.closed? rescue true # || socket.stat.mode == 0140222 rescue true # if mode is read only, it's the same as closed.
 		end
 
 	end
