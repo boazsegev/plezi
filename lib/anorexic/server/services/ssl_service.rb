@@ -43,14 +43,14 @@ module Anorexic
 			true
 		end
 
-		protected
-
-		#sends data over the connection
-		def _send data
-			ssl_socket.write data
+		# returns an IO-like object used for reading/writing (unlike the original IO object, this can be an SSL layer or any other wrapper object).
+		def io
+			touch
+			@ssl_socket
 		end
+
 		# reads from the connection
-		def _read size = 1048576
+		def read size = 1048576
 			data = ''
 			begin
 				loop { data << ssl_socket.read_nonblock( size) }
@@ -58,6 +58,13 @@ module Anorexic
 				
 			end
 			data
+		end
+
+		protected
+
+		#sends data over the connection
+		def _send data
+			ssl_socket.write data
 		end
 
 		#closes the connection
@@ -183,16 +190,3 @@ module Anorexic
 		# end
 	end
 end
-
-
-######
-## example requests
-
-# GET / HTTP/1.1
-# Host: localhost:2000
-# Accept: text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8
-# Cookie: user_token=2INa32_vDgx8Aa1qe43oILELpSdIe9xwmT8GTWjkS-w
-# User-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_10) AppleWebKit/600.1.25 (KHTML, like Gecko) Version/8.0 Safari/600.1.25
-# Accept-Language: en-us
-# Accept-Encoding: gzip, deflate
-# Connection: keep-alive

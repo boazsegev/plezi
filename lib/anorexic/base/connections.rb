@@ -11,7 +11,7 @@ module Anorexic
 	# Anorexic Engine, DO NOT CALL. disconnectes all active connections
 	def stop_connections
 		log 'Stopping connections'
-		C_LOCKER.synchronize {IO_CONNECTION_DIC.values.each {|c| callback c, :on_disconnect unless c.disconnected?} ; IO_CONNECTION_DIC.clear}
+		C_LOCKER.synchronize {IO_CONNECTION_DIC.values.each {|c| c.timeout = -1; callback c, :on_disconnect unless c.disconnected?} ; IO_CONNECTION_DIC.clear}
 	end
 
 	# Anorexic Engine, DO NOT CALL. adds a new connection to the connection stack

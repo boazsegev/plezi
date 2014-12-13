@@ -12,13 +12,17 @@ module Anorexic
 	# a protocol class should support the initialize(service, parameters={}) method as well.
 	#
 	# to-do: fix logging
-	class BasicService
+	class NoService
 
 		# create a listener (io) - will create a TCPServer socket
 		#
 		# listeners are 'server sockets' that answer to `accept` by creating a new connection socket (io).
 		def self.create_service port, parameters
-			TCPServer.new(port)
+			self
+		end
+
+		def self.accept
+			false
 		end
 
 		# instance methods
@@ -29,7 +33,7 @@ module Anorexic
 		# creates a new connection wrapper object for the new socket that was recieved from the `accept_nonblock` method call.
 		def initialize socket, parameters = {}
 			@handler = parameters[:handler]
-			@socket = socket
+			@socket = nil
 			# socket.setsockopt Socket::SOL_SOCKET, Socket::SO_RCVTIMEO, "\n\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00" #== [10 sec 0 usec].pack '1_2'
 			@out_que = []
 			@locker = Mutex.new
@@ -99,12 +103,6 @@ module Anorexic
 
 		# makes sure any data in the que is send and calls `flush` on the socket, to make sure the buffer is sent.
 		def flush
-			begin
-				send
-				socket.flush				
-			rescue Exception => e
-				
-			end
 		end
 
 		# event based interface for messages.
@@ -120,11 +118,6 @@ module Anorexic
 					touch
 					if protocol
 						protocol.on_message self
-					else # if there's no protocol - fall back on echo.
-						data = read
-						send "echo #{Time.now.utc.to_s}: "
-						send data
-						disconnect if data.to_s.match /^bye[\r\n]*$/
 					end
 				rescue Exception => e
 					Anorexic.error e
@@ -136,13 +129,7 @@ module Anorexic
 		# called once a socket is disconnected or needs to be disconnected.
 		def on_disconnect
 			Anorexic.callback Anorexic, :remove_connection, self
-			locker.synchronize do
-				@out_que.each { |d| _send d rescue true}
-				@out_que.clear
-			end
-			if protocol
-				Anorexic.callback protocol, :on_disconnect, self
-			end
+
 			close
 		end
 
@@ -150,21 +137,18 @@ module Anorexic
 
 		# closes the connection
 		def close
-			locker.synchronize do
-				_close rescue true
-			end
 		end
 		# returns true if the service is disconnected
 		def disconnected?
-			_disconnected?
+			false
 		end
 		# disconects the service.
 		def disconnect
-			Anorexic.callback self, :on_disconnect
+			on_disconnect
 		end
 		# returns true if the socket has content to be read.
 		def has_incoming_data?
-			 (socket.stat.size > 0) rescue false
+			 false
 		end
 
 
@@ -172,7 +156,7 @@ module Anorexic
 
 		#returns the service type - set to normal
 		def service_type
-			'normal'
+			'no-service'
 		end
 		#returns true if the service is encrypted using the OpenSSL library.
 		def ssl?
@@ -185,15 +169,7 @@ module Anorexic
 		# this is a public method and it should be used by child classes to implement each
 		# read(_nonblock) action. accepts one argument ::size for an optional buffer size to be read.
 		def read size = 1048576
-			begin
-				return @socket.recv_nonblock( size )
-			rescue IO::WaitReadable => e
-				return ''
-			rescue Exception => e
-				Anorexic.error e
-				disconnect
-				raise
-			end
+			''
 		end
 
 		protected
@@ -201,24 +177,16 @@ module Anorexic
 		# this is a protected method, it should be used by child classes to implement each
 		# send action.
 		def _send data
-			# data.force_encoding "binary" rescue false
-			len = data.bytesize
-			act = @socket.send data, 0
-			while len > act
-				act += @socket.send data.byteslice(act..-1) , 0
-				touch
-			end
+			''
 		end
 		# this is a protected method, it should be used by child classes to implement each
 		# close action. doesn't accept any arguments.
 		def _close
-			socket.flush rescue true
-			socket.close
 		end
 		# this is a protected method, it should be used by child classes to tell if the socket
 		# was closed (returns true/false).
 		def _disconnected?
-			socket.closed? || socket.stat.mode == 0140222 rescue true # if mode is read only, it's the same as closed.
+			false # if mode is read only, it's the same as closed.
 		end
 
 	end
