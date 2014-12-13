@@ -15,7 +15,3 @@ Haml doesn't play well with multiple concurrent requests... looking into that. c
 the Apache benchmark hangs some requests, when chuncked data and missing mimetypes are introduced...
 
 is this a server or benchmark error?
-
-## New?!
-
-**resolved**: sometimes connections don't clear, causing CPU to run wild... need to simplify the timeout process...?

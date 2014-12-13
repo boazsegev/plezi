@@ -272,6 +272,10 @@ module Anorexic
 				end
 				return
 			end
+
+			# require a part body to exist (data exists) for parsing
+			return true if part.to_s.empty?
+
 			# convert part to `charset` if charset is defined?
 
 			if !headers["content-disposition"]
