@@ -8,7 +8,10 @@ module Anorexic
 
 		HTTP_METHODS = %w{GET HEAD POST PUT DELETE TRACE OPTIONS}
 
+		attr_accessor :service
+
 		def initialize service, params
+			@service = service
 			@parser_stage = 0
 			@parser_data = {}
 			@parser_body = ''
@@ -32,7 +35,7 @@ module Anorexic
 		# typically returns an Array with any data not yet processed (to be returned to the in-que)... but here it always processes (or discards) the data.
 		def on_message(service)
 			# parse the request
-			@locker.synchronize { parse_message service, service.read.to_s.lines.to_a }
+			@locker.synchronize { parse_message }
 			if (@parser_stage == 1) && @parser_data[:version] >= 1.1
 				# send 100 continue message????? doesn't work! both Crome and Safari go crazy if this is sent after the request was sent (but before all the packets were recieved... msgs over 1 Mb).
 				# Anorexic.push_event Proc.new { Anorexic.info "sending continue signal."; service.send_nonblock "100 Continue\r\n\r\n" }
@@ -56,22 +59,23 @@ module Anorexic
 		# Protocol specific helper methods.
 
 		# parses incoming data
-		def parse_message service, data
+		def parse_message data = nil
+			data ||= service.read.to_s.lines.to_a
 			# require 'pry'; binding.pry
 			if 	@parser_stage == 0
-				return false unless parse_method service, data
+				return false unless parse_method data
 			end
 			if 	@parser_stage == 1
-				return false unless parse_head service, data
+				return false unless parse_head data
 			end
 			if 	@parser_stage == 2
-				return false unless parse_body service, data
+				return false unless parse_body data
 			end
 			true
 		end
 
 		# parses the method request (the first line in the HTTP request).
-		def parse_method service, data
+		def parse_method data
 			return false unless data[0] && data[0].match(/^#{HTTP_METHODS.join('|')}/)
 			@parser_data[:time_recieved] = Time.now
 			@parser_data[:params] = {}
@@ -94,7 +98,7 @@ module Anorexic
 		end
 
 		#parses the head on a request (headers and values).
-		def parse_head service, data
+		def parse_head data
 			until data[0].nil? || data[0].match(/^[\r\n]+$/)
 				m = data.shift.match(/^([^:]*):[\s]*([^\r\n]*)/)
 				# move cookies to cookie-jar, all else goes to headers
@@ -110,14 +114,14 @@ module Anorexic
 				@parser_stage = 2
 			else					
 				# create request object and hand over to handler
-				complete_request service
-				return parse_message service, data unless data.empty?
+				complete_request
+				return parse_message data unless data.empty?
 			end
 			true
 		end
 
 		#parses the body of a request.
-		def parse_body service, data
+		def parse_body data
 			# check for body is needed, if exists and if complete
 			if @parser_data["transfer-coding"] == "chunked"
 				until data.empty? || data[0].to_s.match(/0(\r)?\n/)
@@ -151,15 +155,15 @@ module Anorexic
 			read_body
 
 			# complete request
-			complete_request service
+			complete_request
 
 			#read next request unless data is finished
-			return parse_message service, data unless data.empty?
+			return parse_message data unless data.empty?
 			true 
 		end
 
 		# completes the parsing of the request and sends the request to the handler.
-		def complete_request service
+		def complete_request
 			#finalize params and query properties
 			m = @parser_data[:query].match /(([a-z0-9A-Z]+):\/\/)?(([^\/\:]+))?(:([0-9]+))?([^\?\#]*)(\?([^\#]*))?/
 			@parser_data[:requested_protocol] = m[1] || (service.ssl? ? 'https' : 'http')
@@ -208,7 +212,7 @@ module Anorexic
 			end
 
 			#pass it to the handler or decler error.
-			if service.handler
+			if service && service.handler
 				Anorexic.callback service.handler, :on_request, request
 			else
 				AN.error "No Handler for this HTTP service."

@@ -59,7 +59,7 @@ module Anorexic
 
 		# pushes data to the body of the response. this is the preffered way to add data to the response.
 		def << str
-			body.push str		
+			body.push str	
 		end
 
 		# returns a response header, if set.

@@ -13,7 +13,7 @@ module Anorexic
 			self[:anorexic_service] = service
 			######
 			# set global variables
-			self[:client_ip] = service.socket.remote_address.ip_address rescue false
+			self[:client_ip] = (self["x-forwarded-for"].to_s.split(/,[\s]?/)[0] || service.socket.remote_address.ip_address) rescue 'unknown IP'
 		end
 
 		public
