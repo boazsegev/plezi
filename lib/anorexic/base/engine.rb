@@ -74,8 +74,12 @@ module Anorexic
 
 	# Anorexic Engine, DO NOT CALL. runs one thread cycle
 	def self.thread_cycle flag = 0
-		io_reactor
+		io_reactor rescue stop_connections
 		true while fire_event
 		fire_timers
+
+		rescue Exception => e
+
+		error e
 	end
 end

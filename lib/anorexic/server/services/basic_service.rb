@@ -114,22 +114,16 @@ module Anorexic
 		def on_message
 			# return false if locker.locked?
 			return false if locker.locked?
-			return disconnect if (_disconnected? rescue true)
-			locker.synchronize do
-				begin
+			begin
+				
+				locker.synchronize do
+					return disconnect if _disconnected?
 					touch
-					if protocol
-						protocol.on_message self
-					else # if there's no protocol - fall back on echo.
-						data = read
-						send "echo #{Time.now.utc.to_s}: "
-						send data
-						disconnect if data.to_s.match /^bye[\r\n]*$/
-					end
-				rescue Exception => e
-					Anorexic.error e
-					return disconnect
+					protocol.on_message(self)
 				end
+
+			rescue Exception => e
+				return disconnect
 			end
 		end
 
@@ -185,15 +179,9 @@ module Anorexic
 		# this is a public method and it should be used by child classes to implement each
 		# read(_nonblock) action. accepts one argument ::size for an optional buffer size to be read.
 		def read size = 1048576
-			begin
-				return @socket.recv_nonblock( size )
-			rescue IO::WaitReadable => e
-				return ''
+			return @socket.recv_nonblock( size )
 			rescue Exception => e
-				Anorexic.error e
-				disconnect
-				raise
-			end
+				return ''
 		end
 
 		protected

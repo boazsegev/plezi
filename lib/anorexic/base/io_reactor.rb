@@ -15,7 +15,7 @@ module Anorexic
 			return false if united.empty?
 			io_r = (IO.select(united, nil, united, idle_sleep) ) #rescue false)
 			if io_r
-				(io_r[0] + io_r[2]).each do |io|
+				io_r[0].each do |io|
 					if SERVICES[io]
 						begin
 							connection = io.accept_nonblock
@@ -28,8 +28,12 @@ module Anorexic
 						end
 					elsif IO_CONNECTION_DIC[io]
 						callback(IO_CONNECTION_DIC[io], :on_message)
+					else
+						IO_CONNECTION_DIC.delete(io)
+						SERVICES.delete(io)
 					end
 				end
+				io_r[2].each { |io| (IO_CONNECTION_DIC.delete(io) || SERVICES.delete(io)).close rescue true }
 			end
 		end
 		true

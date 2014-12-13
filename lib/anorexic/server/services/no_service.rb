@@ -69,17 +69,7 @@ module Anorexic
 
 		# sends data immidiately - forcing the data to be sent, flushing any pending messages in the que
 		def send data = nil
-			return if @out_que.empty? && data.nil?
-			locker.synchronize do
-				if @out_que.empty?
-					_send data rescue disconnect
-				else
-					@out_que.each { |d| _send d rescue disconnect }
-					@out_que.clear
-					(_send data rescue disconnect) if data
-				end
-				touch
-			end
+			touch
 		end
 
 		# sends data immidiately, interrupting any pending que and ignoring thread safety.
