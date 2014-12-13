@@ -1,26 +1,19 @@
-# HTTPProtocol
-
-JSON/XML::
-support for special HTTP body types?
-
-Charset::
-parse chareset for incoming content-type in the multipart request body? (or leave if binary?)
-
-
-# SASS / CoffeeScript / HAML / IRB
-
-HAML is slow
-
 # HTTPHost
 
 Folder Listing:: add folder listing option?
 
 # Template
 
-Update welcome page.
-
 update gem file (remove erb).
 
-#Name?
+# Name?
 
 rename the project?
+
+# HTTPProtocol
+
+XML::
+support for XML HTTP body types?
+
+Charset::
+parse chareset for incoming content-type in the multipart request body? (or leave if binary?)
