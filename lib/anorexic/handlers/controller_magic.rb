@@ -304,11 +304,10 @@ module Anorexic
 			def __review_redis_connection
 				return true if @@redis_sub_thread
 				raise "Redis asuumed, but no Redis server is defined - define ENV['REDIS_URL'] or ENV['REDISCLOUD_URL'] to set up the Redis server's location." unless ENV["REDIS_URL"] || ENV["REDISCLOUD_URL"]
-				@@redis_uri ||= URI.parse(ENV["REDIS_URL"] || ENV["REDISCLOUD_URL"])
-				@@redis ||= Redis.new(host: @@redis_uri.host, port: @@redis_uri.port, password: @@redis_uri.password)
-				@@redis_sub_thread ||= Thread.new do
-					redis_sub = Redis.new(host: @@redis_uri.host, port: @@redis_uri.port, password: @@redis_uri.password)
-					redis_sub.subscribe(self.name.to_s) do |on|
+				@@redis_uri = URI.parse(ENV["REDIS_URL"] || ENV["REDISCLOUD_URL"])
+				@@redis = Redis.new(host: @@redis_uri.host, port: @@redis_uri.port, password: @@redis_uri.password)
+				@@redis_sub_thread = Thread.new do
+					Redis.new(host: @@redis_uri.host, port: @@redis_uri.port, password: @@redis_uri.password).subscribe(self.name.to_s) do |on|
 						on.message do |channel, msg|
 							msg = JSON.parse(msg)
 							__inner_process_broadcast nil, msg.delete(:_an_method_broadcasted), msg
