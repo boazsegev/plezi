@@ -221,9 +221,8 @@ module Anorexic
 			#
 			# the method will be called asynchrnously for each sibling instance of this Controller class.
 			def broadcast method_name, *args, &block
-				ObjectSpace.each_object(self.class) { |controller|
-				 	Anorexic.callback controller, method_name, *args, &block if controller.class.superclass.public_instance_methods.include?(method_name) && controller.accepts_broadcast? && (controller.object_id != self.object_id)
-				 }
+				return false unless self.class.public_instance_methods.include?(method_name)
+				self.class.__inner_redis_broadcast(self, method_name, args, block) || self.class.__inner_process_broadcast(self, method_name, args, block)
 			end
 
 
@@ -301,6 +300,38 @@ module Anorexic
 		module ClassMethods
 			public
 
+			# reviews the Redis connection and sets it up if it's missing.
+			def __review_redis_connection
+				return true if @@redis_sub_thread
+				raise "Redis asuumed, but no Redis server is defined - define ENV['REDIS_URL'] or ENV['REDISCLOUD_URL'] to set up the Redis server's location." unless ENV["REDIS_URL"] || ENV["REDISCLOUD_URL"]
+				@@redis_uri ||= URI.parse(ENV["REDIS_URL"] || ENV["REDISCLOUD_URL"])
+				@@redis ||= Redis.new(host: @@redis_uri.host, port: @@redis_uri.port, password: @@redis_uri.password)
+				@@redis_sub_thread ||= Thread.new do
+					redis_sub = Redis.new(host: @@redis_uri.host, port: @@redis_uri.port, password: @@redis_uri.password)
+					redis_sub.subscribe(self.name.to_s) do |on|
+						on.message do |channel, msg|
+							msg = JSON.parse(msg)
+							__inner_process_broadcast nil, msg.delete(:_an_method_broadcasted), msg
+						end
+					end
+				end
+			end
+
+			# broadcasts messages (methods) for this process
+			def __inner_process_broadcast ignore, method_name, args, block
+				ObjectSpace.each_object(self) { |controller| Anorexic.callback controller, method_name, *args, &block if controller.accepts_broadcast? && controller.object_id != ignore.object_id }
+			end
+
+			# broadcasts messages (methods) between all processes (using Redis).
+			def __inner_redis_broadcast ignore, method_name, args, block
+				return false unless defined?(Redis)
+				raise "Radis broadcasts cannot accept blocks (no inter-process callbacks)" if block
+				raise "Radis broadcasts accept only one paramater, which is an optional Hash (no inter-process memory sharing)" if args.length > 1 && (arg[0] && !arg[0].is_a(Hash))
+				__review_redis_connection
+				@@redis.publish(self.name.to_s, {_an_method_broadcasted: method_name}.merge( args[0] || {} ).to_json )
+				true
+			end
+
 			# WebSockets.
 			#
 			# Class method.
@@ -313,9 +344,8 @@ module Anorexic
 			#
 			# the method will be called asynchrnously for each sibling instance of this Controller class.
 			def broadcast method_name, *args, &block
-				ObjectSpace.each_object(self) { |controller|
-				 	Anorexic.callback controller, method_name, *args, &block if controller.class.superclass.public_instance_methods.include?(method_name) && controller.accepts_broadcast?
-				 }
+				return false unless public_instance_methods.include?(method_name)
+				__inner_redis_broadcast(nil, method_name, args, block) || __inner_process_broadcast(nil, method_name, args, block)
 			end
 
 			# WebSockets.

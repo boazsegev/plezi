@@ -47,6 +47,13 @@ gem 'anorexic'
 # gem 'i18n'
 
 ####################
+# WebSocket Scaling
+
+## redis servers are used to allow websocket scaling.
+## without redis, the :broadcast and :collect methods will work only for the current process. 
+# gem 'redis'
+
+####################
 # gems for databases and models
 
 ## if you want to use a database, here are a few common enough options:
