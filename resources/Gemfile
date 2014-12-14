@@ -50,7 +50,10 @@ gem 'anorexic'
 # WebSocket Scaling
 
 ## redis servers are used to allow websocket scaling.
-## without redis, the :broadcast and :collect methods will work only for the current process. 
+## the :broadcast and :collect methods will work only for the current process.
+## using Redis, we can publish messages and subscribe to 'chunnels' across processes
+# (limited support for :broadcast and NO support for :collect while Redis is running).
+
 # gem 'redis'
 
 ####################
