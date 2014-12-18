@@ -217,9 +217,13 @@ module Anorexic
 			#
 			# accepts:
 			# method_name:: a Symbol with the method's name that should respond to the broadcast.
-			# *args:: any arguments that should be passed to the method.
+			# *args:: any arguments that should be passed to the method (UNLESS REDIS IS USED).
+			# hash:: (REDIS ONLY) any data stored in a key-value hash, that can be converted to string objects.
 			#
 			# the method will be called asynchrnously for each sibling instance of this Controller class.
+			#
+			# IF REDIS IS USED, THE METHOD WILL ALSO BE CALLED FOR THE CALLING OBJECT (self).
+			# please make sure to write code that will ignore this message if you are using Redis.
 			def broadcast method_name, *args, &block
 				return false unless self.class.public_instance_methods.include?(method_name)
 				self.class.__inner_redis_broadcast(self, method_name, args, block) || self.class.__inner_process_broadcast(self, method_name, args, block)
@@ -339,7 +343,8 @@ module Anorexic
 			#
 			# accepts:
 			# method_name:: a Symbol with the method's name that should respond to the broadcast.
-			# *args:: any arguments that should be passed to the method.
+			# *args:: any arguments that should be passed to the method (UNLESS REDIS IS USED).
+			# hash:: (REDIS ONLY) any data stored in a key-value hash, that can be converted to string objects.
 			#
 			# the method will be called asynchrnously for each sibling instance of this Controller class.
 			def broadcast method_name, *args, &block
