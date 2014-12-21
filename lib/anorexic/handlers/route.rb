@@ -24,6 +24,7 @@ module Anorexic
 				return ret
 			elsif proc
 				ret = proc.call(request, response)
+				# response << ret if ret.is_a?(String)
 				response.try_finish if ret
 				return ret
 			elsif controller == false
@@ -81,57 +82,83 @@ module Anorexic
 			if path.is_a? Regexp
 				@path = path
 			elsif path.is_a? String
-				if path == '*'
-					@path = /.*/
-				else
-					param_num = 0
-					section_search = "([\\/][^\\/]*)"
-					optional_section_search = "([\\/][^\\/]*)?"
-					@path = '^'
-					path = path.gsub(/(^\/)|(\/$)/, '').split /[\/\.]/
-					@path_sections = path.length
-					path.each do |section|
-						if section == '*'
-							# create catch all
-							@path << "(.*)"
-							# finish
-							@path = /#{@path}$/
-							return
+				# prep used prameters
+				param_num = 0
+				section_search = "([\\/][^\\/]*)"
+				optional_section_search = "([\\/][^\\/]*)?"
+				@path = '^'
 
-						# check for routes formatted: /:paramater - required paramaters
-						elsif section.match /^\:([^\(\)\{\}\:]*)$/
-							#create a simple section catcher
-						 	@path << section_search
-						 	# add paramater recognition value
-						 	@fill_paramaters[param_num += 1] = section.match(/^\:([^\(\)\{\}\:]*)$/)[1]
+				# prep path string
+				# path = path.gsub(/(^\/)|(\/$)/, '')
 
+				# scan for the '/' divider
+				# (split path string only when the '/' is not inside a {} regexp)
+				# level = 0
+				# scn = StringScanner.new(path)
+				# while scn.matched != ''
+				# 	scn.scan_until /[^\\][\/\{\}]|$/
+				# 	case scn.matched
+				# 	when '{'
+				# 		level += 1
+				# 	when '}'
+				# 		level -= 1
+				# 	when '/'
+				# 		split_pos ||= []
+				# 		split_pos << scn.pos if level == 0
+				# 	end
+				# end
 
-						# check for routes formatted: /(:paramater) - optional paramaters
-						elsif section.match /^\(\:([^\(\)\{\}\:]*)\)$/
-							#create a optional section catcher
-						 	@path << optional_section_search
-						 	# add paramater recognition value
-						 	@fill_paramaters[param_num += 1] = section.match(/^\(\:([^\(\)\{\}\:]*)\)$/)[1]
+				# prep path string and split it where the '/' charected is unescaped.
+				path = path.gsub(/(^\/)|(\/$)/, '').split /[^\\]\//
+				@path_sections = path.length
+				path.each do |section|
+					if section == '*'
+						# create catch all
+						@path << "(.*)"
+						# finish
+						@path = /#{@path}$/
+						return
 
-						# check for routes formatted: /(:paramater){options} - optional paramaters
-						elsif section.match /^\(\:([^\(\)\{\}\:]*)\)\{(.*)\}$/
-							#create a optional section catcher
-						 	@path << (  "(\/(" +  section.match(/^\(\:([^\(\)\{\}\:]*)\)\{(.*)\}$/)[2] + "))?"  )
-						 	# add paramater recognition value
-						 	@fill_paramaters[param_num += 1] = section.match(/^\(\:([^\(\)\{\}\:]*)\)\{(.*)\}$/)[1]
-						 	param_num += 1 # we are using two spaces
+					# check for routes formatted: /:paramater - required paramaters
+					elsif section.match /^\:([^\(\)\{\}\:]*)$/
+						#create a simple section catcher
+					 	@path << section_search
+					 	# add paramater recognition value
+					 	@fill_paramaters[param_num += 1] = section.match(/^\:([^\(\)\{\}\:]*)$/)[1]
 
-						else
-							@path << "\/"
-							@path << section
-						end
+					# check for routes formatted: /:paramater{regexp} - required paramaters
+					elsif section.match /^\:([^\(\)\{\}\:\/]*)\{(.*)\}$/
+						#create a simple section catcher
+					 	@path << (  "(\/(" +  section.match(/^\:([^\(\)\{\}\:\/]*)\{(.*)\}$/)[2] + "))"  )
+					 	# add paramater recognition value
+					 	@fill_paramaters[param_num += 1] = section.match(/^\:([^\(\)\{\}\:\/]*)\{(.*)\}$/)[1]
+					 	param_num += 1 # we are using two spaces
+
+					# check for routes formatted: /(:paramater) - optional paramaters
+					elsif section.match /^\(\:([^\(\)\{\}\:]*)\)$/
+						#create a optional section catcher
+					 	@path << optional_section_search
+					 	# add paramater recognition value
+					 	@fill_paramaters[param_num += 1] = section.match(/^\(\:([^\(\)\{\}\:]*)\)$/)[1]
+
+					# check for routes formatted: /(:paramater){regexp} - optional paramaters
+					elsif section.match /^\(\:([^\(\)\{\}\:]*)\)\{(.*)\}$/
+						#create a optional section catcher
+					 	@path << (  "(\/(" +  section.match(/^\(\:([^\(\)\{\}\:]*)\)\{(.*)\}$/)[2] + "))?"  )
+					 	# add paramater recognition value
+					 	@fill_paramaters[param_num += 1] = section.match(/^\(\:([^\(\)\{\}\:]*)\)\{(.*)\}$/)[1]
+					 	param_num += 1 # we are using two spaces
+
+					else
+						@path << "\/"
+						@path << section
 					end
-					unless @fill_paramaters.values.include?("id")
-						@path << optional_section_search
-						@fill_paramaters[param_num += 1] = "id"
-					end
-					@path = /#{@path}$/
 				end
+				unless @fill_paramaters.values.include?("id")
+					@path << optional_section_search
+					@fill_paramaters[param_num += 1] = "id"
+				end
+				@path = /#{@path}$/
 			else
 				raise "Path cannot be initialized - path must be either a string or a regular experssion."
 			end	

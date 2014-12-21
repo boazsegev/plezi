@@ -118,15 +118,23 @@ end
 #
 # * routes can define their own parameters, for their own logic:
 #
-#     route "/path/:required_paramater_foo/(:optional_paramater_bar)"
+#     route "/path/:required_paramater/:required_paramater{with_format}/(:optional_paramater)/(:optional){with_format}"
 #
-# * routes can define optional routes with regular expressions in them:
+# * routes can define optional or required routes with regular expressions in them:
 #
 #     route "(:locale){en|ru}/path"
 #
+# * routes which use the special '/' charecter within a parameter's format, must escape this charecter using the '\' charecter. **Notice the single quotes** in the following example:
+#
+#     route '(:math){[\d\+\-\*\^\%\.\/]}'
+#
+#   * or, with double quotes:
+#
+#     route "(:math){[\\d\\+\\-\\*\\^\\%\\.\\/]}"
+#
 # magic routes make for difficult debugging - the smarter the routes, the more difficult the debugging.
 # use with care and avoid complex routes when possible. RESTful routes are recommended when possible.
-# jason serving apps are advised to use required paramaters, empty sections indicating missing required paramaters (i.e. /path///foo/bar///).
+# json serving apps are advised to use required paramaters, empty sections indicating missing required paramaters (i.e. /path///foo/bar///).
 #
 def route(path, controller = nil, &block)
 	Anorexic::DSL.route(path, controller, &block)
