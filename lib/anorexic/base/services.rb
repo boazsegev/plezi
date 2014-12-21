@@ -17,7 +17,7 @@ module Anorexic
 	# parameters:: a hash of paramaters that are passed on to the service for handling (and from there, service dependent, to the protocol and/or handler).
 	#
 	# parameters are any of the following:
-	# host:: the host name. defaults to any host not explicitly defined.
+	# host:: the host name. defaults to any host not explicitly defined (a catch-all).
 	# alias:: a String or an Array of Strings which represent alternative host names (i.e. `alias: ["admin.google.com", "admin.gmail.com"]`).
 	# root:: the public root folder. if this is defined, static files will be served from the location.
 	# assets:: the assets root folder. defaults to nil (no assets support). if the path is defined, assets will be served from `/assets/...` (or the public_asset path defined) before any static files. assets will not be served if the file in the /public/assets folder if up to date (a rendering attempt will be made for systems that allow file writing).

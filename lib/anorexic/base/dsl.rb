@@ -80,15 +80,21 @@ AN = Anorexic
 # creates a server object and waits for routes to be set.
 # 
 # port:: the port to listen to. the first port defaults to 3000 and increments by 1 with every `listen` call. it's possible to set the first port number by running the app with the -p paramater.
-# params:: a Hash of serever paramaters: v_host, ssl_cert, ssl_pkey or ssl_self.
+# params:: a Hash of serever paramaters, as listed in the Anorexic#add_service documentation.
 #
 # The different keys in the params hash control the server's behaviour, as follows:
 #
-# host:: sets a host for virtal hosts / namespaces. defaults to the global host (`:any`).
-# ssl_self:: sets an SSL server with a self assigned certificate (changes with every restart). defaults to false.
-# debug:: set's detailed exeption output, using Rack::ShowExceptions
-# server_params:: a hash of paramaters to be passed directly to the server - architecture dependent.
-# middleware:: a middleray array of arras of type [Middleware, paramater, paramater], if using RackServer.
+# host:: the host name. defaults to any host not explicitly defined (a catch-all).
+# alias:: a String or an Array of Strings which represent alternative host names (i.e. `alias: ["admin.google.com", "admin.gmail.com"]`).
+# root:: the public root folder. if this is defined, static files will be served from the location.
+# assets:: the assets root folder. defaults to nil (no assets support). if the path is defined, assets will be served from `/assets/...` (or the public_asset path defined) before any static files. assets will not be served if the file in the /public/assets folder if up to date (a rendering attempt will be made for systems that allow file writing).
+# assets_public:: the assets public uri location (uri format, NOT a file path). defaults to `/assets`. assets will be saved (or rendered) to the assets public folder and served as static files.
+# assets_callback:: a method that accepts one parameters: `request` and renders any custom assets. the method should return `false` unless it has created a response object (`response = Anorexic::HTTPResponse.new(request)`) and sent a response to the client using `response.finish`.
+# save_assets:: saves the rendered assets to the filesystem, under the public folder. defaults to false.
+# templates:: the templates root folder. defaults to nil (no template support). templates can be rendered by a Controller class, using the `render` method.
+# ssl:: if true, an SSL service will be attempted. if no certificate is defined, an attempt will be made to create a self signed certificate.
+# ssl_key:: the public key for the SSL service.
+# ssl_cert:: the certificate for the SSL service.
 #
 def listen(port = nil, params = {})
 	Anorexic::DSL.listen port, params

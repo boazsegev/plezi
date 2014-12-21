@@ -96,7 +96,7 @@ module Anorexic
 			return true if params[:assets_callback] && params[:assets_callback].call(request)
 			source_file = File.join(params[:assets], *(request.path.match(/^#{params[:assets_public]}\/(.+)/)[1].split('/')))
 			# stop if file name is reserved
-			return false if source_file.match(/(scss|sass|coffee|haml)$/)
+			return false if source_file.match(/(scss|sass|coffee|haml|slim)$/)
 			target_file = false
 			target_file = File.join( params[:root], params[:assets_public], *request.path.match(/^#{params[:assets_public]}\/(.*)/)[1].split('/') ) if params[:root]
 			if !File.exists?(source_file)
