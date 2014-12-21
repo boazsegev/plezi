@@ -6,7 +6,7 @@ Change log v.0.6.18
 
 **fix**: fixed an issue where the router would split a Regexp within a RESTful route (i.e. `'route :simple_math{[\d\+\-\*\/]}'`) even when the special '/' charecter was escaped.
 
-**fix/change(!)**: fixed an issue where dots ('.') would act as slashes ('/') in path naming recognition, deviding parameters names which contained dots into a number of path segments (instead of one).
+**fix/change**: fixed an issue where dots ('.') would act as slashes ('/') in path naming recognition, deviding parameters names which contained dots into a number of path segments (instead of one).
 
 ***
 
