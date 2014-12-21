@@ -305,6 +305,8 @@ module Anorexic
 			public
 
 			# reviews the Redis connection and sets it up if it's missing.
+			#
+			# todo: review thread status?
 			def __review_redis_connection
 				return true if @@redis_sub_thread
 				raise "Redis asuumed, but no Redis server is defined - define ENV['REDIS_URL'] or ENV['REDISCLOUD_URL'] to set up the Redis server's location." unless ENV["REDIS_URL"] || ENV["REDISCLOUD_URL"]
