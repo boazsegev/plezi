@@ -2,6 +2,12 @@
 
 ***
 
+Change log v.0.6.20
+
+**change**: Redis server assimilation isn't automatic anymore. To change Anorexic's #broadcast methid to use redix, set the redix url using the `ENV['AN_REDIS_URL']` - i.e. `ENV['AN_REDIS_URL'] = ENV['REDISCLOUD_URL']`
+
+***
+
 Change log v.0.6.19
 
 **performance/feature**: assets rendering was re-written and should work faster - except for Sass which now reviews all dependencies for updates (a new feature instead of performance boost).
