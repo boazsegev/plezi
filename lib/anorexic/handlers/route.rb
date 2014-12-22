@@ -109,7 +109,7 @@ module Anorexic
 				# end
 
 				# prep path string and split it where the '/' charected is unescaped.
-				path = path.gsub(/(^\/)|(\/$)/, '').split /[^\\]\//
+				path = path.gsub(/(^\/)|(\/$)/, '').gsub(/([^\\])\//, '\1 - /').split ' - /'
 				@path_sections = path.length
 				path.each do |section|
 					if section == '*'

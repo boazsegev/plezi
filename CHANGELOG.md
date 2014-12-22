@@ -2,11 +2,21 @@
 
 ***
 
-Change log v.0.6.18
+Change log v.0.6.19
+
+**performance/feature**: assets rendering was re-written and should work faster - except for Sass which now reviews all dependencies for updates (a new feature instead of performance boost).
 
 **fix**: fixed an issue where the router would split a Regexp within a RESTful route (i.e. `'route :simple_math{[\d\+\-\*\/]}'`) even when the special '/' charecter was escaped.
 
 **fix/change**: fixed an issue where dots ('.') would act as slashes ('/') in path naming recognition, deviding parameters names which contained dots into a number of path segments (instead of one).
+
+***
+
+Change log v.0.6.18 (yanked)
+
+**BROKEN**:
+
+trying to fix the routing system broke the code. Apologies to anyone who updated. We have yanked this version and are working on a better fix.
 
 ***
 

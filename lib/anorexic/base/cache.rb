@@ -23,8 +23,7 @@ module Anorexic
 
 	# load the file from the cache (if exists) or the file system (if it doesn't)
 	def load_file filename
-		return get_cached(filename) if cached?(filename)
-		reload_file filename
+		cached?(filename) ? get_cached(filename) : reload_file(filename)
 	end
 	# review a file's modification time
 	def file_mtime filename
@@ -57,7 +56,7 @@ module Anorexic
 	end
 	# Get data from the cache. will throw an exception if there is no data in the cache.
 	def get_cached filename
-		CACHE_STORE[filename].data
+		CACHE_STORE[filename].data # if CACHE_STORE[filename]
 	end
 
 	# returns true if the filename is cached.
@@ -67,8 +66,7 @@ module Anorexic
 
 	# returns true if the file exists on disk or in the cache.
 	def file_exists? filename
-		return true if CACHE_STORE[filename]
-		File.exists?(filename)
+		(CACHE_STORE[filename] || File.exists?(filename)) ? true : false
 	end
 
 	# returns true if the file has been update since data was last cached.

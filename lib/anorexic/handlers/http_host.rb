@@ -88,72 +88,9 @@ module Anorexic
 			true
 		end
 
-		# renders assets, if necessary, and places the rendered result in the cache and in the public folder.
-		def render_assets request
-			# contine only if assets are defined and called for
-			return false unless @params[:assets] && request.path.match(/^#{params[:assets_public]}\/.+/)
-			# call callback
-			return true if params[:assets_callback] && params[:assets_callback].call(request)
-			source_file = File.join(params[:assets], *(request.path.match(/^#{params[:assets_public]}\/(.+)/)[1].split('/')))
-			# stop if file name is reserved
-			return false if source_file.match(/(scss|sass|coffee|haml|slim)$/)
-			target_file = false
-			target_file = File.join( params[:root], params[:assets_public], *request.path.match(/^#{params[:assets_public]}\/(.*)/)[1].split('/') ) if params[:root]
-			if !File.exists?(source_file)
-				case source_file
-				when /\.css$/
-					source_file.gsub! /css$/, 'sass'
-					source_file.gsub! /sass$/, 'scss' unless File.exists?(source_file)
-					# if needs render, delete target file (force render).
-					# File.delete(target_file) if force_sass_refresh?(source_file, target_file) # rescue true
-				when /\.js$/
-					source_file.gsub! /js$/i, 'coffee'
-				end
-			end
-			return false unless File.exists?(source_file) && asset_needs_render?(source_file, target_file)
-			# check sass / scss, coffee script
-			case source_file
-			when /\.scss$/, /\.sass$/
-				if defined? ::Sass
-					source_file, map = Sass::Engine.for_file(source_file, cache_store: @sass_cache).render_with_sourcemap(params[:assets_public])
-					Anorexic.save_file((target_file + '.map'), data, params[:save_assets]) rescue false
-				else
-					return false
-				end
-			when /\.coffee$/
-				if defined? ::CoffeeScript
-					source_file = CoffeeScript.compile(IO.read source_file)
-				else
-					return false
-				end
-			else
-				source_file = IO.read source_file
-			end
-			render_asset(request, target_file, source_file)
-		end
-
-		# returns true if an asset needs to be rendered.
-		def asset_needs_render? source_file, target_file
-			return true unless Anorexic.file_exists?(target_file)
-			raise 'asset verification failed - no such file?!' unless File.exists?(source_file)
-			File.mtime(source_file) > Anorexic.file_mtime(target_file)
-		end
-
-		# checks sass dependecies, if a referesh is required (isn't in use, bacause of performance issues).
-		def force_sass_refresh? source_file, target_file
-			return false unless File.exists?(source_file) && Anorexic.file_exists?(target_file) && defined?(::Sass)
-			Sass::Engine.for_file(source_file, cache_store: @sass_cache).dependencies.each {|e| return true if File.exists?(e.options[:filename]) && (File.mtime(e.options[:filename]) > File.mtime(target_file))} # fn = File.join( e.options[:load_paths][0].root, e.options[:filename]) 
-			false
-		end
-
-		# renders an asset to the cache an attempt to save it to the file system.
-		#
-		# returns false (data wasn't sent) unless data was sent.
-		def render_asset request, target, data
-			Anorexic.save_file(target, data, params[:save_assets])
-			return HTTPResponse.new( request, 200, {'content-type' => MimeTypeHelper::MIME_DICTIONARY[File.extname(target)] }, [data]).finish unless Anorexic.cached?(target)
-			false
-		end
+		################
+		## basic responses
+		## (error codes and static files)
 
 		# sends a response for an error code, rendering the relevent file (if exists).
 		def send_by_code request, code, headers = {}
@@ -184,13 +121,13 @@ module Anorexic
 		def send_static_file request
 			return false unless params[:root]
 			file_requested = request[:path].to_s.split('/')
-			unless file_requested.include? ".."
+			unless file_requested.include? '..'
 				file_requested.shift
 				file_requested = File.join(params[:root], *file_requested)
-				return send_file request, file_requested if Anorexic.file_exists?(file_requested) && !File.directory?(file_requested)
+				return true if send_file request, file_requested
 				return send_file request, File.join(file_requested, params[:index_file])
 			end
-			return false
+			false
 		end
 
 		# sends a file/cacheed data if it exists. otherwise returns false.
@@ -207,8 +144,72 @@ module Anorexic
 			response << data
 			response['content-length'] = data.bytesize
 			response.finish
+			true
 		end
 
+		###############
+		## asset rendering and responses
+
+		# renders assets, if necessary, and places the rendered result in the cache and in the public folder.
+		def render_assets request
+			# contine only if assets are defined and called for
+			return false unless @params[:assets] && request.path.match(/^#{params[:assets_public]}\/.+/)
+			# review callback, if defined
+			return true if params[:assets_callback] && params[:assets_callback].call(request)
+
+			# get file requested
+			source_file = File.join(params[:assets], *(request.path.match(/^#{params[:assets_public]}\/(.+)/)[1].split('/')))
+
+			# stop if file name is reserved / has security issues
+			return false if source_file.match(/(scss|sass|coffee|\.\.\/)$/)
+
+			# set where to store the rendered asset
+			target_file = false
+			target_file = File.join( params[:root], params[:assets_public], *request.path.match(/^#{params[:assets_public]}\/(.*)/)[1].split('/') ) if params[:root]
+
+			# send the file if it exists (no render needed)
+			if File.exists?(source_file)
+				data = Anorexic.cache_needs_update?(source_file) ? Anorexic.save_file(target_file, Anorexic.reload_file(source_file), params[:save_assets]) : Anorexic.load_file(source_file)
+				return (data ? send_raw_data(request, data, MimeTypeHelper::MIME_DICTIONARY[::File.extname(source_file)]) : false)
+			end
+
+			# render supported assets
+			case source_file
+			when /\.css$/
+				sass = source_file.gsub /css$/, 'sass'
+				sass.gsub! /sass$/, 'scss' unless Anorexic.file_exists?(sass)
+				return false unless Anorexic.file_exists?(sass)
+				# review mtime and render sass if necessary
+				if defined?(::Sass) && refresh_sass?(sass)
+					eng = Sass::Engine.for_file(sass, cache_store: @sass_cache)
+					Anorexic.cache_data sass, eng.dependencies
+					css, map = eng.render_with_sourcemap(params[:assets_public])
+					Anorexic.save_file target_file, css, params[:save_assets]
+					Anorexic.save_file (target_file + ".map"), map, params[:save_assets]
+				end
+				# try to send the cached css file which started the request.
+				return send_file request, target_file
+			when /\.js$/
+				coffee = source_file.gsub /js$/i, 'coffee'
+				return false unless Anorexic.file_exists?(coffee)
+				# review mtime and render coffee if necessary
+				if defined?(::CoffeeScript) && Anorexic.cache_needs_update?(coffee)
+					# render coffee to cache
+					Anorexic.cache_data coffee, nil
+					Anorexic.save_file target_file, CoffeeScript.compile(IO.read coffee), params[:save_assets]
+				end
+				# try to send the cached js file which started the request.
+				return send_file request, target_file
+			end
+			false
+		end
+		def refresh_sass? sass
+			return false unless File.exists?(sass)
+			return true if Anorexic.cache_needs_update?(sass)
+			mt = Anorexic.file_mtime(sass)
+			Anorexic.get_cached(sass).each {|e| return true if File.exists?(e.options[:filename]) && (File.mtime(e.options[:filename]) > mt)} # fn = File.join( e.options[:load_paths][0].root, e.options[:filename]) 
+			false
+		end
 	end
 
 end
