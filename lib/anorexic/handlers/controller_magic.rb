@@ -221,15 +221,14 @@ module Anorexic
 			#
 			# accepts:
 			# method_name:: a Symbol with the method's name that should respond to the broadcast.
-			# *args:: any arguments that should be passed to the method (UNLESS REDIS IS USED).
-			# hash:: (REDIS ONLY) any data stored in a key-value hash, that can be converted to string objects.
+			# *args:: any arguments that should be passed to the method (IF REDIS IS USED, LIMITATIONS APPLY).
 			#
 			# the method will be called asynchrnously for each sibling instance of this Controller class.
 			#
 			def broadcast method_name, *args, &block
 				return false unless self.class.public_instance_methods.include?(method_name)
 				@uuid ||= SecureRandom.uuid
-				self.class.__inner_redis_broadcast(uuid, method_name, args, block) || self.class.__inner_process_broadcast(uuid, method_name, args, block)
+				self.class.__inner_redis_broadcast(uuid, method_name, args, &block) || self.class.__inner_process_broadcast(uuid, method_name.to_sym, args, &block)
 			end
 
 
@@ -283,6 +282,8 @@ module Anorexic
 				# set up controller as WebSocket handler
 				@response = WSResponse.new request
 				@_accepts_broadcast = true
+				# create the redis connection (in case this in the first instance of this class)
+				self.class.redis_connection
 			end
 
 
@@ -311,20 +312,17 @@ module Anorexic
 			#
 			# todo: review thread status? (incase an exception killed it)
 			def redis_connection
-				Anorexic.info "testing for Redis"
 				return false unless defined?(Redis) && ENV['AN_REDIS_URL']
-				Anorexic.info "testing if Redis already connected"
 				return @@redis if defined?(@@redis_sub_thread) && @@redis
 				@@redis_uri ||= URI.parse(ENV['AN_REDIS_URL'])
-				Anorexic.info "trying to connect to Redis on #{ENV['AN_REDIS_URL']}"
 				@@redis ||= Redis.new(host: @@redis_uri.host, port: @@redis_uri.port, password: @@redis_uri.password)
 				@@redis_sub_thread = Thread.new do
 					begin
 						Redis.new(host: @@redis_uri.host, port: @@redis_uri.port, password: @@redis_uri.password).subscribe(redis_channel_name) do |on|
 							on.message do |channel, msg|
-								msg = JSON.parse(msg)
-								ignore = msg.delete :_an_ingnore_object
-								__inner_process_broadcast ignore, msg.delete(:_an_method_broadcasted), msg
+								args = JSON.parse(msg)
+								params = args.shift
+								__inner_process_broadcast params['_an_ignore_object'], params['_an_method_broadcasted'].to_sym, args
 							end
 						end						
 					rescue Exception => e
@@ -332,7 +330,7 @@ module Anorexic
 						retry
 					end
 				end
-				raise "Redis connction failed" unless @@redis
+				raise "Redis connction failed for: #{ENV['AN_REDIS_URL']}" unless @@redis
 				@@redis
 			end
 
@@ -342,16 +340,17 @@ module Anorexic
 			end
 
 			# broadcasts messages (methods) for this process
-			def __inner_process_broadcast ignore, method_name, args, block
+			def __inner_process_broadcast ignore, method_name, args, &block
 				ObjectSpace.each_object(self) { |controller| Anorexic.callback controller, method_name, *args, &block if controller.accepts_broadcast? && (!ignore || controller.uuid != ignore) }
 			end
 
 			# broadcasts messages (methods) between all processes (using Redis).
-			def __inner_redis_broadcast ignore, method_name, args, block
+			def __inner_redis_broadcast ignore, method_name, args, &block
 				return false unless redis_connection
-				raise "Radis broadcasts cannot accept blocks (no inter-process callbacks)" if block
-				raise "Radis broadcasts accept only one paramater, which is an optional Hash (no inter-process memory sharing)" if args.length > 1 && (arg[0] && !arg[0].is_a(Hash))
-				redis_connection.publish(redis_channel_name, {_an_method_broadcasted: method_name, _an_ingnore_object: ignore}.merge( args[0] || {} ).to_json )
+				raise "Radis broadcasts cannot accept blocks (no inter-process callbacks of memory sharing)!" if block
+				# raise "Radis broadcasts accept only one paramater, which is an optional Hash (no inter-process memory sharing)" if args.length > 1 || (args[0] && !args[0].is_a?(Hash))
+				args.unshift ({_an_method_broadcasted: method_name, _an_ignore_object: ignore})
+				redis_connection.publish(redis_channel_name, args.to_json )
 				true
 			end
 
@@ -363,13 +362,14 @@ module Anorexic
 			#
 			# accepts:
 			# method_name:: a Symbol with the method's name that should respond to the broadcast.
-			# *args:: any arguments that should be passed to the method (UNLESS REDIS IS USED).
-			# hash:: (REDIS ONLY) any data stored in a key-value hash, that can be converted to string objects.
+			# *args:: any arguments that should be passed to the method (IF REDIS IS USED, LIMITATIONS APPLY).
+			#
+			# this method accepts and optional block (NON-REDIS ONLY) to be used as a callback for each sibling's event.
 			#
 			# the method will be called asynchrnously for each sibling instance of this Controller class.
 			def broadcast method_name, *args, &block
 				return false unless public_instance_methods.include?(method_name)
-				__inner_redis_broadcast(nil, method_name, args, block) || __inner_process_broadcast(nil, method_name, args, block)
+				__inner_redis_broadcast(nil, method_name, args, &block) || __inner_process_broadcast(nil, method_name.to_sym, args, &block)
 			end
 
 			# WebSockets.

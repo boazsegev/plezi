@@ -4,7 +4,9 @@
 
 Change log v.0.6.20
 
-**change**: Redis server assimilation isn't automatic anymore. To change Anorexic's #broadcast methid to use redix, set the redix url using the `ENV['AN_REDIS_URL']` - i.e. `ENV['AN_REDIS_URL'] = ENV['REDISCLOUD_URL']`
+**feature**: Redis broadcasts (automated)! once a Redis server is defined, #broadcast will use Redis (limitations apply due to data-types, memory sharing, callback limitations etc').
+
+To change Anorexic's #broadcast method to use Redis, set the Redix server url using the `ENV['AN_REDIS_URL']` - i.e. `ENV['AN_REDIS_URL'] = ENV['REDISCLOUD_URL']` or `ENV['AN_REDIS_URL'] = "redis://username:password@my.host:6379"`
 
 **template**: a `redis_config.rb` file was added to the template. It has some demo code and explanations about automating Redis in Anorexic... for now, since this automation hasn't been tested yet (I haven't installed Redis), automation is disabled by default.
 
