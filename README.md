@@ -7,7 +7,7 @@ _(if to para-phrase "People who are serious about their software, should make th
 
 ## About the Anorexic framework \ server
 
-A thin, lightweight, barebones, mutli-threaded Ruby alternative to Rack/Rails/Sintra - Anorexic is The Ruby Websocket Framework with full RESTful routing support.
+Anorexic is an easy to use Ruby Websocket Framework, with full RESTful routing support. It is a thin, lightweight, barebones, mutli-threaded Ruby alternative to Rack/Rails/Sintra.
 
 Anorexic contains an object-oriented server, divided into parts that can be changed/updated and removed easily and dynamically. The Anorexic framework runs HTTP and WebSockets, but could as easily be extended to run SMTP, SPDY or any other Protocol (including custom made protocols).
 
