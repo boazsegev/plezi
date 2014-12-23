@@ -1,4 +1,4 @@
-# Anorexic - a r/evolution
+# Anorexic, The Ruby Websocket Framework
 [![Gem Version](https://badge.fury.io/rb/anorexic.svg)](http://badge.fury.io/rb/anorexic)
 [![Inline docs](http://inch-ci.org/github/boazsegev/anorexic.svg?branch=master)](http://inch-ci.org/github/boazsegev/anorexic)
 
@@ -7,7 +7,7 @@ _(if to para-phrase "People who are serious about their software, should make th
 
 ## About the Anorexic framework \ server
 
-A thin, lightweight, barebones, mutli-threaded Ruby alternative to Rack/Rails/Sintra.
+A thin, lightweight, barebones, mutli-threaded Ruby alternative to Rack/Rails/Sintra - Anorexic is The Ruby Websocket Framework with full RESTful routing support.
 
 Anorexic contains an object-oriented server, divided into parts that can be changed/updated and removed easily and dynamically. The Anorexic framework runs HTTP and WebSockets, but could as easily be extended to run SMTP, SPDY or any other Protocol (including custom made protocols).
 

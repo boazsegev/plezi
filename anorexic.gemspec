@@ -8,8 +8,8 @@ Gem::Specification.new do |spec|
   spec.version       = Anorexic::VERSION
   spec.authors       = ["Boaz Segev"]
   spec.email         = ["We try, we fail, we do, we are"]
-  spec.summary       = %q{People who are serious about their framework, should write their own server.}
-  spec.description   = %q{"People who are serious about their framework, should write their own server." - advance to next step in Ruby evolution, a framework with an integrated server, ready for seamless WebSockets and RESTful applications.}
+  spec.summary       = %q{The Ruby Websocket Framework.}
+  spec.description   = %q{Anorexic is The Ruby Websocket Framework. "People who are serious about their framework, should write their own server." - advance to next step in Ruby evolution, a framework with an integrated server, ready for seamless WebSockets and RESTful applications.}
   spec.homepage      = "http://boazsegev.github.io/anorexic/"
   spec.license       = "MIT"
 
