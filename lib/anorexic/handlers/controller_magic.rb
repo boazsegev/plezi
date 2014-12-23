@@ -304,22 +304,33 @@ module Anorexic
 		module ClassMethods
 			public
 
-			# reviews the Redis connection and sets it up if it's missing.
+			# reviews the Redis connection, sets it up if it's missing and returns the Redis connection.
 			#
-			# todo: review thread status?
-			def __review_redis_connection
-				return true if defined?(@@redis_sub_thread)
+			# todo: review thread status? (incase an exception killed it)
+			def redis_connection
 				return false unless defined?(Redis) && ENV['AN_REDIS_URL']
-				@@redis_uri = URI.parse(ENV['AN_REDIS_URL'])
-				@@redis = Redis.new(host: @@redis_uri.host, port: @@redis_uri.port, password: @@redis_uri.password)
+				return @@redis if defined?(@@redis_sub_thread) && @@redis
+				@@redis_uri ||= URI.parse(ENV['AN_REDIS_URL'])
+				@@redis ||= Redis.new(host: @@redis_uri.host, port: @@redis_uri.port, password: @@redis_uri.password)
 				@@redis_sub_thread = Thread.new do
-					Redis.new(host: @@redis_uri.host, port: @@redis_uri.port, password: @@redis_uri.password).subscribe(self.name.to_s) do |on|
-						on.message do |channel, msg|
-							msg = JSON.parse(msg)
-							__inner_process_broadcast nil, msg.delete(:_an_method_broadcasted), msg
-						end
+					begin
+						Redis.new(host: @@redis_uri.host, port: @@redis_uri.port, password: @@redis_uri.password).subscribe(redis_channel_name) do |on|
+							on.message do |channel, msg|
+								msg = JSON.parse(msg)
+								__inner_process_broadcast nil, msg.delete(:_an_method_broadcasted), msg
+							end
+						end						
+					rescue Exception => e
+						Anorexic.error e
+						retry
 					end
 				end
+				@@redis
+			end
+
+			# returns a Redis channel name for this controller.
+			def redis_channel_name
+				self.name.to_s
 			end
 
 			# broadcasts messages (methods) for this process
@@ -329,10 +340,10 @@ module Anorexic
 
 			# broadcasts messages (methods) between all processes (using Redis).
 			def __inner_redis_broadcast ignore, method_name, args, block
-				return false unless __review_redis_connection
+				return false unless redis_connection
 				raise "Radis broadcasts cannot accept blocks (no inter-process callbacks)" if block
 				raise "Radis broadcasts accept only one paramater, which is an optional Hash (no inter-process memory sharing)" if args.length > 1 && (arg[0] && !arg[0].is_a(Hash))
-				@@redis.publish(self.name.to_s, {_an_method_broadcasted: method_name}.merge( args[0] || {} ).to_json )
+				redis_connection.publish(redis_channel_name, {_an_method_broadcasted: method_name}.merge( args[0] || {} ).to_json )
 				true
 			end
 

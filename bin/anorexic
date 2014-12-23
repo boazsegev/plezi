@@ -3,6 +3,7 @@ $0="Anorexic Builder"
 # count lines of code with: ^[ \t]*[\w\d\"\(\{\@\[\]\}\)\:\'\.\*\&]+.*$
 
 require 'irb'
+require 'securerandom'
 
 ##########
 # this is the template writer
@@ -65,6 +66,7 @@ class AppTemplate
 		app_tree["config"]["db_dm_config.rb"] ||= IO.read(::File.expand_path(File.join("..", "..", "resources" ,"db_dm_config.rb"),  __FILE__))
 		app_tree["config"]["haml_config.rb"] ||= IO.read(::File.expand_path(File.join("..", "..", "resources" ,"haml_config.rb"),  __FILE__))
 		app_tree["config"]["i18n_config.rb"] ||= IO.read(::File.expand_path(File.join("..", "..", "resources" ,"i18n_config.rb"),  __FILE__))
+		app_tree["config"]["radis_config.rb"] ||= (IO.read(::File.expand_path(File.join("..", "..", "resources" ,"radis_config.rb"),  __FILE__))).gsub('appsecret', "#{ARGV[1]}_#{SecureRandom.hex}")
 
 		#set up database stub folders
 		app_tree["db"] ||= {}
