@@ -44,6 +44,10 @@ module Anorexic
 			# the parameters used to create the host (the parameters passed to the `listen` / `add_service` call).
 			attr_reader :host_params
 
+			# a unique UUID to identify the object - used to make sure Radis broadcasts don't triger the
+			# boadcasting object's event.
+			attr_reader :uuid
+
 			# checks whether this instance accepts broadcasts (WebSocket instances).
 			def accepts_broadcast?
 				@_accepts_broadcast
@@ -222,11 +226,10 @@ module Anorexic
 			#
 			# the method will be called asynchrnously for each sibling instance of this Controller class.
 			#
-			# IF REDIS IS USED, THE METHOD WILL ALSO BE CALLED FOR THE CALLING OBJECT (self).
-			# please make sure to write code that will ignore this message if you are using Redis.
 			def broadcast method_name, *args, &block
 				return false unless self.class.public_instance_methods.include?(method_name)
-				self.class.__inner_redis_broadcast(self, method_name, args, block) || self.class.__inner_process_broadcast(self, method_name, args, block)
+				@uuid ||= SecureRandom.uuid
+				self.class.__inner_redis_broadcast(uuid, method_name, args, block) || self.class.__inner_process_broadcast(uuid, method_name, args, block)
 			end
 
 
@@ -308,16 +311,20 @@ module Anorexic
 			#
 			# todo: review thread status? (incase an exception killed it)
 			def redis_connection
+				Anorexic.info "testing for Redis"
 				return false unless defined?(Redis) && ENV['AN_REDIS_URL']
+				Anorexic.info "testing if Redis already connected"
 				return @@redis if defined?(@@redis_sub_thread) && @@redis
 				@@redis_uri ||= URI.parse(ENV['AN_REDIS_URL'])
+				Anorexic.info "trying to connect to Redis on #{ENV['AN_REDIS_URL']}"
 				@@redis ||= Redis.new(host: @@redis_uri.host, port: @@redis_uri.port, password: @@redis_uri.password)
 				@@redis_sub_thread = Thread.new do
 					begin
 						Redis.new(host: @@redis_uri.host, port: @@redis_uri.port, password: @@redis_uri.password).subscribe(redis_channel_name) do |on|
 							on.message do |channel, msg|
 								msg = JSON.parse(msg)
-								__inner_process_broadcast nil, msg.delete(:_an_method_broadcasted), msg
+								ignore = msg.delete :_an_ingnore_object
+								__inner_process_broadcast ignore, msg.delete(:_an_method_broadcasted), msg
 							end
 						end						
 					rescue Exception => e
@@ -325,6 +332,7 @@ module Anorexic
 						retry
 					end
 				end
+				raise "Redis connction failed" unless @@redis
 				@@redis
 			end
 
@@ -335,7 +343,7 @@ module Anorexic
 
 			# broadcasts messages (methods) for this process
 			def __inner_process_broadcast ignore, method_name, args, block
-				ObjectSpace.each_object(self) { |controller| Anorexic.callback controller, method_name, *args, &block if controller.accepts_broadcast? && controller.object_id != ignore.object_id }
+				ObjectSpace.each_object(self) { |controller| Anorexic.callback controller, method_name, *args, &block if controller.accepts_broadcast? && (!ignore || controller.uuid != ignore) }
 			end
 
 			# broadcasts messages (methods) between all processes (using Redis).
@@ -343,7 +351,7 @@ module Anorexic
 				return false unless redis_connection
 				raise "Radis broadcasts cannot accept blocks (no inter-process callbacks)" if block
 				raise "Radis broadcasts accept only one paramater, which is an optional Hash (no inter-process memory sharing)" if args.length > 1 && (arg[0] && !arg[0].is_a(Hash))
-				redis_connection.publish(redis_channel_name, {_an_method_broadcasted: method_name}.merge( args[0] || {} ).to_json )
+				redis_connection.publish(redis_channel_name, {_an_method_broadcasted: method_name, _an_ingnore_object: ignore}.merge( args[0] || {} ).to_json )
 				true
 			end
 

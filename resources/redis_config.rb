@@ -1,6 +1,6 @@
 # encoding: UTF-8
 
-if defined? Radis
+if defined? Redis
 
 	# ## Anorexic Redis Automation
 	# ## ====

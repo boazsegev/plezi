@@ -8,6 +8,7 @@ require 'openssl'
 require 'strscan'
 require 'base64'
 require 'digest/sha1'
+require 'securerandom'
 require 'time'
 require 'json'
 
