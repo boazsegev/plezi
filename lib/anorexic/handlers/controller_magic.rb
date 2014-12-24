@@ -254,45 +254,11 @@ module Anorexic
 			#
 			# the method will be called asynchrnously for each sibling instance of this Controller class.
 			def collect method_name, *args, &block
-				if block
-					Anorexic.push_event((Proc.new() {r = []; ObjectSpace.each_object(self.class) { |controller|  r << controller.method(method_name).call(*args) if controller.accepts_broadcast?  && (controller.object_id != self.object_id)} ; r } ), &block)
-					return true
-				else
-					r = []
-					ObjectSpace.each_object(self.class) { |controller|  r << controller.method(method_name).call(*args) if controller.accepts_broadcast?  && (controller.object_id != self.object_id) }
-					return r
-				end
-			end
+				return Anorexic.callback(self, :collect, *args, &block) if block
 
-			# WebSockets.
-			#
-			# this method handles the protocol and handler transition between the HTTP connection
-			# (with a protocol instance of HTTPProtocol and a handler instance of HTTPRouter)
-			# and the WebSockets connection
-			# (with a protocol instance of WSProtocol and an instance of the Controller class set as a handler)
-			def pre_connect
-				# make sure this is a websocket controller
-				return false unless self.class.public_instance_methods.include?(:on_message)
-				# call the controller's original method, if exists, and check connection.
-				return false if (defined?(super) && !super) 
-				# finish if the response was sent
-				return true if response.headers_sent?
-				# complete handshake
-				return false unless WSProtocol.new( request.service, request.service.parameters).http_handshake request, response, self
-				# set up controller as WebSocket handler
-				@response = WSResponse.new request
-				@_accepts_broadcast = true
-				# create the redis connection (in case this in the first instance of this class)
-				self.class.redis_connection
-			end
-
-
-			# WebSockets.
-			#
-			# stops broadcasts from being called on closed sockets that havn't been collected by the garbage collector.
-			def on_disconnect
-				@_accepts_broadcast = false
-				super if defined? super
+				r = []
+				ObjectSpace.each_object(self.class) { |controller|  r << controller.method(method_name).call(*args) if controller.accepts_broadcast?  && (controller.object_id != self.object_id) }
+				return r
 			end
 
 
@@ -395,15 +361,12 @@ module Anorexic
 			# &block:: an optional block to be used as a callback.
 			#
 			# the method will be called asynchrnously for each instance of this Controller class.
-			def collect method_name, *args, &block
-				if block
-					Anorexic.push_event((Proc.new() {r = []; ObjectSpace.each_object(self.class) { |controller|  r << controller.method(method_name).call(*args) if controller.accepts_broadcast? } ; r } ), &block)
-					return true
-				else
-					r = []
-					ObjectSpace.each_object(self.class) { |controller|  r << controller.method(method_name).call(*args) if controller.accepts_broadcast? }
-					return r
-				end
+			def collect method_name, *args, &block				
+				return Anorexic.push_event(self.method(:collect), *args, &block) if block
+
+				r = []
+				ObjectSpace.each_object(self) { |controller|  r << controller.method(method_name).call(*args) if controller.accepts_broadcast? }
+				return r
 			end
 		end
 

@@ -131,9 +131,7 @@ module Anorexic
 				@out_que.each { |d| _send d rescue true}
 				@out_que.clear
 			end
-			if protocol
-				Anorexic.callback protocol, :on_disconnect, self
-			end
+			Anorexic.callback protocol, :on_disconnect, self if protocol
 			close
 		end
 

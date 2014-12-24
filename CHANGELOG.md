@@ -2,6 +2,14 @@
 
 ***
 
+Change log v.0.6.21
+
+**fix**: fixed a bug in the broadcast/collect system, where closed connections would still react to broadcasts until garbage collected. fixed the issue by reinforsing the on_disconnect for the controllers child class (the one inheriting the controller and injecting the Anorexic magic into it).
+
+**fix**: fixed a bug where some websocket connections might fail without a Redis server. fixed issue by making sure a successful #pre_connect method will return `true`.
+
+***
+
 Change log v.0.6.20
 
 **feature**: Redis broadcasts (automated)! once a Redis server is defined for Anorexic, #broadcast will automatically use Redis (limitations apply due to data-types, memory sharing, callback limitations etc')!

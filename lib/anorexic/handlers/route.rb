@@ -231,6 +231,37 @@ module Anorexic
 					end
 					return true
 				end
+				# WebSockets.
+				#
+				# this method handles the protocol and handler transition between the HTTP connection
+				# (with a protocol instance of HTTPProtocol and a handler instance of HTTPRouter)
+				# and the WebSockets connection
+				# (with a protocol instance of WSProtocol and an instance of the Controller class set as a handler)
+				def pre_connect
+					# make sure this is a websocket controller
+					return false unless self.class.public_instance_methods.include?(:on_message)
+					# call the controller's original method, if exists, and check connection.
+					return false if (defined?(super) && !super) 
+					# finish if the response was sent
+					return true if response.headers_sent?
+					# complete handshake
+					return false unless WSProtocol.new( request.service, request.service.parameters).http_handshake request, response, self
+					# set up controller as WebSocket handler
+					@response = WSResponse.new request
+					# create the redis connection (in case this in the first instance of this class)
+					self.class.redis_connection
+					# set broadcasts and return true
+					@_accepts_broadcast = true
+				end
+
+
+				# WebSockets.
+				#
+				# stops broadcasts from being called on closed sockets that havn't been collected by the garbage collector.
+				def on_disconnect
+					@_accepts_broadcast = false
+					super if defined? super
+				end
 			end
 			Object.const_set(new_class_name, ret)
 			ret
