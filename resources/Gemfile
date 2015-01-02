@@ -64,6 +64,15 @@ gem 'anorexic'
 # gem 'sqlite3'
 # gem 'pg'
 
+## MongoDB is a very well known NoSQL DB
+## https://github.com/mongodb/mongo-ruby-driver
+# gem 'mongo'
+## for a performance boost, the C extentions can be used (NOT JRuby - bson_ext isn't used with JRuby).
+# gem 'bson_ext'
+## you can also have a look at the Mongo Mapper ORM
+## http://mongomapper.com
+# gem 'mongo_mapper'
+
 ## someone told me good things about sequel:
 ## http://sequel.jeremyevans.net/rdoc/files/README_rdoc.html
 ## http://sequel.jeremyevans.net/rdoc/files/doc/cheat_sheet_rdoc.html
