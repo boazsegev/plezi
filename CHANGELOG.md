@@ -4,6 +4,8 @@
 
 Change log v.0.6.22
 
+**misc**: App generator (`anorexic` command) now protects against invalid app names by auto-correcting the name, replacing any invalid characters with an underscore.
+
 **misc**: updated the gemspec file and project tag-line for a better gem description.
 
 ***
