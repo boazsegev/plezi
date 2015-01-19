@@ -7,9 +7,9 @@ Gem::Specification.new do |spec|
   spec.name          = "anorexic"
   spec.version       = Anorexic::VERSION
   spec.authors       = ["Boaz Segev"]
-  spec.email         = ["We try, we fail, we do, we are"]
+  spec.email         = ['boaz@2be.co.il']
   spec.summary       = %q{The Ruby Websocket Framework.}
-  spec.description   = %q{Anorexic is The Ruby Websocket Framework. Advance to next step in Ruby evolution, a framework with an integrated server, ready for seamless WebSockets and RESTful applications.}
+  spec.description   = %q{Anorexic is The Ruby Websocket Framework. Advance to next step in Ruby evolution - a framework with an integrated server, ready for seamless WebSockets and RESTful applications.}
   spec.homepage      = "http://boazsegev.github.io/anorexic/"
   spec.license       = "MIT"
 
@@ -21,6 +21,6 @@ Gem::Specification.new do |spec|
   spec.add_development_dependency "bundler", "~> 1.7"
   spec.add_development_dependency "rake", "~> 10.0"
 
-  spec.post_install_message = "Anorexic is hungry for your code - feed it!"
+  spec.post_install_message = "Anorexic is hungry - feed it your code!"
 
 end

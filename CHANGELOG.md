@@ -2,9 +2,15 @@
 
 ***
 
+Change log v.0.6.22
+
+**misc**: updated the gemspec file and project tag-line for a better gem description.
+
+***
+
 Change log v.0.6.21
 
-**fix**: fixed a bug in the broadcast/collect system, where closed connections would still react to broadcasts until garbage collected. fixed the issue by reinforsing the on_disconnect for the controllers child class (the one inheriting the controller and injecting the Anorexic magic into it).
+**fix**: fixed a bug in the broadcast/collect system, where closed connections would still react to broadcasts until garbage collected. fixed the issue by reinforcing the on_disconnect for the controllers child class (the one inheriting the controller and injecting the Anorexic magic into it).
 
 **fix**: fixed a bug where some websocket connections might fail without a Redis server. fixed issue by making sure a successful #pre_connect method will return `true`.
 
