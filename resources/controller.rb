@@ -30,7 +30,7 @@
 #
 # redirect_to:: easily set up redirection.
 # send_data:: easily send data, setting the content-type and content-length headers.
-# render:: easily render Haml and IRB files into String text.
+# render:: easily render Slim, Haml and IRB files into String text.
 #
 class SampleController
 
