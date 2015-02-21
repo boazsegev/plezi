@@ -4,7 +4,7 @@
 
 # Using pathname extentions for setting public folder
 require 'pathname'
-#set up root object, it might be used by the environment and\or the anorexic extension gems.
+#set up root object, it might be used by the environment and\or the plezi extension gems.
 Root ||= Pathname.new(File.dirname(__FILE__)).expand_path
 
 # make sure all file access and file loading is relative to the application's root folder
@@ -16,12 +16,12 @@ ENV["RACK_ENV"] ||= "development"
 # save the process id (pid) to file - notice Heroku doesn't allow to write files.
 (IO.write File.expand_path(File.join 'tmp','pid'), Process.pid unless ENV["DYNO"]) rescue true
 
-# using bundler to load gems (including the anorexic gem)
+# using bundler to load gems (including the plezi gem)
 require 'bundler'
 Bundler.require
 
-# set up Anorexic logs - Heroku logs to STDOUT, this machine logs to log file
-Anorexic.create_logger File.expand_path(File.join 'logs','server.log'), ENV["RACK_ENV"]=="development" unless ENV['DYNO']
+# set up Plezi logs - Heroku logs to STDOUT, this machine logs to log file
+Plezi.create_logger File.expand_path(File.join 'logs','server.log'), ENV["RACK_ENV"]=="development" unless ENV['DYNO']
 
 # load all config files
 Dir[File.join "{config}", "**" , "*.rb"].each {|file| load File.expand_path(file)}

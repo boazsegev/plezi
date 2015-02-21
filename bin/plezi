@@ -1,0 +1,301 @@
+#!/usr/bin/env ruby
+$0="Plezi Builder"
+# count lines of code with: ^[ \t]*[\w\d\"\(\{\@\[\]\}\)\:\'\.\*\&]+.*$
+
+require 'irb'
+require 'securerandom'
+
+##########
+# this is the template writer
+#
+# you can update it by aliasing the old initialize and writing adding to it:
+#
+#		if defined? BUILDING_PLEZI_TEMPLATE
+#			class AppTemplate
+#				alias :my_new_gem_old_init :initialize
+#				def initialize
+#					# start with the old initialize, to set the template up
+#					my_new_gem_old_init appname
+#					# add your gem to the gemfile
+#					app_tree["Gemfile"] << "\n# feed GEMNAME to plezi"
+#					app_tree["Gemfile"] << "\ngem 'GEMNAME'"
+#					# make sure your folder exists, but don't overwrite!!!
+#					# if you overwrite!!! you might destroy other gems additions.
+#					app_tree["lib"] ||= {}
+#					app_tree["MY_SPECIAL_GEM"] ||= {}
+#					# once your folder exists, create your file
+#					app_tree["lib]["MY_SPECIAL_GEM"]["filename.rb"] = "# code goes here..."
+#					app_tree["file_without_folder.rb"] ||= "# more code goes here..."
+#				end
+#			end
+#		end
+#
+class AppTemplate
+
+	def initialize
+		require 'rubygems'
+		# set end comments
+		@end_comments = []
+		@app_tree ||= {}
+
+		# set up application files
+		app_tree["app"] ||= {}
+		app_tree["app"]["controllers"] ||= {}
+		app_tree["app"]["controllers"]["sample_controller.rb"] ||= IO.read(::File.expand_path(File.join("..", "..", "resources" ,"controller.rb"),  __FILE__))
+		app_tree["app"]["models"] ||= {}
+		app_tree["app"]["views"] ||= {}
+
+		# set up the assets folder
+		app_tree["assets"] ||= {}
+		app_tree["assets"]["stylesheets"] ||= {}
+		app_tree["assets"]["javascripts"] ||= {}
+		app_tree["assets"]["welcome.html"] ||= IO.read(::File.expand_path(File.join("..", "..", "resources" ,"welcome_page.html"),  __FILE__)).gsub('appname', ARGV[1])
+
+		# app core files.
+		app_tree["environment.rb"] ||= IO.read ::File.expand_path(File.join("..", "..", "resources" ,"environment.rb"),  __FILE__)
+		app_tree["routes.rb"] ||= IO.read ::File.expand_path(File.join("..", "..", "resources" ,"routes.rb"),  __FILE__)
+		app_tree["rakefile.rb"] ||= IO.read ::File.expand_path(File.join("..", "..", "resources" ,"rakefile.rb"),  __FILE__)
+		app_tree["Procfile"] ||= ""
+		app_tree["Procfile"] << "\nweb: bundle exec ./#{ARGV[1]}.rb -p $PORT\n"
+		app_tree["Gemfile"] ||= IO.read ::File.expand_path(File.join("..", "..", "resources" ,"Gemfile"),  __FILE__)
+
+		# set up config files
+		app_tree["config"] ||= {}
+		app_tree["config"]["db_ac_config.rb"] ||= IO.read(::File.expand_path(File.join("..", "..", "resources" ,"db_ac_config.rb"),  __FILE__))
+		app_tree["config"]["db_sequel_config.rb"] ||= IO.read(::File.expand_path(File.join("..", "..", "resources" ,"db_sequel_config.rb"),  __FILE__))
+		app_tree["config"]["db_dm_config.rb"] ||= IO.read(::File.expand_path(File.join("..", "..", "resources" ,"db_dm_config.rb"),  __FILE__))
+		app_tree["config"]["haml_config.rb"] ||= IO.read(::File.expand_path(File.join("..", "..", "resources" ,"haml_config.rb"),  __FILE__))
+		app_tree["config"]["i18n_config.rb"] ||= IO.read(::File.expand_path(File.join("..", "..", "resources" ,"i18n_config.rb"),  __FILE__))
+		app_tree["config"]["redis_config.rb"] ||= (IO.read(::File.expand_path(File.join("..", "..", "resources" ,"redis_config.rb"),  __FILE__))).gsub('appsecret', "#{ARGV[1]}_#{SecureRandom.hex}")
+
+		#set up database stub folders
+		app_tree["db"] ||= {}
+		app_tree["db"]["migrate"] ||= {}
+
+		#set up the extras folder, to be filled with future goodies.
+		app_tree["extras"] ||= {}
+		app_tree["extras"]["config.ru"] ||= IO.read ::File.expand_path(File.join("..", "..", "resources" ,"config.ru"),  __FILE__)
+
+		#set up I18n stub
+		app_tree["locales"] ||= {}
+		app_tree["locales"]["en.yml"] ||= IO.read ::File.expand_path(File.join("..", "..", "resources" ,"en.yml"),  __FILE__)
+
+		# create library, log and tmp folders
+		app_tree["logs"] ||= {}
+		app_tree["lib"] ||= {}
+		app_tree["tmp"] ||= {}
+
+
+		# set up a public folder for static file service
+		app_tree["public"] ||= {}		
+		app_tree["public"]["404.slim"] ||= IO.read(::File.expand_path(File.join("..", "..", "resources" ,"404.slim"),  __FILE__))
+		app_tree["public"]["500.slim"] ||= IO.read(::File.expand_path(File.join("..", "..", "resources" ,"500.slim"),  __FILE__))
+		app_tree["public"]["404.html"] ||= IO.read(::File.expand_path(File.join("..", "..", "resources" ,"404.html"),  __FILE__))
+		app_tree["public"]["500.html"] ||= IO.read(::File.expand_path(File.join("..", "..", "resources" ,"500.html"),  __FILE__))
+		app_tree["public"]["404.erb"] ||= IO.read(::File.expand_path(File.join("..", "..", "resources" ,"404.erb"),  __FILE__))
+		app_tree["public"]["500.erb"] ||= IO.read(::File.expand_path(File.join("..", "..", "resources" ,"500.erb"),  __FILE__))
+		app_tree["public"]["404.haml"] ||= IO.read(::File.expand_path(File.join("..", "..", "resources" ,"404.haml"),  __FILE__))
+		app_tree["public"]["500.haml"] ||= IO.read(::File.expand_path(File.join("..", "..", "resources" ,"500.haml"),  __FILE__))
+		app_tree["public"]["assets"] ||= {}		
+		app_tree["public"]["assets"]["stylesheets"] ||= {}		
+		app_tree["public"]["assets"]["javascripts"] ||= {}		
+		app_tree["public"]["images"] ||= {}		
+		app_tree["public"]["images"]['plezi_gray.png'] ||= IO.read(::File.expand_path(File.join("..", "..", "resources" ,"plezi_gray.png"),  __FILE__))	
+
+	end
+
+	def app_tree
+		@app_tree ||= {}
+	end
+	def build
+		# require 'pry'
+		# binding.pry
+		app_tree["Gemfile"] << "\n\n\nruby '#{RUBY_VERSION}'\n"
+		begin
+			Dir.mkdir ARGV[1]
+			puts "created the #{ARGV[1]} application directory.".green
+		rescue Exception => e
+			puts "the #{ARGV[1]} application directory exists - trying to rebuild (no overwrite).".pink
+		end
+		Dir.chdir ARGV[1]
+		puts "starting to write template data...".red
+		puts ""
+		@app_tree["#{ARGV[1]}"] ||= IO.read ::File.expand_path(File.join("..", "..", "resources" ,"code.rb"),  __FILE__)
+		write_files app_tree
+		File.chmod 0775, "#{ARGV[1]}"
+		puts "tried to update execution permissions. this probably failed.".pink
+		puts "use: chmod +x ./#{ARGV[1]} to set execution permissions on Unix machines."
+		puts ""
+		puts "done."
+		puts "\n#{@end_comments.join("\n")}" unless @end_comments.empty?
+		puts ""
+		puts "please change directory into the app directory: cd #{ARGV[1]}"
+		puts ""
+		puts "run the #{ARGV[1]} app using: ./#{ARGV[1]} or using: plezi s"
+		puts ""
+	end
+
+	def write_files files, parent = "."
+		if files.is_a? Hash
+			files.each do |k, v|
+				if v.is_a? Hash
+					begin
+						Dir.mkdir k
+						puts "    created #{parent}/#{k}".green
+					rescue Exception => e
+						puts "    exists #{parent}/#{k}".red
+					end
+					Dir.chdir k
+					write_files v, (parent + "/" + k)
+					Dir.chdir ".."
+				elsif v.is_a? String
+					if ::File.exists? k
+						if false #%w{Gemfile rakefile.rb}.include? k
+							# old = IO.read k
+							# old = (old.lines.map {|l| "\##{l}"}).join
+							# IO.write k, "#####################\n#\n# OLD DATA COMMENTED OUT - PLEASE REVIEW\n#\n##{old}\n#{v}"
+							# puts "    #{parent}/#{k} WAS OVERWRITTEN, old data was preserved by comenting it out.".pink
+							# puts "    #{parent}/#{k} PLEASE REVIEW.".pink
+							# @end_comments << "#{parent}/#{k} WAS OVERWRITTEN, old data was preserved by comenting it out. PLEASE REVIEW."
+						else
+							puts "    EXISTS(!) #{parent}/#{k}".red
+						end
+					else
+						IO.write k, v
+						puts "    wrote #{parent}/#{k}".yellow
+					end
+				end
+			end
+		end
+	end
+end
+
+
+######################################################################
+# tweek the string class for termial coloring options
+class String
+  # colorization
+  def colorize(color_code)
+    "\e[#{color_code}m#{self}\e[0m"
+  end
+
+  def red
+    colorize(31)
+  end
+
+  def green
+    colorize(32)
+  end
+
+  def yellow
+    colorize(33)
+  end
+
+  def pink
+    colorize(35)
+  end
+end
+
+######################################################################
+######################################################################
+##
+## Start the Build script
+##
+######################################################################
+######################################################################
+
+if ARGV[0] == 'new' || ARGV[0] == 'n' || ARGV[0] == "force"
+	#########
+	## set up building environment
+	BUILDING_PLEZI_TEMPLATE = true
+	ARGV[1] = ARGV[1].gsub /[^a-zA-Z0-9]/, '_'
+	if Dir.exists?(ARGV[1]) && ARGV[0] != "force"
+		puts ""
+		puts "WARNING: app/folder alread exists, use `plezi fource #{ARGV[1]}` to attempt rebuild (no files will be overwritten).".red
+		puts ""
+		exit
+	end
+	if Dir.exists?(ARGV[1]) && ARGV[0] == "force"
+		Dir.chdir ARGV[1]
+		require ::File.expand_path(::Dir["."][0], ( ARGV[1] + ".rb") )
+		Dir.chdir '..'
+	end
+
+	if ARGV.count > 3 && (ARGV[2] == 'with' || ARGV[2] == 'w')
+
+		# gem loading
+		local_gems = Gem::Specification.map {|g| g.name}
+		# this will load all requested gems and allow them to update the AppTemplate
+		if ARGV[3] == "all"
+			puts "loading gems and giving each gem a chance to update the app template:".yellow
+			local_gems.each do |g|
+				begin
+					puts "loaded the #{g} gem."	if require g				
+				rescue Exception => e
+					puts "couldn't load the #{g} gem... moving on.".red
+				end
+			end
+		else
+			require 'pathname'
+			ARGV[3..-1].each do |g|
+				if local_gems.include? g
+					require g
+					puts "loaded the #{g} gem, and gave it a change to update the template."
+				else
+					puts "Error, the gem: #{g} could not be found!".red
+					puts "try first running: gem install #{g}".green
+					exit
+				end
+			end
+		end
+		true
+	end
+
+	# building
+	template = AppTemplate.new
+	template.build
+elsif ARGV[0] == 'server' || ARGV[0] == 'start' || ARGV[0] == 's'
+	ARGV.shift
+	load File.expand_path(Dir["."][0], (File.expand_path(Dir["."][0]).split(/[\\\/]/).last) ) rescue load( File.expand_path(Dir["."][0], (File.expand_path(Dir["."][0]).split(/[\\\/]/).last + '.rb') ) )
+elsif ARGV[0] == 'console' || ARGV[0] == 'c'
+	NO_PLEZI_AUTO_START ||= true
+	load File.expand_path(Dir["."][0], (File.expand_path(Dir["."][0]).split(/[\\\/]/).last) ) rescue load( File.expand_path(Dir["."][0], (File.expand_path(Dir["."][0]).split(/[\\\/]/).last + '.rb') ) )
+	ARGV.clear
+	IRB.setup nil
+	IRB.conf[:MAIN_CONTEXT] = IRB::Irb.new.context
+	require 'irb/ext/multi-irb'
+	IRB.irb nil, self
+else
+	puts ""
+	puts "Plezi fast web app starter.".pink
+	puts "use: plezi new appname"
+	puts "or: plezi new appname with template-gem-to-put-in another-template-gem-to-put"
+	puts "==============================".green
+	puts "new app options:".pink
+	puts "option                  description".yellow
+	puts "new <appname>           creates a new application called <appname>."
+	puts "n                       alias for new."
+	puts "new app with gem        'new' accepts the 'with' paramater (or w for short)."
+	puts "starting up an app:".pink
+	puts "start                   runs the app. accepts any paramaters the app supports."
+	puts "s                       alias for start/server."
+	puts "start console innsead of services:".pink
+	puts "console                 runs the app. accepts any paramaters the app supports."
+	puts "c                       alias for start/server."
+	puts "==============================".green
+	puts "create an app with specific plugins:".pink
+	puts "plezi new app with gem1 gem2"
+	puts "loads the specific gem(s) and allows them to update the template before building the app.".green
+	puts ""
+	puts "create an app with ALL plugins:".pink
+	puts "plezi n app w all"
+	puts "loads the all available gem(s) and allows them to update the template before building the app.".green
+	puts ""
+	puts "start the application with any paramaters it supports:".pink
+	puts "plezi s -p 80"
+	puts "loads the app with paramaters -p 80".green
+	puts ""
+end
+
+
+

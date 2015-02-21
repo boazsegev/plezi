@@ -3,8 +3,8 @@ source "https://rubygems.org"
 ####################
 # core gems
 
-# include the basic anorexic framework and server
-gem 'anorexic'
+# include the basic plezi framework and server
+gem 'plezi'
 
 ####################
 # development gems

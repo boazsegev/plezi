@@ -1,10 +1,10 @@
-# The Ruby Chatroom - Websockets with Anorexic
+# The Ruby Chatroom - Websockets with Plezi
 
-Using Anorexic, anyone can easily create a web application that has advanced features such as **websockets**, data pushing and callbacks.
+Using Plezi, anyone can easily create a web application that has advanced features such as **websockets**, data pushing and callbacks.
 
-The chatroom application is a great way to discover these advanced features and the Anorexic framework's native WebSocket support.
+The chatroom application is a great way to discover these advanced features and the Plezi framework's native WebSocket support.
 
-###Coding is the way to discover Anorexic
+###Coding is the way to discover Plezi
 
 When I was little, my father tried to teach me to swim... in other words, he throw me in the pool and let the chips fall where they may.
 
@@ -12,27 +12,27 @@ I was on the verge of drowning for the first few weeks, but looking back I am ve
 
 So let's start with getting wet - writing the code - and then maybe refine our understanding a bit by taking the code apart.
 
-###Before we start - installing Anorexic
+###Before we start - installing Plezi
 
 I assume that you have already [installed Ruby with RubyGems](https://www.ruby-lang.org/en/installation/), if not, do it now. I recommend [installing Ruby and RubyGems using rvm](http://rvm.io/rvm/install).
 
-once ruby and rubygems are installed, it's time to install Anorexic. in your terminal window, run:
+once ruby and rubygems are installed, it's time to install Plezi. in your terminal window, run:
 
 ```
-$ gem install anorexic
+$ gem install plezi
 ```
 
 depending on your system and setup, you might need to enter a password or use the sudo command to install new gems:
 
 ```
-$ sudo gem install anorexic
+$ sudo gem install plezi
 ```
 
 That's it.
 
 ##The Ruby Code (chatroom server)
 
-We can create an Anorexic application using the `$ anorexic new myapp` command, but that's too easy - we want it hardcore.
+We can create an Plezi application using the `$ plezi new myapp` command, but that's too easy - we want it hardcore.
 
 Let's create an application folder called `mychat` and save our code in a file called `mychat.rb` in our application folder.
 
@@ -43,10 +43,10 @@ The first bit of code tells the Unix bash to run this file as a ruby file, just 
 # encoding: UTF-8
 ```
 
-This next bit of code imports Anorexic into our program and allows us to use the Anorexic framework in our application.
+This next bit of code imports Plezi into our program and allows us to use the Plezi framework in our application.
 
 ```ruby
-require 'anorexic'
+require 'plezi'
 ```
 
 Then there is the part where we define the `ChatController` class... We'll talk about this piece of code later on. for now, I will just point out that this class doesn't inherit any special controller class.
@@ -58,7 +58,7 @@ class ChatController
 # ...we'll fill this in later...
 end
 ```
-Next, we set find the root folder where our application exists - we will use this to tell anorexic where our html files, templates and assets are stored (once we write any of them).
+Next, we set find the root folder where our application exists - we will use this to tell plezi where our html files, templates and assets are stored (once we write any of them).
 
 ```ruby
 # Using pathname extentions for setting public folder
@@ -67,19 +67,19 @@ require 'pathname'
 Root = Pathname.new(File.dirname(__FILE__)).expand_path
 ```
 
-Then, we set up the Anorexic service's parameters - parameters which Anorexic will use to create our main service and host.
+Then, we set up the Plezi service's parameters - parameters which Plezi will use to create our main service and host.
 
-A service, in this case, is realy just a nice word for the Anorexic server (which might have a number of services or hosts). We will have only one service and one host, so it's very easy to set up.
+A service, in this case, is realy just a nice word for the Plezi server (which might have a number of services or hosts). We will have only one service and one host, so it's very easy to set up.
 
 As you can see, some options are there for later, but are disabled for now.
 
-- **root**: this option defines the folder from which Anorexic should serve static files (html files, images etc'). We will not be serving any static files at the moment, so this option is disabled.
+- **root**: this option defines the folder from which Plezi should serve static files (html files, images etc'). We will not be serving any static files at the moment, so this option is disabled.
 
-- **assets**: this option tells anorexic where to look for asset files that might need rendering - such as Sass and Coffee-Script files... We will not be using these features either, so that's out as well.
+- **assets**: this option tells plezi where to look for asset files that might need rendering - such as Sass and Coffee-Script files... We will not be using these features either, so that's out as well.
 
-- **assets_public**: this option tells anorexic which route is the one where assets are attached to (it defaults to '/assets'). We aren't using assets, so that's really not important.
+- **assets_public**: this option tells plezi which route is the one where assets are attached to (it defaults to '/assets'). We aren't using assets, so that's really not important.
 
-- **_templates_**: this option tells Anorexic where to look for template files (.haml / .erb files). Since we will use a template file for our HTML, let's go ahead and create a subfolder called `views` and set that as our templates source folder.
+- **_templates_**: this option tells Plezi where to look for template files (.haml / .erb files). Since we will use a template file for our HTML, let's go ahead and create a subfolder called `views` and set that as our templates source folder.
 
 - **ssl**: this option, if set to true, will make our service into an SSL/TSL encrypted service (as well as our websocket service)... we can leave this off for now - it's actually hardly ever used since it's usually better to leave that to our production server.
 
@@ -95,7 +95,7 @@ service_options = {
 
 Next we call the `listen` command - this command actually creates the service.
 
-The port anorexic uses by default is 3000 [http://localhost:3000/](http://localhost:3000/). By not defining a port, we allowed ourselves to either use the default port (3000) or decide the port when we run our application (i.e. `./mychat.rb -p 8080`).
+The port plezi uses by default is 3000 [http://localhost:3000/](http://localhost:3000/). By not defining a port, we allowed ourselves to either use the default port (3000) or decide the port when we run our application (i.e. `./mychat.rb -p 8080`).
 
 ```ruby
 listen service_options
@@ -103,15 +103,15 @@ listen service_options
 
 (if you want to force a specific port, i.e. 80, write `listen 80, service_options` - but make sure you are allowed to use this port)
 
-Last, but not least, we tell Anorexic to connect the root of our web application to our ChatController - in other words, make sure the root _path_ ('/') is connected to the ChatController class.
+Last, but not least, we tell Plezi to connect the root of our web application to our ChatController - in other words, make sure the root _path_ ('/') is connected to the ChatController class.
 
 ```ruby
 route '/', ChatController
 ```
 
-Anorexic controller classes are like virtual folders with special support for RESTful methods (`index`, `new`, `save`, `update`, `delete`), HTTP filters and helpers (`before`, `after`, `redirect_to`, `send_data`), WebSockets methods (`on_connect`, `on_message(data)`, `on_disconnect`), and WebSockets filters and helpers (`pre-connect`, `broadcast`, `collect`).
+Plezi controller classes are like virtual folders with special support for RESTful methods (`index`, `new`, `save`, `update`, `delete`), HTTP filters and helpers (`before`, `after`, `redirect_to`, `send_data`), WebSockets methods (`on_connect`, `on_message(data)`, `on_disconnect`), and WebSockets filters and helpers (`pre-connect`, `broadcast`, `collect`).
 
-Anorexic uses a common special parameter called 'id' to help with all this magic... if we don't define this parameter ourselves, Anorexic will try to append this parameter to the end our route's path. So, actually, our route looks like this:
+Plezi uses a common special parameter called 'id' to help with all this magic... if we don't define this parameter ourselves, Plezi will try to append this parameter to the end our route's path. So, actually, our route looks like this:
 
 ```ruby
 route '/(:id)', ChatController
@@ -133,7 +133,7 @@ def index
 end
 ```
 
-Anorexic has a really easy method called `render` that creates (and caches) a rendering object with our template file's content and returns a String of our rendered template.
+Plezi has a really easy method called `render` that creates (and caches) a rendering object with our template file's content and returns a String of our rendered template.
 
 Lets fill in our `index` method:
 
@@ -147,7 +147,7 @@ class ChatController
 end
 ```
 
-Actually, some tasks are so common - like sending text in our HTTP response - that Anorexic can helps us along. If our method should return a String object, that String will be appended to the response.
+Actually, some tasks are so common - like sending text in our HTTP response - that Plezi can helps us along. If our method should return a String object, that String will be appended to the response.
 
 Let's rewrite our `index` method to make it cleaner:
 
@@ -168,7 +168,7 @@ We just need to remember to create a 'chat' template file (`chat.html.erb` or `c
 
 there is a secret web convention that allows developers to _sign_ their work by answering the `/people` path with plain text and the names of the people who built the site...
 
-With Anorexic, that's super easy.
+With Plezi, that's super easy.
 
 Since out ChatController is at the root of ou application, let's add a `people` method to our ChatController:
 
@@ -178,7 +178,7 @@ def people
 end
 ```
 
-Anorexic uses the 'id' parameter to recognize special paths as well as for it's RESTful support. Now, anyone visiting '/people' will reach our ChatController#people method.
+Plezi uses the 'id' parameter to recognize special paths as well as for it's RESTful support. Now, anyone visiting '/people' will reach our ChatController#people method.
 
 Just like we already discovered, returning a String object (the last line of the `people` method is a String) automatically appends this string to our HTTP response - cool :)
 
@@ -190,7 +190,7 @@ We are building an advanced application here - this is _not_ another 'hello worl
 
 To accept WebSockets connections, our controller must define an `on_message(data)` method.
 
-Anorexic will recognize this method and allow websocket connections for our controller's path (which is at the root of our application).
+Plezi will recognize this method and allow websocket connections for our controller's path (which is at the root of our application).
 
 We will also want to transport some data between the browser (the client) and our server. To do this, we will use [JSON](http://en.wikipedia.org/wiki/JSON), which is really easy to use and is the same format used by socket.io.
 
@@ -219,7 +219,7 @@ To design a chatroom we will need a few things:
 
 We can use the :id parameter to collect the nickname.
 
-the :id is an automatic parameter that Anorexic appended to our path like already explained and it's perfect for our simple needs.
+the :id is an automatic parameter that Plezi appended to our path like already explained and it's perfect for our simple needs.
 
 We could probably rewrite our route to something like this: `route '/(:id)/(:nickname)', ChatController` (or move the `/people` path out of the controller and use `'/(:nickname)'`)... but why work hard when we don't need to?
 
@@ -264,7 +264,7 @@ end
 
 Now that the code is shorter, let's look at that last line - the one that calls `broadcast`
 
-`broadcast` is an interesing Anorexic feature that allows us to tell all the _other_ connection to run a method. It is totally asynchroneos, so we don't wait for it to complete.
+`broadcast` is an interesing Plezi feature that allows us to tell all the _other_ connection to run a method. It is totally asynchroneos, so we don't wait for it to complete.
 
 Here, we tell all the other websocket instances of our ChatController to run their `_send_message(msg)` method on their own connections - it even passes a message as an argument... but wait, we didn't write the `_send_message(msg)` method yet!
 
@@ -272,9 +272,9 @@ Here, we tell all the other websocket instances of our ChatController to run the
 
 Let's start with the name - why the underscore at the beginning?
 
-Anorexic knows that sometimes we will want to create public methods that aren't available as a path - remember the `people` method, it was automatically recognized as an HTTP path...
+Plezi knows that sometimes we will want to create public methods that aren't available as a path - remember the `people` method, it was automatically recognized as an HTTP path...
 
-Anorexic allows us to 'exclude' some methods from this auto-recogntion. protected methods and methods starting with an underscore (\_) aren't recognized by the Anorexic router.
+Plezi allows us to 'exclude' some methods from this auto-recogntion. protected methods and methods starting with an underscore (\_) aren't recognized by the Plezi router.
 
 Since we want the `_send_message` to be called by the `broadcast` method - it must be a public method (otherwise, we will not be able to call it for _other_ connections, only for our own connection).
 
@@ -350,7 +350,7 @@ We will also add some reserved names to this list, to make sure nobody impersona
 	end
 ```
 
-Hmm.. **collect**? what is the `collect` method? - well, this is a little bit of more Anorexic magic that allows us to ask and collect information from all the _other_ active connections. This method returns an array of all the responses.
+Hmm.. **collect**? what is the `collect` method? - well, this is a little bit of more Plezi magic that allows us to ask and collect information from all the _other_ active connections. This method returns an array of all the responses.
 
 We will use `collect` to get an array of all the connected nicknames - we will write the `_ask_nickname` method in just a bit.
 
@@ -406,7 +406,7 @@ end
 
 ####The \_ask_nickname method
 
-Just like the `_send_message` method, this method's name starts with an underscore to make sure it is ignored by the Anorexic router.
+Just like the `_send_message` method, this method's name starts with an underscore to make sure it is ignored by the Plezi router.
 
 Since this message is used by the `collect` method to collect information (which will block our code), it's very important that this method will be short and fast - it might run hundreds of times (or more), depending how many people are connected to our chatroom...
 
@@ -424,7 +424,7 @@ This is our complete `mychat.rb` Ruby application code:
 #!/usr/bin/env ruby
 # encoding: UTF-8
 
-require 'anorexic'
+require 'plezi'
 
 class ChatController
 	def index
@@ -483,7 +483,7 @@ require 'pathname'
 # set up the Root object for easy path access.
 Root = Pathname.new(File.dirname(__FILE__)).expand_path
 
-# set up the Anorexic service options
+# set up the Plezi service options
 service_options = {
 	# root: Root.join('public').to_s,
 	# assets: Root.join('assets').to_s,
@@ -506,11 +506,11 @@ Since this isn't really a tutorial about HTML, Javascript or CSS, we will make i
 
 ...**this is probably the hardest part in the code** (maybe because it isn't Ruby).
 
-Let us create a new file, and save it at `views/chat.html.erb` - this is our template file and Anorexic will find it when we call `render :chat`.
+Let us create a new file, and save it at `views/chat.html.erb` - this is our template file and Plezi will find it when we call `render :chat`.
 
 `.erb` files allow us to write HTML like files with Ruby code inside. We could also use Haml (which has a nicer syntax), but for now we will keep things symple... so simple, in fact, we will start with no Ruby code inside.
 
-Copy and paste the following into your `views/chat.html.erb` file - the `views` folder is the one we defined for the `templates` in the Anorexic service options - remember?
+Copy and paste the following into your `views/chat.html.erb` file - the `views` folder is the one we defined for the `templates` in the Plezi service options - remember?
 
 Anyway, here's the HTML code, copy it and I'll explain the code in a bit:
 
@@ -630,10 +630,10 @@ The main javascript functions we are using are:
 
 ##Congratulations!
 
-Congratulations! You wrote your first Anorexic chatroom :-)
+Congratulations! You wrote your first Plezi chatroom :-)
 
-Using this example we discovered that Anorexic is a powerful Ruby framework that has easy and native support for both RESTful HTTP and WebSockets.
+Using this example we discovered that Plezi is a powerful Ruby framework that has easy and native support for both RESTful HTTP and WebSockets.
 
-Anorexic allowed us to easily write a very advanced application, while exploring exciting new features and discovering how Anorexic could help our workflow.
+Plezi allowed us to easily write a very advanced application, while exploring exciting new features and discovering how Plezi could help our workflow.
 
 There's a lot more to explore - enjoy :-)

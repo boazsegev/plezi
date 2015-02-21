@@ -17,10 +17,10 @@ route "/(:locale){#{I18n.available_locales.join "|"}}/*" , false if defined? I18
 # add your routes here:
 
 
-# remove this demo route and the SampleController once you want to feed Anorexic your code.
+# remove this demo route and the SampleController once you want to feed Plezi your code.
 route '/', SampleController
 
 
 # this is a catch all route with a stub controller.
 # un comment the following line and replace the controller if you want a catch-all route.
-# route '*',  Anorexic::StubRESTCtrl
+# route '*',  Plezi::StubRESTCtrl

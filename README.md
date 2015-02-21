@@ -1,42 +1,42 @@
-# Anorexic, The Ruby Websocket and HTTP Framework
-[![Gem Version](https://badge.fury.io/rb/anorexic.svg)](http://badge.fury.io/rb/anorexic)
-[![Inline docs](http://inch-ci.org/github/boazsegev/anorexic.svg?branch=master)](http://inch-ci.org/github/boazsegev/anorexic)
+# Plezi, The Ruby Websocket and HTTP Framework
+[![Gem Version](https://badge.fury.io/rb/plezi.svg)](http://badge.fury.io/rb/plezi)
+[![Inline docs](http://inch-ci.org/github/boazsegev/plezi.svg?branch=master)](http://inch-ci.org/github/boazsegev/plezi)
 
 > People who are serious about their frameworks, should make their own servers...
 
 _(if to para-phrase "People who are serious about their software, should make their own hardware.")_
 
-## About the Anorexic framework \ server
+## About the Plezi framework \ server
 
-Anorexic is an easy to use Ruby Websocket Framework, with full RESTful routing support and HTTP streaming support. It's name comes from being both a barebones lightweight framework and keeping your code clean and streamlined.
+Plezi is an easy to use Ruby Websocket Framework, with full RESTful routing support and HTTP streaming support. It's name comes from the word "fun" in Haitian, since Plezi is really fun to work with and it keeps our code clean and streamlined.
 
-Anorexic works as an asynchronous multi-threaded Ruby alternative to a Rack/Rails/Sintra/Faye/EM-Websockets combo. It's also great as an alternative to socket.io, allowing for both websockets and long pulling.
+Plezi works as an asynchronous multi-threaded Ruby alternative to a Rack/Rails/Sintra/Faye/EM-Websockets combo. It's also great as an alternative to socket.io, allowing for both websockets and long pulling.
 
-Anorexic contains an object-oriented server, divided into parts that can be changed/updated and removed easily and dynamically. This allows - much like Node.js - native WebSocket support (and, if you would like to write your own Protocol or Handler, native SMPT or any other custom protocol you might wish to implement).
+Plezi contains an object-oriented server, divided into parts that can be changed/updated and removed easily and dynamically. This allows - much like Node.js - native WebSocket support (and, if you would like to write your own Protocol or Handler, native SMPT or any other custom protocol you might wish to implement).
 
-You can follow our [tutorial to write your first Anorexic Chatroom](http://boazsegev.github.io/anorexic/websockets.html) - but it's better to start with this readme and explore the WebSockets example given here.
+You can follow our [tutorial to write your first Plezi Chatroom](http://boazsegev.github.io/plezi/websockets.html) - but it's better to start with this readme and explore the WebSockets example given here.
 
 ## Installation
 
 Add this line to your application's Gemfile:
 
 ```ruby
-gem 'anorexic'
+gem 'plezi'
 ```
 Or install it yourself as:
 
-    $ gem install anorexic
+    $ gem install plezi
 
-## Creating an Anorexic Application
+## Creating an Plezi Application
 
-to create a new barebones app using the Anorexic framework, run from terminal:
+to create a new barebones app using the Plezi framework, run from terminal:
 
-    $ anorexic new appname
+    $ plezi new appname
 
 That's it, now you have a ready to use basic web server (with some demo code), just run it:
 
     $ cd appname
-    $ ./appname.rb # ( or: anorexic s )
+    $ ./appname.rb # ( or: plezi s )
 
 now go, in your browser, to: [http://localhost:3000/](http://localhost:3000/)
 
@@ -52,17 +52,17 @@ this example is basic, useless, but required for every doc out there...
 
 "Hello World!" in 3 lines - try it in irb (exit irb to start server):
 
-		require 'anorexic'
+		require 'plezi'
 		listen
 		route(/.?/) { |req, res| res << "Hello World!" }
 
-After you exited irb, the Anorexic server started up. go to http://localhost:3000/ and see it run :)
+After you exited irb, the Plezi server started up. go to http://localhost:3000/ and see it run :)
 
-## Anorexic Controller classes
+## Plezi Controller classes
 
-One of the best things about the Anorexic is it's ability to take in any class as a controller class and route to the classes methods with special support for RESTful methods (`index`, `show`, `new`, `save`, `update`, `delete`, `before` and `after`) and for WebSockets (`pre_connect`, `on_connect`, `on_message(data)`, `on_disconnect`, `broadcast`, `collect`):
+One of the best things about the Plezi is it's ability to take in any class as a controller class and route to the classes methods with special support for RESTful methods (`index`, `show`, `new`, `save`, `update`, `delete`, `before` and `after`) and for WebSockets (`pre_connect`, `on_connect`, `on_message(data)`, `on_disconnect`, `broadcast`, `collect`):
 
-        require 'anorexic'
+        require 'plezi'
 
         class Controller
             def index
@@ -77,11 +77,11 @@ Except for WebSockets, returning a String will automatically add the string to t
 
 Controllers can even be nested (order matters) or have advanced uses that are definitly worth exploring.
 
-**please read the demo code for Anorexic::StubRESTCtrl and Anorexic::StubWSCtrl to learn more.**
+**please read the demo code for Plezi::StubRESTCtrl and Plezi::StubWSCtrl to learn more.**
 
 ## Native Websocket and Radis support
 
-Anorexic Controllers have access to native websocket support through the `pre_connect`, `on_connect`, `on_message(data)`, `on_disconnect`, `broadcast` and `collect` methods.
+Plezi Controllers have access to native websocket support through the `pre_connect`, `on_connect`, `on_message(data)`, `on_disconnect`, `broadcast` and `collect` methods.
 
 Here is some demo code for a simple Websocket broadcasting server, where messages sent to the server will be broadcasted back to all the **other** active connections (the connection sending the message will not recieve the broadcast).
 
@@ -90,11 +90,11 @@ As a client side, we will use the WebSockets echo demo page - we will simply put
 Remember to connect to the service from at least two browser windows - to truly experience the `broadcast`ed websocket messages.
 
 ```ruby
-    require 'anorexic'
+    require 'plezi'
 
     # do you need automated redis support?
     # require 'redis'
-    # ENV['AN_REDIS_URL'] = "http://user:password@localhost:6379"
+    # ENV['PL_REDIS_URL'] = "http://user:password@localhost:6379"
 
     class BroadcastCtrl
         def index
@@ -123,17 +123,17 @@ method names starting with an underscore ('_') will NOT be made public by the ro
 
 ## Native HTTP streaming with Asynchronous events
 
-Anorexic comes with native HTTP streaming support, alowing you to use Anorexic Events and Timers to send an Asynchronous response.
+Plezi comes with native HTTP streaming support, alowing you to use Plezi Events and Timers to send an Asynchronous response.
 
-Let's make the classic 'Hello World' use HTTP Streaming and Asynchronous Anorexic Events:
+Let's make the classic 'Hello World' use HTTP Streaming and Asynchronous Plezi Events:
 
 ```ruby
-        require 'anorexic'
+        require 'plezi'
 
         class Controller
             def index
                 response.start_http_streaming
-                AN.callback(response, :send, "Hello World") { response.finish }
+                PL.callback(response, :send, "Hello World") { response.finish }
                 true
             end
         end
@@ -142,23 +142,23 @@ Let's make the classic 'Hello World' use HTTP Streaming and Asynchronous Anorexi
         route '*' , Controller
 ```
 
-Notice the easy use of Asynchronous Events using the AN#callback method. The optional block passed to this method (`response.finish`) will be executed only after the asynchronous call for the response#send method with the "Hello World" argument has completed.
+Notice the easy use of Asynchronous Events using the PL#callback method. The optional block passed to this method (`response.finish`) will be executed only after the asynchronous call for the response#send method with the "Hello World" argument has completed.
 
 More on asynchronous events and timers later.
 
-## Anorexic Routes
+## Plezi Routes
 
-Anorexic supports magic routes, in similar formats found in other systems, such as: `route "/:required/(:optional_with_format){[\\d]*}/(:optional)", Anorexic::StubRESTCtrl`.
+Plezi supports magic routes, in similar formats found in other systems, such as: `route "/:required/(:optional_with_format){[\\d]*}/(:optional)", Plezi::StubRESTCtrl`.
 
-Anorexic assummes all simple string routes to be RESTful routes woth the parameter `:id` ( `"/user" == "/user/(:id)"` ).
+Plezi assummes all simple string routes to be RESTful routes woth the parameter `:id` ( `"/user" == "/user/(:id)"` ).
 
-    require 'anorexic'
+    require 'plezi'
     listen
 
     # this route demos a route for listing/showing posts,
     # with or without revision numbers or page-control....
     # notice the single quotes (otherwise the '\' would need to be escaped).
-    route '/post/(:id)/(:revision){[\d]+\.[\d]+}/(:page_number)', Anorexic::StubRESTCtrl
+    route '/post/(:id)/(:revision){[\d]+\.[\d]+}/(:page_number)', Plezi::StubRESTCtrl
 
 now visit:
 
@@ -167,11 +167,11 @@ now visit:
 
 **please see the `route` documentation for more information on routes**.
 
-## Anorexic Virtual Hosts
+## Plezi Virtual Hosts
 
-Anorexic can be used to create virtual hosts for the same service:
+Plezi can be used to create virtual hosts for the same service:
 
-    require 'anorexic'
+    require 'plezi'
     listen
     host 'localhost', alias: 'localhost2'
 
@@ -198,55 +198,55 @@ Now visit:
 * [http://127.0.0.1:3000/people]( http://127.0.0.1:3000/people )
 * [http://localhost:3000/people]( http://localhost:3000/people )
 
-## Anorexic Logging
+## Plezi Logging
 
-The Anorexic module (also `AN`) has methods to help with logging as well as the support you already noticed for dynamic routes, dynamic services and more.
+The Plezi module (also `PL`) has methods to help with logging as well as the support you already noticed for dynamic routes, dynamic services and more.
 
 Logging:
 
-    require 'anorexic'
+    require 'plezi'
 
     # simple logging of strings
-    AN.info 'log info'
-    AN.warn 'log warning'
-    AN.error 'log error'
-    AN.fatal "log a fatal error (shuoldn't be needed)."
-    AN.log_raw "Write raw strings to the logger."
+    PL.info 'log info'
+    PL.warn 'log warning'
+    PL.error 'log error'
+    PL.fatal "log a fatal error (shuoldn't be needed)."
+    PL.log_raw "Write raw strings to the logger."
 
     # the logger accepts exceptions as well.
     begin
         raise "hell"
     rescue Exception => e
-        AN.error e
+        PL.error e
     end
 
-## Anorexic Events and Timers
+## Plezi Events and Timers
 
-The Anorexic module (also `AN`) also has methods to help with asynchronous tasking, callbacks, timers and customized shutdown cleanup.
+The Plezi module (also `PL`) also has methods to help with asynchronous tasking, callbacks, timers and customized shutdown cleanup.
 
 Asynchronous callbacks (works only while services are active and running):
 
-    require 'anorexic'
+    require 'plezi'
 
     def my_shutdown_proc time_start
         puts "Services were running for #{Time.now - time_start} ms."
     end
 
     # shutdown callbacks
-    AN.on_shutdown(Kernel, :my_shutdown_proc, Time.now) { puts "this will run after shutdown." }
-    AN.on_shutdown() { puts "this will run too." }
+    PL.on_shutdown(Kernel, :my_shutdown_proc, Time.now) { puts "this will run after shutdown." }
+    PL.on_shutdown() { puts "this will run too." }
 
     # a timer
-    AN.run_after 2, -> {puts "this will wait 2 seconds to run... too late. for this example"}
+    PL.run_after 2, -> {puts "this will wait 2 seconds to run... too late. for this example"}
 
     # an asynchronous method call with an optional callback block
-    AN.callback(Kernel, :puts, "Anorexic will start eating our code once we exit terminal.") {puts 'first output finished'}
+    PL.callback(Kernel, :puts, "Plezi will start eating our code once we exit terminal.") {puts 'first output finished'}
 
 ## Food for thought - advanced controller uses
 
-Here's some food for thought - code similar to something actually used at some point while developing the applicatio template used by `anorexic new myapp`:
+Here's some food for thought - code similar to something actually used at some point while developing the applicatio template used by `plezi new myapp`:
 
-    require 'anorexic'
+    require 'plezi'
 
     # this controller will re-write the request to extract data,
     # and then it will fail, so that routing continues.
@@ -326,15 +326,15 @@ try:
 * [http://localhost:3000/fr/(5+5*20-15)/9](http://localhost:3000/fr/(5+5*20-15)/9)
 * [http://localhost:3000/users/hello?_method=delete](http://localhost:3000/users/hello?_method=delete)
 
-## Anorexic Settings
+## Plezi Settings
 
-Anorexic is ment to be very flexible. please take a look at the Anorexic Module for settings you might want to play with (max_threads, idle_sleep, create_logger) or any monkey patching you might enjoy.
+Plezi is ment to be very flexible. please take a look at the Plezi Module for settings you might want to play with (max_threads, idle_sleep, create_logger) or any monkey patching you might enjoy.
 
 Feel free to fork or contribute. right now I am one person, but together we can make something exciting that will help us enjoy Ruby in this brave new world and (hopefully) set an example that will induce progress in the popular mainstream frameworks such as Rails and Sinatra.
 
 ## Contributing
 
-1. Fork it ( https://github.com/boazsegev/anorexic-server/fork )
+1. Fork it ( https://github.com/boazsegev/plezi-server/fork )
 2. Create your feature branch (`git checkout -b my-new-feature`)
 3. Commit your changes (`git commit -am 'Add some feature'`)
 4. Push to the branch (`git push origin my-new-feature`)

@@ -1,4 +1,4 @@
 source 'https://rubygems.org'
 
-# Specify your gem's dependencies in anorexic.gemspec
+# Specify your gem's dependencies in plezi.gemspec
 gemspec

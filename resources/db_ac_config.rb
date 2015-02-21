@@ -18,11 +18,11 @@ if defined? ActiveRecord
 	elsif defined? PG
 		ActiveRecord::Base.establish_connection :adapter => 'postgresql', encoding: 'unicode'
   else
-    Anorexic.logger.warning "ActiveRecord database adapter not auto-set. Update the db_ac_config.rb file"
+    Plezi.logger.warning "ActiveRecord database adapter not auto-set. Update the db_ac_config.rb file"
 	end
 
 	# if debugging purposes, uncomment this line to see the ActiveRecord's generated SQL:
-	# ActiveRecord::Base.logger = Anorexic.logger
+	# ActiveRecord::Base.logger = Plezi.logger
 
 	# Uncomment this line to make the logger output look nicer in Windows.
 	# ActiveSupport::LogSubscriber.colorize_logging = false
@@ -35,7 +35,7 @@ if defined? ActiveRecord
 
       desc "Migrate the database so that it is fully updated, using db/migrate."
       task :migrate do
-        ActiveRecord::Base.logger = Anorexic.logger
+        ActiveRecord::Base.logger = Plezi.logger
         ActiveRecord::Migrator.migrate(Root.join('db', 'migrate').to_s, ENV["VERSION"] ? ENV["VERSION"].to_i : nil )
       end
 

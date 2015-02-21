@@ -2,9 +2,19 @@
 
 ***
 
+Change log v.0.7.0
+
+Welcome our new name, Plezi.
+
+Plezi means "Fun" in Heitian and we are very happy to have this new bright and shiny name.
+
+We are growing up to into a happier and more mature framework.
+
+***
+
 Change log v.0.6.23
 
-**name change notice**: Due to some people being offended by the framework's name, the name will be deprecated in favor of a more generic name. I apologize if anyone felt offended by the name, that was never my intention. The new we are considering is Plezi, meaning 'fun' in Heitian.
+**name change notice**: Due to some people being offended by the framework's name, the name will be deprecated in favor of a more generic name. I apologize if anyone felt offended by the name, that was never my intention. The new name we are considering is Plezi, meaning 'fun' in Heitian.
 
 **major fix**: A serious bug was discovered where RESTful routes would not execute due to a security update which blocked the HTTP router from knowing these methods were available. This was fixed by giving the router access to more information about the controller.
 
@@ -12,9 +22,9 @@ Change log v.0.6.23
 
 Change log v.0.6.22
 
-**new feature**: HTTP streaming is here and easier then ever. Simply call `response.start_http_streaming` from your controler, set the asynchronous work using Anorexic Events (or timers) and return `true` from your controller. This feature requires that the response will be manually closed using `response.finish` once the work is done.
+**new feature**: HTTP streaming is here and easier then ever. Simply call `response.start_http_streaming` from your controler, set the asynchronous work using Plezi Events (or timers) and return `true` from your controller. This feature requires that the response will be manually closed using `response.finish` once the work is done.
 
-**misc**: App generator (`anorexic` command) now protects against invalid app names by auto-correcting the name, replacing any invalid characters with an underscore.
+**misc**: App generator (`plezi` command) now protects against invalid app names by auto-correcting the name, replacing any invalid characters with an underscore.
 
 **misc**: updated the gemspec file and project tag-line for a better gem description.
 
@@ -24,7 +34,7 @@ Change log v.0.6.22
 
 Change log v.0.6.21
 
-**fix**: fixed a bug in the broadcast/collect system, where closed connections would still react to broadcasts until garbage collected. fixed the issue by reinforcing the on_disconnect for the controllers child class (the one inheriting the controller and injecting the Anorexic magic into it).
+**fix**: fixed a bug in the broadcast/collect system, where closed connections would still react to broadcasts until garbage collected. fixed the issue by reinforcing the on_disconnect for the controllers child class (the one inheriting the controller and injecting the Plezi magic into it).
 
 **fix**: fixed a bug where some websocket connections might fail without a Redis server. fixed issue by making sure a successful #pre_connect method will return `true`.
 
@@ -32,11 +42,11 @@ Change log v.0.6.21
 
 Change log v.0.6.20
 
-**feature**: Redis broadcasts (automated)! once a Redis server is defined for Anorexic, #broadcast will automatically use Redis (limitations apply due to data-types, memory sharing, callback limitations etc')!
+**feature**: Redis broadcasts (automated)! once a Redis server is defined for Plezi, #broadcast will automatically use Redis (limitations apply due to data-types, memory sharing, callback limitations etc')!
 
-To change Anorexic's #broadcast method to use Redis, set the Redix server url using the `ENV['AN_REDIS_URL']` - i.e. `ENV['AN_REDIS_URL'] = ENV['REDISCLOUD_URL']` or `ENV['AN_REDIS_URL'] = "redis://username:password@my.host:6379"`
+To change Plezi's #broadcast method to use Redis, set the Redix server url using the `ENV['PL_REDIS_URL']` - i.e. `ENV['PL_REDIS_URL'] = ENV['REDISCLOUD_URL']` or `ENV['PL_REDIS_URL'] = "redis://username:password@my.host:6379"`
 
-**template**: a `redis_config.rb` file was added to the template. It has some demo code and explanations about automating Redis in Anorexic... it's as easy as uncommenting one line and writing in the Redis server's URL :)
+**template**: a `redis_config.rb` file was added to the template. It has some demo code and explanations about automating Redis in Plezi... it's as easy as uncommenting one line and writing in the Redis server's URL :)
 
 ***
 
@@ -130,9 +140,9 @@ Mainly small engine and performance tweeks here and there.
 
 Change log v.0.6.11
 
-**fix**: the long awaited fix for ssl services is here. notice that most of the time, SSL should be handled by the proxy calling on Anorexic and SSL services should be disabled.
+**fix**: the long awaited fix for ssl services is here. notice that most of the time, SSL should be handled by the proxy calling on Plezi and SSL services should be disabled.
 
-**performance**: performance improvements and a better, greener Anorexic (less CPU load while idling). performance improvements are even more noticable on JRuby... although, if you're looking for the fastest 'hello world', maybe this is not a perfect fit.
+**performance**: performance improvements and a better, greener Plezi (less CPU load while idling). performance improvements are even more noticable on JRuby... although, if you're looking for the fastest 'hello world', maybe this is not a perfect fit.
 
 ***
 
@@ -165,7 +175,7 @@ Change log v.0.6.8
 
 **fix**: fixed an issue where WebSocket connections would get disconnected after sending data (an update in v. 0.6.6 introduced a bug that caused connections to close once data was sent).
 
-**updates**: quick web app template updates. now you get better code when you run `$ anorexic new myapp`...
+**updates**: quick web app template updates. now you get better code when you run `$ plezi new myapp`...
 
 ***
 
@@ -186,11 +196,11 @@ Change log v.0.6.6
 
 Change log v.0.6.5
 
-**engine**: Anorexic idling engine tweeks. As of yet, Anorexic never really sleeps... (new events can be created by either existing events, existing connections or new connections, so IO.select cannot be used)... idle time costs CPU cycles which were as minimized as possible for now.
+**engine**: Plezi idling engine tweeks. As of yet, Plezi never really sleeps... (new events can be created by either existing events, existing connections or new connections, so IO.select cannot be used)... idle time costs CPU cycles which were as minimized as possible for now.
 
 **feature**: very basic Rack support is back (brought back mainly for testing)... BUT:
 
-Rack code and Anorexic code are NOT fully compatible. for example: Rack's parameters aren't always fully decoded. Also, Rack's file upload contains tmporary files, where Anorexic's request object contains the binary data in a binary String object.
+Rack code and Plezi code are NOT fully compatible. for example: Rack's parameters aren't always fully decoded. Also, Rack's file upload contains tmporary files, where Plezi's request object contains the binary data in a binary String object.
 
 Also, Rack does NOT support native WebSocket Controllers (you will need middle ware for that). 
 
@@ -230,19 +240,19 @@ Change log v.0.6.1
 
 Change log v.0.6.0 - **WebSockets are here!**
 
-This version is a major re-write for the whole anorexic framework.
+This version is a major re-write for the whole plezi framework.
 
 **RACK SUPPORT DROPPED!**
 
 Rack support is dropped in favor of a native server that allowa protocol switching mid-stream...
 
-This re-write is a major step into the future. Anorexic is no longer an alternative to Rails or Sinatra - rather, it aspires to be an alternative to Rack and Node.js, with native support for websocket, callbacks and asynchronous responses.
+This re-write is a major step into the future. Plezi is no longer an alternative to Rails or Sinatra - rather, it aspires to be an alternative to Rack and Node.js, with native support for websocket, callbacks and asynchronous responses.
 
 ***
 
 Change log v.0.5.2
 
-**deprecation-notice**: Rack will not be supported on Anorexic v. 0.6.0 and above. Major code changes expected!
+**deprecation-notice**: Rack will not be supported on Plezi v. 0.6.0 and above. Major code changes expected!
 
 ***
 
@@ -274,13 +284,13 @@ Change log v.0.4.3
 
 Change log v.0.4.2
 
-**error-detection**: Anorexic will check that the same port isn't used for to services and will return a warning. a `listen` call with `RackServer` will return an existing router object if a service is already assigned to the requested port.
+**error-detection**: Plezi will check that the same port isn't used for to services and will return a warning. a `listen` call with `RackServer` will return an existing router object if a service is already assigned to the requested port.
 
 **notice!:** v.0.5.0 will break any code using the `listen :vhost => "foo.bar.com"` format. hosts and aliases will be restructured. 
 
 **fix**: 404 error handler should now be immune to path rewrites (displays originally requested path).
 
-**fix/template**: fixed for Heroku - Anorexic will not write the pid file if under Heroku Dyno (Heroku apps crash when trying to write data to files).
+**fix/template**: fixed for Heroku - Plezi will not write the pid file if under Heroku Dyno (Heroku apps crash when trying to write data to files).
 
 ***
 
@@ -348,7 +358,7 @@ route "/(:foo)/*", false
 in a more worldly sense...
 ```ruby
 route ":proc/(:version){v-[\\w\\d\\.]*}/:func/*", false
-# look at http://www.rubydoc.info path for /gems/anorexic/0.3.2/frames ...
+# look at http://www.rubydoc.info path for /gems/plezi/0.3.2/frames ...
 ```
 
 **feature**: magic routes.
@@ -373,9 +383,9 @@ Change log v.0.3.2
 
 Change log v.0.3.1
 
-**feature removed**: (Code Breaker), removed the `Anorexic.default_content_type` feature. it's prone to issues.
+**feature removed**: (Code Breaker), removed the `Plezi.default_content_type` feature. it's prone to issues.
 
-**patched**: utf-8 encoding enforcement now works. this might disrupt non-text web-apps (which should use `Anorexic.default_encoding = 'binary'` or `Anorexic.default_encoding = false`).
+**patched**: utf-8 encoding enforcement now works. this might disrupt non-text web-apps (which should use `Plezi.default_encoding = 'binary'` or `Plezi.default_encoding = false`).
 
 **feature**: Enabled path rewrites to effect router - see the advanced features in the wiki home for how to apply this powerful feature. Notice that re-writing is done using the `env["PATH_INFO"]` or the `request.path_info=` method - the `request.path` method is a read only method.
 
@@ -383,7 +393,7 @@ Change log v.0.3.1
 
 **fix**: the send_data method now sets the content-type that was set by the caller (was sending 'application/pdf' for a historic testing reason).
 
-**fix**: minor fixes to the app generator. `anorexic new app` should now place the `en.yaml` file correctly (it was making a directory instead of writing the file... oops).
+**fix**: minor fixes to the app generator. `plezi new app` should now place the `en.yaml` file correctly (it was making a directory instead of writing the file... oops).
 
 ***
 

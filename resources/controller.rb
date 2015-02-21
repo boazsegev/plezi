@@ -16,7 +16,7 @@
 #
 # methods should return true (if the response was set/sent) or the body's string as their last value.
 #
-# no inheritance is required (the Anorexic framework inherits your code, not the other way around).
+# no inheritance is required (the Plezi framework inherits your code, not the other way around).
 #
 # here are some of the available controller properties and methods:
 #
@@ -34,10 +34,10 @@
 #
 class SampleController
 
-	# it is possible to includes all the Anorexic::FeedHaml helper methods...
+	# it is possible to includes all the Plezi::FeedHaml helper methods...
 	# ... this breakes the strict MVC architecture by running the HAML view
 	# as part of the controller class. It's good for hacking, but bad practice.
-	# include Anorexic::FeedHaml if defined? Anorexic::FeedHaml
+	# include Plezi::FeedHaml if defined? Plezi::FeedHaml
 
 	# called before any action except WebSockets actions
 	def before
@@ -60,14 +60,14 @@ class SampleController
 	# called when request is GET and there's no "id" in quary
 	def index
 		# while using sym redirection (unlike string redirection),
-		# Anorexic will attempt to auto-format a valid URL. 
+		# Plezi will attempt to auto-format a valid URL. 
 		redirect_to "assets_welcome.html".to_sym
 	end
 
 	# called when the params[:id] == fail. this a demonstration for custom routing.
 	def fail
-		# throw up this code and feed anorexic your own lines :)
-		raise "Anorexic raising hell!"
+		# throw up this code and feed plezi your own lines :)
+		raise "Plezi raising hell!"
 	end
 
 	# called when request is GET and quary defines "id"

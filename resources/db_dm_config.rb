@@ -11,7 +11,7 @@
 # http://datamapper.org
 if defined? DataMapper
   # If you want the logs...
-  DataMapper::Logger.new(Anorexic.logger, :debug)
+  DataMapper::Logger.new(Plezi.logger, :debug)
   
   if defined? SQLite3
     # An in-memory Sqlite3 connection:

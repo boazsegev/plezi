@@ -2,20 +2,20 @@
 
 if defined? Redis
 
-	# ## Anorexic Redis Automation
+	# ## Plezi Redis Automation
 	# ## ====
 	# ##
-	# ## sets up Anorexic to use Radis broadcast.
+	# ## sets up Plezi to use Radis broadcast.
 	# ## this is less recommended then writing your own tailored solution
 	# ##
-	# ## If Anorexic Redis Automation is enabled:
-	# ## Anorexic creates is own listening thread for each Controller class that broadcasts using Redis.
+	# ## If Plezi Redis Automation is enabled:
+	# ## Plezi creates is own listening thread for each Controller class that broadcasts using Redis.
 	# ## (using the Controller.redis_connection and Controller.redis_channel_name class methods)
 	# ##
 	# ## this overrides the default Controller#broadcast method which is very powerful but
 	# ## is limited to one process.
 	# ##
-	# ENV['AN_REDIS_URL'] = ENV['REDISCLOUD_URL'] ||= ENV["REDISTOGO_URL"] ||= "redis://username:password@my.host:6389"
+	# ENV['PL_REDIS_URL'] = ENV['REDISCLOUD_URL'] ||= ENV["REDISTOGO_URL"] ||= "redis://username:password@my.host:6389"
 
 
 	# ## create a listening thread - rewrite the following code for your own Redis tailored solution.
