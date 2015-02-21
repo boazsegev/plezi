@@ -2,6 +2,14 @@
 
 ***
 
+Change log v.0.6.23
+
+**name change notice**: Due to some people being offended by the framework's name, the name will be deprecated in favor of a more generic name. I apologize if anyone felt offended by the name, that was never my intention. The new we are considering is Plezi, meaning 'fun' in Heitian.
+
+**major fix**: A serious bug was discovered where RESTful routes would not execute due to a security update which blocked the HTTP router from knowing these methods were available. This was fixed by giving the router access to more information about the controller.
+
+***
+
 Change log v.0.6.22
 
 **new feature**: HTTP streaming is here and easier then ever. Simply call `response.start_http_streaming` from your controler, set the asynchronous work using Anorexic Events (or timers) and return `true` from your controller. This feature requires that the response will be manually closed using `response.finish` once the work is done.

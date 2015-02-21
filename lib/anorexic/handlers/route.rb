@@ -217,13 +217,13 @@ module Anorexic
 
 				def _route_path_to_methods_and_set_the_response_
 					#run :before filter
-					return false if available_public_methods.include?(:before) && before == false 
+					return false if available_routing_methods.include?(:before) && before == false 
 					#check request is valid and call requested method
 					ret = requested_method
-					return false unless available_public_methods.include?(ret) || ret == :pre_connect
+					return false unless available_routing_methods.include?(ret)
 					return false unless (ret = self.method(ret).call)
 					#run :after filter
-					return false if available_public_methods.include?(:after) && after == false
+					return false if available_routing_methods.include?(:after) && after == false
 					# review returned type for adding String to response
 					if ret.is_a?(String)
 						response << ret

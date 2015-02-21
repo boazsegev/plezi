@@ -58,11 +58,99 @@ this example is basic, useless, but required for every doc out there...
 
 After you exited irb, the Anorexic server started up. go to http://localhost:3000/ and see it run :)
 
+## Anorexic Controller classes
+
+One of the best things about the Anorexic is it's ability to take in any class as a controller class and route to the classes methods with special support for RESTful methods (`index`, `show`, `new`, `save`, `update`, `delete`, `before` and `after`) and for WebSockets (`pre_connect`, `on_connect`, `on_message(data)`, `on_disconnect`, `broadcast`, `collect`):
+
+        require 'anorexic'
+
+        class Controller
+            def index
+                "Hello World!"
+            end
+        end
+
+        listen
+        route '*' , Controller
+
+Except for WebSockets, returning a String will automatically add the string to the response before sending the response - which makes for cleaner code. It's also possible to send the response as it is (by returning true).
+
+Controllers can even be nested (order matters) or have advanced uses that are definitly worth exploring.
+
+**please read the demo code for Anorexic::StubRESTCtrl and Anorexic::StubWSCtrl to learn more.**
+
+## Native Websocket and Radis support
+
+Anorexic Controllers have access to native websocket support through the `pre_connect`, `on_connect`, `on_message(data)`, `on_disconnect`, `broadcast` and `collect` methods.
+
+Here is some demo code for a simple Websocket broadcasting server, where messages sent to the server will be broadcasted back to all the **other** active connections (the connection sending the message will not recieve the broadcast).
+
+As a client side, we will use the WebSockets echo demo page - we will simply put in ws://localhost:3000/ as the server, instead of the default websocket server (ws://echo.websocket.org).
+
+Remember to connect to the service from at least two browser windows - to truly experience the `broadcast`ed websocket messages.
+
+```ruby
+    require 'anorexic'
+
+    # do you need automated redis support?
+    # require 'redis'
+    # ENV['AN_REDIS_URL'] = "http://user:password@localhost:6379"
+
+    class BroadcastCtrl
+        def index
+            redirect_to 'http://www.websocket.org/echo.html'
+        end
+        def on_message data
+            # try replacing the following two lines are with:
+            # self.class.broadcast :_send_message, data
+            broadcast :_send_message, data
+            response << "sent."
+        end
+        def _send_message data
+            response << data
+        end
+        def people
+            'I made this :)'
+        end
+    end
+
+    listen 
+
+    route '/', BroadcastCtrl
+```
+
+method names starting with an underscore ('_') will NOT be made public by the router: so while '/people' is public ( [try it](http://localhost:3000/people) ), '/_send_message' will return a 404 not found error ( [try it](http://localhost:3000/_send_message) ).
+
+## Native HTTP streaming with Asynchronous events
+
+Anorexic comes with native HTTP streaming support, alowing you to use Anorexic Events and Timers to send an Asynchronous response.
+
+Let's make the classic 'Hello World' use HTTP Streaming and Asynchronous Anorexic Events:
+
+```ruby
+        require 'anorexic'
+
+        class Controller
+            def index
+                response.start_http_streaming
+                AN.callback(response, :send, "Hello World") { response.finish }
+                true
+            end
+        end
+
+        listen
+        route '*' , Controller
+```
+
+Notice the easy use of Asynchronous Events using the AN#callback method. The optional block passed to this method (`response.finish`) will be executed only after the asynchronous call for the response#send method with the "Hello World" argument has completed.
+
+More on asynchronous events and timers later.
+
 ## Anorexic Routes
 
-Anorexic supports magic routes, in similar formats found in other systems, such as: `route "/:required/(:optional)/(:optional_with_format){[\\d]*}", Controler`.
+Anorexic supports magic routes, in similar formats found in other systems, such as: `route "/:required/(:optional_with_format){[\\d]*}/(:optional)", Anorexic::StubRESTCtrl`.
 
-Anorexic assummes all simple string routes to be RESTful routes ( `"/user" == "/user/(:id)"` ).
+Anorexic assummes all simple string routes to be RESTful routes woth the parameter `:id` ( `"/user" == "/user/(:id)"` ).
 
     require 'anorexic'
     listen
@@ -110,91 +198,9 @@ Now visit:
 * [http://127.0.0.1:3000/people]( http://127.0.0.1:3000/people )
 * [http://localhost:3000/people]( http://localhost:3000/people )
 
-## Anorexic Controller classes
+## Anorexic Logging
 
-One of the best things about the Anorexic is it's ability to take in any class as a controller class and route to the classes methods with special support for RESTful methods (`index`, `show`, `new`, `save`, `update`, `delete`, `before` and `after`) and for WebSockets (`pre_connect`, `on_connect`, `on_message(data)`, `on_disconnect`, `broadcast`, `collect`):
-
-		require 'anorexic'
-
-		class Controller
-			def index
-				"Hello World!"
-			end
-		end
-
-		listen
-		route '*' , Controller
-
-Except for WebSockets, returning a String will automatically add the string to the response before sending the response - which makes for cleaner code. It's also possible to send the response as it is (by returning true).
-
-Controllers can even be nested (order matters) or have advanced uses that are definitly worth exploring.
-
-**please read the demo code for Anorexic::StubRESTCtrl and Anorexic::StubWSCtrl to learn more.**
-
-## Native Websocket support
-
-Anorexic Controllers have access to native websocket support through the `pre_connect`, `on_connect`, `on_message(data)`, `on_disconnect`, `broadcast` and `collect` methods.
-
-Here is some demo code for a simple Websocket broadcasting server, where messages sent to the server will be broadcasted back to all the **other** active connections (the connection sending the message will not recieve the broadcast).
-
-As a client side, we will use the WebSockets echo demo page - we will simply put in ws://localhost:3000/ as the server, instead of the default websocket server (ws://echo.websocket.org).
-
-Remember to connect to the service from at least two browser windows - to truly experience the `broadcast`ed websocket messages.
-
-```ruby
-    require 'anorexic'
-
-    class BroadcastCtrl
-        def index
-            redirect_to 'http://www.websocket.org/echo.html'
-        end
-        def on_message data
-            # the following two lines are the same as:
-            # self.class.broadcast :_send_message, data
-            broadcast :_send_message, data
-            response << "sent."
-        end
-        def _send_message data
-            response << data
-        end
-        def people
-            'I made this :)'
-        end
-    end
-
-    listen 
-
-    route '/', BroadcastCtrl
-```
-
-method names starting with an underscore ('_') will NOT be made public by the router: so while '/people' is public ( [try it](http://localhost:3000/people) ), '/_send_message' will return a 404 not found error ( [try it](http://localhost:3000/_send_message) ).
-
-## Native HTTP streaming with Asynchronous events
-
-Anorexic comes with native HTTP streaming support, alowing you to use Anorexic Events and Timers to send an Asynchronous response.
-
-Let's make the classic 'Hello World' use HTTP Streaming and Asynchronous Anorexic Events:
-
-```ruby
-        require 'anorexic'
-
-        class Controller
-            def index
-                response.start_http_streaming
-                AN.callback(response, :send, "Hello World") { response.finish }
-                true
-            end
-        end
-
-        listen
-        route '*' , Controller
-```
-
-Notice the easy use of Asynchronous Events using the AN#callback method. The block passed to this method (`response.finish`) will be excuted only after the asynchronous call for the response#send method with the "Hello World" argument. 
-
-## Anorexic Helpers and Logging
-
-The Anorexic module (also `AN`) has methods to help with logging, asynchronous callbacks, dynamic routes, dynamic services and more.
+The Anorexic module (also `AN`) has methods to help with logging as well as the support you already noticed for dynamic routes, dynamic services and more.
 
 Logging:
 
@@ -214,6 +220,10 @@ Logging:
         AN.error e
     end
 
+## Anorexic Events and Timers
+
+The Anorexic module (also `AN`) also has methods to help with asynchronous tasking, callbacks, timers and customized shutdown cleanup.
+
 Asynchronous callbacks (works only while services are active and running):
 
     require 'anorexic'
@@ -226,6 +236,10 @@ Asynchronous callbacks (works only while services are active and running):
     AN.on_shutdown(Kernel, :my_shutdown_proc, Time.now) { puts "this will run after shutdown." }
     AN.on_shutdown() { puts "this will run too." }
 
+    # a timer
+    AN.run_after 2, -> {puts "this will wait 2 seconds to run... too late. for this example"}
+
+    # an asynchronous method call with an optional callback block
     AN.callback(Kernel, :puts, "Anorexic will start eating our code once we exit terminal.") {puts 'first output finished'}
 
 ## Food for thought - advanced controller uses

@@ -102,7 +102,7 @@ module Anorexic
 		#
 		# data is a string that contains binary or UTF8 (message dependent) data.
 		def on_message data
-			broadcast :_tell_firends, data
+			broadcast :_push, data
 		end
 
 		# called when a disconnect packet has been recieved or the connection has been cut
@@ -115,8 +115,8 @@ module Anorexic
 		# methods that are protected and methods that start with an underscore are hidden from the router
 		# BUT, broadcasted methods must be public (or the broadcast will quietly fail)... so we have to use
 		# the _underscore for this method.
-		def _tell_firends data
-			response << "Someone said #{data}"			
+		def _push data
+			response << data		
 		end
 
 		#####
@@ -135,7 +135,7 @@ module Anorexic
 		# called when request is POST / PUT and params\[:id] exists
 		def update
 			# assumes body is JSON - more handling could be done using the params (which hold parsed JSON data).
-			broadcast :_tell_firends, request[:body] 
+			broadcast :_push, request[:body] 
 			{message: 'write_chat', data: {id: params[:id], token: cookies['example_token'], example_data: 'message sent.'}}.to_json
 		end
 

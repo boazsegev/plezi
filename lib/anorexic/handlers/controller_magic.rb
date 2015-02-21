@@ -210,7 +210,13 @@ module Anorexic
 			# lists the available methods that will be exposed to HTTP requests
 			def available_public_methods
 				# set class global to improve performance while checking for supported methods
-				@@___available_public_methods___ ||= (((self.class.public_instance_methods - Object.public_instance_methods) - [:before, :after, :save, :show, :update, :delete, :initialize, :on_message, :pre_connect, :on_connect, :on_disconnect] - Anorexic::ControllerMagic::InstanceMethods.instance_methods).delete_if {|m| m.to_s[0] == '_'})
+				@@___available_public_methods___ ||= available_routing_methods - [:before, :after, :save, :show, :update, :delete, :initialize, :on_message, :pre_connect, :on_connect, :on_disconnect]
+			end
+
+			# lists the available methods that will be exposed to the HTTP router
+			def available_routing_methods
+				# set class global to improve performance while checking for supported methods
+				@@___available_routing_methods___ ||= (((self.class.public_instance_methods - Object.public_instance_methods) - Anorexic::ControllerMagic::InstanceMethods.instance_methods).delete_if {|m| m.to_s[0] == '_'})
 			end
 
 			## WebSockets Magic
