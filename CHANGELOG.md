@@ -2,6 +2,12 @@
 
 ***
 
+Change log v.0.7.1
+
+**Logo**: we're still working on a nice logo... but we have a lot on our todo list. so we put a temporary one in.
+
+***
+
 Change log v.0.7.0
 
 Welcome our new name, Plezi.
