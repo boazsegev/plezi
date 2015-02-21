@@ -8,11 +8,11 @@ _(if to para-phrase "People who are serious about their software, should make th
 
 ## About the Anorexic framework \ server
 
-Anorexic is an easy to use Ruby Websocket Framework, with full RESTful routing support and HTTP streaming support. It's name comes from being a lightweight, barebones, mutli-threaded, asynchronous Ruby alternative to Rack/Rails/Sintra/Faye. It's also great as an alternative to socket.io, allowing for both websockets and long pulling.
+Anorexic is an easy to use Ruby Websocket Framework, with full RESTful routing support and HTTP streaming support. It's name comes from being both a barebones lightweight framework and keeping your code clean and streamlined.
 
-Anorexic contains an object-oriented server, divided into parts that can be changed/updated and removed easily and dynamically. The Anorexic framework runs HTTP and WebSockets, but could as easily be extended to run SMTP, SPDY or any other Protocol (including custom made protocols).
+Anorexic works as an asynchronous multi-threaded Ruby alternative to a Rack/Rails/Sintra/Faye/EM-Websockets combo. It's also great as an alternative to socket.io, allowing for both websockets and long pulling.
 
-This allows - much like Node.js - native WebSocket support (and, if you would like to write your own Protocol or Handler, native SMPT or any other custom protocol you might wish to implement).
+Anorexic contains an object-oriented server, divided into parts that can be changed/updated and removed easily and dynamically. This allows - much like Node.js - native WebSocket support (and, if you would like to write your own Protocol or Handler, native SMPT or any other custom protocol you might wish to implement).
 
 You can follow our [tutorial to write your first Anorexic Chatroom](http://boazsegev.github.io/anorexic/websockets.html) - but it's better to start with this readme and explore the WebSockets example given here.
 
