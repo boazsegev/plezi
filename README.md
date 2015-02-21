@@ -1,19 +1,20 @@
-# Anorexic, The Ruby Websocket Framework
+# Anorexic, The Ruby Websocket and HTTP Framework
 [![Gem Version](https://badge.fury.io/rb/anorexic.svg)](http://badge.fury.io/rb/anorexic)
 [![Inline docs](http://inch-ci.org/github/boazsegev/anorexic.svg?branch=master)](http://inch-ci.org/github/boazsegev/anorexic)
 
 > People who are serious about their frameworks, should make their own servers...
+
 _(if to para-phrase "People who are serious about their software, should make their own hardware.")_
 
 ## About the Anorexic framework \ server
 
-Anorexic is an easy to use Ruby Websocket Framework, with full RESTful routing support. It is a thin, lightweight, barebones, mutli-threaded Ruby alternative to Rack/Rails/Sintra.
+Anorexic is an easy to use Ruby Websocket Framework, with full RESTful routing support and HTTP streaming support. It's name comes from being a lightweight, barebones, mutli-threaded, asynchronous Ruby alternative to Rack/Rails/Sintra/Faye. It's also great as an alternative to socket.io, allowing for both websockets and long pulling.
 
 Anorexic contains an object-oriented server, divided into parts that can be changed/updated and removed easily and dynamically. The Anorexic framework runs HTTP and WebSockets, but could as easily be extended to run SMTP, SPDY or any other Protocol (including custom made protocols).
 
 This allows - much like Node.js - native WebSocket support (and, if you would like to write your own Protocol or Handler, native SMPT or any other custom protocol you might wish to implement).
 
-You can follow our [tutorial to write your first Anorexic Chatroom](http://boazsegev.github.io/anorexic/websockets.html) - but first I advise to read this readme and explore the WebSockets example given here.
+You can follow our [tutorial to write your first Anorexic Chatroom](http://boazsegev.github.io/anorexic/websockets.html) - but it's better to start with this readme and explore the WebSockets example given here.
 
 ## Installation
 
@@ -168,6 +169,29 @@ Remember to connect to the service from at least two browser windows - to truly 
 
 method names starting with an underscore ('_') will NOT be made public by the router: so while '/people' is public ( [try it](http://localhost:3000/people) ), '/_send_message' will return a 404 not found error ( [try it](http://localhost:3000/_send_message) ).
 
+## Native HTTP streaming with Asynchronous events
+
+Anorexic comes with native HTTP streaming support, alowing you to use Anorexic Events and Timers to send an Asynchronous response.
+
+Let's make the classic 'Hello World' use HTTP Streaming and Asynchronous Anorexic Events:
+
+```ruby
+        require 'anorexic'
+
+        class Controller
+            def index
+                response.start_http_streaming
+                AN.callback(response, :send, "Hello World") { response.finish }
+                true
+            end
+        end
+
+        listen
+        route '*' , Controller
+```
+
+Notice the easy use of Asynchronous Events using the AN#callback method. The block passed to this method (`response.finish`) will be excuted only after the asynchronous call for the response#send method with the "Hello World" argument. 
+
 ## Anorexic Helpers and Logging
 
 The Anorexic module (also `AN`) has methods to help with logging, asynchronous callbacks, dynamic routes, dynamic services and more.
@@ -195,18 +219,14 @@ Asynchronous callbacks (works only while services are active and running):
     require 'anorexic'
 
     def my_shutdown_proc time_start
-        puts "Services were running for #{Time.now - time_start} seconds."
+        puts "Services were running for #{Time.now - time_start} ms."
     end
 
     # shutdown callbacks
     AN.on_shutdown(Kernel, :my_shutdown_proc, Time.now) { puts "this will run after shutdown." }
     AN.on_shutdown() { puts "this will run too." }
 
-    AN.callback(Kernel, :puts, "Please tell me your name?") do
-        AN.callback(Kernel, :gets) {|name| puts "hello #{name}"}
-    end
-
-    puts "Anorexic will start eating our code once we exit terminal."
+    AN.callback(Kernel, :puts, "Anorexic will start eating our code once we exit terminal.") {puts 'first output finished'}
 
 ## Food for thought - advanced controller uses
 

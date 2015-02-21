@@ -36,7 +36,7 @@ module Anorexic
 			@request, @status, @headers, @body, @service = request, status, headers, body, (defined?(ANOREXIC_ON_RACK) ? false : request.service)
 			@http_version = 'HTTP/1.1' # request.version
 			@bytes_sent = 0
-			@finished = false
+			@finished = @streaming = false
 			@cookies = {}
 			# propegate flash object
 			@flash = Hash.new do |hs,k|
@@ -57,9 +57,29 @@ module Anorexic
 			@finished
 		end
 
-		# pushes data to the body of the response. this is the preffered way to add data to the response.
+		# returns true if the response is set to http streaming (you will need to close the response manually by calling #finish).
+		def streaming?
+			@streaming
+		end
+
+		# sets the http streaming flag, so that the response could be handled asynchronously.
+		#
+		# if this flag is not set, the response will try to automatically finish its job
+		# (send its data and close the connection) once the controllers method has finished.
+		#
+		# If HTTP streaming is set, you will need to manually call `response.finish`
+		# of the connection will not close properly.
+		def start_http_streaming
+			@streaming = true
+		end
+
+		# pushes data to the body of the response. this is the preferred way to add data to the response.
+		#
+		# if HTTP streaming is used, remember to call #send to send the data.
+		# it is also possible to only use #send while streaming, although performance should be considered when streaming using #send rather then caching using #<<.
 		def << str
-			body.push str	
+			body.push str
+			# send if streaming?
 		end
 
 		# returns a response header, if set.
@@ -130,8 +150,9 @@ module Anorexic
 		# sends the response object. headers will be frozen (they can only be sent at the head of the response).
 		#
 		# the response will remain open for more data to be sent through (using `response << data` and `response.send`).
-		def send
+		def send(str = nil)
 			raise 'HTTPResponse SERVICE MISSING: cannot send http response without a service.' unless service
+			body << str if str && body.is_a?(Array)
 			send_headers
 			return if request.head?
 			if headers["transfer-encoding"] == "chunked"
@@ -162,16 +183,16 @@ module Anorexic
 			Anorexic.log_raw "#{request[:client_ip]} [#{Time.now.utc}] \"#{request[:method]} #{request[:original_path]} #{request[:requested_protocol]}\/#{request[:version]}\" #{status} #{bytes_sent.to_s} #{"%0.3f" % ((Time.now - request[:time_recieved])*1000)}ms\n"
 		end
 
-		# attempts to finish the response - if it was not flaged as completed.
+		# Danger Zone (internally used method, use with care): attempts to finish the response - if it was not flaged as streaming or completed.
 		def try_finish
-			finish unless @finished
+			finish unless @finished || @streaming
 		end
 
 		# Danger Zone (internally used method, use with care): fix response's headers before sending them (date, connection and transfer-coding).
 		def fix_headers
 			# headers['Connection'] ||= "Keep-Alive"
-			headers['Date'] = Time.now.httpdate
-			headers['Transfer-Encoding'] ||= 'chunked' if !headers['content-length']
+			headers['date'] = Time.now.httpdate
+			headers['transfer-encoding'] ||= 'chunked' if !headers['content-length']
 			headers['cache-control'] ||= 'no-cache'
 			# remove old flash cookies
 			request.cookies.keys.each do |k|

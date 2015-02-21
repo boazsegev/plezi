@@ -4,9 +4,13 @@
 
 Change log v.0.6.22
 
+**new feature**: HTTP streaming is here and easier then ever. Simply call `response.start_http_streaming` from your controler, set the asynchronous work using Anorexic Events (or timers) and return `true` from your controller. This feature requires that the response will be manually closed using `response.finish` once the work is done.
+
 **misc**: App generator (`anorexic` command) now protects against invalid app names by auto-correcting the name, replacing any invalid characters with an underscore.
 
 **misc**: updated the gemspec file and project tag-line for a better gem description.
+
+**fix**: fixed an issue where chunked data wan't encoded correctly. This issue only effected the use of HTTP streaming, which wasn't a fully tested feature before this release.
 
 ***
 

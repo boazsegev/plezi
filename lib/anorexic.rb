@@ -72,7 +72,9 @@ end
 ##############################################################################
 # To make something new, we leap to the unknown.
 ##############################################################################
-# Anorexic is a stand alone web services app, which supports RESTful HTTP and WebSockets.
+# Anorexic is a stand alone web services app, which supports RESTful HTTP, HTTP Streaming and WebSockets.
+#
+# Anorexic is a wonderful alternative to Socket.io which makes writing the server using Ruby a breeze. 
 #
 # Anorexic routes accept Regexp's (regular exceptions) for route paths. for example:
 #
