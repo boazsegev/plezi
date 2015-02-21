@@ -79,7 +79,7 @@ Controllers can even be nested (order matters) or have advanced uses that are de
 
 **please read the demo code for Plezi::StubRESTCtrl and Plezi::StubWSCtrl to learn more.**
 
-## Native Websocket and Radis support
+## Native Websocket and Redis support
 
 Plezi Controllers have access to native websocket support through the `pre_connect`, `on_connect`, `on_message(data)`, `on_disconnect`, `broadcast` and `collect` methods.
 
