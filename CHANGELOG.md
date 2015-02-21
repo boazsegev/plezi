@@ -10,7 +10,7 @@ Change log v.0.6.22
 
 **misc**: updated the gemspec file and project tag-line for a better gem description.
 
-**fix**: fixed an issue where chunked data wan't encoded correctly. This issue only effected the use of HTTP streaming, which wasn't a fully tested feature before this release.
+**fix**: fixed an issue where chunked data wasn't encoded correctly. This issue only effected the use of HTTP streaming, which wasn't a formal nor documented feature before this release.
 
 ***
 
