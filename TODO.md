@@ -6,10 +6,6 @@ Folder Listing:: add folder listing option?
 
 update gem file (remove erb).
 
-# Name?
-
-rename the project?
-
 # HTTPProtocol
 
 XML::
