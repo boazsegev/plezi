@@ -27,7 +27,7 @@ Or install it yourself as:
 
     $ gem install plezi
 
-## Creating an Plezi Application
+## Creating a Plezi Application
 
 to create a new barebones app using the Plezi framework, run from terminal:
 

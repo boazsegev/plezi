@@ -20,6 +20,9 @@ ENV["RACK_ENV"] ||= "development"
 require 'bundler'
 Bundler.require
 
+# require tilt/sass in a thread safe way (before multi-threading cycle begins)
+require 'tilt/sass' if defined?(::Slim) && defined?(::Sass)
+
 # set up Plezi logs - Heroku logs to STDOUT, this machine logs to log file
 Plezi.create_logger File.expand_path(File.join 'logs','server.log'), ENV["RACK_ENV"]=="development" unless ENV['DYNO']
 
