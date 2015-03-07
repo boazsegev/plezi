@@ -29,6 +29,8 @@ module Plezi
 				hs[k.to_s]
 			elsif k.is_a?(String) && hs.has_key?( k.to_sym)
 				hs[k.to_sym]
+			elsif k.is_a?(Numeric) && hs.has_key?(k.to_s.to_sym)
+				hs[k.to_s.to_sym]
 			end
 		end
 		hash.default_proc = @magic_hash_proc

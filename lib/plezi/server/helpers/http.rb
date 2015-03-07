@@ -75,12 +75,12 @@ module Plezi
 			begin
 				a = target_hash
 				p = param_name.gsub(']',' ').split(/\[/)
-				p.each_index { |i| n = p[i].strip.to_sym; p[i+1] ? [ ( a[n] ||= ( p[i+1] == ' ' ? [] : {} ) ), ( a = a[n]) ] : (a.is_a?(Hash) ? [(a[n]? (a[n].is_a?(String)? (a[n] = [a[n]]) : true) : a[n]=''), (a=a[n])] : [(a << ''), (a = a.last)]) }
-				a << param_value
+				val = rubyfy! param_value
+				p.each_index { |i| p[i].strip! ; n = p[i].match(/^[0-9]+$/) ? p[i].to_i : p[i].to_sym ; p[i+1] ? [ ( a[n] ||= ( p[i+1] == ' ' ? [] : {} ) ), ( a = a[n]) ] : ( a.is_a?(Hash) ? (a[n] ? (a[n].is_a?(Array) ? (a << val) : a[n] = [a[n], val] ) : (a[n] = val) ) : (a << val) ) }
 			rescue Exception => e
 				Plezi.error e
 				Plezi.error "(Silent): paramaters parse error for #{param_name} ... maybe conflicts with a different set?"
-				target_hash[param_name] = make_utf8! param_value
+				target_hash[param_name] = rubyfy! param_value
 			end
 		end
 
@@ -164,6 +164,21 @@ module Plezi
 			string
 		end
 
+		# Changes String to a Ruby Object, if it's a special string
+		def rubyfy!(string)
+			return false unless string
+			make_utf8! string
+			if string == 'true'
+				string = true
+			elsif string == 'false'
+				string = false
+			elsif string.match(/[0-9]/) && !string.match(/[^0-9]/)
+				string = string.to_i
+			elsif string.match(/[0-9]/) && !string.match(/[^0-9\.]/)
+				string = string.to_f
+			end
+			string
+		end
 
 	end
 end

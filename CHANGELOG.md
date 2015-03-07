@@ -4,6 +4,8 @@
 
 Change log v.0.7.1
 
+**feature**: ruby objects (Integers, Floats, true & false) are now automatically converted from strings to Ruby objects (notice that 'true' and 'false' ARE case sensative, to preserve the value in case of a #to_s method call)
+
 **Logo**: we're still working on a nice logo... but we have a lot on our todo list. so we put a temporary one in.
 
 ***
