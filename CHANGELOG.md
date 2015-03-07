@@ -2,6 +2,12 @@
 
 ***
 
+Change log v.0.7.2
+
+**fix**: fixed the template's Proc file for Heroku integration. There was a issue due to the main app file name convention change (the app file no longer has the .rb extention, and now the Proc file reflects that change)
+
+***
+
 Change log v.0.7.1 - OLDER CODE MIGHT BREAK!
 
 **feature**: ruby objects (Integers, Floats, true & false) are now automatically converted from strings to Ruby objects (notice that 'true' and 'false' ARE case sensative, to preserve the value in case of a #to_s method call)
