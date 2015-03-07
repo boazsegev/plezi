@@ -56,7 +56,7 @@ class AppTemplate
 		app_tree["routes.rb"] ||= IO.read ::File.expand_path(File.join("..", "..", "resources" ,"routes.rb"),  __FILE__)
 		app_tree["rakefile.rb"] ||= IO.read ::File.expand_path(File.join("..", "..", "resources" ,"rakefile.rb"),  __FILE__)
 		app_tree["Procfile"] ||= ""
-		app_tree["Procfile"] << "\nweb: bundle exec ./#{ARGV[1]}.rb -p $PORT\n"
+		app_tree["Procfile"] << "\nweb: bundle exec ./#{ARGV[1]} -p $PORT\n"
 		app_tree["Gemfile"] ||= IO.read ::File.expand_path(File.join("..", "..", "resources" ,"Gemfile"),  __FILE__)
 
 		# set up config files
@@ -123,7 +123,7 @@ class AppTemplate
 		@app_tree["#{ARGV[1]}"] ||= IO.read ::File.expand_path(File.join("..", "..", "resources" ,"code.rb"),  __FILE__)
 		write_files app_tree
 		File.chmod 0775, "#{ARGV[1]}"
-		puts "tried to update execution permissions. this probably failed.".pink
+		puts "tried to update execution permissions. this is system dependent and might have failed.".pink
 		puts "use: chmod +x ./#{ARGV[1]} to set execution permissions on Unix machines."
 		puts ""
 		puts "done."
