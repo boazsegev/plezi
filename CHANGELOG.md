@@ -2,9 +2,11 @@
 
 ***
 
-Change log v.0.7.1
+Change log v.0.7.1 - CODE MIGHT BREAK!
 
 **feature**: ruby objects (Integers, Floats, true & false) are now automatically converted from strings to Ruby objects (notice that 'true' and 'false' ARE case sensative, to preserve the value in case of a #to_s method call)
+
+**change**: Request parameter names are now converted to numbers, if they are recognized as numbers (i.e. use `params[:list][0][:name]` rather than `params[:list]['0'.to_sym][:name]`)
 
 **Logo**: we're still working on a nice logo... but we have a lot on our todo list. so we put a temporary one in.
 
