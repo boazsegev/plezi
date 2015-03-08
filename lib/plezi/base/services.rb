@@ -14,7 +14,7 @@ module Plezi
 	# public API to add a service to the framework.
 	# accepts:
 	# port:: port number
-	# parameters:: a hash of paramaters that are passed on to the service for handling (and from there, service dependent, to the protocol and/or handler).
+	# parameters:: a hash of parameters that are passed on to the service for handling (and from there, service dependent, to the protocol and/or handler).
 	#
 	# parameters are any of the following:
 	# host:: the host name. defaults to any host not explicitly defined (a catch-all).
@@ -38,12 +38,12 @@ module Plezi
 	#
 	# templates can be either an ERB file on a Haml file.
 	#
-	def add_service port, paramaters = {}
-		paramaters[:port] ||= port
-		paramaters[:service_type] ||= ( paramaters[:ssl] ? SSLService : BasicService)
+	def add_service port, parameters = {}
+		parameters[:port] ||= port
+		parameters[:service_type] ||= ( parameters[:ssl] ? SSLService : BasicService)
 		service = nil
-		service = paramaters[:service_type].create_service(port, paramaters) unless ( defined?(BUILDING_PLEZI_TEMPLATE) || defined?(PLEZI_ON_RACK) )
-		S_LOCKER.synchronize {SERVICES[service] = paramaters}
+		service = parameters[:service_type].create_service(port, parameters) unless ( defined?(BUILDING_PLEZI_TEMPLATE) || defined?(PLEZI_ON_RACK) )
+		S_LOCKER.synchronize {SERVICES[service] = parameters}
 		info "Started listening on port #{port}."
 		true
 	end

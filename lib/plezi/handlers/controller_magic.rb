@@ -26,7 +26,7 @@ module Plezi
 			# the request object, class: HTTPRequest.
 			attr_reader :request
 
-			# the ::params variable contains all the paramaters set by the request (/path?locale=he  => params["locale"] == "he").
+			# the ::params variable contains all the parameters set by the request (/path?locale=he  => params["locale"] == "he").
 			attr_reader :params
 
 			# a cookie-jar to get and set cookies (set: `cookie\[:name] = data` or get: `cookie\[:name]`).

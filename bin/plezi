@@ -277,10 +277,10 @@ else
 	puts "n                       alias for new."
 	puts "new app with gem        'new' accepts the 'with' paramater (or w for short)."
 	puts "starting up an app:".pink
-	puts "start                   runs the app. accepts any paramaters the app supports."
+	puts "start                   runs the app. accepts any parameters the app supports."
 	puts "s                       alias for start/server."
 	puts "start console innsead of services:".pink
-	puts "console                 runs the app. accepts any paramaters the app supports."
+	puts "console                 runs the app. accepts any parameters the app supports."
 	puts "c                       alias for start/server."
 	puts "==============================".green
 	puts "create an app with specific plugins:".pink
@@ -291,9 +291,9 @@ else
 	puts "plezi n app w all"
 	puts "loads the all available gem(s) and allows them to update the template before building the app.".green
 	puts ""
-	puts "start the application with any paramaters it supports:".pink
+	puts "start the application with any parameters it supports:".pink
 	puts "plezi s -p 80"
-	puts "loads the app with paramaters -p 80".green
+	puts "loads the app with parameters -p 80".green
 	puts ""
 end
 

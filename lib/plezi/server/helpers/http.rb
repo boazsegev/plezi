@@ -79,7 +79,7 @@ module Plezi
 				p.each_index { |i| p[i].strip! ; n = p[i].match(/^[0-9]+$/) ? p[i].to_i : p[i].to_sym ; p[i+1] ? [ ( a[n] ||= ( p[i+1] == ' ' ? [] : {} ) ), ( a = a[n]) ] : ( a.is_a?(Hash) ? (a[n] ? (a[n].is_a?(Array) ? (a << val) : a[n] = [a[n], val] ) : (a[n] = val) ) : (a << val) ) }
 			rescue Exception => e
 				Plezi.error e
-				Plezi.error "(Silent): paramaters parse error for #{param_name} ... maybe conflicts with a different set?"
+				Plezi.error "(Silent): parameters parse error for #{param_name} ... maybe conflicts with a different set?"
 				target_hash[param_name] = rubyfy! param_value
 			end
 		end
@@ -174,8 +174,6 @@ module Plezi
 				string = false
 			elsif string.match(/[0-9]/) && !string.match(/[^0-9]/)
 				string = string.to_i
-			elsif string.match(/[0-9]/) && !string.match(/[^0-9\.]/)
-				string = string.to_f
 			end
 			string
 		end

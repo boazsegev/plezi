@@ -14,9 +14,9 @@ module Plezi
 
 		# lets the route answer the request. returns false if no response has been sent.
 		def on_request request
-			fill_paramaters = match request.path
-			return false unless fill_paramaters
-			fill_paramaters.each {|k,v| HTTP.add_param_to_hash k, v, request.params }
+			fill_parameters = match request.path
+			return false unless fill_parameters
+			fill_parameters.each {|k,v| HTTP.add_param_to_hash k, v, request.params }
 			response = HTTPResponse.new request
 			if controller
 				ret = controller.new(request, response, params)._route_path_to_methods_and_set_the_response_
@@ -35,9 +35,9 @@ module Plezi
 
 		# handles Rack requests (dresses up as Rack).
 		def call request
-			fill_paramaters = match request.path_info
-			return false unless fill_paramaters
-			fill_paramaters.each {|k,v| HTTP.add_param_to_hash k, v, request.params }
+			fill_parameters = match request.path_info
+			return false unless fill_parameters
+			fill_parameters.each {|k,v| HTTP.add_param_to_hash k, v, request.params }
 			response = HTTPResponse.new request
 			if controller
 				ret = controller.new(request, response, params)._route_path_to_methods_and_set_the_response_
@@ -55,7 +55,7 @@ module Plezi
 		#
 		# Regexp paths will be left unchanged
 		#
-		# a string can be either a simple string `"/users"` or a string with paramaters:
+		# a string can be either a simple string `"/users"` or a string with parameters:
 		# `"/static/:required/(:optional)/(:optional_with_format){[\d]*}/:optional_2"`
 		def initialize path, controller, params={}, &block
 			@path_sections , @params = false, params
@@ -78,7 +78,7 @@ module Plezi
 		# initializes the path by converting the string into a Regexp
 		# and noting any parameters that might need to be extracted for RESTful routes.
 		def initialize_path path
-			@fill_paramaters = {}
+			@fill_parameters = {}
 			if path.is_a? Regexp
 				@path = path
 			elsif path.is_a? String
@@ -119,34 +119,34 @@ module Plezi
 						@path = /#{@path}$/
 						return
 
-					# check for routes formatted: /:paramater - required paramaters
+					# check for routes formatted: /:paramater - required parameters
 					elsif section.match /^\:([^\(\)\{\}\:]*)$/
 						#create a simple section catcher
 					 	@path << section_search
 					 	# add paramater recognition value
-					 	@fill_paramaters[param_num += 1] = section.match(/^\:([^\(\)\{\}\:]*)$/)[1]
+					 	@fill_parameters[param_num += 1] = section.match(/^\:([^\(\)\{\}\:]*)$/)[1]
 
-					# check for routes formatted: /:paramater{regexp} - required paramaters
+					# check for routes formatted: /:paramater{regexp} - required parameters
 					elsif section.match /^\:([^\(\)\{\}\:\/]*)\{(.*)\}$/
 						#create a simple section catcher
 					 	@path << (  "(\/(" +  section.match(/^\:([^\(\)\{\}\:\/]*)\{(.*)\}$/)[2] + "))"  )
 					 	# add paramater recognition value
-					 	@fill_paramaters[param_num += 1] = section.match(/^\:([^\(\)\{\}\:\/]*)\{(.*)\}$/)[1]
+					 	@fill_parameters[param_num += 1] = section.match(/^\:([^\(\)\{\}\:\/]*)\{(.*)\}$/)[1]
 					 	param_num += 1 # we are using two spaces
 
-					# check for routes formatted: /(:paramater) - optional paramaters
+					# check for routes formatted: /(:paramater) - optional parameters
 					elsif section.match /^\(\:([^\(\)\{\}\:]*)\)$/
 						#create a optional section catcher
 					 	@path << optional_section_search
 					 	# add paramater recognition value
-					 	@fill_paramaters[param_num += 1] = section.match(/^\(\:([^\(\)\{\}\:]*)\)$/)[1]
+					 	@fill_parameters[param_num += 1] = section.match(/^\(\:([^\(\)\{\}\:]*)\)$/)[1]
 
-					# check for routes formatted: /(:paramater){regexp} - optional paramaters
+					# check for routes formatted: /(:paramater){regexp} - optional parameters
 					elsif section.match /^\(\:([^\(\)\{\}\:]*)\)\{(.*)\}$/
 						#create a optional section catcher
 					 	@path << (  "(\/(" +  section.match(/^\(\:([^\(\)\{\}\:]*)\)\{(.*)\}$/)[2] + "))?"  )
 					 	# add paramater recognition value
-					 	@fill_paramaters[param_num += 1] = section.match(/^\(\:([^\(\)\{\}\:]*)\)\{(.*)\}$/)[1]
+					 	@fill_parameters[param_num += 1] = section.match(/^\(\:([^\(\)\{\}\:]*)\)\{(.*)\}$/)[1]
 					 	param_num += 1 # we are using two spaces
 
 					else
@@ -154,9 +154,9 @@ module Plezi
 						@path << section
 					end
 				end
-				unless @fill_paramaters.values.include?("id")
+				unless @fill_parameters.values.include?("id")
 					@path << optional_section_search
-					@fill_paramaters[param_num += 1] = "id"
+					@fill_parameters[param_num += 1] = "id"
 				end
 				@path = /#{@path}$/
 			else
@@ -165,11 +165,11 @@ module Plezi
 			return
 		end
 
-		# this performs the match and assigns the paramaters, if required.
+		# this performs the match and assigns the parameters, if required.
 		def match path
 			hash = {}
 			m = nil
-			# unless @fill_paramaters.values.include?("format")
+			# unless @fill_parameters.values.include?("format")
 			# 	if (m = path.match /([^\.]*)\.([^\.\/]+)$/)
 			# 		HTTP.add_param_to_hash 'format', m[2], hash
 			# 		path = m[1]
@@ -177,7 +177,7 @@ module Plezi
 			# end
 			m = @path.match path
 			return false unless m
-			@fill_paramaters.each { |k, v| hash[v] = m[k][1..-1] if m[k] && m[k] != '/' }
+			@fill_parameters.each { |k, v| hash[v] = m[k][1..-1] if m[k] && m[k] != '/' }
 			hash
 		end
 
@@ -190,7 +190,7 @@ module Plezi
 		#
 		# adds the `redirect_to` and `send_data` methods to the controller class, as well as the properties:
 		# env:: the env recieved by the Rack server.
-		# params:: the request's paramaters.
+		# params:: the request's parameters.
 		# cookies:: the request's cookies.
 		# flash:: an amazing Hash object that sets temporary cookies for one request only - greate for saving data between redirect calls.
 		#

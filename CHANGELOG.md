@@ -4,7 +4,9 @@
 
 Change log v.0.7.2
 
-**fix**: fixed the template's Proc file for Heroku integration. There was a issue due to the main app file name convention change (the app file no longer has the .rb extention, and now the Proc file reflects that change)
+**fix**: fixed the template's Proc file for Heroku integration. There was a issue due to the main app file name convention change (the app file no longer has the .rb extention, and now the Proc file correctly reflects that change).
+
+**fix**: recognition of floats caused conversion errors for stings that are nomeric with multiple dots (i.e. 1.1.2015). Also, float recognition was discovered to be non-reversable (i.e `"1.10".to_f.to_s #==> "1.1"`). For this reason, float recognition has been removed. Fixnum recognition is still active.
 
 ***
 
@@ -282,7 +284,7 @@ Change log v.0.5.1
 
 Change log v.0.5.0
 
-**feature:** Multiple (virtual) hosts on the same port are now available `listen port, host: 'foo', file_root: 'public/'`, each host holds it's own route stack, file_root and special paramaters (i.e. `:debug` etc'). greate for different namespaces (admin.foo.com, www.foo.com, etc').
+**feature:** Multiple (virtual) hosts on the same port are now available `listen port, host: 'foo', file_root: 'public/'`, each host holds it's own route stack, file_root and special parameters (i.e. `:debug` etc'). greate for different namespaces (admin.foo.com, www.foo.com, etc').
 
 **fix**: Magic params have full featured Regex capabilities for the optional routes (`(:optional){(regex)|([7]{3})}`).
 
@@ -331,15 +333,15 @@ the following features are added
 
 - magic routes:
 
-it is now possible to set required paramaters inside the route:
+it is now possible to set required parameters inside the route:
 ```ruby
 route "/version/:number/", Controller
 # => accepts only paths styled "/version/foo".
-# => if no version paramater exists, path will not be called and paramaters will not be set.
+# => if no version paramater exists, path will not be called and parameters will not be set.
 # => (this: "/version" fails).
 ```
 
-it is now possible to set optional paramaters inside the route:
+it is now possible to set optional parameters inside the route:
 ```ruby
 route "/user/(:id)/(:visitor_id)", Controller
 # => accepts any of the following paths:
@@ -359,7 +361,7 @@ route "/user/(:id)/*", Controller
 
 - re-write routes:
 
-re-write routes allow us to extract paramaters from the route without any controller, rewriting the request's path.
+re-write routes allow us to extract parameters from the route without any controller, rewriting the request's path.
 
 they can be extreamly powerful in fairly rare but interesting circumstances.
 

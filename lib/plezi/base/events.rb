@@ -38,7 +38,7 @@ module Plezi
 	# `callback( Kernel, :sleep, 1 ) { puts "this is a demo" }`
 	# callback sets an asynchronous method call with a callback.
 	#
-	# paramaters:
+	# parameters:
 	# object:: the object holding the method to be called (use `Kernel` for global methods).
 	# method:: the method's name (Symbol). this is the method that will be called.
 	# *arguments:: any additional arguments that should be sent to the method (the main method, not the callback).

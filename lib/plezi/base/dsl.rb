@@ -80,7 +80,7 @@ PL = Plezi
 # creates a server object and waits for routes to be set.
 # 
 # port:: the port to listen to. the first port defaults to 3000 and increments by 1 with every `listen` call. it's possible to set the first port number by running the app with the -p paramater.
-# params:: a Hash of serever paramaters, as listed in the Plezi#add_service documentation.
+# params:: a Hash of serever parameters, as listed in the Plezi#add_service documentation.
 #
 # The different keys in the params hash control the server's behaviour, as follows:
 #
@@ -114,7 +114,7 @@ end
 # path:: the path for the route
 # controller:: The controller class which will accept the route.
 #
-# `path` paramaters has a few options:
+# `path` parameters has a few options:
 #
 # * `path` can be a Regexp object, forcing the all the logic into controller (typically using the before method).
 #
@@ -140,7 +140,7 @@ end
 #
 # magic routes make for difficult debugging - the smarter the routes, the more difficult the debugging.
 # use with care and avoid complex routes when possible. RESTful routes are recommended when possible.
-# json serving apps are advised to use required paramaters, empty sections indicating missing required paramaters (i.e. /path///foo/bar///).
+# json serving apps are advised to use required parameters, empty sections indicating missing required parameters (i.e. /path///foo/bar///).
 #
 def route(path, controller = nil, &block)
 	Plezi::DSL.route(path, controller, &block)

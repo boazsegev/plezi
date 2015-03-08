@@ -105,7 +105,7 @@ end
 #    # client requests: /1
 #    #  =>  Plezi::StubRESTCtrl.new.show() # where params[:id] == 1
 #
-# it is possible to use "magic" routes (i.e. `/resource/:type/(:id)/(:date){/[0-9]{8}}/:foo`) and it is also possible to set the appropriate paramaters within the `before` method of the Conltroller.
+# it is possible to use "magic" routes (i.e. `/resource/:type/(:id)/(:date){/[0-9]{8}}/:foo`) and it is also possible to set the appropriate parameters within the `before` method of the Conltroller.
 #
 # Routes are handled in the order they are created. If overlapping routes exist, the first will execute first:
 #
