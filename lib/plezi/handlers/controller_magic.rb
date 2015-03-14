@@ -193,7 +193,7 @@ module Plezi
 				# set DELETE method if simulated
 				request.request_method = 'DELETE' if params[:_method].to_s.downcase == 'delete'
 				# respond to special :id routing
-				return params[:id].to_sym if params[:id] && available_public_methods.include?(params[:id].to_sym)
+				return params[:id].to_sym if params[:id] && self.class.available_public_methods.include?(params[:id].to_sym)
 				#review general cases
 				case request.request_method
 				when 'GET', 'HEAD'
@@ -205,18 +205,6 @@ module Plezi
 					return :delete
 				end
 				false
-			end
-
-			# lists the available methods that will be exposed to HTTP requests
-			def available_public_methods
-				# set class global to improve performance while checking for supported methods
-				@@___available_public_methods___ ||= available_routing_methods - [:before, :after, :save, :show, :update, :delete, :initialize, :on_message, :pre_connect, :on_connect, :on_disconnect]
-			end
-
-			# lists the available methods that will be exposed to the HTTP router
-			def available_routing_methods
-				# set class global to improve performance while checking for supported methods
-				@@___available_routing_methods___ ||= (((self.class.public_instance_methods - Object.public_instance_methods) - Plezi::ControllerMagic::InstanceMethods.instance_methods).delete_if {|m| m.to_s[0] == '_'})
 			end
 
 			## WebSockets Magic
@@ -261,7 +249,6 @@ module Plezi
 			# the method will be called asynchrnously for each sibling instance of this Controller class.
 			def collect method_name, *args, &block
 				return Plezi.callback(self, :collect, *args, &block) if block
-
 				r = []
 				ObjectSpace.each_object(self.class) { |controller|  r << controller.method(method_name).call(*args) if controller.accepts_broadcast?  && (controller.object_id != self.object_id) }
 				return r
@@ -280,6 +267,39 @@ module Plezi
 		module ClassMethods
 			public
 
+			# lists the available methods that will be exposed to HTTP requests
+			def available_public_methods
+				# set class global to improve performance while checking for supported methods
+				@@___available_public_methods___ ||= available_routing_methods - [:before, :after, :save, :show, :update, :delete, :initialize, :on_message, :pre_connect, :on_connect, :on_disconnect]
+			end
+
+			# lists the available methods that will be exposed to the HTTP router
+			def available_routing_methods
+				# set class global to improve performance while checking for supported methods
+				@@___available_routing_methods___ ||= (((public_instance_methods - Object.public_instance_methods) - Plezi::ControllerMagic::InstanceMethods.instance_methods).delete_if {|m| m.to_s[0] == '_'})
+			end
+
+			# resets this controller's router, to allow for dynamic changes
+			def reset_routing_cache
+				Plezi.info "Dynamicly reseting the #{self.class.name} routing cache." if defined?(@@___available_routing_methods___)
+				@@___available_routing_methods___ = @@___available_public_methods___ = nil
+				available_routing_methods
+				available_public_methods
+			end
+
+			# a callback that resets the class router whenever a method (a potential route) is added
+			def method_added(id)
+				reset_routing_cache
+			end
+			# a callback that resets the class router whenever a method (a potential route) is removed
+			def method_removed(id)
+				reset_routing_cache
+			end
+			# a callback that resets the class router whenever a method (a potential route) is undefined (using #undef_method).
+			def method_undefined(id)
+				reset_routing_cache
+			end
+			
 			# reviews the Redis connection, sets it up if it's missing and returns the Redis connection.
 			#
 			# todo: review thread status? (incase an exception killed it)
@@ -294,7 +314,7 @@ module Plezi
 							on.message do |channel, msg|
 								args = JSON.parse(msg)
 								params = args.shift
-								__inner_process_broadcast params['_an_ignore_object'], params['_an_method_broadcasted'].to_sym, args
+								__inner_process_broadcast params['_pl_ignore_object'], params['_pl_method_broadcasted'].to_sym, args
 							end
 						end						
 					rescue Exception => e
@@ -321,7 +341,7 @@ module Plezi
 				return false unless redis_connection
 				raise "Radis broadcasts cannot accept blocks (no inter-process callbacks of memory sharing)!" if block
 				# raise "Radis broadcasts accept only one paramater, which is an optional Hash (no inter-process memory sharing)" if args.length > 1 || (args[0] && !args[0].is_a?(Hash))
-				args.unshift ({_an_method_broadcasted: method_name, _an_ignore_object: ignore})
+				args.unshift ({_pl_method_broadcasted: method_name, _pl_ignore_object: ignore})
 				redis_connection.publish(redis_channel_name, args.to_json )
 				true
 			end

@@ -2,6 +2,12 @@
 
 ***
 
+Change log v.0.7.3
+
+**fix / feature**: It is now possible to dynamically add or remove routes from existing controllers. As you know, Plezi controllers behave like "smart folders" and their public methods are automatically published as routes. But - That routing tables is cached. Now the cache is automatically reset whenever a method is added or removed from the controller, or, you can reset the controller's routing cache by calling the controller class method #reset_routing_cache. This allows you to dynamically add or remove routes from existing controllers.
+
+***
+
 Change log v.0.7.2
 
 **fix**: fixed the template's Proc file for Heroku integration. There was a issue due to the main app file name convention change (the app file no longer has the .rb extention, and now the Proc file correctly reflects that change).

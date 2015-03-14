@@ -215,22 +215,6 @@ module Plezi
 					super()
 				end
 
-				def _route_path_to_methods_and_set_the_response_
-					#run :before filter
-					return false if available_routing_methods.include?(:before) && before == false 
-					#check request is valid and call requested method
-					ret = requested_method
-					return false unless available_routing_methods.include?(ret)
-					return false unless (ret = self.method(ret).call)
-					#run :after filter
-					return false if available_routing_methods.include?(:after) && after == false
-					# review returned type for adding String to response
-					if ret.is_a?(String)
-						response << ret
-						response['content-length'] = ret.bytesize if response.body.empty? && !response.headers_sent?
-					end
-					return true
-				end
 				# WebSockets.
 				#
 				# this method handles the protocol and handler transition between the HTTP connection
@@ -262,8 +246,41 @@ module Plezi
 					@_accepts_broadcast = false
 					super if defined? super
 				end
+
+				# Inner Routing
+				#
+				#
+				def _route_path_to_methods_and_set_the_response_
+					#run :before filter
+					return false if self.class.available_routing_methods.include?(:before) && before == false 
+					#check request is valid and call requested method
+					ret = requested_method
+					return false unless self.class.available_routing_methods.include?(ret)
+					return false unless (ret = self.method(ret).call)
+					#run :after filter
+					return false if self.class.available_routing_methods.include?(:after) && after == false
+					# review returned type for adding String to response
+					if ret.is_a?(String)
+						response << ret
+						response['content-length'] = ret.bytesize if response.body.empty? && !response.headers_sent?
+					end
+					return true
+				end
+				# a callback that resets the class router whenever a method (a potential route) is added
+				def self.method_added(id)
+					reset_routing_cache
+				end
+				# a callback that resets the class router whenever a method (a potential route) is removed
+				def self.method_removed(id)
+					reset_routing_cache
+				end
+				# a callback that resets the class router whenever a method (a potential route) is undefined (using #undef_method).
+				def self.method_undefined(id)
+					reset_routing_cache
+				end
 			end
 			Object.const_set(new_class_name, ret)
+			ret.reset_routing_cache
 			ret
 		end
 
