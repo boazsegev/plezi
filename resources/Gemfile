@@ -9,23 +9,25 @@ gem 'plezi'
 ####################
 # development gems
 
-# use pry gem for basic debug ( put `binding.pry` at breake point )?
+## use pry gem for basic debug ( put `binding.pry` at breake point )?
 # gem 'pry'
 
+## use rake tasks with bundle exec?
+# gem 'rake'
 
-# active support can run without rails and extends the Ruby language.
-# it might be heavy, be warned.
-# see: http://guides.rubyonrails.org/active_support_core_extensions.html
+## active support can run without rails and extends the Ruby language.
+## it might be heavy, be warned.
+## see: http://guides.rubyonrails.org/active_support_core_extensions.html
 # 
 # gem 'activesupport', :require => ['active_support', 'active_support/core_ext'] 
-# or:
+## or:
 # gem 'activesupport', :require => ['active_support', active_support/all'] 
 
 
 ####################
 # gems for easy markup
 
-## Slim is very recommended for HTML markup, it's both easy and fast.
+## Slim is very recommended for HTML markup, it's both easy and fast. We LOVE it.
 # gem 'slim'
 
 ## Sass makes CSS easy
@@ -50,9 +52,10 @@ gem 'plezi'
 # WebSocket Scaling
 
 ## redis servers are used to allow websocket scaling.
-## the :broadcast and :collect methods will work only for the current process.
+## the Controller#collect method will work only for the current process.
+## the Controller#broadcast can be configured to automatically use Redis, but some inter-process limitation apply.
 ## using Redis, we can publish messages and subscribe to 'chunnels' across processes
-# (limited support for :broadcast and NO support for :collect while Redis is running).
+## (limited support for :broadcast and NO support for :collect while Redis is running).
 
 # gem 'redis'
 

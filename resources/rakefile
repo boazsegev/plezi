@@ -1,0 +1,12 @@
+# load all framework and gems
+load ::File.expand_path(File.join("..", "environment.rb"),  __FILE__)
+
+# Make sure the server doesn't start
+NO_PLEZI_AUTO_START = true
+
+# create a default task
+desc "The default task does nothing... it's waiting for you to tell it what to do."
+task :default do
+	puts "I don't know what to do."
+	puts `rake -T`
+end
