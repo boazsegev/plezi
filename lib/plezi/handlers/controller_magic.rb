@@ -281,7 +281,6 @@ module Plezi
 
 			# resets this controller's router, to allow for dynamic changes
 			def reset_routing_cache
-				Plezi.info "Dynamicly reseting the #{self.class.name} routing cache." if defined?(@@___available_routing_methods___)
 				@@___available_routing_methods___ = @@___available_public_methods___ = nil
 				available_routing_methods
 				available_public_methods
