@@ -44,7 +44,7 @@ module Plezi
 		service = nil
 		service = parameters[:service_type].create_service(port, parameters) unless ( defined?(BUILDING_PLEZI_TEMPLATE) || defined?(PLEZI_ON_RACK) )
 		S_LOCKER.synchronize {SERVICES[service] = parameters}
-		info "Started listening on port #{port}."
+		Plezi.callback Plezi, :info, "Started listening on port #{port}."
 		true
 	end
 
