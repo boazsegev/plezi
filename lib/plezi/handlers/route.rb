@@ -17,20 +17,23 @@ module Plezi
 			fill_parameters = match request.path
 			return false unless fill_parameters
 			fill_parameters.each {|k,v| HTTP.add_param_to_hash k, v, request.params }
+			ret = false
 			response = HTTPResponse.new request
 			if controller
 				ret = controller.new(request, response, params)._route_path_to_methods_and_set_the_response_
-				response.try_finish if ret
-				return ret
 			elsif proc
 				ret = proc.call(request, response)
 				# response << ret if ret.is_a?(String)
-				response.try_finish if ret
-				return ret
 			elsif controller == false
-				request.path = path.match(request.path).to_a.last
+				request.path = path.match(request.path).to_a.last.to_s
+				return false
 			end
-			return false
+			unless ret
+				request.params.delete :id if fill_parameters['id']
+				return false
+			end
+			response.try_finish
+			return ret
 		end
 
 		# handles Rack requests (dresses up as Rack).
@@ -111,10 +114,10 @@ module Plezi
 				# prep path string and split it where the '/' charected is unescaped.
 				path = path.gsub(/(^\/)|(\/$)/, '').gsub(/([^\\])\//, '\1 - /').split ' - /'
 				@path_sections = path.length
-				path.each do |section|
+				path.each.with_index do |section, section_index|
 					if section == '*'
 						# create catch all
-						@path << "(.*)"
+						section_index == 0 ? (@path << "(.*)") : (@path << "(\\/.*)?")
 						# finish
 						@path = /#{@path}$/
 						return
@@ -168,7 +171,7 @@ module Plezi
 		# this performs the match and assigns the parameters, if required.
 		def match path
 			hash = {}
-			m = nil
+			# m = nil
 			# unless @fill_parameters.values.include?("format")
 			# 	if (m = path.match /([^\.]*)\.([^\.\/]+)$/)
 			# 		HTTP.add_param_to_hash 'format', m[2], hash
@@ -200,6 +203,10 @@ module Plezi
 			# controller.include Plezi::ControllerMagic
 			controller.instance_eval { include Plezi::ControllerMagic }
 			ret = Class.new(controller) do
+
+				def name
+					new_class_name
+				end
 
 				def initialize request, response, host_params
 					@request, @params, @flash, @host_params = request, request.params, response.flash, host_params
@@ -252,13 +259,13 @@ module Plezi
 				#
 				def _route_path_to_methods_and_set_the_response_
 					#run :before filter
-					return false if self.class.available_routing_methods.include?(:before) && before == false 
+					return false if self.class.available_routing_methods.include?(:before) && self.before == false 
 					#check request is valid and call requested method
 					ret = requested_method
 					return false unless self.class.available_routing_methods.include?(ret)
 					return false unless (ret = self.method(ret).call)
 					#run :after filter
-					return false if self.class.available_routing_methods.include?(:after) && after == false
+					return false if self.class.available_routing_methods.include?(:after) && self.after == false
 					# review returned type for adding String to response
 					if ret.is_a?(String)
 						response << ret
@@ -278,9 +285,76 @@ module Plezi
 				def self.method_undefined(id)
 					reset_routing_cache
 				end
+
+				# # lists the available methods that will be exposed to HTTP requests
+				# def self.available_public_methods
+				# 	# set class global to improve performance while checking for supported methods
+				# 	@@___available_public_methods___ ||= available_routing_methods - [:before, :after, :save, :show, :update, :delete, :initialize, :on_message, :pre_connect, :on_connect, :on_disconnect]
+				# end
+
+				# # lists the available methods that will be exposed to the HTTP router
+				# def self.available_routing_methods
+				# 	# set class global to improve performance while checking for supported methods
+				# 	@@___available_routing_methods___ ||= (((public_instance_methods - Object.public_instance_methods) - Plezi::ControllerMagic::InstanceMethods.instance_methods).delete_if {|m| m.to_s[0] == '_'})
+				# end
+
+				# # resets this controller's router, to allow for dynamic changes
+				# def self.reset_routing_cache
+				# 	@@___available_routing_methods___ = @@___available_public_methods___ = nil
+				# 	available_routing_methods
+				# 	available_public_methods
+				# end
+
+				
+				# # reviews the Redis connection, sets it up if it's missing and returns the Redis connection.
+				# #
+				# # todo: review thread status? (incase an exception killed it)
+				# def self.redis_connection
+				# 	return false unless defined?(Redis) && ENV['PL_REDIS_URL']
+				# 	return @@redis if defined?(@@redis_sub_thread) && @@redis
+				# 	@@redis_uri ||= URI.parse(ENV['PL_REDIS_URL'])
+				# 	@@redis ||= Redis.new(host: @@redis_uri.host, port: @@redis_uri.port, password: @@redis_uri.password)
+				# 	@@redis_sub_thread = Thread.new do
+				# 		begin
+				# 			Redis.new(host: @@redis_uri.host, port: @@redis_uri.port, password: @@redis_uri.password).subscribe(redis_channel_name) do |on|
+				# 				on.message do |channel, msg|
+				# 					args = JSON.parse(msg)
+				# 					params = args.shift
+				# 					__inner_process_broadcast params['_pl_ignore_object'], params['_pl_method_broadcasted'].to_sym, args
+				# 				end
+				# 			end						
+				# 		rescue Exception => e
+				# 			Plezi.error e
+				# 			retry
+				# 		end
+				# 	end
+				# 	raise "Redis connction failed for: #{ENV['PL_REDIS_URL']}" unless @@redis
+				# 	@@redis
+				# end
+
+				# # returns a Redis channel name for this controller.
+				# def self.redis_channel_name
+				# 	self.name.to_s
+				# end
+
+				# # broadcasts messages (methods) for this process
+				# def self.__inner_process_broadcast ignore, method_name, args, &block
+				# 	ObjectSpace.each_object(self) { |controller| Plezi.callback controller, method_name, *args, &block if controller.accepts_broadcast? && (!ignore || controller.uuid != ignore) }
+				# end
+
+				# # broadcasts messages (methods) between all processes (using Redis).
+				# def self.__inner_redis_broadcast ignore, method_name, args, &block
+				# 	return false unless redis_connection
+				# 	raise "Radis broadcasts cannot accept blocks (no inter-process callbacks of memory sharing)!" if block
+				# 	# raise "Radis broadcasts accept only one paramater, which is an optional Hash (no inter-process memory sharing)" if args.length > 1 || (args[0] && !args[0].is_a?(Hash))
+				# 	args.unshift ({_pl_method_broadcasted: method_name, _pl_ignore_object: ignore})
+				# 	redis_connection.publish(redis_channel_name, args.to_json )
+				# 	true
+				# end
+
 			end
 			Object.const_set(new_class_name, ret)
-			ret.reset_routing_cache
+			Module.const_get(new_class_name).reset_routing_cache
 			ret
 		end
 

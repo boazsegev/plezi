@@ -11,7 +11,7 @@
 
 # This is an optional re-write route for I18n.
 # i.e.: `/en/home` will be rewriten as `/home`, while setting params[:locale] to "en"
-route "/(:locale){#{I18n.available_locales.join "|"}}/*" , false if defined? I18n
+route "/:locale{#{I18n.available_locales.join "|"}}/*" , false if defined? I18n
 
 ###
 # add your routes here:

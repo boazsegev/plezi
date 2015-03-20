@@ -49,14 +49,21 @@ module Plezi
 		end
 		data
 	end
+
 	# places data into the cache, under an identifier ( file name ).
 	def cache_data filename, data, mtime = Time.now
 		LOCK.synchronize { CACHE_STORE[filename] = CacheObject.new( data, mtime )  }
 		data
 	end
+
 	# Get data from the cache. will throw an exception if there is no data in the cache.
 	def get_cached filename
 		CACHE_STORE[filename].data # if CACHE_STORE[filename]
+	end
+
+	# Remove data from the cache, if it exists.
+	def clear_cached filename
+		LOCK.synchronize { CACHE_STORE.delete filename } # if CACHE_STORE[filename]
 	end
 
 	# returns true if the filename is cached.

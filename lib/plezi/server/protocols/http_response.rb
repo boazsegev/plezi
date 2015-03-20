@@ -40,7 +40,7 @@ module Plezi
 			@cookies = {}
 			# propegate flash object
 			@flash = Hash.new do |hs,k|
-				hs["plezi_flash_#{k.to_s}"] if hs.has_key? "plezi_flash_#{k.to_s}"
+				hs["plezi_flash_#{k.to_s}".to_sym] if hs.has_key? "plezi_flash_#{k.to_s}".to_sym
 			end
 			request.cookies.each do |k,v|
 				@flash[k] = v if k.to_s.start_with? "plezi_flash_"

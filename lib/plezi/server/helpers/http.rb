@@ -126,6 +126,7 @@ module Plezi
 			elsif object.is_a?(String)
 				case decode_method
 				when :uri, :url, :form
+					object.force_encoding "binary"
 					object.gsub!(/[^a-zA-Z0-9\*\.\_\-]/) {|m| m.ord <= 16 ? "%0#{m.ord.to_s(16)}" : "%#{m.ord.to_s(16)}"}
 				when :html
 					object.gsub!('&', "&amp;")
@@ -134,8 +135,10 @@ module Plezi
 					object.gsub!("<", "&lt;")
 					object.gsub!(/[^\sa-zA-Z\d\&\;]/) {|m| "&#%04d;" % m.unpack('U')[0] }
 					# object.gsub!(/[^\s]/) {|m| "&#%04d;" % m.unpack('U')[0] }
+					object.force_encoding "binary"
 				when :utf8
 					object.gsub!(/[^\sa-zA-Z\d]/) {|m| "&#%04d;" % m.unpack('U')[0] }
+					object.force_encoding "binary"
 				else
 
 				end

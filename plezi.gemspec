@@ -8,8 +8,8 @@ Gem::Specification.new do |spec|
   spec.version       = Plezi::VERSION
   spec.authors       = ["Boaz Segev"]
   spec.email         = ['boaz@2be.co.il']
-  spec.summary       = %q{The Ruby Web-App Framework with Websockets, REST and HTTP streaming support.}
-  spec.description   = %q{Plezi is a Rack free Ruby Web-App Framework with native Websocket, HTTP streaming, and REST routing support. Advance to next step in Ruby evolution - a framework with an integrated server, ready for seamless WebSockets and RESTful applications.}
+  spec.summary       = %q{The Ruby Framework for real time web-apps, with Websockets, REST and HTTP streaming support.}
+  spec.description   = %q{Plezi is a Rack free Ruby Framework for real time web-apps, with native Websocket, HTTP streaming, and REST routing support.}
   spec.homepage      = "http://boazsegev.github.io/plezi/"
   spec.license       = "MIT"
 
@@ -21,6 +21,7 @@ Gem::Specification.new do |spec|
   spec.add_development_dependency "bundler", "~> 1.7"
   spec.add_development_dependency "rake", "~> 10.0"
 
-  spec.post_install_message = "This update might break existing code - please review ChangeLog.md before upgrading any apps.\n\r\n\rFor example\n\r-Please make sure to change any `params[:list]['0'.to_sym][:key]` to `params[:list][0][:key]` (Fixnum rather then String).\n\r- Pleasemake sure to update `params[:check] == 'true'` to `params[:check] == true` (not aString)."
+  # spec.post_install_message = "This update might break existing code - please review ChangeLog.md before upgrading any apps."
+  spec.post_install_message = "Thank you for installing Plezi, the Ruby Framework for real time web-apps."
 
 end

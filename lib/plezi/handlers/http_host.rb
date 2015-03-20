@@ -98,7 +98,7 @@ module Plezi
 				if params[:root]
 					if defined?(::Slim) && Plezi.file_exists?(File.join(params[:root], "#{code}.slim"))
 						Plezi.cache_data File.join(params[:root], "#{code}.slim"), Slim::Template.new( File.join( params[:root], "#{code}.slim" ) ) unless Plezi.cached? File.join(params[:root], "#{code}.slim")
-						return send_raw_data request, Plezi.get_cached( File.join(params[:root], "#{code}.slim") ).render( self ), 'text/html', code, headers
+						return send_raw_data request, Plezi.get_cached( File.join(params[:root], "#{code}.slim") ).render( self, request: request ), 'text/html', code, headers
 					elsif defined?(::Haml) && Plezi.file_exists?(File.join(params[:root], "#{code}.haml"))
 						Plezi.cache_data File.join(params[:root], "#{code}.haml"), Haml::Engine.new( IO.read( File.join( params[:root], "#{code}.haml" ) ) ) unless Plezi.cached? File.join(params[:root], "#{code}.haml")
 						return send_raw_data request, Plezi.get_cached( File.join(params[:root], "#{code}.haml") ).render( self ), 'text/html', code, headers

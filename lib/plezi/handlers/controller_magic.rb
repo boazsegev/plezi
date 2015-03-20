@@ -270,18 +270,19 @@ module Plezi
 			# lists the available methods that will be exposed to HTTP requests
 			def available_public_methods
 				# set class global to improve performance while checking for supported methods
-				@@___available_public_methods___ ||= available_routing_methods - [:before, :after, :save, :show, :update, :delete, :initialize, :on_message, :pre_connect, :on_connect, :on_disconnect]
+				Plezi.cached?(self.superclass.name + "_p&rt") ? Plezi.get_cached(self.superclass.name + "_p&rt") : Plezi.cache_data(self.superclass.name + "_p&rt", available_routing_methods - [:before, :after, :save, :show, :update, :delete, :initialize, :on_message, :pre_connect, :on_connect, :on_disconnect])
 			end
 
 			# lists the available methods that will be exposed to the HTTP router
 			def available_routing_methods
 				# set class global to improve performance while checking for supported methods
-				@@___available_routing_methods___ ||= (((public_instance_methods - Object.public_instance_methods) - Plezi::ControllerMagic::InstanceMethods.instance_methods).delete_if {|m| m.to_s[0] == '_'})
+				Plezi.cached?(self.superclass.name + "_r&rt") ? Plezi.get_cached(self.superclass.name + "_r&rt") : Plezi.cache_data(self.superclass.name + "_r&rt",  (((public_instance_methods - Object.public_instance_methods) - Plezi::ControllerMagic::InstanceMethods.instance_methods).delete_if {|m| m.to_s[0] == '_'})  )
 			end
 
 			# resets this controller's router, to allow for dynamic changes
 			def reset_routing_cache
-				@@___available_routing_methods___ = @@___available_public_methods___ = nil
+				Plezi.clear_cached(self.superclass.name + "_p&rt")
+				Plezi.clear_cached(self.superclass.name + "_r&rt")
 				available_routing_methods
 				available_public_methods
 			end
@@ -303,11 +304,32 @@ module Plezi
 			#
 			# todo: review thread status? (incase an exception killed it)
 			def redis_connection
+				# return false unless defined?(Redis) && ENV['PL_REDIS_URL']
+				# return @@redis if defined?(@@redis_sub_thread) && @@redis
+				# @@redis_uri ||= URI.parse(ENV['PL_REDIS_URL'])
+				# @@redis ||= Redis.new(host: @@redis_uri.host, port: @@redis_uri.port, password: @@redis_uri.password)
+				# @@redis_sub_thread = Thread.new do
+				# 	begin
+				# 		Redis.new(host: @@redis_uri.host, port: @@redis_uri.port, password: @@redis_uri.password).subscribe(redis_channel_name) do |on|
+				# 			on.message do |channel, msg|
+				# 				args = JSON.parse(msg)
+				# 				params = args.shift
+				# 				__inner_process_broadcast params['_pl_ignore_object'], params['_pl_method_broadcasted'].to_sym, args
+				# 			end
+				# 		end						
+				# 	rescue Exception => e
+				# 		Plezi.error e
+				# 		retry
+				# 	end
+				# end
+				# raise "Redis connction failed for: #{ENV['PL_REDIS_URL']}" unless @@redis
+				# @@redis
 				return false unless defined?(Redis) && ENV['PL_REDIS_URL']
-				return @@redis if defined?(@@redis_sub_thread) && @@redis
+				return Plezi.get_cached(self.superclass.name + "_b") if Plezi.cached?(self.superclass.name + "_b")
 				@@redis_uri ||= URI.parse(ENV['PL_REDIS_URL'])
-				@@redis ||= Redis.new(host: @@redis_uri.host, port: @@redis_uri.port, password: @@redis_uri.password)
-				@@redis_sub_thread = Thread.new do
+				Plezi.cache_data self.superclass.name + "_b", Redis.new(host: @@redis_uri.host, port: @@redis_uri.port, password: @@redis_uri.password)
+				raise "Redis connction failed for: #{ENV['PL_REDIS_URL']}" unless Plezi.cached?(self.superclass.name + "_b")
+				t = Thread.new do
 					begin
 						Redis.new(host: @@redis_uri.host, port: @@redis_uri.port, password: @@redis_uri.password).subscribe(redis_channel_name) do |on|
 							on.message do |channel, msg|
@@ -321,13 +343,13 @@ module Plezi
 						retry
 					end
 				end
-				raise "Redis connction failed for: #{ENV['PL_REDIS_URL']}" unless @@redis
-				@@redis
+				Plezi.cache_data self.superclass.name + "_t", t
+				Plezi.get_cached(self.superclass.name + "_b")
 			end
 
 			# returns a Redis channel name for this controller.
 			def redis_channel_name
-				self.name.to_s
+				self.superclass.name.to_s
 			end
 
 			# broadcasts messages (methods) for this process

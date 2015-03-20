@@ -4,9 +4,17 @@
 
 Change log v.0.7.3
 
-**fix / feature**: It is now possible to dynamically add or remove routes from existing controllers. As you know, Plezi controllers behave like "smart folders" and their public methods are automatically published as routes. But - That routing tables is cached. Now the cache is automatically reset whenever a method is added or removed from the controller, or, you can reset the controller's routing cache by calling the controller class method #reset_routing_cache. This allows you to dynamically add or remove routes from existing controllers.
+**major fix**: Fixed a conflict in the controller namespaces and caching system, which caused routing and Redis connection errors. The errors were resolved by moving the caching to the Framework's global caching system.
+
+**fix + feature**: It is now possible to dynamically add or remove routes from existing controllers. As you know, Plezi controllers behave like "smart folders" and their public methods are automatically published as routes. But - That routing tables is cached. Now the cache is automatically reset whenever a method is added or removed from the controller, or, you can reset the controller's routing cache by calling the controller class method #reset_routing_cache. This allows you to dynamically add or remove routes from existing controllers.
+
+**fix**: fixed as issue with utf-8 data in the cookie and flash data, where utf-8 data wasn't encoded properly as an ASCII string before being sent in the HTTP headers.
+
+**fix**: fixed an error with catch-all and re-write routes that caused some routes to fail or that rewrote routes that should not have been re-written. This bug was introduces when re-write routes conflicted with similar actual routes (such as '/en' conflicting with '/entance', the 'en' would be removed although that was not the intention).
 
 **fix**: fixed the raketasks... which do nothing just yet.
+
+**fix**: fixed the 404 error for the slim template. It now has access to the request object, so that it is possible to dynamically show the requested path or other parameters and cookies.
 
 **fix**: fixed the timing of the first service start up logging to log only once services actually start.
 
