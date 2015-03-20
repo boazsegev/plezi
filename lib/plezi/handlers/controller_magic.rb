@@ -131,11 +131,11 @@ module Plezi
 				true
 			end
 
-			# renders a template file (.erb/.haml) or an html file (.html) to text
-			# for example, to render the file `body.html.haml` with the layout `main_layout.html.haml`:
+			# renders a template file (.slim/.erb/.haml) or an html file (.html) to text
+			# for example, to render the file `body.html.slim` with the layout `main_layout.html.haml`:
 			#   render :body, layout: :main_layout
 			#
-			# or, for example, to render the file `json.js.haml`
+			# or, for example, to render the file `json.js.slim`
 			#   render :json, type: 'js'
 			#
 			# or, for example, to render the file `template.haml`
@@ -148,7 +148,7 @@ module Plezi
 			# options aceept the following keys:
 			# type:: the types for the `:layout' and 'template'. can be any extention, such as `"json"`. defaults to `"html"`.
 			# layout:: a layout template that has at least one `yield` statement where the template will be rendered.
-			# locale:: the I18n locale for the render. (defaults to params[:locale]) - only if the I18n gem namespace is defined (`require 'i18n'`).
+			# locale:: the I18n locale for the render. (defaults to params\[:locale]) - only if the I18n gem namespace is defined (`require 'i18n'`).
 			#
 			# if template is a string, it will assume the string is an
 			# absolute path to a template file. it will NOT search for the template but might raise exceptions.
@@ -302,7 +302,11 @@ module Plezi
 			
 			# reviews the Redis connection, sets it up if it's missing and returns the Redis connection.
 			#
-			# todo: review thread status? (incase an exception killed it)
+			# a Redis connection will be automatically created if the `ENV['PL_REDIS_URL']` is set.
+			# for example:
+			#      ENV['PL_REDIS_URL'] = ENV['REDISCLOUD_URL']`
+			# or
+			#      ENV['PL_REDIS_URL'] = "redis://username:password@my.host:6379"
 			def redis_connection
 				# return false unless defined?(Redis) && ENV['PL_REDIS_URL']
 				# return @@redis if defined?(@@redis_sub_thread) && @@redis

@@ -1,4 +1,4 @@
-# Plezi, The Rack Free Ruby HTTP & Websocket Framework
+# Plezi, The Rack Free Ruby framework for realtime web-apps
 [![Gem Version](https://badge.fury.io/rb/plezi.svg)](http://badge.fury.io/rb/plezi)
 [![Inline docs](http://inch-ci.org/github/boazsegev/plezi.svg?branch=master)](http://inch-ci.org/github/boazsegev/plezi)
 

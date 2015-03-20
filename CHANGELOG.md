@@ -6,7 +6,7 @@ Change log v.0.7.3
 
 **major fix**: Fixed a conflict in the controller namespaces and caching system, which caused routing and Redis connection errors. The errors were resolved by moving the caching to the Framework's global caching system.
 
-**fix + feature**: It is now possible to dynamically add or remove routes from existing controllers. As you know, Plezi controllers behave like "smart folders" and their public methods are automatically published as routes. But - That routing tables is cached. Now the cache is automatically reset whenever a method is added or removed from the controller, or, you can reset the controller's routing cache by calling the controller class method #reset_routing_cache. This allows you to dynamically add or remove routes from existing controllers.
+**fix + feature**: It is now possible to dynamically add or remove routes from existing controllers. As you know, Plezi controllers behave like "smart folders" and their public methods are automatically published as routes. But - That routing table is cached. Now the cache is automatically reset whenever a method is added or removed from the controller, or, you can reset the controller's routing cache by calling the controller class method #reset_routing_cache. This allows you to dynamically add or remove routes from existing controllers.
 
 **fix**: fixed as issue with utf-8 data in the cookie and flash data, where utf-8 data wasn't encoded properly as an ASCII string before being sent in the HTTP headers.
 
