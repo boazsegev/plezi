@@ -193,7 +193,7 @@ module Plezi
 				# set DELETE method if simulated
 				request.request_method = 'DELETE' if params[:_method].to_s.downcase == 'delete'
 				# respond to special :id routing
-				return params[:id].to_sym if params[:id] && self.class.available_public_methods.include?(params[:id].to_sym)
+				return params[:id].to_s.to_sym if params[:id] && self.class.available_public_methods.include?(params[:id].to_s.to_sym)
 				#review general cases
 				case request.request_method
 				when 'GET', 'HEAD'

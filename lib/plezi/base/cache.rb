@@ -66,6 +66,11 @@ module Plezi
 		LOCK.synchronize { CACHE_STORE.delete filename } # if CACHE_STORE[filename]
 	end
 
+	# clears all cached data.
+	def clear_cache! filename
+		LOCK.synchronize { CACHE_STORE.clear } # if CACHE_STORE[filename]
+	end
+
 	# returns true if the filename is cached.
 	def cached? filename
 		!CACHE_STORE[filename].nil?

@@ -37,6 +37,7 @@ module Plezi
 		run_every(5 , Plezi.method(:clear_connections)) #{info "Cleared inactive Connections"}
 		run_every 3600 , GC.method(:start)
 		# run_every( 1 , Proc.new() { Plezi.info "#{IO_CONNECTION_DIC.length} active connections ( #{ IO_CONNECTION_DIC.select{|k,v| v.protocol.is_a?(WSProtocol)} .length } websockets)." })
+		# run_every 10 , -> {Plezi.info "Cache report: #{CACHE_STORE.length} objects cached." } 
 		(max_threads).times {  Thread.new { thread_cycle until exit_flag }  }		
 
 		# Thread.new { check_connections until SERVICES.empty? }

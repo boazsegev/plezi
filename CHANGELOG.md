@@ -2,6 +2,14 @@
 
 ***
 
+Change log v.0.7.4
+
+**change/fix**: it seems that behavior is more predictable when routes macgic parameters are non-persistent between routes. The old behavior (persistent parameters) is now limited to re-write routes.
+
+**fix**: an error was introduced when using paramd\[:id] with a Fixnum. This was caused by the router attempting to search for a method by that name before using the parameter as an :id. This is now fixed by temporarily converting the Fixnum to a string before the required converstion to a symbol.
+
+***
+
 Change log v.0.7.3
 
 **major fix**: Fixed a conflict in the controller namespaces and caching system, which caused routing and Redis connection errors. The errors were resolved by moving the caching to the Framework's global caching system.

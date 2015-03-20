@@ -242,32 +242,19 @@ Asynchronous callbacks (works only while services are active and running):
     # an asynchronous method call with an optional callback block
     PL.callback(Kernel, :puts, "Plezi will start eating our code once we exit terminal.") {puts 'first output finished'}
 
-## Food for thought - advanced controller uses
+## Re-write Routes
 
-Here's some food for thought - code similar to something actually used at some point while developing the applicatio template used by `plezi new myapp`:
+Plezi supports special routes used to re-write the request and extract parameters for all future routes.
+
+This allows you to create path prefixes which will be removed once their information is extracted.
+
+This is great for setting global information such as internationalization (I18n) locales.
+
+By using a route with the a 'false' controller, the parameters extracted are automatically retained.
+
+*(Older versions of Plezi allowed this behavior for all routes, but it was deprecated starting version 0.7.4).
 
     require 'plezi'
-
-    # this controller will re-write the request to extract data,
-    # and then it will fail, so that routing continues.
-    #
-    # this is here just for the demo.
-    #
-    class ReWriteController
-        # using the before filter and regular expressions to make some changes.
-        def before
-            # extract the fr and en locales.
-            result = request.path.match /^\/(en|fr)($|\/.*)/
-
-            if result
-                params[:locale] = result[1]
-                request.path = result[2]
-            end
-
-            # let the routing continue.
-            return false
-        end
-    end
 
     class Controller
         def index
@@ -286,31 +273,23 @@ Here's some food for thought - code similar to something actually used at some p
         end
         def delete
             return "Mon Dieu! Mon français est mauvais!" if params[:locale] == 'fr'
-            "did you try /#{params["id"]}/?_method=delete or does your server support a native DELETE method?"
+            "did you try #{request.base_url + request.original_path}?_method=delete or does your server support a native DELETE method?"
         end
     end
 
     listen
 
-    # we run the ReWriteController first, to rewrite the path for all the remaining routes.
-    #
-    # this is here just for the demo...
-    #
-    # ...in this specific case, it is possible to dispense with the ReWriteController class
-    # and write:
-    #
-    # route '/(:locale){fr|en}/*', false
-    #
-    # the false controller acts as a simple path re-write that
-    # deletes everything before the '*' sign (the catch-all).
-    #
-    route '*' , ReWriteController
+    # this is our re-write route.
+    # it will extract the locale and re-write the request.
+    route '/:locale{fr|en}/*', false
 
     # this route takes a regular expression that is a simple math calculation
     # (calculator)
+    #
+    # it is an example for a Proc controller, which can replace the Class controller.
     route /^\/[\d\+\-\*\/\(\)\.]+$/ do |request, response|
         message = (request.params[:locale] == 'fr') ? "La solution est" : "My Answer is"
-        response << "#{message}: #{eval(request.path[1..-1])}"
+        response << "#{message}: #{eval( request.path[1..-1] )}"
     end
 
     route "/users" , Controller
@@ -322,9 +301,14 @@ try:
 * [http://localhost:3000/](http://localhost:3000/)
 * [http://localhost:3000/fr](http://localhost:3000/fr)
 * [http://localhost:3000/users/hello](http://localhost:3000/users/hello)
-* [http://localhost:3000/(5+5*20-15)/9](http://localhost:3000/(5+5*20-15)/9)
-* [http://localhost:3000/fr/(5+5*20-15)/9](http://localhost:3000/fr/(5+5*20-15)/9)
+* [http://localhost:3000/users/(5+5*20-15)/9.0](http://localhost:3000/users/(5+5*20-15)/9.0)
+* [http://localhost:3000/(5+5*20-15)/9.0](http://localhost:3000/(5+5*20-15)/9)
+* [http://localhost:3000/fr/(5+5*20-15)/9.0](http://localhost:3000/fr/(5+5*20-15)/9)
 * [http://localhost:3000/users/hello?_method=delete](http://localhost:3000/users/hello?_method=delete)
+
+As you can see in the example above, Plezi supports Proc routes as well as Class controller routes.
+
+Please notice that there are some differences between the two. Proc routes less friedly, but plenty powerful and are great for custom 404 error handling.
 
 ## Plezi Settings
 

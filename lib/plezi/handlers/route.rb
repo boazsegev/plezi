@@ -16,6 +16,7 @@ module Plezi
 		def on_request request
 			fill_parameters = match request.path
 			return false unless fill_parameters
+			old_params = request.params.dup
 			fill_parameters.each {|k,v| HTTP.add_param_to_hash k, v, request.params }
 			ret = false
 			response = HTTPResponse.new request
@@ -29,7 +30,7 @@ module Plezi
 				return false
 			end
 			unless ret
-				request.params.delete :id if fill_parameters['id']
+				request.params.replace old_params unless fill_parameters.empty?
 				return false
 			end
 			response.try_finish
