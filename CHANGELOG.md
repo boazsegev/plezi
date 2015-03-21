@@ -3,10 +3,13 @@
 ***
 
 Change log v.0.7.4
+(pre-release)
 
 **change/fix**: it seems that behavior is more predictable when routes macgic parameters are non-persistent between routes. The old behavior (persistent parameters) is now limited to re-write routes.
 
 **fix**: an error was introduced when using paramd\[:id] with a Fixnum. This was caused by the router attempting to search for a method by that name before using the parameter as an :id. This is now fixed by temporarily converting the Fixnum to a string before the required converstion to a symbol.
+
+**feature**: added the method `def_special_method`, which can be used in controller classes to create specially named paths, defying Ruby naming restrictions, such as: "play-now", "text.me" etc'. This is an EXPERIMENTAL feature which might be limited in future releases (specifically limited to names without dots '.', in case of future formatting support).
 
 ***
 

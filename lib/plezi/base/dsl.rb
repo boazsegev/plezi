@@ -153,6 +153,19 @@ def shared_route(path, controller = nil, &block)
 	Plezi::DSL.shared_route(path, controller, &block)
 end
 
+# defines a method with a special name, such as "humens.txt".
+#
+# this could be used in controller classes, to define special routes which might defy
+# normal Ruby naming conventions, such as "/welcome-home", "/play!", etc'
+#
+# could also be used to define methods with special formatting, such as "humans.txt",
+# until a more refined way to deal with formatting will be implemented.
+def def_special_method name, obj=self, &block
+	obj.instance_eval { define_method name.to_s.to_sym, &block }
+end
+
+
+
 # finishes setup of the servers and starts them up. This will hange the proceess.
 #
 # this method is called automatically by the Plezi framework.

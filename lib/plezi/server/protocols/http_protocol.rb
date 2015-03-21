@@ -180,6 +180,12 @@ module Plezi
 			@parser_data[:path] = @parser_data[:original_path].chomp('/')
 			@parser_data[:original_path].freeze
 
+			# the following can be used to extract the request's 'format':
+			# /(^.*)(\.[^\.\/]*)$/.match @parser_data[:path]
+			# ...? should this be done? Could be limited to certain formats:
+			#  /(^.*)(\.(txt|html|json|js|xml|xhtml|csv))$/.match @parser_data[:path]
+			# ... even worst?
+
 			HTTP.make_utf8! @parser_data[:host_name] if @parser_data[:host_name]
 			HTTP.make_utf8! @parser_data[:query]
 

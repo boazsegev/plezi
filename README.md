@@ -94,7 +94,7 @@ Remember to connect to the service from at least two browser windows - to truly 
 
     # do you need automated redis support?
     # require 'redis'
-    # ENV['PL_REDIS_URL'] = "http://user:password@localhost:6379"
+    # ENV['PL_REDIS_URL'] = "redis://user:password@localhost:6379"
 
     class BroadcastCtrl
         def index
@@ -109,7 +109,10 @@ Remember to connect to the service from at least two browser windows - to truly 
         def _send_message data
             response << data
         end
-        def people
+        def hello
+            'Hello!'
+        end
+        def_special_method "humans.txt" do
             'I made this :)'
         end
     end
@@ -119,7 +122,7 @@ Remember to connect to the service from at least two browser windows - to truly 
     route '/', BroadcastCtrl
 ```
 
-method names starting with an underscore ('_') will NOT be made public by the router: so while '/people' is public ( [try it](http://localhost:3000/people) ), '/_send_message' will return a 404 not found error ( [try it](http://localhost:3000/_send_message) ).
+method names starting with an underscore ('_') will NOT be made public by the router: so while both '/hello' and '/humans.txt' are public ( [try it](http://localhost:3000/humans.txt) ), '/_send_message' will return a 404 not found error ( [try it](http://localhost:3000/_send_message) ).
 
 ## Native HTTP streaming with Asynchronous events
 
@@ -175,7 +178,7 @@ Plezi can be used to create virtual hosts for the same service:
     listen
     host 'localhost', alias: 'localhost2'
 
-    shared_route '/people' do |req, res|
+    shared_route '/humans.txt' do |req, res|
         res << "we are people - shared by all routes."
     end
 
@@ -195,8 +198,8 @@ Now visit:
 
 * [http://127.0.0.1:3000/]( http://127.0.0.1:3000/ )
 * [http://localhost:3000/]( http://localhost:3000/ )
-* [http://127.0.0.1:3000/people]( http://127.0.0.1:3000/people )
-* [http://localhost:3000/people]( http://localhost:3000/people )
+* [http://127.0.0.1:3000/humans.txt]( http://127.0.0.1:3000/humans.txt )
+* [http://localhost:3000/humans.txt]( http://localhost:3000/humans.txt )
 
 ## Plezi Logging
 
