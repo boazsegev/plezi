@@ -120,6 +120,8 @@ end
 #
 # thanks to Russ Olsen for his ideas for a DSL and his blog post at:
 # http://www.jroller.com/rolsen/entry/building_a_dsl_in_ruby1 
+#
+# ...he doesn't know it, but he inspired a revolution.
 ##############################################################################
 module Plezi
 end
