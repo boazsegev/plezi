@@ -183,8 +183,17 @@ def start_services
 	Plezi.start_services
 end
 
+# restarts the Plezi app with the same arguments as when it was started.
+#
+# EXPERIMENTAL
+def restart_plezi_app
+	exec "/usr/bin/env ruby #{$PL_SCRIPT} #{$PL_ARGV.join ' '}"
+end
+
 # sets to start the services once dsl script is finished loading.
 at_exit { start_services } unless ( defined?(NO_PLEZI_AUTO_START) || defined?(BUILDING_PLEZI_TEMPLATE) || defined?(PLEZI_ON_RACK) )
 
 # sets a name for the process (on some systems).
+$PL_SCRIPT = $0
+$PL_ARGV = $*.dup
 $0="Plezi (Ruby)"
