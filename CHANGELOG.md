@@ -3,7 +3,6 @@
 ***
 
 Change log v.0.7.4
-(pre-release)
 
 **change/fix**: it seems that behavior is more predictable when routes macgic parameters are non-persistent between routes. The old behavior (persistent parameters) is now limited to re-write routes.
 
