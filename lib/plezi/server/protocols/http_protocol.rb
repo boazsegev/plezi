@@ -232,11 +232,11 @@ module Plezi
 			# parse content
 			case @parser_data["content-type"].to_s
 			when /x-www-form-urlencoded/
-				HTTP.extract_data @parser_body.split(/[&;]/), @parser_data[:params], :uri
+				HTTP.extract_data @parser_body.split(/[&;]/), @parser_data[:params], :form # :uri
 			when /multipart\/form-data/
 				read_multipart @parser_data, @parser_body
 			when /text\/xml/
-				# to-do support xml? support json?
+				# to-do support xml?
 				@parser_data[:body] = @parser_body.dup
 			when /application\/json/
 				@parser_data[:body] = @parser_body.dup

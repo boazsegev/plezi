@@ -90,6 +90,18 @@ module Plezi
 				param_num = 0
 				section_search = "([\\/][^\\/]*)"
 				optional_section_search = "([\\/][^\\/]*)?"
+
+				# to check for routes formatted: /:paramater - required parameters
+				regexp_required_params = /^\:([^\(\)\{\}\:]*)$/
+				# to check for routes formatted: /(:paramater) - optional parameters
+				regexp_optional_params = /^\(\:([^\(\)\{\}\:]*)\)$/
+				# to check for routes formatted: /(:paramater){regexp} - optional formatted parameters
+				regexp_formatted_optional_params = /^\(\:([^\(\)\{\}\:]*)\)\{(.*)\}$/
+				# check for routes formatted: /:paramater{regexp} - required parameters
+				regexp_formatted_required_params = /^\:([^\(\)\{\}\:\/]*)\{(.*)\}$/
+				# check for routes formatted: /{regexp} - required path
+				regexp_formatted_path = /^\{(.*)\}$/
+
 				@path = '^'
 
 				# prep path string
@@ -124,34 +136,41 @@ module Plezi
 						return
 
 					# check for routes formatted: /:paramater - required parameters
-					elsif section.match /^\:([^\(\)\{\}\:]*)$/
+					elsif section.match regexp_required_params
 						#create a simple section catcher
 					 	@path << section_search
 					 	# add paramater recognition value
-					 	@fill_parameters[param_num += 1] = section.match(/^\:([^\(\)\{\}\:]*)$/)[1]
-
-					# check for routes formatted: /:paramater{regexp} - required parameters
-					elsif section.match /^\:([^\(\)\{\}\:\/]*)\{(.*)\}$/
-						#create a simple section catcher
-					 	@path << (  "(\/(" +  section.match(/^\:([^\(\)\{\}\:\/]*)\{(.*)\}$/)[2] + "))"  )
-					 	# add paramater recognition value
-					 	@fill_parameters[param_num += 1] = section.match(/^\:([^\(\)\{\}\:\/]*)\{(.*)\}$/)[1]
-					 	param_num += 1 # we are using two spaces
+					 	@fill_parameters[param_num += 1] = section.match(regexp_required_params)[1]
 
 					# check for routes formatted: /(:paramater) - optional parameters
-					elsif section.match /^\(\:([^\(\)\{\}\:]*)\)$/
+					elsif section.match regexp_optional_params
 						#create a optional section catcher
 					 	@path << optional_section_search
 					 	# add paramater recognition value
-					 	@fill_parameters[param_num += 1] = section.match(/^\(\:([^\(\)\{\}\:]*)\)$/)[1]
+					 	@fill_parameters[param_num += 1] = section.match(regexp_optional_params)[1]
 
 					# check for routes formatted: /(:paramater){regexp} - optional parameters
-					elsif section.match /^\(\:([^\(\)\{\}\:]*)\)\{(.*)\}$/
+					elsif section.match regexp_formatted_optional_params
 						#create a optional section catcher
-					 	@path << (  "(\/(" +  section.match(/^\(\:([^\(\)\{\}\:]*)\)\{(.*)\}$/)[2] + "))?"  )
+					 	@path << (  "(\/(" +  section.match(regexp_formatted_optional_params)[2] + "))?"  )
 					 	# add paramater recognition value
-					 	@fill_parameters[param_num += 1] = section.match(/^\(\:([^\(\)\{\}\:]*)\)\{(.*)\}$/)[1]
-					 	param_num += 1 # we are using two spaces
+					 	@fill_parameters[param_num += 1] = section.match(regexp_formatted_optional_params)[1]
+					 	param_num += 1 # we are using two spaces - param_num += should look for () in regex ? /[^\\](/
+
+					# check for routes formatted: /:paramater{regexp} - required parameters
+					elsif section.match regexp_formatted_required_params
+						#create a simple section catcher
+					 	@path << (  "(\/(" +  section.match(regexp_formatted_required_params)[2] + "))"  )
+					 	# add paramater recognition value
+					 	@fill_parameters[param_num += 1] = section.match(regexp_formatted_required_params)[1]
+					 	param_num += 1 # we are using two spaces - param_num += should look for () in regex ? /[^\\](/
+
+					# check for routes formatted: /{regexp} - formated path
+					elsif section.match regexp_formatted_path
+						#create a simple section catcher
+					 	@path << (  "\/(" +  section.match(regexp_formatted_path)[1] + ")"  )
+					 	# add paramater recognition value
+					 	param_num += 1 # we are using one space - param_num += should look for () in regex ? /[^\\](/
 
 					else
 						@path << "\/"

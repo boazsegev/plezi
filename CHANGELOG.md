@@ -2,6 +2,13 @@
 
 ***
 
+Change log v.0.7.5
+(pre-release)
+
+**fix**: fixed an issue where form data might not be decoded correctly, resulting in remainin '+' signs that weren't properly converted to spaces.
+
+***
+
 Change log v.0.7.4
 
 **change/fix**: it seems that behavior is more predictable when routes macgic parameters are non-persistent between routes. The old behavior (persistent parameters) is now limited to re-write routes.
