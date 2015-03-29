@@ -3,7 +3,6 @@
 ***
 
 Change log v.0.7.5
-(pre-release)
 
 **fix**: fixed an issue where form data might not be decoded correctly, resulting in remainin '+' signs that weren't properly converted to spaces.
 
