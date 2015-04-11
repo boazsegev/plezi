@@ -7,6 +7,7 @@ module Plezi
 	class HTTPProtocol
 
 		HTTP_METHODS = %w{GET HEAD POST PUT DELETE TRACE OPTIONS}
+		HTTP_METHODS_REGEXP = /^#{HTTP_METHODS.join('|')}/
 
 		attr_accessor :service
 
@@ -76,7 +77,7 @@ module Plezi
 
 		# parses the method request (the first line in the HTTP request).
 		def parse_method data
-			return false unless data[0] && data[0].match(/^#{HTTP_METHODS.join('|')}/)
+			return false unless data[0] && data[0].match(HTTP_METHODS_REGEXP)
 			@parser_data[:time_recieved] = Time.now
 			@parser_data[:params] = {}
 			@parser_data[:cookies] = Cookies.new

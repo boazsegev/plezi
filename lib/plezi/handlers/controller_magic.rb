@@ -270,13 +270,13 @@ module Plezi
 			# lists the available methods that will be exposed to HTTP requests
 			def available_public_methods
 				# set class global to improve performance while checking for supported methods
-				Plezi.cached?(self.superclass.name + "_p&rt") ? Plezi.get_cached(self.superclass.name + "_p&rt") : Plezi.cache_data(self.superclass.name + "_p&rt", available_routing_methods - [:before, :after, :save, :show, :update, :delete, :initialize, :on_message, :pre_connect, :on_connect, :on_disconnect])
+				Plezi.cached?(self.superclass.name + "_p&rt") ? Plezi.get_cached(self.superclass.name + "_p&rt") : Plezi.cache_data(self.superclass.name + "_p&rt", (available_routing_methods - [:before, :after, :save, :show, :update, :delete, :initialize, :on_message, :pre_connect, :on_connect, :on_disconnect]).to_set )
 			end
 
 			# lists the available methods that will be exposed to the HTTP router
 			def available_routing_methods
 				# set class global to improve performance while checking for supported methods
-				Plezi.cached?(self.superclass.name + "_r&rt") ? Plezi.get_cached(self.superclass.name + "_r&rt") : Plezi.cache_data(self.superclass.name + "_r&rt",  (((public_instance_methods - Object.public_instance_methods) - Plezi::ControllerMagic::InstanceMethods.instance_methods).delete_if {|m| m.to_s[0] == '_'})  )
+				Plezi.cached?(self.superclass.name + "_r&rt") ? Plezi.get_cached(self.superclass.name + "_r&rt") : Plezi.cache_data(self.superclass.name + "_r&rt",  (((public_instance_methods - Object.public_instance_methods) - Plezi::ControllerMagic::InstanceMethods.instance_methods).delete_if {|m| m.to_s[0] == '_'}).to_set  )
 			end
 
 			# resets this controller's router, to allow for dynamic changes
