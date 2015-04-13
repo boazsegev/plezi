@@ -103,6 +103,7 @@ module Plezi
 		# data is a string that contains binary or UTF8 (message dependent) data.
 		def on_message data
 			broadcast :_push, data
+			_push "your message was sent: #{data.to_s}"
 		end
 
 		# called when a disconnect packet has been recieved or the connection has been cut
@@ -116,7 +117,7 @@ module Plezi
 		# BUT, broadcasted methods must be public (or the broadcast will quietly fail)... so we have to use
 		# the _underscore for this method.
 		def _push data
-			response << data		
+			response << data.to_s
 		end
 
 		#####
@@ -125,7 +126,7 @@ module Plezi
 
 		# called when request is GET and params\[:id] isn't defined
 		def index
-			{message: 'index', data: {id: nil, token: nil}}.to_json
+			"This stub controller is used to test websockets.\n\r\n\rVisit http://www.websocket.org/echo.html for WS testing.\n\r\n\rOr add a nickname to the route to view long-pulling stub. i.e.: #{request.base_url}/nickname"
 		end
 
 		# called when request is GET and params\[:id] exists (unless params\[:id] == "new").

@@ -79,8 +79,8 @@ module Plezi
 		true while fire_event
 		fire_timers
 
-		rescue Exception => e
-
-		error e
+		# rescue Exception => e
+		# error e
+		# # raise if e.is_a?(SignalException) || e.is_a?(SystemExit)
 	end
 end
