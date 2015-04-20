@@ -9,16 +9,21 @@ module Plezi
 	end
 	# Plezi event cycle settings: sets how many worker threads Plezi will run.
 	def max_threads= value
-		@max_threads = value
+		raise "Plezi will hang and do nothing if there isn't at least one (1) working thread. Cannot set Plezi.max_threads = #{value}" if value.to_i <= 0
+		@max_threads = value.to_i
 	end
+
+	# set the default idle sleep time
+	@idle_sleep = 0.1
+
 
 	# Plezi event cycle settings: how long to wait for IO activity before forcing another cycle.
 	#
 	# No timing methods will be called during this interval.
 	#
-	# get the current idle setting
+	# Gets the current idle setting. The default setting is 0.1 seconds.
 	def idle_sleep
-		@idle_sleep ||= 0.1
+		@idle_sleep
 	end
 	# Plezi event cycle settings: how long to wait for IO activity before forcing another cycle.
 	#
@@ -45,7 +50,7 @@ module Plezi
 		# set signal tarps
 		trap('INT'){ exit_flag = true; raise "close Plezi" }
 		trap('TERM'){ exit_flag = true; raise "close Plezi" }
-		puts 'Services running. Press ^C to stop'
+		puts "Services running Plezi version #{Plezi::VERSION}. Press ^C to stop"
 		# sleep until trap raises exception (cycling might cause the main thread to ignor signals and lose attention)
 		(sleep unless SERVICES.empty?) rescue true
 		# start shutdown.

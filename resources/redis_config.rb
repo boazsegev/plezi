@@ -18,17 +18,21 @@ if defined? Redis
 	# ENV['PL_REDIS_URL'] = ENV['REDISCLOUD_URL'] ||= ENV["REDISTOGO_URL"] ||= "redis://username:password@my.host:6389"
 
 
+	# ## Custom Redis Automation
+	# ## ====
+	# ##
 	# ## create a listening thread - rewrite the following code for your own Redis tailored solution.
 	# ##
 	# ## the following is only sample code for you to change:
-	# RADIS_CHANNEL = appsecret
+	# RADIS_CHANNEL = 'appsecret'
 	# RADIS_URI = URI.parse(ENV['REDISCLOUD_URL'] || "redis://username:password@my.host:6389")
 	# RADIS_CONNECTION = Redis.new(host: RADIS_URI.host, port: RADIS_URI.port, password: RADIS_URI.password)
 	# RADIS_THREAD = Thread.new do
 	# 	Redis.new(host: RADIS_URI.host, port: RADIS_URI.port, password: RADIS_URI.password).subscribe(RADIS_CHANNEL) do |on|
 	# 		on.message do |channel, msg|
 	# 			msg = JSON.parse(msg)
-	# 			# do stuff
+	# 			# do stuff, i.e.:
+	# 			# Plezi.run_async(msg) { |m| Plezi.info m.to_s }
 	# 		end
 	# 	end
 	# end

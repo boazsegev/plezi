@@ -3,6 +3,25 @@ module Plezi
 
 	module_function
 
+	# set the default idle waiting time.
+	@idle_sleep = 0.1
+
+	# Plezi event cycle settings: how long to wait for IO activity before forcing another cycle.
+	#
+	# No timing methods will be called during this interval.
+	#
+	# Gets the current idle setting. The default setting is 0.1 seconds.
+	def idle_sleep
+		@idle_sleep
+	end
+	# Plezi event cycle settings: how long to wait for IO activity before forcing another cycle.
+	#
+	# No timing methods will be called during this interval.
+	#
+	# set the current idle setting
+	def idle_sleep= value
+		@idle_sleep = value
+	end
 
 	# DANGER ZONE - Plezi Engine. the io reactor mutex
 	IO_LOCKER = Mutex.new
@@ -13,7 +32,7 @@ module Plezi
 			return false unless EVENTS.empty?
 			united = SERVICES.keys + IO_CONNECTION_DIC.keys
 			return false if united.empty?
-			io_r = (IO.select(united, nil, united, idle_sleep) ) #rescue false)
+			io_r = (IO.select(united, nil, united, @idle_sleep) ) #rescue false)
 			if io_r
 				io_r[0].each do |io|
 					if SERVICES[io]

@@ -33,6 +33,15 @@ module Plezi
 		end
 	end
 
+	# Public API. Runs the block asynchronously by pushin it as an event to the event's stack
+	#
+	# accepts a block to be executed asynchronously.
+	#
+	def run_async *args, &block
+		LOCKER.synchronize {EVENTS << [ block, args ]} if block
+		block
+	end
+
 	# Public API. creates an asynchronous call to a method, with an optional callback:
 	# demo use:
 	# `callback( Kernel, :sleep, 1 ) { puts "this is a demo" }`

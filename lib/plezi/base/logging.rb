@@ -21,10 +21,8 @@ module Plezi
 	# log_file:: a log file name to be used for logging
 	# copy_to_stdout:: if false, log will only log to file. defaults to true.
 	def create_logger log_file = STDOUT, copy_to_stdout = false
-		@copy_to_stdout = false
-		@copy_to_stdout = ::Logger.new(STDOUT) if copy_to_stdout
+		@copy_to_stdout = ( copy_to_stdout ? (::Logger.new(STDOUT)) : false )
 		@logger = ::Logger.new(log_file)
-		@logger
 	end
 	alias :set_logger :create_logger
 

@@ -2,10 +2,12 @@
 
 ***
 
-Change log v.0.7.5
+Change log v.0.7.6
 (pre-release)
 
 **performance**: minor performance improvements.
+
+**API**: minor additions to the Plezi API, such as the `Plezi.run_async` method.
 
 ***
 
