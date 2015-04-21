@@ -13,27 +13,6 @@ module Plezi
 		@max_threads = value.to_i
 	end
 
-	# set the default idle sleep time
-	@idle_sleep = 0.1
-
-
-	# Plezi event cycle settings: how long to wait for IO activity before forcing another cycle.
-	#
-	# No timing methods will be called during this interval.
-	#
-	# Gets the current idle setting. The default setting is 0.1 seconds.
-	def idle_sleep
-		@idle_sleep
-	end
-	# Plezi event cycle settings: how long to wait for IO activity before forcing another cycle.
-	#
-	# No timing methods will be called during this interval.
-	#
-	# set the current idle setting
-	def idle_sleep= value
-		@idle_sleep = value
-	end
-
 	# Plezi Engine, DO NOT CALL. creates the thread pool and starts cycling through the events.
 	def start_services
 		# prepare threads
