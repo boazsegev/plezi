@@ -2,7 +2,7 @@
 [![Gem Version](https://badge.fury.io/rb/plezi.svg)](http://badge.fury.io/rb/plezi)
 [![Inline docs](http://inch-ci.org/github/boazsegev/plezi.svg?branch=master)](http://inch-ci.org/github/boazsegev/plezi)
 
-> People who are serious about their frameworks, should make their own servers...
+> People who are serious about their frameworks, should write their own servers...
 
 _(if to para-phrase "People who are serious about their software, should make their own hardware.")_
 
