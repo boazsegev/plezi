@@ -16,7 +16,9 @@ module Plezi
 	end
 	# Plezi event cycle settings: how long to wait for IO activity before forcing another cycle.
 	#
-	# No timing methods will be called during this interval.
+	# No timing methods will be called during this interval (#run_after / #run_every).
+	# 
+	# It's rare, but it's one of the reasons for the timeout: some connections might wait for the timeout befor being established.
 	#
 	# set the current idle setting
 	def idle_sleep= value
