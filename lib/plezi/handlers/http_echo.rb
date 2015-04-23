@@ -6,7 +6,7 @@ module Plezi
 
 		# handles requests by printing out the parsed data. gets the `request` parameter from the HTTP protocol.
 		def on_request request
-			response = HTTPResponse.new request, 200, {"content-type" => "text/plain"}, ["parsed as:\r\n", request.to_s]
+			response = HTTPResponse.new request, 200, {'content-type' => 'text/plain'}, ["parsed as:\r\n", request.to_s]
 			response.body.last << "\n\n params:"
 			request.params.each {|k,v| response.body.last << "\n#{k}: #{v}"}
 			response.send

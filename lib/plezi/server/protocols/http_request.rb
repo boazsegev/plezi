@@ -112,11 +112,11 @@ module Plezi
 		end
 		# returns true if the request is of type JSON.
 		def json?
-			self["content-type"].match /application\/json/
+			self['content-type'].match /application\/json/
 		end
 		# returns true if the request is of type XML.
 		def xml?
-			self["content-type"].match /text\/xml/
+			self['content-type'].match /text\/xml/
 		end
 
 	end

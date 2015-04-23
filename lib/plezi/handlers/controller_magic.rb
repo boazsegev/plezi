@@ -106,16 +106,16 @@ module Plezi
 				response << data
 
 				# set headers
-				content_disposition = "attachment"
+				content_disposition = 'attachment'
 
 				options[:type] ||= MimeTypeHelper::MIME_DICTIONARY[::File.extname(options[:filename])] if options[:filename]
 
 				if options[:type]
-					response["content-type"] = options[:type]
+					response['content-type'] = options[:type]
 					options.delete :type
 				end
 				if options[:inline]
-					content_disposition = "inline"
+					content_disposition = 'inline'
 					options.delete :inline
 				end
 				if options[:attachment]
@@ -125,8 +125,8 @@ module Plezi
 					content_disposition << "; filename=#{options[:filename]}"
 					options.delete :filename
 				end
-				response["content-length"] = data.bytesize rescue true
-				response["content-disposition"] = content_disposition
+				response['content-length'] = data.bytesize rescue true
+				response['content-disposition'] = content_disposition
 				response.finish
 				true
 			end
@@ -270,19 +270,19 @@ module Plezi
 			# lists the available methods that will be exposed to HTTP requests
 			def available_public_methods
 				# set class global to improve performance while checking for supported methods
-				Plezi.cached?(self.superclass.name + "_p&rt") ? Plezi.get_cached(self.superclass.name + "_p&rt") : Plezi.cache_data(self.superclass.name + "_p&rt", (available_routing_methods - [:before, :after, :save, :show, :update, :delete, :initialize, :on_message, :pre_connect, :on_connect, :on_disconnect]).to_set )
+				Plezi.cached?(self.superclass.name + '_p&rt') ? Plezi.get_cached(self.superclass.name + "_p&rt") : Plezi.cache_data(self.superclass.name + "_p&rt", (available_routing_methods - [:before, :after, :save, :show, :update, :delete, :initialize, :on_message, :pre_connect, :on_connect, :on_disconnect]).to_set )
 			end
 
 			# lists the available methods that will be exposed to the HTTP router
 			def available_routing_methods
 				# set class global to improve performance while checking for supported methods
-				Plezi.cached?(self.superclass.name + "_r&rt") ? Plezi.get_cached(self.superclass.name + "_r&rt") : Plezi.cache_data(self.superclass.name + "_r&rt",  (((public_instance_methods - Object.public_instance_methods) - Plezi::ControllerMagic::InstanceMethods.instance_methods).delete_if {|m| m.to_s[0] == '_'}).to_set  )
+				Plezi.cached?(self.superclass.name + '_r&rt') ? Plezi.get_cached(self.superclass.name + "_r&rt") : Plezi.cache_data(self.superclass.name + "_r&rt",  (((public_instance_methods - Object.public_instance_methods) - Plezi::ControllerMagic::InstanceMethods.instance_methods).delete_if {|m| m.to_s[0] == '_'}).to_set  )
 			end
 
 			# resets this controller's router, to allow for dynamic changes
 			def reset_routing_cache
-				Plezi.clear_cached(self.superclass.name + "_p&rt")
-				Plezi.clear_cached(self.superclass.name + "_r&rt")
+				Plezi.clear_cached(self.superclass.name + '_p&rt')
+				Plezi.clear_cached(self.superclass.name + '_r&rt')
 				available_routing_methods
 				available_public_methods
 			end
@@ -329,10 +329,10 @@ module Plezi
 				# raise "Redis connction failed for: #{ENV['PL_REDIS_URL']}" unless @@redis
 				# @@redis
 				return false unless defined?(Redis) && ENV['PL_REDIS_URL']
-				return Plezi.get_cached(self.superclass.name + "_b") if Plezi.cached?(self.superclass.name + "_b")
+				return Plezi.get_cached(self.superclass.name + '_b') if Plezi.cached?(self.superclass.name + '_b')
 				@@redis_uri ||= URI.parse(ENV['PL_REDIS_URL'])
-				Plezi.cache_data self.superclass.name + "_b", Redis.new(host: @@redis_uri.host, port: @@redis_uri.port, password: @@redis_uri.password)
-				raise "Redis connction failed for: #{ENV['PL_REDIS_URL']}" unless Plezi.cached?(self.superclass.name + "_b")
+				Plezi.cache_data self.superclass.name + '_b', Redis.new(host: @@redis_uri.host, port: @@redis_uri.port, password: @@redis_uri.password)
+				raise "Redis connction failed for: #{ENV['PL_REDIS_URL']}" unless Plezi.cached?(self.superclass.name + '_b')
 				t = Thread.new do
 					begin
 						Redis.new(host: @@redis_uri.host, port: @@redis_uri.port, password: @@redis_uri.password).subscribe(redis_channel_name) do |on|
@@ -347,8 +347,8 @@ module Plezi
 						retry
 					end
 				end
-				Plezi.cache_data self.superclass.name + "_t", t
-				Plezi.get_cached(self.superclass.name + "_b")
+				Plezi.cache_data self.superclass.name + '_t', t
+				Plezi.get_cached(self.superclass.name + '_b')
 			end
 
 			# returns a Redis channel name for this controller.

@@ -45,7 +45,7 @@ module Plezi
 			service.timeout = @timeout_interval
 			# Plezi.callback service, :timeout=, @timeout_interval
 			Plezi.callback @service.handler, :on_connect if @service.handler.methods.include?(:on_connect)
-			Plezi.info "Upgraded HTTP to WebSockets. Logging only errors."
+			Plezi.info 'Upgraded HTTP to WebSockets. Logging only errors.'
 		end
 
 		# called when data is recieved

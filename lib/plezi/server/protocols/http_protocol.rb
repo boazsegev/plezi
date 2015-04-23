@@ -19,7 +19,7 @@ module Plezi
 			@parser_chunk = ''
 			@parser_length = 0
 			@locker = Mutex.new
-			@@rack_dictionary ||= {"HOST".freeze => :host_name, 'REQUEST_METHOD'.freeze => :method,
+			@@rack_dictionary ||= {'HOST'.freeze => :host_name, 'REQUEST_METHOD'.freeze => :method,
 								'PATH_INFO'.freeze => :path, 'QUERY_STRING'.freeze => :query,
 								'SERVER_NAME'.freeze => :host_name, 'SERVER_PORT'.freeze => :port,
 								'rack.url_scheme'.freeze => :requested_protocol}
@@ -111,7 +111,7 @@ module Plezi
 			end
 			return false unless data[0]
 			data.shift while data[0] && data[0].match(/^[\r\n]+$/)
-			if @parser_data["transfer-coding"] || (@parser_data["content-length"] && @parser_data["content-length"].to_i != 0) || @parser_data["content-type"]
+			if @parser_data['transfer-coding'] || (@parser_data['content-length'] && @parser_data['content-length'].to_i != 0) || @parser_data['content-type']
 				@parser_stage = 2
 			else					
 				# create request object and hand over to handler
@@ -124,7 +124,7 @@ module Plezi
 		#parses the body of a request.
 		def parse_body data
 			# check for body is needed, if exists and if complete
-			if @parser_data["transfer-coding"] == "chunked"
+			if @parser_data['transfer-coding'] == 'chunked'
 				until data.empty? || data[0].to_s.match(/0(\r)?\n/)
 					if @parser_length == 0
 						@parser_length = data.to_s.shift.match(/^[a-z0-9A-Z]+/).to_i(16)
@@ -142,8 +142,8 @@ module Plezi
 				return false unless data[0].to_s.match(/0(\r)?\n/)
 				true until data.empty? || data.shift.match(/^[\r\n]+$/)
 				data.shift while data[0].to_s.match /^[\r\n]+$/
-			elsif @parser_data["content-length"].to_i
-				@parser_length = @parser_data["content-length"].to_i if @parser_length == 0
+			elsif @parser_data['content-length'].to_i
+				@parser_length = @parser_data['content-length'].to_i if @parser_length == 0
 				@parser_chunk << data.shift while @parser_length > @parser_chunk.bytesize && data[0]
 				return false if @parser_length > @parser_chunk.bytesize
 				@parser_body = @parser_chunk.byteslice(0, @parser_length)
@@ -207,13 +207,13 @@ module Plezi
 
 			#check for server-responses
 			case request.request_method
-			when "TRACE"
+			when 'TRACE'
 				return true
-			when "OPTIONS"
+			when 'OPTIONS'
 				Plezi.push_event Proc.new do
 					response = HTTPResponse.new request
-					response[:Allow] = "GET,HEAD,POST,PUT,DELETE,OPTIONS"
-					response["access-control-allow-origin"] = "*"
+					response[:Allow] = 'GET,HEAD,POST,PUT,DELETE,OPTIONS'
+					response['access-control-allow-origin'] = '*'
 					response['content-length'] = 0
 					response.finish
 				end
@@ -224,14 +224,14 @@ module Plezi
 			if service && service.handler
 				Plezi.callback service.handler, :on_request, request
 			else
-				Plezi.error "No Handler for this HTTP service."
+				Plezi.error 'No Handler for this HTTP service.'
 			end
 		end
 
 		# read the body's data and parse any incoming data.
 		def read_body
 			# parse content
-			case @parser_data["content-type"].to_s
+			case @parser_data['content-type'].to_s
 			when /x-www-form-urlencoded/
 				HTTP.extract_data @parser_body.split(/[&;]/), @parser_data[:params], :form # :uri
 			when /multipart\/form-data/
@@ -250,13 +250,13 @@ module Plezi
 
 		# parse a mime/multipart body or part.
 		def read_multipart headers, part, name_prefix = ''
-			if headers["content-type"].to_s.match /multipart/
-				boundry = headers["content-type"].match(/boundary=([^\s]+)/)[1]
-				if headers["content-disposition"].to_s.match /name=/
+			if headers['content-type'].to_s.match /multipart/
+				boundry = headers['content-type'].match(/boundary=([^\s]+)/)[1]
+				if headers['content-disposition'].to_s.match /name=/
 					if name_prefix.empty?
-						name_prefix << HTTP.decode(headers["content-disposition"].to_s.match(/name="([^"]*)"/)[1])
+						name_prefix << HTTP.decode(headers['content-disposition'].to_s.match(/name="([^"]*)"/)[1])
 					else
-						name_prefix << "[#{HTTP.decode(headers["content-disposition"].to_s.match(/name="([^"]*)"/)[1])}]"
+						name_prefix << "[#{HTTP.decode(headers['content-disposition'].to_s.match(/name="([^"]*)"/)[1])}]"
 					end
 				end
 				part.split(/([\r]?\n)?--#{boundry}(--)?[\r]?\n/).each do |p|
@@ -285,14 +285,14 @@ module Plezi
 
 			# convert part to `charset` if charset is defined?
 
-			if !headers["content-disposition"]
+			if !headers['content-disposition']
 				Plezi.error "Wrong multipart format with headers: #{headers} and body: #{part}"
 				return
 			end
 
 			cd = {}
 
-			HTTP.extract_data headers["content-disposition"].match(/[^;];([^\r\n]*)/)[1].split(/[;,][\s]?/), cd, :uri
+			HTTP.extract_data headers['content-disposition'].match(/[^;];([^\r\n]*)/)[1].split(/[;,][\s]?/), cd, :uri
 
 			name = name_prefix.dup
 
@@ -301,9 +301,9 @@ module Plezi
 			else
 				name << "[#{HTTP.decode(cd[:name][1..-2])}]"
 			end
-			if headers["content-type"]
+			if headers['content-type']
 				HTTP.add_param_to_hash "#{name}[data]", part, @parser_data[:params]
-				HTTP.add_param_to_hash "#{name}[type]", HTTP.make_utf8!(headers["content-type"]), @parser_data[:params]
+				HTTP.add_param_to_hash "#{name}[type]", HTTP.make_utf8!(headers['content-type']), @parser_data[:params]
 				cd.each {|k,v|  HTTP.add_param_to_hash "#{name}[#{k.to_s}]", HTTP.make_utf8!(v[1..-2]), @parser_data[:params] unless k == :name}
 			else
 				HTTP.add_param_to_hash name, HTTP.decode(part, :utf8), @parser_data[:params]

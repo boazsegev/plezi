@@ -15,12 +15,12 @@ module Plezi
 		Object.const_set('PLEZI_ON_RACK', true) unless defined? PLEZI_ON_RACK
 
 		# re-encode to utf-8, as it's all BINARY encoding at first
-		env["rack.input"].rewind
-		env['rack.input'] = StringIO.new env["rack.input"].read.encode("utf-8", "binary", invalid: :replace, undef: :replace, replace: '')		 	
+		env['rack.input'].rewind
+		env['rack.input'] = StringIO.new env['rack.input'].read.encode('utf-8', 'binary', invalid: :replace, undef: :replace, replace: '')		 	
 		env.each do |k, v|
 			if k.to_s.match /^[A-Z]/
 				if v.is_a?(String) && !v.frozen?
-					v.force_encoding("binary").encode!("utf-8", "binary", invalid: :replace, undef: :replace, replace: '') unless v.force_encoding("utf-8").valid_encoding?
+					v.force_encoding('binary').encode!('utf-8', 'binary', invalid: :replace, undef: :replace, replace: '') unless v.force_encoding('utf-8').valid_encoding?
 				end
 			end
 		end
@@ -33,11 +33,11 @@ module Plezi
 		make_hash_accept_symbols(env)
 
 		# use Plezi Cookies
-		env["rack.request.cookie_string"] = env["HTTP_COOKIE"]
-		env["rack.request.cookie_hash"] = Plezi::Cookies.new.update(env["rack.request.cookie_hash"] || {})
+		env['rack.request.cookie_string'] = env['HTTP_COOKIE']
+		env['rack.request.cookie_hash'] = Plezi::Cookies.new.update(env['rack.request.cookie_hash'] || {})
 
 		# chomp path
-		env["PATH_INFO"].chomp! '/'
+		env['PATH_INFO'].chomp! '/'
 
 		# get response
 		response = Plezi::SERVICES[0][1][:handler].call env
@@ -51,8 +51,8 @@ module Plezi
 		headers.delete 'transfer-encoding'
 		headers.delete 'connection'
 		unless response.cookies.empty?
-			headers["Set-Cookie"] = []
-			response.cookies.each {|k,v| headers["Set-Cookie"] << ("#{k.to_s}=#{v.to_s}")}
+			headers['Set-Cookie'] = []
+			response.cookies.each {|k,v| headers['Set-Cookie'] << ("#{k.to_s}=#{v.to_s}")}
 		end
 		[response.status, headers, response.body]
 	end

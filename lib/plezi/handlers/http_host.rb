@@ -108,7 +108,7 @@ module Plezi
 						return send_file(request, File.join(params[:root], "#{code}.html"), code, headers)
 					end
 				end
-				return true if send_raw_data(request, HTTPResponse::STATUS_CODES[code], "text/plain", code, headers)
+				return true if send_raw_data(request, HTTPResponse::STATUS_CODES[code], 'text/plain', code, headers)
 			rescue Exception => e
 				Plezi.error e
 			end

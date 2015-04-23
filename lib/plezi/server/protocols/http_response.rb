@@ -43,7 +43,7 @@ module Plezi
 				hs["plezi_flash_#{k.to_s}".to_sym] if hs.has_key? "plezi_flash_#{k.to_s}".to_sym
 			end
 			request.cookies.each do |k,v|
-				@flash[k] = v if k.to_s.start_with? "plezi_flash_"
+				@flash[k] = v if k.to_s.start_with? 'plezi_flash_'
 			end
 		end
 
@@ -122,14 +122,14 @@ module Plezi
 			params[:path] ||= '/'
 			value = HTTP.encode(value.to_s)
 			if params[:max_age]
-				value << ("; Max-Age=%s" % params[:max_age])
+				value << ('; Max-Age=%s' % params[:max_age])
 			else
-				value << ("; Expires=%s" % params[:expires].httpdate)
+				value << ('; Expires=%s' % params[:expires].httpdate)
 			end
 			value << "; Path=#{params[:path]}"
 			value << "; Domain=#{params[:domain]}" if params[:domain]
-			value << "; Secure" if params[:secure]
-			value << "; HttpOnly" if params[:http_only]
+			value << '; Secure' if params[:secure]
+			value << '; HttpOnly' if params[:http_only]
 			@cookies[HTTP.encode(name.to_s).to_sym] = value
 		end
 
@@ -155,7 +155,7 @@ module Plezi
 			body << str if str && body.is_a?(Array)
 			send_headers
 			return if request.head?
-			if headers["transfer-encoding"] == "chunked"
+			if headers['transfer-encoding'] == 'chunked'
 				body.each do |s|
 					service.send "#{s.bytesize.to_s(16)}\r\n"
 					service.send s
@@ -177,7 +177,7 @@ module Plezi
 			return self if defined?(PLEZI_ON_RACK)
 			raise 'HTTPResponse SERVICE MISSING: cannot send http response without a service.' unless service
 			self.send
-			service.send( (headers["transfer-encoding"] == "chunked") ? "0\r\n\r\n" : nil)
+			service.send( (headers['transfer-encoding'] == 'chunked') ? "0\r\n\r\n" : nil)
 			@finished = true
 			# log
 			Plezi.log_raw "#{request[:client_ip]} [#{Time.now.utc}] \"#{request[:method]} #{request[:original_path]} #{request[:requested_protocol]}\/#{request[:version]}\" #{status} #{bytes_sent.to_s} #{"%0.3f" % ((Time.now - request[:time_recieved])*1000)}ms\n"
@@ -196,7 +196,7 @@ module Plezi
 			headers['cache-control'] ||= 'no-cache'
 			# remove old flash cookies
 			request.cookies.keys.each do |k|
-				if k.to_s.start_with? "plezi_flash_"
+				if k.to_s.start_with? 'plezi_flash_'
 					set_cookie k, nil
 					flash.delete k
 				end

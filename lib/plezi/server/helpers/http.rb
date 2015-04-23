@@ -99,8 +99,8 @@ module Plezi
 				when :html
 					object.gsub!(/&amp;/i, '&')
 					object.gsub!(/&quot;/i, '"')
-					object.gsub!(/&gt;/i, ">")
-					object.gsub!(/&lt;/i, "<")
+					object.gsub!(/&gt;/i, '>')
+					object.gsub!(/&lt;/i, '<')
 				when :utf8
 
 				else
@@ -126,19 +126,19 @@ module Plezi
 			elsif object.is_a?(String)
 				case decode_method
 				when :uri, :url, :form
-					object.force_encoding "binary"
+					object.force_encoding 'binary'
 					object.gsub!(/[^a-zA-Z0-9\*\.\_\-]/) {|m| m.ord <= 16 ? "%0#{m.ord.to_s(16)}" : "%#{m.ord.to_s(16)}"}
 				when :html
-					object.gsub!('&', "&amp;")
-					object.gsub!('"', "&quot;")
-					object.gsub!(">", "&gt;")
-					object.gsub!("<", "&lt;")
-					object.gsub!(/[^\sa-zA-Z\d\&\;]/) {|m| "&#%04d;" % m.unpack('U')[0] }
+					object.gsub!('&', '&amp;')
+					object.gsub!('"', '&quot;')
+					object.gsub!('>', '&gt;')
+					object.gsub!('<', '&lt;')
+					object.gsub!(/[^\sa-zA-Z\d\&\;]/) {|m| '&#%04d;' % m.unpack('U')[0] }
 					# object.gsub!(/[^\s]/) {|m| "&#%04d;" % m.unpack('U')[0] }
-					object.force_encoding "binary"
+					object.force_encoding 'binary'
 				when :utf8
-					object.gsub!(/[^\sa-zA-Z\d]/) {|m| "&#%04d;" % m.unpack('U')[0] }
-					object.force_encoding "binary"
+					object.gsub!(/[^\sa-zA-Z\d]/) {|m| '&#%04d;' % m.unpack('U')[0] }
+					object.force_encoding 'binary'
 				else
 
 				end
@@ -163,7 +163,7 @@ module Plezi
 		# re-encodes a string into UTF-8
 		def make_utf8!(string, encoding= 'utf-8')
 			return false unless string
-			string.force_encoding("binary").encode!(encoding, "binary", invalid: :replace, undef: :replace, replace: '') unless string.force_encoding(encoding).valid_encoding?
+			string.force_encoding('binary').encode!(encoding, 'binary', invalid: :replace, undef: :replace, replace: '') unless string.force_encoding(encoding).valid_encoding?
 			string
 		end
 
