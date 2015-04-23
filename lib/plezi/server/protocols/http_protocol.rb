@@ -244,7 +244,7 @@ module Plezi
 				JSON.parse(HTTP.make_utf8! @parser_data[:body]).each {|k, v| HTTP.add_param_to_hash k, v, @parser_data[:params]}
 			else
 				@parser_data[:body] = @parser_body.dup
-				Plezi.error "POST body type (#{@parser_data["content-type"]}) cannot be parsed. raw body is kept in the request's data as request[:body]: #{@parser_body}"
+				Plezi.error "POST body type (#{@parser_data['content-type']}) cannot be parsed. raw body is kept in the request's data as request[:body]: #{@parser_body}"
 			end
 		end
 
