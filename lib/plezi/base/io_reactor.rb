@@ -40,7 +40,7 @@ module Plezi
 					if SERVICES[io]
 						begin
 							connection = io.accept_nonblock
-							callback Plezi, :add_connection, connection, SERVICES[io]
+							push_event method(:add_connection), connection, SERVICES[io]
 						rescue Errno::EWOULDBLOCK => e
 
 						rescue Exception => e
@@ -48,7 +48,7 @@ module Plezi
 							# SERVICES.delete s if s.closed?
 						end
 					elsif IO_CONNECTION_DIC[io]
-						callback(IO_CONNECTION_DIC[io], :on_message)
+						push_event IO_CONNECTION_DIC[io].method(:on_message)
 					else
 						IO_CONNECTION_DIC.delete(io)
 						SERVICES.delete(io)
