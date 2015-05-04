@@ -2,12 +2,18 @@
 
 ***
 
-Change log v.0.7.6
+Change log v.0.7.7
 (pre-release)
+
+***
+
+Change log v.0.7.6
 
 **performance**: minor performance improvements.
 
 **API**: minor additions to the Plezi API, such as the `Plezi.run_async` method.
+
+**fix**: Some HTTP refinements. for example, keep-alive headers are now enforced for all connections (not standard, but better performance). Patch requests are now pipelined to the controller's RESTful API.
 
 ***
 
