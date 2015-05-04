@@ -179,6 +179,7 @@ module Plezi
 			self.send
 			service.send( (headers['transfer-encoding'] == 'chunked') ? "0\r\n\r\n" : nil)
 			@finished = true
+			# service.disconnect unless headers['keep-alive']
 			# log
 			Plezi.log_raw "#{request[:client_ip]} [#{Time.now.utc}] \"#{request[:method]} #{request[:original_path]} #{request[:requested_protocol]}\/#{request[:version]}\" #{status} #{bytes_sent.to_s} #{"%0.3f" % ((Time.now - request[:time_recieved])*1000)}ms\n"
 		end
@@ -190,7 +191,8 @@ module Plezi
 
 		# Danger Zone (internally used method, use with care): fix response's headers before sending them (date, connection and transfer-coding).
 		def fix_headers
-			# headers['Connection'] ||= "Keep-Alive"
+			headers['connection'] = "Keep-Alive"
+			headers['keep-alive'] = "timeout=5"
 			headers['date'] = Time.now.httpdate
 			headers['transfer-encoding'] ||= 'chunked' if !headers['content-length']
 			headers['cache-control'] ||= 'no-cache'
