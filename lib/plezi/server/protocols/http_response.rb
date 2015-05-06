@@ -194,7 +194,7 @@ module Plezi
 			headers['connection'] = "Keep-Alive"
 			headers['keep-alive'] = "timeout=5"
 			headers['date'] = Time.now.httpdate
-			headers['transfer-encoding'] ||= 'chunked' if !headers['content-length']
+			headers['transfer-encoding'] ||= 'chunked' unless headers['content-length']
 			headers['cache-control'] ||= 'no-cache'
 			# remove old flash cookies
 			request.cookies.keys.each do |k|
