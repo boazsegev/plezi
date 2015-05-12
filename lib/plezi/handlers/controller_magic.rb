@@ -35,7 +35,7 @@ module Plezi
 			attr_reader :cookies
 
 			# the HTTPResponse **OR** the WSResponse object that formats the response and sends it. use `response << data`. This object can be used to send partial data (such as headers, or partial html content) in blocking mode as well as sending data in the default non-blocking mode.
-			attr_accessor :response
+			attr_reader :response
 
 			# the ::flash is a little bit of a magic hash that sets and reads temporary cookies.
 			# these cookies will live for one successful request to a Controller and will then be removed.

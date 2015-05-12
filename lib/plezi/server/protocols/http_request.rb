@@ -59,6 +59,11 @@ module Plezi
 			"#{switch_protocol || self[:requested_protocol]}://#{self[:host_name]}#{self[:port]? ":#{self[:port]}" : ''}"
 		end
 
+		# the request's url, without any GET parameters ([http/https]://host[:port]/path)
+		def request_url switch_protocol = nil
+			"#{base_url switch_protocol}#{self[:original_path]}"
+		end
+
 		# the service (socket wrapper) that answered this request
 		def service
 			self[:plezi_service]
