@@ -36,7 +36,7 @@ module Plezi
 			"Should we make something new?"
 		end
 
-		# called when request is POST or PUT and params\[:id] isn't defined params\[:id] == "new" 
+		# called when request is POST or PUT and params\[:id] isn't defined or params\[:id] == "new" 
 		def save
 			"save called - creating a new object."
 		end
