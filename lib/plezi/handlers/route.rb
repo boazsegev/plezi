@@ -256,7 +256,7 @@ module Plezi
 					# finish if the response was sent
 					return true if response.headers_sent?
 					# complete handshake
-					return false unless WSProtocol.new( request.service, request.service.parameters).http_handshake request, response, self
+					return false unless WSProtocol.new( request.service, request.service.params).http_handshake request, response, self
 					# set up controller as WebSocket handler
 					@response = WSResponse.new request
 					# create the redis connection (in case this in the first instance of this class)

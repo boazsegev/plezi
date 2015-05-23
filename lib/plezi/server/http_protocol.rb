@@ -4,15 +4,13 @@ module Plezi
 	#
 	#
 	# to do: implemet logging, support body types: multipart (non-ASCII form data / uploaded files), json & xml
-	class HTTPProtocol
+	class HTTPProtocol < Protocol
 
 		HTTP_METHODS = %w{GET HEAD POST PUT DELETE TRACE OPTIONS}
 		HTTP_METHODS_REGEXP = /^#{HTTP_METHODS.join('|')}/
 
-		attr_accessor :service
-
-		def initialize service, params
-			@service = service
+		def initialize connection, params
+			super
 			@parser_stage = 0
 			@parser_data = {}
 			@parser_body = ''
@@ -25,35 +23,20 @@ module Plezi
 								'rack.url_scheme'.freeze => :requested_protocol}
 		end
 
-		# called when connection is initialized.
-		def on_connect service
-		end
-
 		# called when data is recieved.
 		#
-		# this method is called within a lock on the service (Mutex) - craeful from double locking.
+		# this method is called within a lock on the connection (Mutex) - craeful from double locking.
 		#
 		# typically returns an Array with any data not yet processed (to be returned to the in-que)... but here it always processes (or discards) the data.
-		def on_message(service)
+		def on_message
 			# parse the request
 			@locker.synchronize { parse_message }
 			if (@parser_stage == 1) && @parser_data[:version] >= 1.1
 				# send 100 continue message????? doesn't work! both Crome and Safari go crazy if this is sent after the request was sent (but before all the packets were recieved... msgs over 1 Mb).
-				# Plezi.push_event Proc.new { Plezi.info "sending continue signal."; service.send_nonblock "100 Continue\r\n\r\n" }
-				# service.send_unsafe_interrupt "100 Continue\r\n\r\n" # causes double lock on service
+				# Plezi.push_event Proc.new { Plezi.info "sending continue signal."; connection.send_nonblock "100 Continue\r\n\r\n" }
+				# connection.send_unsafe_interrupt "100 Continue\r\n\r\n" # causes double lock on connection
 			end
 			true
-		end
-
-		# # called when a disconnect is fired
-		# # (socket was disconnected / service should be disconnected / shutdown / socket error)
-		def on_disconnect service
-		end
-
-		# called when an exception was raised
-		# (socket was disconnected / service should be disconnected / shutdown / socket error)
-		def on_exception service, e
-			Plezi.error e
 		end
 
 
@@ -61,7 +44,7 @@ module Plezi
 
 		# parses incoming data
 		def parse_message data = nil
-			data ||= service.read.to_s.lines.to_a
+			data ||= connection.read.to_s.lines.to_a
 			# require 'pry'; binding.pry
 			if 	@parser_stage == 0
 				return false unless parse_method data
@@ -167,7 +150,7 @@ module Plezi
 		def complete_request
 			#finalize params and query properties
 			m = @parser_data[:query].match /(([a-z0-9A-Z]+):\/\/)?(([^\/\:]+))?(:([0-9]+))?([^\?\#]*)(\?([^\#]*))?/
-			@parser_data[:requested_protocol] = m[1] || (service.ssl? ? 'https' : 'http')
+			@parser_data[:requested_protocol] = m[1] || (connection.ssl? ? 'https' : 'http')
 			@parser_data[:host_name] = m[4] || (@parser_data['host'] ? @parser_data['host'].match(/^[^:]*/).to_s : nil)
 			@parser_data[:port] = m[6] || (@parser_data['host'] ? @parser_data['host'].match(/:([0-9]*)/).to_a[1] : nil)
 			@parser_data[:original_path] = HTTP.decode(m[7], :uri) || '/'
@@ -190,12 +173,12 @@ module Plezi
 			HTTP.make_utf8! @parser_data[:host_name] if @parser_data[:host_name]
 			HTTP.make_utf8! @parser_data[:query]
 
-			@parser_data[:client_ip] = @parser_data['x-forwarded-for'].to_s.split(/,[\s]?/)[0] || (service.socket.remote_address.ip_address) rescue 'unknown IP'
+			@parser_data[:client_ip] = @parser_data['x-forwarded-for'].to_s.split(/,[\s]?/)[0] || (connection.socket.remote_address.ip_address) rescue 'unknown IP'
 
 			@@rack_dictionary.each {|k,v| @parser_data[k] = @parser_data[v]}
 
 			#create request
-			request = HTTPRequest.new service
+			request = HTTPRequest.new connection
 			request.update @parser_data
 
 			#clear current state
@@ -221,10 +204,10 @@ module Plezi
 			end
 
 			#pass it to the handler or decler error.
-			if service && service.handler
-				Plezi.callback service.handler, :on_request, request
+			if connection && connection.handler
+				Plezi.callback connection.handler, :on_request, request
 			else
-				Plezi.error 'No Handler for this HTTP service.'
+				Plezi.error 'No Handler for this HTTP connection.'
 			end
 		end
 

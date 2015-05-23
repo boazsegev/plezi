@@ -2,8 +2,23 @@
 
 ***
 
+Change log v.0.8.0
+
+**Refactoring**: core code was refractored. Older code might not work.
+
+**Timers API changes**: The API for timed events has changed. It is now both more streamlined and allows setting a repeat limit for events that repeat themselves (i.e. schedule an event to repeat every 60 seconds and limit it to perform only 5 times).
+
+***
+
 Change log v.0.7.7
-(pre-release)
+
+**fix**: fixed a header issue in the HTTPResponse that prevented websocket connections.
+
+**deprecation notice**:
+
+v.0.8.0 will consist of many changes that will also influence the API. The 0.8.0 version will mark the begining of some major rewrites, so that the code will be even easier to maintain.
+
+If your code depends on Timers and other advanced API, please review your code before updating to the 0.8.0 version.
 
 ***
 

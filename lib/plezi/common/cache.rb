@@ -5,7 +5,7 @@ module Plezi
 	module_function
 	# contains the cached data, in the format: CACHE_STORE["filename"] = CacheObject
 	CACHE_STORE = {}
-	LOCK = Mutex.new
+	CACHE_LOCK = Mutex.new
 	CACHABLE = %w{cache object slim haml css map js html scss sass coffee txt xml json yaml rb}
 
 	@cache_to_disk = true
@@ -52,7 +52,7 @@ module Plezi
 
 	# places data into the cache, under an identifier ( file name ).
 	def cache_data filename, data, mtime = Time.now
-		LOCK.synchronize { CACHE_STORE[filename] = CacheObject.new( data, mtime )  }
+		CACHE_LOCK.synchronize { CACHE_STORE[filename] = CacheObject.new( data, mtime )  }
 		data
 	end
 
@@ -63,12 +63,12 @@ module Plezi
 
 	# Remove data from the cache, if it exists.
 	def clear_cached filename
-		LOCK.synchronize { CACHE_STORE.delete filename } # if CACHE_STORE[filename]
+		CACHE_LOCK.synchronize { CACHE_STORE.delete filename } # if CACHE_STORE[filename]
 	end
 
 	# clears all cached data.
 	def clear_cache! filename
-		LOCK.synchronize { CACHE_STORE.clear } # if CACHE_STORE[filename]
+		CACHE_LOCK.synchronize { CACHE_STORE.clear } # if CACHE_STORE[filename]
 	end
 
 	# returns true if the filename is cached.

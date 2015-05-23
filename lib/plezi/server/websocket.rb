@@ -4,7 +4,7 @@ module Plezi
 	#
 	#
 	# to do: implemet logging, support body types: multipart (non-ASCII form data / uploaded files), json & xml
-	class WSProtocol
+	class WSProtocol < Protocol
 
 		SUPPORTED_EXTENTIONS = {}
 		# SUPPORTED_EXTENTIONS['x-webkit-deflate-frame'] = Proc.new {|body, params| }
@@ -12,22 +12,18 @@ module Plezi
 
 		# get the timeout interval for this websockt (the number of seconds the socket can remain with no activity - will be reset every ping, message etc').
 		def timeout_interval
-			@timeout_interval
+			connection.timeout
 		end
 		# set the timeout interval for this websockt (the number of seconds the socket can remain with no activity - will be reset every ping, message etc').
 		def timeout_interval= value
-			@timeout_interval = value
-			Plezi.callback service, :set_timeout, @timeout_interval
+			connection.timeout = value
 		end
 
-		# the service (holding the socket) over which this protocol is running.
-		attr_reader :service
 		# the extentions registered for the websockets connection.
 		attr_reader :extentions
 
-		def initialize service, params
-			@params = params
-			@service = service
+		def initialize connection, params
+			super
 			@extentions = []
 			@locker = Mutex.new
 			@parser_stage = 0
@@ -36,36 +32,30 @@ module Plezi
 			@parser_data[:step] = 0
 			@in_que = []
 			@message = ''
-			@timeout_interval = 60
 		end
 
 		# called when connection is initialized.
-		def on_connect service
-			# cancel service timeout? (for now, reset to 60 seconds)
-			service.timeout = @timeout_interval
-			# Plezi.callback service, :timeout=, @timeout_interval
-			Plezi.callback @service.handler, :on_connect if @service.handler.methods.include?(:on_connect)
-			Plezi.info 'Upgraded HTTP to WebSockets. Logging only errors.'
+		def on_connect
+			# set timeout to 60 seconds
+			Plezi.log_raw "#{@request[:client_ip]} [#{Time.now.utc}] - #{@connection.object_id} Upgraded HTTP to WebSockets.\n"
+			Plezi.callback @connection.handler, :on_connect if @connection.handler.methods.include?(:on_connect)
+			@connection.touch
+			Plezi.run_after(2) { @connection.timeout = 60 }
 		end
 
 		# called when data is recieved
 		# returns an Array with any data not yet processed (to be returned to the in-que).
-		def on_message(service)
+		def on_message
 			# parse the request
-			return @locker.synchronize {extract_message service.read.bytes}
+			return @locker.synchronize {extract_message connection.read.bytes}
 			true
 		end
 
 		# called when a disconnect is fired
 		# (socket was disconnected / service should be disconnected / shutdown / socket error)
-		def on_disconnect service
-			Plezi.callback @service.handler, :on_disconnect if @service.handler.methods.include?(:on_disconnect)
-		end
-
-		# called when an exception was raised
-		# (socket was disconnected / service should be disconnected / shutdown / socket error)
-		def on_exception service, e
-			Plezi.error e
+		def on_disconnect
+			Plezi.log_raw "#{@request[:client_ip]} [#{Time.now.utc}] - #{@connection.object_id} Websocket disconnected.\n"
+			Plezi.callback @connection.handler, :on_disconnect if @connection.handler.methods.include?(:on_disconnect)
 		end
 
 		########
@@ -82,6 +72,7 @@ module Plezi
 									request['connection'].to_s.downcase == 'upgrade' &&
 									# (request['sec-websocket-extensions'].split(/[\s]*[,][\s]*/).reject {|ex| ex == '' || SUPPORTED_EXTENTIONS[ex.split(/[\s]*;[\s]*/)[0]] } ).empty? &&
 									(request['sec-websocket-version'].to_s.downcase.split(/[, ]/).map {|s| s.strip} .include?( '13' ))
+			@request = request
 			response.status = 101
 			response['upgrade'] = 'websocket'
 			response['content-length'] = '0'
@@ -95,9 +86,9 @@ module Plezi
 			response['Sec-WebSocket-Accept'] = Digest::SHA1.base64digest(request['sec-websocket-key'] + '258EAFA5-E914-47DA-95CA-C5AB0DC85B11')
 			response.finish
 			@extentions.freeze
-			response.service.protocol = self
-			response.service.handler = handler
-			Plezi.callback self, :on_connect, response.service
+			connection.protocol = self
+			connection.handler = handler
+			Plezi.callback self, :on_connect
 			return true
 		end
 
@@ -167,18 +158,18 @@ module Plezi
 			case @parser_data[:op_code]
 			when 9, 10
 				# handle @parser_data[:op_code] == 9 (ping) / @parser_data[:op_code] == 10 (pong)
-				Plezi.callback @service, :send_nonblock, WSResponse.frame_data(@parser_data[:body].pack('C*'), 10)
+				Plezi.callback @connection, :send_nonblock, WSResponse.frame_data(@parser_data[:body].pack('C*'), 10)
 				@parser_op_code = nil if @parser_op_code == 9 || @parser_op_code == 10
 			when 8
 				# handle @parser_data[:op_code] == 8 (close)
-				Plezi.callback( @service, :send_nonblock, WSResponse.frame_data('', 8) ) { @service.disconnect }
+				Plezi.callback( @connection, :send_nonblock, WSResponse.frame_data('', 8) ) { @connection.disconnect }
 				@parser_op_code = nil if @parser_op_code == 8
 			else
 				@message << @parser_data[:body].pack('C*')
 				# handle @parser_data[:op_code] == 0 / fin == false (continue a frame that hasn't ended yet)
 				if @parser_data[:fin]
 					HTTP.make_utf8! @message if @parser_op_code == 1
-					Plezi.callback @service.handler, :on_message, @message
+					Plezi.callback @connection.handler, :on_message, @message
 					@message = ''
 					@parser_op_code = nil
 				end

@@ -13,28 +13,50 @@ require 'time'
 require 'json'
 require 'uri'
 require 'set'
+
+## erb templating
+begin
+	require 'erb'
+rescue Exception => e
+	
+end
+
 ### version
 
 require "plezi/version"
 
+### common helpers
 
-### Server requirements
+require 'plezi/common/logging.rb'
+require 'plezi/common/cache.rb'
+require 'plezi/common/dsl.rb'
 
-require "plezi/server/services/basic_service"
-require "plezi/server/services/ssl_service"
-require "plezi/server/services/no_service"
+### event machine
 
-require "plezi/server/protocols/http_protocol"
-require 'plezi/server/protocols/http_request'
-require 'plezi/server/protocols/http_response'
+require "plezi/eventmachine/em.rb"
 
-require "plezi/server/helpers/http"
-require "plezi/server/helpers/mime_types"
+require 'plezi/eventmachine/queue.rb'
+require 'plezi/eventmachine/workers.rb'
+require 'plezi/eventmachine/timers.rb'
+require 'plezi/eventmachine/io.rb'
 
-require "plezi/server/protocols/websocket"
-require 'plezi/server/protocols/ws_response'
+### server
 
-## Server-Framework Bridges
+require 'plezi/server/protocol.rb'
+require 'plezi/server/connection.rb'
+
+require 'plezi/server/mime_types.rb'
+
+require 'plezi/server/http.rb'
+require 'plezi/server/http_protocol.rb'
+require 'plezi/server/http_request.rb'
+require 'plezi/server/http_response.rb'
+
+require 'plezi/server/websocket.rb'
+require 'plezi/server/ws_response.rb'
+
+### Handlers / Framework
+
 require "plezi/handlers/http_echo"
 require "plezi/handlers/http_host"
 require "plezi/handlers/http_router"
@@ -44,30 +66,6 @@ require "plezi/handlers/magic_helpers"
 require "plezi/handlers/route"
 
 require "plezi/handlers/stubs"
-
-### Framework requirements
-require "plezi/base/events"
-require "plezi/base/timers"
-require "plezi/base/services"
-require "plezi/base/connections"
-require "plezi/base/logging"
-require "plezi/base/io_reactor"
-require "plezi/base/cache"
-require "plezi/base/engine"
-
-### DSL requirements
-require "plezi/base/dsl"
-
-### optional Rack
-require "plezi/base/rack_app"
-
-## erb templating
-begin
-	require 'erb'
-rescue Exception => e
-	
-end
-
 
 
 ##############################################################################
