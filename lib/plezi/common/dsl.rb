@@ -18,7 +18,7 @@ module Plezi
 
 	# adds a shared route to all existing services and hosts.
 	def shared_route(path, controller = nil, &block)
-		@servers.values.each {|p| p[:handler].add_shared_route path, controller, &block }
+		@listeners.values.each {|p| p.params[:handler].add_shared_route path, controller, &block }
 	end
 
 	# adds a host to the last server created
