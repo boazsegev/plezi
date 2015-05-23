@@ -191,8 +191,8 @@ module Plezi
 
 		# Danger Zone (internally used method, use with care): fix response's headers before sending them (date, connection and transfer-coding).
 		def fix_headers
-			headers['connection'] = "Keep-Alive"
-			headers['keep-alive'] = "timeout=5"
+			headers['keep-alive'] ||= "timeout=5" unless headers['connection']
+			headers['connection'] ||= "Keep-Alive"
 			headers['date'] = Time.now.httpdate
 			headers['transfer-encoding'] ||= 'chunked' unless headers['content-length']
 			headers['cache-control'] ||= 'no-cache'

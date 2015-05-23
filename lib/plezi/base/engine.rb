@@ -30,6 +30,13 @@ module Plezi
 		trap('INT'){ exit_flag = true; raise "close Plezi" }
 		trap('TERM'){ exit_flag = true; raise "close Plezi" }
 		puts "Services running Plezi version #{Plezi::VERSION}. Press ^C to stop"
+		puts %q{**deprecation notice**:
+
+v.0.8.0 will consist of many changes that will also influence the API. The 0.8.0 version will mark the begining of some major rewrites, so that the code will be even easier to maintain.
+
+If your code depends on Timers and other advanced API, please review your code before updating to the 0.8.0 version.
+
+		}
 		# sleep until trap raises exception (cycling might cause the main thread to ignor signals and lose attention)
 		(sleep unless SERVICES.empty?) rescue true
 		# start shutdown.

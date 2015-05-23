@@ -3,7 +3,14 @@
 ***
 
 Change log v.0.7.7
-(pre-release)
+
+**fix**: fixed a header issue in the HTTPResponse that prevented websocket connections.
+
+**deprecation notice**:
+
+v.0.8.0 will consist of many changes that will also influence the API. The 0.8.0 version will mark the begining of some major rewrites, so that the code will be even easier to maintain.
+
+If your code depends on Timers and other advanced API, please review your code before updating to the 0.8.0 version.
 
 ***
 
