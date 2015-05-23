@@ -8,6 +8,8 @@ Change log v.0.8.0
 
 **Timers API changes**: The API for timed events has changed. It is now both more streamlined and allows setting a repeat limit for events that repeat themselves (i.e. schedule an event to repeat every 60 seconds and limit it to perform only 5 times).
 
+**fix**: Fixed an issue with attachments. Attachments were mistakenly enforced to comply with UTF-8 encoding, preventing binary attachments from successfully uploading.
+
 ***
 
 Change log v.0.7.7

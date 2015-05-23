@@ -114,7 +114,7 @@ module Plezi
 		# Changes String to a Ruby Object, if it's a special string
 		def rubyfy!(string)
 			return false unless string
-			make_utf8! string
+			# make_utf8! string
 			if string == 'true'
 				string = true
 			elsif string == 'false'

@@ -13,12 +13,12 @@ module Plezi
 		# parameters are the same (almost) as `add_service` and include `root` for file root, `assets`
 		# and other non service related options.
 		def initialize params = {}
-			@params = params
+			@params = params.dup
 			@routes = []
 			# params[:save_assets] = true unless params[:save_assets] == false
-			params[:index_file] ||= 'index.html'
-			params[:assets_public] ||= '/assets'
-			params[:assets_public].chomp! '/'
+			@params[:index_file] ||= 'index.html'
+			@params[:assets_public] ||= '/assets'
+			@params[:assets_public].chomp! '/'
 
 			@sass_cache = Sass::CacheStores::Memory.new if defined?(::Sass)
 			# @sass_cache_lock = Mutex.new

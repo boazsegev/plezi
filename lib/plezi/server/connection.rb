@@ -157,6 +157,7 @@ module Plezi
 		# send action.
 		def _send data
 			# data.force_encoding "binary" rescue false
+			touch
 			len = data.bytesize
 			act = @socket.send data, 0
 			while len > act
