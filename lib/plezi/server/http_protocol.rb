@@ -4,10 +4,11 @@ module Plezi
 	#
 	#
 	# to do: implemet logging, support body types: multipart (non-ASCII form data / uploaded files), json & xml
-	class HTTPProtocol < Protocol
+	class HTTPProtocol < EventMachine::Protocol
 
 		HTTP_METHODS = %w{GET HEAD POST PUT DELETE TRACE OPTIONS}
 		HTTP_METHODS_REGEXP = /^#{HTTP_METHODS.join('|')}/
+		HTTP_FIRE_REQUEST = Proc.new {|handler, request| handler.on_request request}
 
 		def initialize connection, params
 			super
@@ -16,7 +17,6 @@ module Plezi
 			@parser_body = ''
 			@parser_chunk = ''
 			@parser_length = 0
-			@locker = Mutex.new
 			@@rack_dictionary ||= {'HOST'.freeze => :host_name, 'REQUEST_METHOD'.freeze => :method,
 								'PATH_INFO'.freeze => :path, 'QUERY_STRING'.freeze => :query,
 								'SERVER_NAME'.freeze => :host_name, 'SERVER_PORT'.freeze => :port,
@@ -30,7 +30,7 @@ module Plezi
 		# typically returns an Array with any data not yet processed (to be returned to the in-que)... but here it always processes (or discards) the data.
 		def on_message
 			# parse the request
-			@locker.synchronize { parse_message }
+			parse_message
 			if (@parser_stage == 1) && @parser_data[:version] >= 1.1
 				# send 100 continue message????? doesn't work! both Crome and Safari go crazy if this is sent after the request was sent (but before all the packets were recieved... msgs over 1 Mb).
 				# Plezi.push_event Proc.new { Plezi.info "sending continue signal."; connection.send_nonblock "100 Continue\r\n\r\n" }
@@ -193,7 +193,7 @@ module Plezi
 			when 'TRACE'
 				return true
 			when 'OPTIONS'
-				Plezi.push_event Proc.new do
+				Plezi.run_async do
 					response = HTTPResponse.new request
 					response[:Allow] = 'GET,HEAD,POST,PUT,DELETE,OPTIONS'
 					response['access-control-allow-origin'] = '*'
@@ -205,7 +205,7 @@ module Plezi
 
 			#pass it to the handler or decler error.
 			if connection && connection.handler
-				Plezi.callback connection.handler, :on_request, request
+				EventMachine.queue [connection.handler, request], HTTP_FIRE_REQUEST
 			else
 				Plezi.error 'No Handler for this HTTP connection.'
 			end

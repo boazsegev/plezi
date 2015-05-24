@@ -39,9 +39,12 @@ module Plezi
 
 		module_function
 
+		# the timers stack.
 		TIMERS = []
+		# the timers stack Mutex.
 		TIMERS_LOCK = Mutex.new
 
+		# Creates a TimedEvent object and adds it to the Timers stack.
 		def timed_job seconds, limit = false, args = [], block = nil
 			TIMERS_LOCK.synchronize {TIMERS << TimedEvent.new(seconds, limit, args, block); TIMERS.last}
 		end

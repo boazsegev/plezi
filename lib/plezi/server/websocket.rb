@@ -4,7 +4,7 @@ module Plezi
 	#
 	#
 	# to do: implemet logging, support body types: multipart (non-ASCII form data / uploaded files), json & xml
-	class WSProtocol < Protocol
+	class WSProtocol < EventMachine::Protocol
 
 		SUPPORTED_EXTENTIONS = {}
 		# SUPPORTED_EXTENTIONS['x-webkit-deflate-frame'] = Proc.new {|body, params| }
@@ -30,7 +30,6 @@ module Plezi
 			@parser_data = {}
 			@parser_data[:body] = []
 			@parser_data[:step] = 0
-			@in_que = []
 			@message = ''
 		end
 
@@ -47,7 +46,7 @@ module Plezi
 		# returns an Array with any data not yet processed (to be returned to the in-que).
 		def on_message
 			# parse the request
-			return @locker.synchronize {extract_message connection.read.bytes}
+			extract_message connection.read.to_s.bytes
 			true
 		end
 

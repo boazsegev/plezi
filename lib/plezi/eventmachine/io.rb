@@ -1,19 +1,24 @@
 module Plezi
 	module EventMachine
 
+		# a basic IO listening socket wrapper.
 		class BasicIO
 
+			# attribute readers
 			attr_reader :io, :params
+			# initialize the listener with the actual socket and the properties.
 			def initialize io, params
 				@io, @params = io, params
 			end
+			# returns true if the socket is closed and the object can be cleared.
 			def clear?
 				@io.closed?
 			end
+			# accepts a new connection, adding it to the IO stack, so that it will be reviewed.
 			def call
 				begin
 					socket = io.accept_nonblock
-					handler = Plezi::Connection.new socket, @params
+					handler = Connection.new socket, @params
 					EventMachine.add_io socket, handler
 				rescue Errno::EWOULDBLOCK => e
 
@@ -24,7 +29,9 @@ module Plezi
 		end
 		module_function
 
+		# the IO stack.
 		EM_IO = {}
+		# the IO Mutex
 		IO_LOCKER = Mutex.new
 
 		# Adds an io object to the Plezi event machine.
@@ -37,18 +44,22 @@ module Plezi
 			IO_LOCKER.synchronize { EM_IO[io] = job }
 		end
 
+		# removes an IO from the event machine.
 		def remove_io io
 			IO_LOCKER.synchronize { (EM_IO.delete io).close rescue true }
 		end
 
+		# deletes any connections that are closed or timed out.
 		def clear_connections
 			IO_LOCKER.synchronize { EM_IO.delete_if { |io, c| c.clear? } }
 		end
 
+		# forces the event machine to forget all the existing connections (they will not be reviewed any longer).
 		def forget_connections
 			IO_LOCKER.synchronize { EM_IO.clear }
 		end
 
+		# stops all the connections without stopping the lisntener IO's.
 		def stop_connections
 			IO_LOCKER.synchronize { EM_IO.each { |io, c| Plezi.run_async { c.disconnect rescue true }  } }
 		end
@@ -75,8 +86,10 @@ module Plezi
 			@io_timeout = value
 		end
 
-		SELECT_LOCKER = Mutex.new
-		# hangs for IO data
+		# the proc for async IO removal, in case of IO exceptions raised by unexpectedly closed sockets.
+		IO_CLEAR_ASYNC_PROC = Proc.new {|c| c.protocol.on_disconnect if (c.protocol rescue false) }
+
+		# hangs for IO data or io_timeout
 		def review_io
 			return false if IO_LOCKER.locked?
 			IO_LOCKER.synchronize do
@@ -90,7 +103,7 @@ module Plezi
 				rescue Errno::EWOULDBLOCK => e
 
 				rescue => e
-					EM_IO.keys.each {|io| Plezi.run_async(EM_IO.delete(io)) {|c| c.protocol.on_disconnect if (c.protocol rescue false) } if io.closed?}
+					EM_IO.keys.each {|io| EventMachine.queue [EM_IO.delete(io)], IO_CLEAR_ASYNC_PROC if io.closed?}
 					raise e
 				end
 				true

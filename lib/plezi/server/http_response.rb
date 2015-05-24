@@ -178,7 +178,7 @@ module Plezi
 			return self if defined?(PLEZI_ON_RACK)
 			raise 'HTTPResponse SERVICE MISSING: cannot send http response without a service.' unless service
 			self.send
-			service.send( (@chunked) ? "0\r\n\r\n" :  nil) #"\r\n"
+			service.send( (@chunked) ? "0\r\n\r\n" : "\r\n")
 			@finished = true
 			# service.disconnect unless headers['keep-alive']
 			# log

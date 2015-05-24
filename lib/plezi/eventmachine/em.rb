@@ -32,7 +32,7 @@ module Plezi
 		end
 
 		def running?
-			!(@workers_lock.synchronize { @workers.empty? } )
+			@workers && @workers.any?
 		end
 		def count_living_workers
 			(@workers_lock.synchronize { @workers.select {|w| w.alive? } } ).count
@@ -95,8 +95,6 @@ module Plezi
 			# prepare threads
 			exit_flag = false
 			threads = []
-			EventMachine.timed_job(5, false, [], )
-			EventMachine.timed_job 3600 , false, [], 
 			run_every(5, &EventMachine.method(:clear_connections))
 			run_every(3600, &GC.method(:start))
 			run_every(3600) {PL.info "Refreshing worker threads."; EventMachine.stop; EventMachine.start max_threads}

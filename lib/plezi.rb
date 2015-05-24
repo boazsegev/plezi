@@ -39,11 +39,11 @@ require 'plezi/eventmachine/queue.rb'
 require 'plezi/eventmachine/workers.rb'
 require 'plezi/eventmachine/timers.rb'
 require 'plezi/eventmachine/io.rb'
+require 'plezi/eventmachine/protocol.rb'
+require 'plezi/eventmachine/connection.rb'
 
-### server
+### http and websocket server
 
-require 'plezi/server/protocol.rb'
-require 'plezi/server/connection.rb'
 
 require 'plezi/server/mime_types.rb'
 
