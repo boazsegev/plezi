@@ -36,7 +36,8 @@ module Plezi
 
 		def clear?
 			return false unless timedout? || disconnected?
-			on_disconnect
+			disconnect
+			true
 		end
 
 		# checks if a connection timed out

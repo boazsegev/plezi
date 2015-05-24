@@ -5,7 +5,8 @@ module Plezi
 		class Worker
 			def initialize
 				@stop = false
-				@thread = Thread.new { EventMachine.run until @stop }
+				wait = Worker.get_wait
+				@thread = Thread.new { EventMachine.run wait until @stop }
 			end
 			def stop
 				@stop = true
@@ -19,6 +20,15 @@ module Plezi
 			end
 			def status
 				@thread.status
+			end
+			def self.get_wait
+				@instances ||= 0
+				@instances += 1
+				@instances = 1 if @instances > 8
+				Prime.first(@instances).last / 10.0
+			end
+			def self.reset_wait
+				@instances = 0
 			end
 		end
 	end

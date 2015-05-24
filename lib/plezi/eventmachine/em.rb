@@ -16,19 +16,19 @@ module Plezi
 		end
 
 		# runs through all existing events and one idle cycle
-		def run
+		def run wait = 0.1
 			begin
 				fire_timers
 				do_job while do_job
 				# replace with io
-				review_io || sleep(0.5)				
+				review_io || sleep(wait)
 			rescue Exception => e
 				Plezi.error e
 			end
 		end
 
 		def stop
-			@workers_lock.synchronize { @workers.each {|w| w.stop }; @workers.each {|w| w.join }; @workers.clear }
+			@workers_lock.synchronize { @workers.each {|w| w.stop }; @workers.each {|w| w.join }; @workers.clear; Worker.reset_wait}
 		end
 
 		def running?
@@ -88,12 +88,15 @@ module Plezi
 
 	# Plezi Engine, DO NOT CALL. creates the thread pool and starts cycling through the events.
 	def start_services
-		return false unless @listeners
+		return false unless @listeners && @listeners.any?
 		# prepare threads
 		exit_flag = false
 		threads = []
-		EventMachine.timed_job(5, false, [], EventMachine.method(:clear_connections))
-		EventMachine.timed_job 3600 , false, [], GC.method(:start)
+		EventMachine.timed_job(5, false, [], )
+		EventMachine.timed_job 3600 , false, [], 
+		run_every(5, &EventMachine.method(:clear_connections))
+		run_every(3600, &GC.method(:start))
+		run_every(3600) {PL.info "Refreshing worker threads."; EventMachine.stop; EventMachine.start max_threads}
 		# run_every( 1 , Proc.new() { Plezi.info "#{IO_CONNECTION_DIC.length} active connections ( #{ IO_CONNECTION_DIC.select{|k,v| v.protocol.is_a?(WSProtocol)} .length } websockets)." })
 		# run_every 10 , -> {Plezi.info "Cache report: #{CACHE_STORE.length} objects cached." } 
 		puts "Services running Plezi version #{Plezi::VERSION}. Press ^C to stop"

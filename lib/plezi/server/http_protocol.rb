@@ -68,7 +68,7 @@ module Plezi
 			@parser_data[:query] = ''
 			@parser_data[:original_path] = ''
 			@parser_data[:path] = ''
-			if defined? Rack
+			if defined? ::Rack
 				@parser_data['rack.version'] = Rack::VERSION
 				@parser_data['rack.multithread'] = true
 				@parser_data['rack.multiprocess'] = false

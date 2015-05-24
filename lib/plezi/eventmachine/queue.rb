@@ -8,16 +8,16 @@ module Plezi
 		def queue args, job
 			raise "Job missing" unless job
 			QUEUE_LOCKER.synchronize { QUEUE << [job, args]}
+			true
 		end
 
 		def do_job
 			job, args = QUEUE_LOCKER.synchronize { QUEUE.shift }
-			job.call(*args) if job
-			job && true
+			job ? (job.call(*args) || true) : false
 		end
 
 		def queue_empty?
-			QUEUE_LOCKER.synchronize { QUEUE.empty? }
+			QUEUE.empty?
 		end
 
 	end

@@ -38,6 +38,7 @@ module Plezi
 			@bytes_sent = 0
 			@finished = @streaming = false
 			@cookies = {}
+			@chunked = false
 			# propegate flash object
 			@flash = Hash.new do |hs,k|
 				hs["plezi_flash_#{k.to_s}".to_sym] if hs.has_key? "plezi_flash_#{k.to_s}".to_sym
@@ -70,7 +71,7 @@ module Plezi
 		# If HTTP streaming is set, you will need to manually call `response.finish`
 		# of the connection will not close properly.
 		def start_http_streaming
-			@streaming = true
+			@streaming = @chunked = true
 		end
 
 		# pushes data to the body of the response. this is the preferred way to add data to the response.
@@ -155,7 +156,7 @@ module Plezi
 			body << str if str && body.is_a?(Array)
 			send_headers
 			return if request.head?
-			if headers['transfer-encoding'] == 'chunked'
+			if @chunked
 				body.each do |s|
 					service.send "#{s.bytesize.to_s(16)}\r\n"
 					service.send s
@@ -177,7 +178,7 @@ module Plezi
 			return self if defined?(PLEZI_ON_RACK)
 			raise 'HTTPResponse SERVICE MISSING: cannot send http response without a service.' unless service
 			self.send
-			service.send( (headers['transfer-encoding'] == 'chunked') ? "0\r\n\r\n" : nil)
+			service.send( (@chunked) ? "0\r\n\r\n" :  nil) #"\r\n"
 			@finished = true
 			# service.disconnect unless headers['keep-alive']
 			# log
@@ -190,12 +191,7 @@ module Plezi
 		end
 
 		# Danger Zone (internally used method, use with care): fix response's headers before sending them (date, connection and transfer-coding).
-		def fix_headers
-			headers['keep-alive'] ||= "timeout=5" unless headers['connection']
-			headers['connection'] ||= "Keep-Alive"
-			headers['date'] = Time.now.httpdate
-			headers['transfer-encoding'] ||= 'chunked' unless headers['content-length']
-			headers['cache-control'] ||= 'no-cache'
+		def fix_cookie_headers
 			# remove old flash cookies
 			request.cookies.keys.each do |k|
 				if k.to_s.start_with? 'plezi_flash_'
@@ -211,8 +207,22 @@ module Plezi
 		# Danger Zone (internally used method, use with care): fix response's headers before sending them (date, connection and transfer-coding).
 		def send_headers
 			return false if @headers.frozen?
-			fix_headers
-			service.send "#{@http_version} #{status} #{STATUS_CODES[status] || 'unknown'}\r\n"
+			fix_cookie_headers
+			headers['cache-control'] ||= 'no-cache'
+
+			service.send "#{@http_version} #{status} #{STATUS_CODES[status] || 'unknown'}\r\nDate: #{Time.now.httpdate}\r\n"
+
+			unless headers['connection']
+				service.send "Connection: Keep-Alive\r\nKeep-Alive: timeout=5\r\n"
+			end
+
+			if headers['content-length']
+				@chunked = false
+			else
+				@chunked = true
+				service.send "Transfer-Encoding: chunked\r\n"
+			end
+
 			headers.each {|k,v| service.send "#{k.to_s}: #{v}\r\n"}
 			@cookies.each {|k,v| service.send "Set-Cookie: #{k.to_s}=#{v.to_s}\r\n"}
 			service.send "\r\n"

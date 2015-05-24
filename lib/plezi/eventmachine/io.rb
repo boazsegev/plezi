@@ -8,13 +8,13 @@ module Plezi
 				@io, @params = io, params
 			end
 			def clear?
-				false
+				@io.closed?
 			end
 			def call
 				begin
 					socket = io.accept_nonblock
 					handler = Plezi::Connection.new socket, @params
-					EventMachine.add_io socket, handler					
+					EventMachine.add_io socket, handler
 				rescue Errno::EWOULDBLOCK => e
 
 				rescue => e
@@ -90,7 +90,7 @@ module Plezi
 				rescue Errno::EWOULDBLOCK => e
 
 				rescue => e
-					EM_IO.delete_if {|io, job| io.closed?}
+					EM_IO.keys.each {|io| Plezi.run_async(EM_IO.delete(io)) {|c| c.protocol.on_disconnect if (c.protocol rescue false) } if io.closed?}
 					raise e
 				end
 				true
