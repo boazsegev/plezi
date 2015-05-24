@@ -44,11 +44,14 @@ module Plezi
 		SHUTDOWN_CALLBACKS = []
 		# runs the shutdown queue
 		def shutdown
-			stop
+			stop rescue false
+			old_timeout = io_timeout
+			io_timeout = 0.001
 			run
+			io_timeout = old_timeout
 			do_job while do_job
 			stop_connections
-			do_job
+			do_job while do_job
 			QUEUE_LOCKER.synchronize do
 				SHUTDOWN_CALLBACKS.each { |s_job| s_job[0].call(*s_job[1]) }
 				SHUTDOWN_CALLBACKS.clear
@@ -88,35 +91,36 @@ module Plezi
 
 	# Plezi Engine, DO NOT CALL. creates the thread pool and starts cycling through the events.
 	def start_services
-		return false unless @listeners && @listeners.any?
-		# prepare threads
-		exit_flag = false
-		threads = []
-		EventMachine.timed_job(5, false, [], )
-		EventMachine.timed_job 3600 , false, [], 
-		run_every(5, &EventMachine.method(:clear_connections))
-		run_every(3600, &GC.method(:start))
-		run_every(3600) {PL.info "Refreshing worker threads."; EventMachine.stop; EventMachine.start max_threads}
-		# run_every( 1 , Proc.new() { Plezi.info "#{IO_CONNECTION_DIC.length} active connections ( #{ IO_CONNECTION_DIC.select{|k,v| v.protocol.is_a?(WSProtocol)} .length } websockets)." })
-		# run_every 10 , -> {Plezi.info "Cache report: #{CACHE_STORE.length} objects cached." } 
-		puts "Services running Plezi version #{Plezi::VERSION}. Press ^C to stop"
-		EventMachine.start max_threads
+		if @listeners && @listeners.any?
+			# prepare threads
+			exit_flag = false
+			threads = []
+			EventMachine.timed_job(5, false, [], )
+			EventMachine.timed_job 3600 , false, [], 
+			run_every(5, &EventMachine.method(:clear_connections))
+			run_every(3600, &GC.method(:start))
+			run_every(3600) {PL.info "Refreshing worker threads."; EventMachine.stop; EventMachine.start max_threads}
+			# run_every( 1 , Proc.new() { Plezi.info "#{IO_CONNECTION_DIC.length} active connections ( #{ IO_CONNECTION_DIC.select{|k,v| v.protocol.is_a?(WSProtocol)} .length } websockets)." })
+			# run_every 10 , -> {Plezi.info "Cache report: #{CACHE_STORE.length} objects cached." } 
+			puts "Services running Plezi version #{Plezi::VERSION}. Press ^C to stop"
+			EventMachine.start max_threads
 
-		# set signal tarps
-		trap('INT'){ exit_flag = true; raise "close Plezi" }
-		trap('TERM'){ exit_flag = true; raise "close Plezi" }
-		# sleep until trap raises exception (cycling might cause the main thread to ignor signals and lose attention)
-		sleep rescue true
-		# start shutdown.
-		exit_flag = true
-		# set new tarps
-		trap('INT'){ puts 'Forced exit.'; Kernel.exit } #rescue true}
-		trap('TERM'){ puts 'Forced exit.'; Kernel.exit } #rescue true }
-		puts 'Started shutdown process. Press ^C to force quit.'
-		# shut down listening sockets
-		stop_services
-		# cycle down threads
-		info "Finishing up and running shutdown tasks."
+			# set signal tarps
+			trap('INT'){ exit_flag = true; raise "close Plezi" }
+			trap('TERM'){ exit_flag = true; raise "close Plezi" }
+			# sleep until trap raises exception (cycling might cause the main thread to ignor signals and lose attention)
+			sleep rescue true
+			# start shutdown.
+			exit_flag = true
+			# set new tarps
+			trap('INT'){ puts 'Forced exit.'; Kernel.exit } #rescue true}
+			trap('TERM'){ puts 'Forced exit.'; Kernel.exit } #rescue true }
+			puts 'Started shutdown process. Press ^C to force quit.'
+			# shut down listening sockets
+			stop_services
+			# cycle down threads
+			info "Finishing up and running shutdown tasks."
+		end
 		EventMachine.shutdown
 		info "Plezi is out."
 		# return exit code?

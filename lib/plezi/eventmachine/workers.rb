@@ -22,13 +22,13 @@ module Plezi
 				@thread.status
 			end
 			def self.get_wait
-				@instances ||= 0
-				@instances += 1
-				@instances = 1 if @instances > 8
-				Prime.first(@instances).last / 10.0
+				@primes = [2, 3, 5, 7, 11, 13, 17, 19, 23, 29, 31, 37] 
+				@instances ||= -1
+				@instances += 1 if @instances < 7
+				@primes[@instances] / 10.0
 			end
 			def self.reset_wait
-				@instances = 0
+				@instances = -1
 			end
 		end
 	end

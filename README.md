@@ -153,7 +153,7 @@ More on asynchronous events and timers later.
 
 Plezi supports magic routes, in similar formats found in other systems, such as: `route "/:required/(:optional_with_format){[\\d]*}/(:optional)", Plezi::StubRESTCtrl`.
 
-Plezi assummes all simple string routes to be RESTful routes woth the parameter `:id` ( `"/user" == "/user/(:id)"` ).
+Plezi assummes all simple string routes to be RESTful routes with the parameter `:id` ( `"/user" == "/user/(:id)"` ).
 
     require 'plezi'
     listen
@@ -232,7 +232,7 @@ Asynchronous callbacks (works only while services are active and running):
     require 'plezi'
 
     def my_shutdown_proc time_start
-        puts "Services were running for #{Time.now - time_start} ms."
+        puts "Services were running for #{Time.now - time_start} seconds."
     end
 
     # shutdown callbacks
