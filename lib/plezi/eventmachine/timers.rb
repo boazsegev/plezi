@@ -51,22 +51,26 @@ module Plezi
 
 		# returns true if there are any unhandled events
 		def timers?
-			TIMERS_LOCK.synchronize {!TIMERS.empty?}
+			TIMERS.any?
 		end
 
 		# cycles through timed jobs, executing and/or deleting them if their time has come.
 		def fire_timers
 			TIMERS_LOCK.synchronize { time = Time.now; TIMERS.delete_if {|t| t.done? time} }
 		end
+		# clears all timers
+		def clear_timers
+			TIMERS_LOCK.synchronize { TIMERS.clear }
+		end
 
 	end
 
 	module_function
 
-	# returns true if there are any unhandled events
-	def timers?
-		EventMachine.timers?
-	end
+	# # returns true if there are any unhandled events
+	# def timers?
+	# 	EventMachine.timers?
+	# end
 
 	# pushes a timed event to the timers's stack
 	#

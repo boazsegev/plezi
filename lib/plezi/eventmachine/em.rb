@@ -27,8 +27,12 @@ module Plezi
 			end
 		end
 
-		def stop
+		def stop_and_wait
 			@workers_lock.synchronize { @workers.each {|w| w.stop }; @workers.each {|w| w.join }; @workers.clear; Worker.reset_wait}
+		end
+
+		def stop
+			@workers_lock.synchronize { @workers.each {|w| w.stop } ; @workers.clear; Worker.reset_wait}
 		end
 
 		def running?
@@ -44,7 +48,7 @@ module Plezi
 		SHUTDOWN_CALLBACKS = []
 		# runs the shutdown queue
 		def shutdown
-			stop rescue false
+			stop_and_wait rescue false
 			old_timeout = io_timeout
 			io_timeout = 0.001
 			run
@@ -87,41 +91,5 @@ module Plezi
 	# Adds a callback to be called once the services were shut down. see: callback for more info.
 	def on_shutdown object=nil, method=nil, *args, &block
 		EventMachine.on_shutdown object, method, *args, &block
-	end
-
-	# Plezi Engine, DO NOT CALL. creates the thread pool and starts cycling through the events.
-	def start_services
-		if @listeners && @listeners.any?
-			# prepare threads
-			exit_flag = false
-			threads = []
-			run_every(5, &EventMachine.method(:clear_connections))
-			run_every(3600, &GC.method(:start))
-			run_every(3600) {PL.info "Refreshing worker threads."; EventMachine.stop; EventMachine.start max_threads}
-			# run_every( 1 , Proc.new() { Plezi.info "#{IO_CONNECTION_DIC.length} active connections ( #{ IO_CONNECTION_DIC.select{|k,v| v.protocol.is_a?(WSProtocol)} .length } websockets)." })
-			# run_every 10 , -> {Plezi.info "Cache report: #{CACHE_STORE.length} objects cached." } 
-			puts "Services running Plezi version #{Plezi::VERSION}. Press ^C to stop"
-			EventMachine.start max_threads
-
-			# set signal tarps
-			trap('INT'){ exit_flag = true; raise "close Plezi" }
-			trap('TERM'){ exit_flag = true; raise "close Plezi" }
-			# sleep until trap raises exception (cycling might cause the main thread to ignor signals and lose attention)
-			sleep rescue true
-			# start shutdown.
-			exit_flag = true
-			# set new tarps
-			trap('INT'){ puts 'Forced exit.'; Kernel.exit } #rescue true}
-			trap('TERM'){ puts 'Forced exit.'; Kernel.exit } #rescue true }
-			puts 'Started shutdown process. Press ^C to force quit.'
-			# shut down listening sockets
-			stop_services
-			# cycle down threads
-			info "Finishing up and running shutdown tasks."
-		end
-		EventMachine.shutdown
-		info "Plezi is out."
-		# return exit code?
-		0
 	end
 end

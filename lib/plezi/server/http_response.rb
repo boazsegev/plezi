@@ -33,7 +33,7 @@ module Plezi
 		#
 		# use, at the very least `HTTPResponse.new request`
 		def initialize request, status = 200, headers = {}, body = []
-			@request, @status, @headers, @body, @service = request, status, headers, body, (defined?(PLEZI_ON_RACK) ? false : request.service)
+			@request, @status, @headers, @body, @service = request, status, headers, body, request[:plezi_service]
 			@http_version = 'HTTP/1.1' # request.version
 			@bytes_sent = 0
 			@finished = @streaming = false
@@ -172,17 +172,30 @@ module Plezi
 			@body.is_a?(Array) ? @body.clear : ( @body = [] )
 		end
 
-		# sends the response and flags the response as complete. future data should not be sent. the flag will only be enforced be the Plezi router. your code might attempt sending data (which would probbaly be ignored by the client or raise an exception).
-		def finish
-			@headers['content-length'] ||= body[0].bytesize if !headers_sent? && body.is_a?(Array) && body.length == 1
-			return self if defined?(PLEZI_ON_RACK)
-			raise 'HTTPResponse SERVICE MISSING: cannot send http response without a service.' unless service
-			self.send
-			service.send( (@chunked) ? "0\r\n\r\n" : "\r\n")
-			@finished = true
-			# service.disconnect unless headers['keep-alive']
-			# log
-			Plezi.log_raw "#{request[:client_ip]} [#{Time.now.utc}] \"#{request[:method]} #{request[:original_path]} #{request[:requested_protocol]}\/#{request[:version]}\" #{status} #{bytes_sent.to_s} #{"%0.3f" % ((Time.now - request[:time_recieved])*1000)}ms\n"
+		# prep for rack response
+		def prep_rack
+			@headers['content-length'] ||= body[0].bytesize.to_s if !headers_sent? && body.is_a?(Array) && body.length == 1
+			fix_cookie_headers
+		end
+
+
+		if defined?(PLEZI_ON_RACK)
+			# does nothing.
+			def finish
+				false
+			end
+		else
+			# sends the response and flags the response as complete. future data should not be sent. the flag will only be enforced be the Plezi router. your code might attempt sending data (which would probbaly be ignored by the client or raise an exception).
+			def finish
+				@headers['content-length'] ||= body[0].bytesize if !headers_sent? && body.is_a?(Array) && body.length == 1
+				self.send
+				service.send( (@chunked) ? "0\r\n\r\n" : "\r\n")
+				@finished = true
+				# service.disconnect unless headers['keep-alive']
+				# log
+				Plezi.log_raw "#{request[:client_ip]} [#{Time.now.utc}] \"#{request[:method]} #{request[:original_path]} #{request[:requested_protocol]}\/#{request[:version]}\" #{status} #{bytes_sent.to_s} #{"%0.3f" % ((Time.now - request[:time_recieved])*1000)}ms\n"
+			end
+			
 		end
 
 		# Danger Zone (internally used method, use with care): attempts to finish the response - if it was not flaged as streaming or completed.

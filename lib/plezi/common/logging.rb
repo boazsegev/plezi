@@ -33,28 +33,28 @@ module Plezi
 	end
 
 	# logs info
-	def log line
-		@logger.info line
-		@copy_to_stdout.info line if @copy_to_stdout
+	def log data
+		@logger.info data
+		@copy_to_stdout.info data if @copy_to_stdout
 	end
 	# logs info
-	def info line
-		@logger.info line
-		@copy_to_stdout.info line if @copy_to_stdout
+	def info data
+		@logger.info data
+		@copy_to_stdout.info data if @copy_to_stdout
 	end
 	# logs warning
-	def warn line
-		@logger.warn line
-		@copy_to_stdout.warn line if @copy_to_stdout
+	def warn data
+		@logger.warn data
+		@copy_to_stdout.warn data if @copy_to_stdout
 	end
 	# logs errors
-	def error line
-		@logger.error line
-		@copy_to_stdout.error line if @copy_to_stdout
+	def error data
+		@logger.error data
+		@copy_to_stdout.error data if @copy_to_stdout
 	end
 	# logs a fatal error
-	def fatal line
-		@logger.fatal line
-		@copy_to_stdout.fatal line if @copy_to_stdout
+	def fatal data
+		@logger.fatal data
+		@copy_to_stdout.fatal data if @copy_to_stdout
 	end
 end

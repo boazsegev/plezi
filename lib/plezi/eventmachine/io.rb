@@ -112,6 +112,133 @@ module Plezi
 
 	end
 
+	module DSL
+		module_function
+
+		# public API to add a service to the framework.
+		# accepts a Hash object with any of the following options (Hash keys):
+		# port:: port number. defaults to 3000 or the port specified when the script was called.
+		# host:: the host name. defaults to any host not explicitly defined (a catch-all).
+		# alias:: a String or an Array of Strings which represent alternative host names (i.e. `alias: ["admin.google.com", "admin.gmail.com"]`).
+		# root:: the public root folder. if this is defined, static files will be served from the location.
+		# assets:: the assets root folder. defaults to nil (no assets support). if the path is defined, assets will be served from `/assets/...` (or the public_asset path defined) before any static files. assets will not be served if the file in the /public/assets folder if up to date (a rendering attempt will be made for systems that allow file writing).
+		# assets_public:: the assets public uri location (uri format, NOT a file path). defaults to `/assets`. assets will be saved (or rendered) to the assets public folder and served as static files.
+		# assets_callback:: a method that accepts one parameters: `request` and renders any custom assets. the method should return `false` unless it has created a response object (`response = Plezi::HTTPResponse.new(request)`) and sent a response to the client using `response.finish`.
+		# save_assets:: saves the rendered assets to the filesystem, under the public folder. defaults to false.
+		# templates:: the templates root folder. defaults to nil (no template support). templates can be rendered by a Controller class, using the `render` method.
+		# ssl:: if true, an SSL service will be attempted. if no certificate is defined, an attempt will be made to create a self signed certificate.
+		# ssl_key:: the public key for the SSL service.
+		# ssl_cert:: the certificate for the SSL service.
+		#
+		# some further options, which are unstable and might be removed in future versions, are:
+		# protocol:: the protocol objects (usually a class, but any object answering `#call` will do).
+		# handler:: an optional handling object, to be called upon by the protocol (i.e. #on_message, #on_connect, etc'). this option is used to allow easy protocol switching, such as from HTTP to Websockets. 
+		#
+		# Duringn normal Plezi behavior, the optional `handler` object will be returned if `listen` is called more than once for the same port.
+		#
+		# assets:
+		#
+		# assets support will render `.sass`, `.scss` and `.coffee` and save them as local files (`.css`, `.css`, and `.js` respectively)
+		# before sending them as static files.
+		#
+		# templates:
+		#
+		# ERB, Slim and Haml are natively supported.
+		#
+		def listen parameters = {}
+			# update default values
+			parameters = {assets_public: '/assets'}.update(parameters)
+
+			# set port if undefined
+			if !parameters[:port] && defined? ARGV
+				if ARGV.find_index('-p')
+					port_index = ARGV.find_index('-p') + 1
+					parameters[:port] ||= ARGV[port_index].to_i
+					ARGV[port_index] = (parameters[:port] + 1).to_s
+				else
+					ARGV << '-p'
+					ARGV << '3001'
+					parameters[:port] ||= 3000
+				end
+			end
+
+			#keeps information of past ports.
+			@listeners ||= {}
+			@listeners_locker = Mutex.new
+
+			# check if the port is used twice.
+			if @listeners[parameters[:port]]
+				puts "WARNING: port aleady in use! returning existing service and attemptin to add host (maybe multiple hosts? use `host` instead)." unless parameters[:host]
+				@active_router = @listeners[parameters[:port]].params[:handler] || @listeners[parameters[:port]].params[:protocol]
+				@active_router.add_host parameters[:host], parameters if @active_router.is_a?(HTTPRouter)
+				return @active_router
+			end
+
+			# make sure the protocol exists.
+			unless parameters[:protocol]
+				parameters[:protocol] = HTTPProtocol
+				parameters[:handler] ||=  HTTPRouter.new
+			end
+
+			# create the EventMachine IO object.
+			io = defined?(PLEZI_ON_RACK) ? parameters : EventMachine::BasicIO.new( TCPServer.new(parameters[:port]), parameters)
+			EventMachine.add_io io.io, io unless defined? PLEZI_ON_RACK
+			@listeners_locker.synchronize { @listeners[parameters[:port]] = io }
+			# set the active router to the handler or the protocol.
+			@active_router = (parameters[:handler] || parameters[:protocol])
+			@active_router.add_host(parameters[:host], parameters) if @active_router.is_a?(HTTPRouter)
+
+			Plezi.run_async { Plezi.info "Started listening on port #{parameters[:port]}." } unless defined?(PLEZI_ON_RACK)
+
+			# return the current handler or the protocol..
+			@active_router
+		end
+
+		# Plezi Engine, DO NOT CALL. creates the thread pool and starts cycling through the events.
+		def start_services
+			if @listeners && @listeners.any?
+				# prepare threads
+				exit_flag = false
+				threads = []
+				Plezi.run_every(5, &EventMachine.method(:clear_connections))
+				Plezi.run_every(3_600) {GC.start; Plezi.info "Refreshing worker threads."; EventMachine.stop; EventMachine.start Plezi.max_threads}
+				# run_every( 1 , Proc.new() { Plezi.info "#{IO_CONNECTION_DIC.length} active connections ( #{ IO_CONNECTION_DIC.select{|k,v| v.protocol.is_a?(WSProtocol)} .length } websockets)." })
+				# run_every 10 , -> {Plezi.info "Cache report: #{CACHE_STORE.length} objects cached." } 
+				puts "Services running Plezi version #{Plezi::VERSION}. Press ^C to stop"
+				EventMachine.start Plezi.max_threads
+
+				# set signal tarps
+				trap('INT'){ exit_flag = true; raise "close Plezi" }
+				trap('TERM'){ exit_flag = true; raise "close Plezi" }
+				# sleep until trap raises exception (cycling might cause the main thread to ignor signals and lose attention)
+				sleep rescue true
+				# avoid refreshing the working threads and stop all timed events.
+				EventMachine.clear_timers
+				# start shutdown.
+				exit_flag = true
+				# set new tarps
+				trap('INT'){ puts 'Forced exit.'; Kernel.exit } #rescue true}
+				trap('TERM'){ puts 'Forced exit.'; Kernel.exit } #rescue true }
+				puts 'Started shutdown process. Press ^C to force quit.'
+				# shut down listening sockets
+				stop_services
+				# cycle down threads
+				Plezi.info "Finishing up and running shutdown tasks."
+			end
+			EventMachine.shutdown
+			Plezi.info "Plezi shutdown as requested."
+			puts "Since we're resting, why not practice Tai Chi?"
+			# return exit code?
+			0
+		end
+		# Closes and removes listening IO's registered by Plezi using #listen
+		def stop_services
+			Plezi.info 'Stopping services'
+			@listeners_locker.synchronize { @listeners.each {|port, io| EventMachine.remove_io(io.io); Plezi.info "Stoped listening on port #{port}" } ; @listeners.clear } if @listeners
+			true
+		end
+	end
+
 	module_function
 
 	# Plezi event cycle settings: how long to wait for IO activity before forcing another cycle.
@@ -132,91 +259,4 @@ module Plezi
 	def idle_sleep= value
 		EventMachine.io_timeout = value
 	end
-
-	# public API to add a service to the framework.
-	# accepts a Hash object with any of the following options (Hash keys):
-	# port:: port number. defaults to 3000 or the port specified when the script was called.
-	# host:: the host name. defaults to any host not explicitly defined (a catch-all).
-	# alias:: a String or an Array of Strings which represent alternative host names (i.e. `alias: ["admin.google.com", "admin.gmail.com"]`).
-	# root:: the public root folder. if this is defined, static files will be served from the location.
-	# assets:: the assets root folder. defaults to nil (no assets support). if the path is defined, assets will be served from `/assets/...` (or the public_asset path defined) before any static files. assets will not be served if the file in the /public/assets folder if up to date (a rendering attempt will be made for systems that allow file writing).
-	# assets_public:: the assets public uri location (uri format, NOT a file path). defaults to `/assets`. assets will be saved (or rendered) to the assets public folder and served as static files.
-	# assets_callback:: a method that accepts one parameters: `request` and renders any custom assets. the method should return `false` unless it has created a response object (`response = Plezi::HTTPResponse.new(request)`) and sent a response to the client using `response.finish`.
-	# save_assets:: saves the rendered assets to the filesystem, under the public folder. defaults to false.
-	# templates:: the templates root folder. defaults to nil (no template support). templates can be rendered by a Controller class, using the `render` method.
-	# ssl:: if true, an SSL service will be attempted. if no certificate is defined, an attempt will be made to create a self signed certificate.
-	# ssl_key:: the public key for the SSL service.
-	# ssl_cert:: the certificate for the SSL service.
-	#
-	# some further options, which are unstable and might be removed in future versions, are:
-	# protocol:: the protocol objects (usually a class, but any object answering `#call` will do).
-	# handler:: an optional handling object, to be called upon by the protocol (i.e. #on_message, #on_connect, etc'). this option is used to allow easy protocol switching, such as from HTTP to Websockets. 
-	#
-	# Duringn normal Plezi behavior, the optional `handler` object will be returned if `listen` is called more than once for the same port.
-	#
-	# assets:
-	#
-	# assets support will render `.sass`, `.scss` and `.coffee` and save them as local files (`.css`, `.css`, and `.js` respectively)
-	# before sending them as static files.
-	#
-	# templates:
-	#
-	# ERB, Slim and Haml are natively supported.
-	#
-	def listen parameters = {}
-		# update default values
-		parameters = {assets_public: '/assets'}.update(parameters)
-
-		# set port if undefined
-		if !parameters[:port] && defined? ARGV
-			if ARGV.find_index('-p')
-				port_index = ARGV.find_index('-p') + 1
-				parameters[:port] ||= ARGV[port_index].to_i
-				ARGV[port_index] = (parameters[:port] + 1).to_s
-			else
-				ARGV << '-p'
-				ARGV << '3001'
-				parameters[:port] ||= 3000
-			end
-		end
-
-		#keeps information of past ports.
-		@listeners ||= {}
-		@listeners_locker = Mutex.new
-
-		# check if the port is used twice.
-		if @listeners[parameters[:port]]
-			puts "WARNING: port aleady in use! returning existing service and attemptin to add host (maybe multiple hosts? use `host` instead)." unless parameters[:host]
-			@active_router = @listeners[parameters[:port]].params[:handler] || @listeners[parameters[:port]].params[:protocol]
-			@active_router.add_host parameters[:host], parameters if @active_router.is_a?(HTTPRouter)
-			return @active_router
-		end
-
-		# make sure the protocol exists.
-		unless parameters[:protocol]
-			parameters[:protocol] = HTTPProtocol
-			parameters[:handler] ||=  HTTPRouter.new
-		end
-
-		# create the EventMachine IO object.
-		io = EventMachine::BasicIO.new TCPServer.new(parameters[:port]), parameters
-		EventMachine.add_io io.io, io
-		@listeners_locker.synchronize { @listeners[parameters[:port]] = io }
-		# set the active router to the handler or the protocol.
-		@active_router = (parameters[:handler] || parameters[:protocol])
-		@active_router.add_host(parameters[:host], parameters) if @active_router.is_a?(HTTPRouter)
-
-		Plezi.run_async { Plezi.info "Started listening on port #{parameters[:port]}." }
-
-		# return the current handler or the protocol..
-		@active_router
-	end
-
-	# Closes and removes listening IO's registered by Plezi using #listen
-	def stop_services
-		info 'Stopping services'
-		@listeners_locker.synchronize { @listeners.each {|port, io| EventMachine.remove_io(io.io); info "Stoped listening on port #{port}" } ; @listeners.clear } if @listeners
-		true
-	end
-
 end

@@ -4,11 +4,19 @@
 
 Change log v.0.8.0
 
-**Refactoring**: core code was refractored. Older code might not work.
+**Refactoring**: core code was refractored. Older code __might__ not work.
+
+Most apps should be able to upgrade with no issues.
+
+**Rack support might be broken** (again)... Rack support has changed and it's probably boken. It might come back, and it might not - it was originally only for testing. Plezi is a pure Ruby Rack alternative. It runs it's own web server (since, unlike Rack, the response objects are part of the server and this allows for a whole lot of magic and concurrency to happen). I hadn't had the time to test the Rack support under the new code.
+
+**Events API changes**: the method Plezi.push_event has been removed. Plezi.run_async and Plezi.callback are the preffered methods to be used for event handling.
 
 **Timers API changes**: The API for timed events has changed. It is now both more streamlined and allows setting a repeat limit for events that repeat themselves (i.e. schedule an event to repeat every 60 seconds and limit it to perform only 5 times).
 
 **fix**: Fixed an issue with attachments. Attachments were mistakenly enforced to comply with UTF-8 encoding, preventing binary attachments from successfully uploading.
+
+unstable API warning - **Effects only advanced users**: v.0.8.0 is a time for change. The regular API (the DSL and some Plezi helpers) will remain stable (and if it breaks, we will fix it), but the core API - which some users might have used even though they probably shouldn't have - will change.
 
 ***
 

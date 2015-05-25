@@ -32,6 +32,7 @@ module Plezi
 					end
 
 				rescue Exception => e
+					PL.error e
 					return disconnect
 				end
 			end

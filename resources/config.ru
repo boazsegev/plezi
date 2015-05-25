@@ -22,18 +22,16 @@
 # 2. you have better control over Middleware then you could have with Plezi.
 # ("wait", you might say, "there is no Middleware in Plezi!"... "Ahhh", I will answer, "so much to discover...")
 
-
-working_dir = ::File.expand_path(Dir.pwd)
-app_path = ::File.expand_path(File.join(".."),  __FILE__)
-app_file_name = app_path.split(/[\\\/]/).last + ".rb"
-
-# # make sure plezi doesn't set up sockets nor starts the event cycle.
 PLEZI_ON_RACK = true
 
-#load the Plezi application file
-Dir.chdir app_path
-require File.join(app_path, app_file_name)
+# load all framework and gems
+load ::File.expand_path(File.join("..", "environment.rb"),  __FILE__)
 
-Dir.chdir working_dir
+# set up the routes
+load ::File.expand_path(File.join("..", "routes.rb"),  __FILE__)
 
-run Plezi
+# start the plezi EM, to make sure that the plezi async code doesn't break.
+Plezi::EventMachine.start Plezi.max_threads
+
+# run the Rack app
+run Plezi::DSL
