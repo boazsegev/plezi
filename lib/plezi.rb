@@ -41,6 +41,7 @@ require 'plezi/eventmachine/timers.rb'
 require 'plezi/eventmachine/io.rb'
 require 'plezi/eventmachine/protocol.rb'
 require 'plezi/eventmachine/connection.rb'
+require 'plezi/eventmachine/ssl_connection.rb'
 
 ### http and websocket server
 

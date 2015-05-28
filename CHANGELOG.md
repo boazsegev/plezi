@@ -2,6 +2,14 @@
 
 ***
 
+Change log v.0.8.1
+
+**fix**: fixed an issue that silently prevented SSL connections from working properly. SSL was mistakenly disabled and normal connections were attempted. This issue should have cause a no-service situation, as attempting to connect using SSL to a non-SSL connection would fail.
+
+**fix**: fixed Websocket connections. An extra EOL marker at the end of the HTTP upgrade responce caused websockets to fail. The excess new line marker was removed.
+
+***
+
 Change log v.0.8.0
 
 **Refactoring**: core code was refractored. Older code __might__ not work.

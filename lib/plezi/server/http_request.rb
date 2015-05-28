@@ -132,7 +132,7 @@ end
 ## example requests
 
 # GET / HTTP/1.1
-# Host: localhost:2000
+# Host: localhost:3000
 # Accept: text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8
 # Cookie: user_token=2INa32_vDgx8Aa1qe43oILELpSdIe9xwmT8GTWjkS-w
 # User-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_10) AppleWebKit/600.1.25 (KHTML, like Gecko) Version/8.0 Safari/600.1.25

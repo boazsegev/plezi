@@ -33,11 +33,13 @@ module Plezi
 			@message = ''
 		end
 
+		# a proc object that calls #on_connect for the handler passed.
+		ON_CONNECT_PROC = Proc.new {|handler| handler.on_connect}
 		# called when connection is initialized.
 		def on_connect
 			# set timeout to 60 seconds
 			Plezi.log_raw "#{@request[:client_ip]} [#{Time.now.utc}] - #{@connection.object_id} Upgraded HTTP to WebSockets.\n"
-			Plezi.callback @connection.handler, :on_connect if @connection.handler.methods.include?(:on_connect)
+			Plezi::EventMachine.queue [@connection.handler], ON_CONNECT_PROC if @connection.handler && @connection.handler.methods.include?(:on_connect)
 			@connection.touch
 			Plezi.run_after(2) { @connection.timeout = 60 }
 		end
@@ -50,11 +52,13 @@ module Plezi
 			true
 		end
 
+		# a proc object that calls #on_disconnect for the handler passed.
+		ON_DISCONNECT_PROC = Proc.new {|handler| handler.on_disconnect}
 		# called when a disconnect is fired
-		# (socket was disconnected / service should be disconnected / shutdown / socket error)
+		# (socket was disconnected / connection should be disconnected / shutdown / socket error)
 		def on_disconnect
 			Plezi.log_raw "#{@request[:client_ip]} [#{Time.now.utc}] - #{@connection.object_id} Websocket disconnected.\n"
-			Plezi.callback @connection.handler, :on_disconnect if @connection.handler.methods.include?(:on_disconnect)
+			Plezi::EventMachine.queue [@connection.handler], ON_DISCONNECT_PROC if @connection.handler.methods.include?(:on_disconnect)
 		end
 
 		########
@@ -66,7 +70,7 @@ module Plezi
 			# should consider adopting the websocket gem for handshake and framing:
 			# https://github.com/imanel/websocket-ruby
 			# http://www.rubydoc.info/github/imanel/websocket-ruby
-			return request.service.handler.hosts[request[:host] || :default].send_by_code request, 400 , response.headers.merge('sec-websocket-extensions' => SUPPORTED_EXTENTIONS.keys.join(', ')) unless request['upgrade'].to_s.downcase == 'websocket' && 
+			return connection.handler.hosts[request[:host] || :default].send_by_code request, 400 , response.headers.merge('sec-websocket-extensions' => SUPPORTED_EXTENTIONS.keys.join(', ')) unless request['upgrade'].to_s.downcase == 'websocket' && 
 									request['sec-websocket-key'] &&
 									request['connection'].to_s.downcase == 'upgrade' &&
 									# (request['sec-websocket-extensions'].split(/[\s]*[,][\s]*/).reject {|ex| ex == '' || SUPPORTED_EXTENTIONS[ex.split(/[\s]*;[\s]*/)[0]] } ).empty? &&
@@ -87,7 +91,7 @@ module Plezi
 			@extentions.freeze
 			connection.protocol = self
 			connection.handler = handler
-			Plezi.callback self, :on_connect
+			Plezi::EventMachine.queue [self], ON_CONNECT_PROC
 			return true
 		end
 
@@ -150,6 +154,9 @@ module Plezi
 			bytes.pop ^ (merge_bytes(*bytes) << 8)
 		end
 
+		# The proc queued whenever a frame is complete.
+		COMPLETE_FRAME_PROC = Proc.new {|handler, message| handler.on_message message}
+
 		# handles the completed frame and sends a message to the handler once all the data has arrived.
 		def complete_frame
 			@extentions.each {|ex| SUPPORTED_EXTENTIONS[ex[0]][1].call(@parser_data[:body], ex[1..-1]) if SUPPORTED_EXTENTIONS[ex[0]]}
@@ -157,7 +164,7 @@ module Plezi
 			case @parser_data[:op_code]
 			when 9, 10
 				# handle @parser_data[:op_code] == 9 (ping) / @parser_data[:op_code] == 10 (pong)
-				Plezi.callback @connection, :send_nonblock, WSResponse.frame_data(@parser_data[:body].pack('C*'), 10)
+				Plezi.callback @connection, :send_nonblock, WSResponse.frame_data(@parser_data[:body].pack('C*'), 10) # unless @parser_data[:op_code] == 10
 				@parser_op_code = nil if @parser_op_code == 9 || @parser_op_code == 10
 			when 8
 				# handle @parser_data[:op_code] == 8 (close)
@@ -168,7 +175,7 @@ module Plezi
 				# handle @parser_data[:op_code] == 0 / fin == false (continue a frame that hasn't ended yet)
 				if @parser_data[:fin]
 					HTTP.make_utf8! @message if @parser_op_code == 1
-					Plezi.callback @connection.handler, :on_message, @message
+					Plezi::EventMachine.queue [@connection.handler, @message], COMPLETE_FRAME_PROC
 					@message = ''
 					@parser_op_code = nil
 				end
@@ -184,10 +191,10 @@ end
 ######
 ## example requests
 
-# GET /?encoding=text HTTP/1.1
+# GET /nickname HTTP/1.1
 # Upgrade: websocket
 # Connection: Upgrade
-# Host: localhost:3001
+# Host: localhost:3000
 # Origin: https://www.websocket.org
 # Cookie: test=my%20cookies; user_token=2INa32_vDgx8Aa1qe43oILELpSdIe9xwmT8GTWjkS-w
 # Pragma: no-cache

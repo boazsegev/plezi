@@ -18,9 +18,12 @@ module Plezi
 			def call
 				begin
 					socket = io.accept_nonblock
-					handler = Connection.new socket, @params
+					handler = (@params[:ssl] ? SSLConnection : Connection).new socket, @params
 					EventMachine.add_io socket, handler
 				rescue Errno::EWOULDBLOCK => e
+
+				rescue OpenSSL::SSL::SSLError => e
+					Plezi.info "Due to an SSL issue, the connection was refused (maybe untrusted certificate)?"
 
 				rescue => e
 					Plezi.error e

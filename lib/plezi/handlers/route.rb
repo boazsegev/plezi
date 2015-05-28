@@ -252,7 +252,7 @@ module Plezi
 					# make sure this is a websocket controller
 					return false unless self.class.public_instance_methods.include?(:on_message)
 					# call the controller's original method, if exists, and check connection.
-					return false if (defined?(super) && !super) 
+					return false if (defined?(super) && !super)
 					# finish if the response was sent
 					return true if response.headers_sent?
 					# complete handshake

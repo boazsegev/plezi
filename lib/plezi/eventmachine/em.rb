@@ -22,7 +22,7 @@ module Plezi
 				do_job while do_job
 				# replace with io
 				review_io || sleep(wait)
-			rescue Exception => e
+			rescue => e
 				Plezi.error e
 			end
 		end

@@ -21,22 +21,53 @@ module Plezi
 			@request, @service = request,request.service
 		end
 
-		# pushes data to the body of the response. this is the preffered way to add data to the response.
+		# sends data through the websocket connection in a non-blocking way.
+		#
+		# Plezi will try a best guess at the type of the data (binary vs. clear text).
+		#
+		# This should be the preferred way.
 		def << str
 			service.send_nonblock self.class.frame_data(str.dup)
 			self
 		end
 
-		# sends the response object. headers will be frozen (they can only be sent at the head of the response).
+		# sends data through the websocket connection in a blocking way.
 		#
-		# the response will remain open for more data to be sent through (using `response << data` and `response.send`).
+		# Plezi will try a best guess at the type of the data (binary vs. clear text).
+		#
 		def send str
-			service.send_nonblock self.class.frame_data(str.dup)
+			service.send self.class.frame_data(str.dup)
+			self
 		end
+		# sends binary data through the websocket connection in a blocking way.
+		#
+		def binsend str
+			service.send self.class.frame_data(str.dup, 2)
+			self
+		end
+		# sends clear text data through the websocket connection in a blocking way.
+		#
+		def txtsend str
+			service.send self.class.frame_data(str.dup, 1)
+			self
+		end
+
 
 		# makes sure any data held in the buffer is actually sent.
 		def flush
 			service.flush
+			self
+		end
+
+		# pings the connection
+		def ping
+			service.send_nonblock self.class.frame_data('', 9)
+			self
+		end
+		# pings the connection
+		def pong
+			service.send_nonblock self.class.frame_data('', 10)
+			self
 		end
 
 		# sends any pending data and closes the connection.
@@ -49,10 +80,10 @@ module Plezi
 		def self.frame_data data, op_code = nil, fin = true
 			# set up variables
 			frame = ''.force_encoding('binary')
-			op_code ||= data.encoding.name == 'UTF-8' ? 1 : 2
+			op_code ||= (data.encoding.name == 'UTF-8' ? 1 : 2)
 			data.force_encoding('binary')
 
-			# fragment big data chuncks into smaller frames
+			# fragment big data chuncks into smaller frames - op-code reset for 0 for all future frames.
 			[frame << frame_data(data.slice!(0..1048576), op_code, false), op_code = 0] while data.length > 1048576
 
 			# apply extenetions to the frame
@@ -77,16 +108,3 @@ module Plezi
 		end
 	end
 end
-
-
-######
-## example requests
-
-# GET / HTTP/1.1
-# Host: localhost:2000
-# Accept: text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8
-# Cookie: user_token=2INa32_vDgx8Aa1qe43oILELpSdIe9xwmT8GTWjkS-w
-# User-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_10) AppleWebKit/600.1.25 (KHTML, like Gecko) Version/8.0 Safari/600.1.25
-# Accept-Language: en-us
-# Accept-Encoding: gzip, deflate
-# Connection: keep-alive

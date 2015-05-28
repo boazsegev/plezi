@@ -189,7 +189,7 @@ module Plezi
 			def finish
 				@headers['content-length'] ||= body[0].bytesize if !headers_sent? && body.is_a?(Array) && body.length == 1
 				self.send
-				service.send( (@chunked) ? "0\r\n\r\n" : "\r\n")
+				service.send( (@chunked) ? "0\r\n\r\n" : nil)
 				@finished = true
 				# service.disconnect unless headers['keep-alive']
 				# log
