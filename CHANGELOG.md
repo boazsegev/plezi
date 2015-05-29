@@ -1,4 +1,9 @@
 #Change Log
+***
+
+Change log v.0.8.2
+
+**fix**: fixed an issue where websocket clients that didn't send the `sec-websocket-extensions` header would cause an exception to be raised and their connections would be refused.
 
 ***
 

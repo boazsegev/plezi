@@ -83,7 +83,7 @@ module Plezi
 			response['sec-websocket-version'] = '13'
 			# Note that the client is only offering to use any advertised extensions
 			# and MUST NOT use them unless the server indicates that it wishes to use the extension.
-			request['sec-websocket-extensions'].split(/[\s]*[,][\s]*/).each {|ex| @extentions << ex.split(/[\s]*;[\s]*/) if SUPPORTED_EXTENTIONS[ex.split(/[\s]*;[\s]*/)[0]]}
+			request['sec-websocket-extensions'].to_s.split(/[\s]*[,][\s]*/).each {|ex| @extentions << ex.split(/[\s]*;[\s]*/) if SUPPORTED_EXTENTIONS[ex.split(/[\s]*;[\s]*/)[0]]}
 			response['sec-websocket-extensions'] = @extentions.map {|e| e[0] } .join (',')
 			response.headers.delete 'sec-websocket-extensions' if response['sec-websocket-extensions'].empty?
 			response['Sec-WebSocket-Accept'] = Digest::SHA1.base64digest(request['sec-websocket-key'] + '258EAFA5-E914-47DA-95CA-C5AB0DC85B11')
