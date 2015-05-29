@@ -27,7 +27,7 @@ module Plezi
 		#
 		# This should be the preferred way.
 		def << str
-			service.send_nonblock self.class.frame_data(str.dup)
+			service.send_nonblock self.class.frame_data(str)
 			self
 		end
 
@@ -36,19 +36,19 @@ module Plezi
 		# Plezi will try a best guess at the type of the data (binary vs. clear text).
 		#
 		def send str
-			service.send self.class.frame_data(str.dup)
+			service.send self.class.frame_data(str)
 			self
 		end
 		# sends binary data through the websocket connection in a blocking way.
 		#
 		def binsend str
-			service.send self.class.frame_data(str.dup, 2)
+			service.send self.class.frame_data(str, 2)
 			self
 		end
 		# sends clear text data through the websocket connection in a blocking way.
 		#
 		def txtsend str
-			service.send self.class.frame_data(str.dup, 1)
+			service.send self.class.frame_data(str, 1)
 			self
 		end
 
@@ -76,15 +76,24 @@ module Plezi
 			service.disconnect
 		end
 
+		FRAME_SIZE_LIMIT = 131_072
+
 		# Dangerzone! ()alters the string, use `send` instead: formats the data as one or more WebSocket frames.
 		def self.frame_data data, op_code = nil, fin = true
 			# set up variables
 			frame = ''.force_encoding('binary')
 			op_code ||= (data.encoding.name == 'UTF-8' ? 1 : 2)
-			data.force_encoding('binary')
 
-			# fragment big data chuncks into smaller frames - op-code reset for 0 for all future frames.
-			[frame << frame_data(data.slice!(0..1048576), op_code, false), op_code = 0] while data.length > 1048576
+
+			if data[FRAME_SIZE_LIMIT]
+				# fragment big data chuncks into smaller frames - op-code reset for 0 for all future frames.
+				data = data.dup
+				data.force_encoding('binary')
+				[frame << frame_data(data.slice!(0..FRAME_SIZE_LIMIT), op_code, false), op_code = 0] while data.length > FRAME_SIZE_LIMIT # 1048576
+				# frame << frame_data(data.slice!(0..1048576), op_code, false)
+				# data = 
+				# op_code = 0
+			end
 
 			# apply extenetions to the frame
 			ext = 0
@@ -103,7 +112,9 @@ module Plezi
 				frame << 127.chr
 				frame << [data.length].pack('Q>')
 			end
+			frame.force_encoding(data.encoding)
 			frame << data
+			frame.force_encoding('binary')
 			frame
 		end
 	end
