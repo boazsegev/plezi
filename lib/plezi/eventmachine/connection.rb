@@ -39,7 +39,7 @@ module Plezi
 
 			def clear?
 				return false unless timedout? || disconnected?
-				disconnect
+				close
 				true
 			end
 
@@ -58,15 +58,21 @@ module Plezi
 				@socket
 			end
 
+			# the proc used to remove the connection from the IO stack.
+			REMOVE_CONNECTION_PROC = Proc.new {|old_io| EventMachine.remove_io old_io }
 			# sends data immidiately - forcing the data to be sent, flushing any pending messages in the que
 			def send data = nil
 				return false unless @out_que.any? || data
-				@locker.synchronize do
-					unless @out_que.empty?
-						@out_que.each { |d| _send d rescue disconnect }
-						@out_que.clear					
+				begin				
+					@locker.synchronize do
+						unless @out_que.empty?
+							@out_que.each { |d| _send d }
+							@out_que.clear					
+						end
+						(_send data rescue disconnect) if data
 					end
-					(_send data rescue disconnect) if data
+				rescue => e
+					EventMachine.queue( [@socket], REMOVE_CONNECTION_PROC)
 				end
 			end
 
@@ -89,44 +95,31 @@ module Plezi
 			# makes sure any data in the que is send and calls `flush` on the socket, to make sure the buffer is sent.
 			def flush
 				send
-				io.flush
+				io.flush rescue true
 			end
 
-			# the proc used to remove the connection from the IO stack.
-			REMOVE_CONNECTION_PROC = Proc.new {|old_io| EventMachine.remove_io old_io }
-			# called once a socket is disconnected or needs to be disconnected.
+			# called once the connection is closed.
+			#
 			def on_disconnect
 				@locker.synchronize do
-					@out_que.each { |d| _send d rescue true}
-					@out_que.clear
-				end if @out_que.any?
-				io.flush rescue true
-				EventMachine.queue [@socket], REMOVE_CONNECTION_PROC
-				EventMachine.queue [], protocol.method(:on_disconnect) if protocol && !protocol.is_a?(Class)
+					EventMachine.queue [], protocol.method(:on_disconnect) if protocol && !protocol.is_a?(Class)
+					@protocol = false
+				end
 			end
+			# closes the connection.
+			def close
+				flush
+				EventMachine.queue [@socket], REMOVE_CONNECTION_PROC
+			end
+			alias :disconnect :close
 
 			# status markers
 
-			# closes the connection
-			def close
-				@locker.synchronize do
-					io.flush rescue true
-					io.close rescue true
-				end
-				EventMachine.queue [@socket], REMOVE_CONNECTION_PROC
-				disconnect
-			end
 			# returns true if the service is disconnected
 			def disconnected?
 				(@socket.closed? || socket.stat.mode == 0140222) rescue true # if mode is read only, it's the same as closed.
 			end
-			# the async disconnect proc
-			FIRE_DISCONNECT_PROC = Proc.new {|handler| handler.on_disconnect }
-			# disconects the service.
-			def disconnect
-				@out_que.clear
-				EventMachine.queue [self], FIRE_DISCONNECT_PROC
-			end
+
 			# returns true if the socket has content to be read.
 			def has_incoming_data?
 				 (@socket.stat.size > 0) rescue false

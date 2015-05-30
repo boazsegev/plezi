@@ -57,7 +57,7 @@ module Plezi
 		# called when a disconnect is fired
 		# (socket was disconnected / connection should be disconnected / shutdown / socket error)
 		def on_disconnect
-			Plezi.log_raw "#{@request[:client_ip]} [#{Time.now.utc}] - #{@connection.object_id} Websocket disconnected.\n"
+			# Plezi.log_raw "#{@request[:client_ip]} [#{Time.now.utc}] - #{@connection.object_id} Websocket disconnected.\n"
 			Plezi::EventMachine.queue [@connection.handler], ON_DISCONNECT_PROC if @connection.handler.methods.include?(:on_disconnect)
 		end
 

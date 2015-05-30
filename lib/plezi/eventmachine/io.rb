@@ -5,10 +5,10 @@ module Plezi
 		class BasicIO
 
 			# attribute readers
-			attr_reader :io, :params
+			attr_reader :io, :params, :protocol
 			# initialize the listener with the actual socket and the properties.
 			def initialize io, params
-				@io, @params = io, params
+				@io, @params, @protocol = io, params, false
 			end
 			# returns true if the socket is closed and the object can be cleared.
 			def clear?
@@ -29,6 +29,13 @@ module Plezi
 					Plezi.error e
 				end
 			end
+			def on_disconnect
+				true
+			end
+			def close
+				false
+			end
+			alias :disconnect :close
 		end
 		module_function
 
@@ -47,9 +54,11 @@ module Plezi
 			IO_LOCKER.synchronize { EM_IO[io] = job }
 		end
 
+		# the proc for async IO removal, in case of IO exceptions raised by unexpectedly closed sockets.
+		IO_CLEAR_ASYNC_PROC = Proc.new {|c| c.on_disconnect rescue false }
 		# removes an IO from the event machine.
 		def remove_io io
-			IO_LOCKER.synchronize { (EM_IO.delete io).close rescue true }
+			IO_LOCKER.synchronize { queue [(EM_IO.delete io)], IO_CLEAR_ASYNC_PROC; (io.close unless io.closed? rescue true);  }
 		end
 
 		# deletes any connections that are closed or timed out.
@@ -64,7 +73,7 @@ module Plezi
 
 		# stops all the connections without stopping the lisntener IO's.
 		def stop_connections
-			IO_LOCKER.synchronize { EM_IO.each { |io, c| Plezi.run_async { c.disconnect rescue true }  } }
+			IO_LOCKER.synchronize { EM_IO.each { |io, c| c.close } }
 		end
 
 		# set the default idle waiting time.
@@ -88,9 +97,6 @@ module Plezi
 		def io_timeout= value
 			@io_timeout = value
 		end
-
-		# the proc for async IO removal, in case of IO exceptions raised by unexpectedly closed sockets.
-		IO_CLEAR_ASYNC_PROC = Proc.new {|c| c.protocol.on_disconnect if (c.protocol rescue false) }
 
 		# hangs for IO data or io_timeout
 		def review_io
