@@ -52,6 +52,15 @@ module Plezi
 			def accepts_broadcast?
 				@_accepts_broadcast
 			end
+			# sets the controller to refuse "broadcasts".
+			#
+			# This allows some websocket connections to isolate themselves even before they are fully disconnected.
+			#
+			# call this method once it is clear the websocket connection should be terminated.
+			def refuse_broadcasts
+				@_accepts_broadcast = false
+				self
+			end
 
 			# this method does two things.
 			#

@@ -17,8 +17,11 @@ module Plezi
 		#the request.
 		attr_accessor :request
 
+		PING_PROC = Proc.new {|res| EventMachine.timed_job 45, 1, [res.ping], PING_PROC unless res.service.disconnected? }
+
 		def initialize request
 			@request, @service = request,request.service
+			PING_PROC.call(self)
 		end
 
 		# sends data through the websocket connection in a non-blocking way.
@@ -72,8 +75,8 @@ module Plezi
 
 		# sends any pending data and closes the connection.
 		def close
-			service.send_nonblock self.class.frame_data('', 8)
-			service.disconnect
+			service.send self.class.frame_data('', 8)
+			service.close
 		end
 
 		FRAME_SIZE_LIMIT = 131_072

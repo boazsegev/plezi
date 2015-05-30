@@ -1,4 +1,13 @@
 #Change Log
+
+***
+
+Change log v.0.8.3
+
+**Auto-ping feature**: WebSocket connections now automatically send a `ping` every ~45 seconds (approximately) before the websocket's connection would timeout. This auto-ping will keep the connection alive even if no data is exchanged.
+
+**Minor performance updates**: Disconnection workflow was slightly optimized. Also, medium and small websocket messages (less than 131,072 UTF-8 characters) should be faster to handle.
+
 ***
 
 Change log v.0.8.2

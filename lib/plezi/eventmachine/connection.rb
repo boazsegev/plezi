@@ -96,13 +96,12 @@ module Plezi
 			REMOVE_CONNECTION_PROC = Proc.new {|old_io| EventMachine.remove_io old_io }
 			# called once a socket is disconnected or needs to be disconnected.
 			def on_disconnect
-				EventMachine.queue [@socket], REMOVE_CONNECTION_PROC
 				@locker.synchronize do
 					@out_que.each { |d| _send d rescue true}
 					@out_que.clear
-					io.flush rescue true
-					io.close rescue true
-				end
+				end if @out_que.any?
+				io.flush rescue true
+				EventMachine.queue [@socket], REMOVE_CONNECTION_PROC
 				EventMachine.queue [], protocol.method(:on_disconnect) if protocol && !protocol.is_a?(Class)
 			end
 
@@ -114,6 +113,8 @@ module Plezi
 					io.flush rescue true
 					io.close rescue true
 				end
+				EventMachine.queue [@socket], REMOVE_CONNECTION_PROC
+				disconnect
 			end
 			# returns true if the service is disconnected
 			def disconnected?
