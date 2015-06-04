@@ -5,8 +5,7 @@ if defined? Redis
 	# ## Plezi Redis Automation
 	# ## ====
 	# ##
-	# ## sets up Plezi to use Radis broadcast.
-	# ## this is less recommended then writing your own tailored solution
+	# ## Sets up Plezi to use Radis broadcast.
 	# ##
 	# ## If Plezi Redis Automation is enabled:
 	# ## Plezi creates is own listening thread for each Controller class that broadcasts using Redis.
@@ -15,17 +14,17 @@ if defined? Redis
 	# ## this overrides the default Controller#broadcast method which is very powerful but
 	# ## is limited to one process.
 	# ##
-	# ENV['PL_REDIS_URL'] = ENV['REDISCLOUD_URL'] ||= ENV["REDISTOGO_URL"] ||= "redis://username:password@my.host:6389"
+	# ENV['PL_REDIS_URL'] ||= ENV['REDIS_URL'] || ENV['REDISCLOUD_URL'] || ENV['REDISTOGO_URL'] || "redis://username:password@my.host:6389"
 
 
-	# ## Custom Redis Automation
+	# ## OR, write your own custom Redis Automation here
 	# ## ====
 	# ##
 	# ## create a listening thread - rewrite the following code for your own Redis tailored solution.
 	# ##
 	# ## the following is only sample code for you to change:
 	# RADIS_CHANNEL = 'appsecret'
-	# RADIS_URI = URI.parse(ENV['REDISCLOUD_URL'] || "redis://username:password@my.host:6389")
+	# RADIS_URI = URI.parse(ENV['REDIS_URL'] || ENV['REDISCLOUD_URL'] || "redis://username:password@my.host:6389")
 	# RADIS_CONNECTION = Redis.new(host: RADIS_URI.host, port: RADIS_URI.port, password: RADIS_URI.password)
 	# RADIS_THREAD = Thread.new do
 	# 	Redis.new(host: RADIS_URI.host, port: RADIS_URI.port, password: RADIS_URI.password).subscribe(RADIS_CHANNEL) do |on|

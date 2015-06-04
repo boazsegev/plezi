@@ -2,6 +2,14 @@
 
 ***
 
+Change log v.0.8.4
+
+**core routing changes**: moved the Controller's routing cache out of the global cahce store. This might provide a very slight performance increase.
+
+**feature**: a new OAuth2 controller offers an easy support for OAuth2 login services such as facebook and google. to use this feature, require 'plezi/oauth'.
+
+***
+
 Change log v.0.8.3
 
 **Auto-ping feature**: WebSocket connections now automatically send a `ping` every ~45 seconds (approximately) before the websocket's connection would timeout. This auto-ping will keep the connection alive even if no data is exchanged.

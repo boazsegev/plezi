@@ -279,19 +279,18 @@ module Plezi
 			# lists the available methods that will be exposed to HTTP requests
 			def available_public_methods
 				# set class global to improve performance while checking for supported methods
-				Plezi.cached?(self.superclass.name + '_p&rt') ? Plezi.get_cached(self.superclass.name + "_p&rt") : Plezi.cache_data(self.superclass.name + "_p&rt", (available_routing_methods - [:before, :after, :save, :show, :update, :delete, :initialize, :on_message, :pre_connect, :on_connect, :on_disconnect]).to_set )
+				@available_public_methods ||= (available_routing_methods - [:before, :after, :save, :show, :update, :delete, :initialize, :on_message, :pre_connect, :on_connect, :on_disconnect]).to_set
 			end
 
 			# lists the available methods that will be exposed to the HTTP router
 			def available_routing_methods
-				# set class global to improve performance while checking for supported methods
-				Plezi.cached?(self.superclass.name + '_r&rt') ? Plezi.get_cached(self.superclass.name + "_r&rt") : Plezi.cache_data(self.superclass.name + "_r&rt",  (((public_instance_methods - Object.public_instance_methods) - Plezi::ControllerMagic::InstanceMethods.instance_methods).delete_if {|m| m.to_s[0] == '_'}).to_set  )
+				@available_routing_methods ||= ( ( (public_instance_methods - Object.public_instance_methods) - Plezi::ControllerMagic::InstanceMethods.instance_methods).delete_if {|m| m.to_s[0] == '_'}).to_set
 			end
 
 			# resets this controller's router, to allow for dynamic changes
 			def reset_routing_cache
-				Plezi.clear_cached(self.superclass.name + '_p&rt')
-				Plezi.clear_cached(self.superclass.name + '_r&rt')
+				@available_routing_methods = false
+				@available_public_methods = false
 				available_routing_methods
 				available_public_methods
 			end
@@ -308,6 +307,26 @@ module Plezi
 			def method_undefined(id)
 				reset_routing_cache
 			end
+			# # lists the available methods that will be exposed to HTTP requests
+			# def available_public_methods
+			# 	# set class global to improve performance while checking for supported methods
+			# 	Plezi.cached?(self.superclass.name + '_p&rt') ? Plezi.get_cached(self.superclass.name + "_p&rt") : Plezi.cache_data(self.superclass.name + "_p&rt", (available_routing_methods - [:before, :after, :save, :show, :update, :delete, :initialize, :on_message, :pre_connect, :on_connect, :on_disconnect]).to_set )
+			# end
+
+			# # lists the available methods that will be exposed to the HTTP router
+			# def available_routing_methods
+			# 	# set class global to improve performance while checking for supported methods
+			# 	Plezi.cached?(self.superclass.name + '_r&rt') ? Plezi.get_cached(self.superclass.name + "_r&rt") : Plezi.cache_data(self.superclass.name + "_r&rt",  (((public_instance_methods - Object.public_instance_methods) - Plezi::ControllerMagic::InstanceMethods.instance_methods).delete_if {|m| m.to_s[0] == '_'}).to_set  )
+			# end
+
+			# # resets this controller's router, to allow for dynamic changes
+			# def reset_routing_cache
+			# 	Plezi.clear_cached(self.superclass.name + '_p&rt')
+			# 	Plezi.clear_cached(self.superclass.name + '_r&rt')
+			# 	available_routing_methods
+			# 	available_public_methods
+			# end
+
 			
 			# reviews the Redis connection, sets it up if it's missing and returns the Redis connection.
 			#
@@ -318,10 +337,10 @@ module Plezi
 			#      ENV['PL_REDIS_URL'] = "redis://username:password@my.host:6379"
 			def redis_connection
 				# return false unless defined?(Redis) && ENV['PL_REDIS_URL']
-				# return @@redis if defined?(@@redis_sub_thread) && @@redis
+				# return @redis if defined?(@redis_sub_thread) && @redis
 				# @@redis_uri ||= URI.parse(ENV['PL_REDIS_URL'])
-				# @@redis ||= Redis.new(host: @@redis_uri.host, port: @@redis_uri.port, password: @@redis_uri.password)
-				# @@redis_sub_thread = Thread.new do
+				# @redis ||= Redis.new(host: @@redis_uri.host, port: @@redis_uri.port, password: @@redis_uri.password)
+				# @redis_sub_thread = Thread.new do
 				# 	begin
 				# 		Redis.new(host: @@redis_uri.host, port: @@redis_uri.port, password: @@redis_uri.password).subscribe(redis_channel_name) do |on|
 				# 			on.message do |channel, msg|
@@ -335,8 +354,8 @@ module Plezi
 				# 		retry
 				# 	end
 				# end
-				# raise "Redis connction failed for: #{ENV['PL_REDIS_URL']}" unless @@redis
-				# @@redis
+				# raise "Redis connction failed for: #{ENV['PL_REDIS_URL']}" unless @redis
+				# @redis
 				return false unless defined?(Redis) && ENV['PL_REDIS_URL']
 				return Plezi.get_cached(self.superclass.name + '_b') if Plezi.cached?(self.superclass.name + '_b')
 				@@redis_uri ||= URI.parse(ENV['PL_REDIS_URL'])
