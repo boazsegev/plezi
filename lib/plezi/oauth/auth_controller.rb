@@ -27,28 +27,29 @@ module Plezi
 	#          # return the current user or false if the callback is called with an authentication failure.
 	#       end
 	#
-	# The `create_auth_shared_route` method is a shortcut for calling the `#shared_route` method with the relevant arguments and setting the AuthController callback.
+	# The `create_auth_shared_route` method is a shortcut for calling the `#shared_route` method with the relevant arguments and setting the OAuth2Ctrl callback.
 	#
 	# Use the following links for social authentication:
 	#
 	# - Facebook: "/auth/facebook?redirect_after=/foo/bar"
 	# - Google: "/auth/google?redirect_after=/foo/bar"
 	#
-	class AuthController
+	class OAuth2Ctrl
 
-		# Sets (or gets) the callback to be called if Facebook credentials are authenticated.
+		# Sets (or gets) the callback to be called after authentication is attempeted.
 		#
 		# Accepts a block that will be called with the following parameters:
-		# id:: Facebook user id.
-		# email:: Facebook primamry email.
-		# fb_response:: a Hash with the full user data response (including email and id).
+		# service_name:: the name of the service. i.e. :facebook, :google, etc'.
+		# remote_user_id:: service's user id.
+		# remote_user_email:: users primamry email, if registed with the service.
+		# remote_response:: a Hash with the complete user data response (including email and id).
 		#
 		# If the authentication fails for Facebook, the block will be called with the following values `auth_callback.call(nil, ni, {server: :responce, might_be: :empty})`
 		#
 		# The block will be run in the context of the controller and all the controller's methods will be available to it.
 		#
 		# i.e.:
-		#       AuthController.auth_callback {|id, email, res| cookies[:fb_user_id], cookies[:fb_user_email] = id, email}
+		#       OAuth2Ctrl.auth_callback {|id, email, res| cookies[:fb_user_id], cookies[:fb_user_email] = id, email}
 		#
 		# defaults to the example above.
 		def self.auth_callback &block
@@ -102,7 +103,7 @@ module Plezi
 		# authenticating manualy after manualy setting the token value ( i.e. `cookies[:google_pl_auth_token] = value`):
 		#
 		#       cookies[:google_pl_auth_token] = 'google_token_could_be_recieved_also_from_javascript_sdk'
-		#       AuthController.auth :google, self
+		#       OAuth2Ctrl.auth :google, self
 		#
 		# Token values should be stored in the cookie-jar using the following naming convention:
 		#
@@ -116,12 +117,12 @@ module Plezi
 		#
 		# Call this method from within a controller, passing the controller (self) to the method, like so:
 		#
-		#             AuthController.auth :facebook, self
+		#             OAuth2Ctrl.auth :facebook, self
 		#
 		# This is especially effective if `auth_callback` returns the user object, as it would allow to chain
 		# different login methods, i.e.:
 		#
-		#             @user ||= app_login || AuthController.auth(:facebook, self) || AuthController.auth(:google, self) || ....
+		#             @user ||= app_login || OAuth2Ctrl.auth(:facebook, self) || OAuth2Ctrl.auth(:google, self) || ....
 		def self.auth service_name, controller
 			service = SERVICES[service_name]
 			retrun false unless service
@@ -207,20 +208,20 @@ module Plezi
 	end
 end
 
-# This method creates the AuthController route.
+# This method creates the OAuth2Ctrl route.
 # This is actually a short-cut for:
 #
-#       shared_route "auth/(:id)/(:code)" , Plezi::AuthController
-#       Plezi::AuthController.auth_callback = Proc.new {|service, user_id, user_email, service_response| ... }
+#       shared_route "auth/(:id)/(:code)" , Plezi::OAuth2Ctrl
+#       Plezi::OAuth2Ctrl.auth_callback = Proc.new {|service, user_id, user_email, service_response| ... }
 #
 # the `:id` parameter is used to identify the service (facebook, google. etc').
 #
-# The method accepts a block that will be used to set the authentication callback. See the Plezi::AuthController documentation for details.
+# The method accepts a block that will be used to set the authentication callback. See the Plezi::OAuth2Ctrl documentation for details.
 #
 # The method can be called only once and will self-destruct.
 def create_auth_shared_route options = {}, &block
-	shared_route "auth/(:id)/(:code)" , Plezi::AuthController
+	shared_route "auth/(:id)/(:code)" , Plezi::OAuth2Ctrl
 	undef create_auth_shared_route
-	Plezi::AuthController.auth_callback = block if block
-	Plezi::AuthController
+	Plezi::OAuth2Ctrl.auth_callback = block if block
+	Plezi::OAuth2Ctrl
 end
