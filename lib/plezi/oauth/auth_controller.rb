@@ -33,6 +33,7 @@ module Plezi
 	#
 	# - Facebook: "/auth/facebook?redirect_after=/foo/bar"
 	# - Google: "/auth/google?redirect_after=/foo/bar"
+	# - foo_service: "/auth/foo_service?redirect_after=/foo/bar"
 	#
 	class OAuth2Ctrl
 
@@ -40,6 +41,7 @@ module Plezi
 		#
 		# Accepts a block that will be called with the following parameters:
 		# service_name:: the name of the service. i.e. :facebook, :google, etc'.
+		# service_token:: the authentication token returned by the service. This token should be stored for future access
 		# remote_user_id:: service's user id.
 		# remote_user_email:: users primamry email, if registed with the service.
 		# remote_response:: a Hash with the complete user data response (including email and id).
@@ -49,11 +51,11 @@ module Plezi
 		# The block will be run in the context of the controller and all the controller's methods will be available to it.
 		#
 		# i.e.:
-		#       OAuth2Ctrl.auth_callback {|id, email, res| cookies[:fb_user_id], cookies[:fb_user_email] = id, email}
+		#       OAuth2Ctrl.auth_callback |service, service_token, id, email, res|  cookies["#{service}_pl_auth_token".to_sym], cookies["#{service}_user_id".to_sym], cookies["#{service}_user_email".to_sym] = service_token, id, email }
 		#
-		# defaults to the example above.
+		# defaults to the example above, which isn't a very sercure behavior, but allows for easy testing.
 		def self.auth_callback &block
-			block_given? ? (@auth_callback = block) : ( @auth_callback ||= (Proc.new {|service, id, email, res| Plezi.info "deafult callback called for #{service}, with response: #{res.to_s}"; cookies["#{service}_user_id".to_sym], cookies["#{service}_user_email".to_sym] = id, email}) )
+			block_given? ? (@auth_callback = block) : ( @auth_callback ||= (Proc.new {|service, service_token, id, email, res| Plezi.info "deafult callback called for #{service}, with response: #{res.to_s}";  cookies["#{service}_pl_auth_token".to_sym], cookies["#{service}_user_id".to_sym], cookies["#{service}_user_email".to_sym] = service_token, id, email}) )
 		end
 
 
@@ -99,91 +101,70 @@ module Plezi
 		# Called to manually run through the authentication logic for the requested service,
 		# without performing any redirections.
 		#
-		# Use this method to attempt and re-login a user using his existing login token, or for
-		# authenticating manualy after manualy setting the token value ( i.e. `cookies[:google_pl_auth_token] = value`):
+		# Use this method to attempt and re-login a user using an existing login token:
 		#
-		#       cookies[:google_pl_auth_token] = 'google_token_could_be_recieved_also_from_javascript_sdk'
-		#       OAuth2Ctrl.auth :google, self
-		#
-		# Token values should be stored in the cookie-jar using the following naming convention:
-		#
-		#       {service name}_pl_auth_token
-		#
-		# i.e.
-		#
-		#       cookies[:facebook_pl_auth_token] = token_value
+		#             token = 'google_token_could_be_recieved_also_from_javascript_sdk'
+		#             OAuth2Ctrl.auth :google, token, self
 		#
 		# The method will return false if re-login fails and it will otherwise return the callback's return value.
 		#
 		# Call this method from within a controller, passing the controller (self) to the method, like so:
 		#
-		#             OAuth2Ctrl.auth :facebook, self
+		#             OAuth2Ctrl.auth :facebook, token, self
 		#
 		# This is especially effective if `auth_callback` returns the user object, as it would allow to chain
 		# different login methods, i.e.:
 		#
-		#             @user ||= app_login || OAuth2Ctrl.auth(:facebook, self) || OAuth2Ctrl.auth(:google, self) || ....
-		def self.auth service_name, controller
+		#             @user ||= app_login || OAuth2Ctrl.auth(:facebook, fb_token, self) || OAuth2Ctrl.auth(:google, google_token, self) || ....
+		def self.auth service_name, service_token, controller
 			service = SERVICES[service_name]
 			retrun false unless service
-			c_name = cookie_name(service_name)
 			# auth_res = controller.cookies[c_name] ? (JSON.parse URI.parse("#{service[:profile_url]}?access_token=#{controller.cookies[c_name]}").read rescue ({}) ) : {}
 			# controller.cookies[c_name] = nil unless auth_res['id']
 			# auth_res['id'] ? controller.instance_exec( service_name, auth_res['id'], auth_res['email'], auth_res, &auth_callback) : ( controller.instance_exec( service_name, nil, nil, auth_res, &auth_callback) && false)
 			auth_res = {}
-			controller.instance_exec( service_name, auth_res['id'], auth_res['email'], auth_res, &auth_callback)
-			uri = URI.parse("#{service[:profile_url]}?access_token=#{controller.cookies[c_name]}")
+			uri = URI.parse("#{service[:profile_url]}?access_token=#{service_token}")
 			Net::HTTP.start(uri.host, uri.port, use_ssl: (uri.scheme == "https"), verify_mode: OpenSSL::SSL::VERIFY_NONE) do |http|
 				req =  Net::HTTP::Get.new(uri)
 				res = http.request(req).body
 				auth_res = (JSON.parse res) rescue ({})
-			end if controller.cookies[c_name]
-			auth_res['id'] ? controller.instance_exec( service_name, auth_res['id'], auth_res['email'], auth_res, &auth_callback) : ( controller.instance_exec( service_name, nil, nil, auth_res, &auth_callback) && false)
+			end if service_token
+			auth_res['id'] ? controller.instance_exec( service_name, service_token, auth_res['id'], auth_res['email'], auth_res, &auth_callback) : ( controller.instance_exec( service_name, nil, nil, nil, auth_res, &auth_callback) && false)
 		end
 
 		def update
-			service_name, cookie_name = params[:id].to_s.to_sym, self.class.cookie_name(params[:id])
+			service_name = params[:id].to_s.to_sym
 			service = SERVICES[service_name]
 			retrun false unless service
 			if params[:error]
-				cookies[cookie_name] = nil
-				instance_exec( service_name, nil, nil, {}, &self.class.auth_callback)
+				instance_exec( service_name, nil, nil, nil, {}, &self.class.auth_callback)
 				return redirect_to(flash[:redirect_after])
 			end
 			unless params[:code]
 				flash[:redirect_after] = params[:redirect_after] || '/'
 				return redirect_to _auth_url_for(service_name)
 			end
-			# cookies[cookie_name] = (JSON.parse Net::HTTP.post_form(URI.parse(service[:token_url]), {"client_id" => service[:app_id],
-			# 							"client_secret" => service[:app_secret], "code" => params[:code] ,
-			# 							"grant_type" => "authorization_code","redirect_uri" => "#{request.base_url}/auth/#{service_name.to_s}"}).body)['access_token'] rescue nil
-
 			uri = URI.parse service[:token_url]
+			service_token = nil
 			Net::HTTP.start(uri.host, uri.port, use_ssl: (uri.scheme == "https"), verify_mode: OpenSSL::SSL::VERIFY_NONE) do |http|
 				req =  Net::HTTP::Post.new(uri)
 				req.form_data = {"client_id" => service[:app_id],
 								"client_secret" => service[:app_secret], "code" => params[:code] ,
 								"grant_type" => "authorization_code","redirect_uri" => "#{request.base_url}/auth/#{service_name.to_s}"}
 				res = http.request(req).body
-				cookies[cookie_name] = ((JSON.parse res)['access_token'] rescue nil)
+				service_token = ((JSON.parse res)['access_token'] rescue nil)
 			end
 
-			self.class.auth service_name, self
+			self.class.auth service_name, service_token, self
 			redirect_to(flash[:redirect_after])
 		end
 		alias :show :update
 
-		# the postfix convention for service cookie naming
-		CONVENTION = "_pl_auth_token"
-
-		# returns the cookie name for the service
-		def self.cookie_name service_name
-			(service_name.to_s + CONVENTION).to_sym
-		end
-
 		protected
 
 		# returns a url for the requested service's social login.
+		#
+		# this is used internally. Normal behavior would be to set a link to '/auth/{service_name}', where correct redirection will be automatic.
 		#
 		def _auth_url_for service_name
 			service = SERVICES[service_name]
