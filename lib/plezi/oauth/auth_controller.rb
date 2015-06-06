@@ -1,4 +1,4 @@
-require 'open-uri'
+
 
 
 
@@ -7,14 +7,26 @@ module Plezi
 	#########################################
 	# This is a social Authentication Controller
 	#
+	# To include this controller in your application, you need to require it using:
+	#
+	#       require 'plezi/oauth'
+	#
 	# This controller currently supports:
 	#
 	# - Facebook authentication using the Graph API, v. 2.3 - [see Facebook documentation](https://developers.facebook.com/docs/facebook-login/manually-build-a-login-flow/v2.3).
 	# - Google authentication using the OAuth 2.0 API - [see Google documentation](https://developers.google.com/identity/protocols/OAuth2WebServer).
 	#
-	# It's also possible to manualy register any OAuth 2.0 authentication service using the `register_service` method.
+	# It's also possible to manualy register any OAuth 2.0 authentication service using the `register_service` method:
+	# 
+	#           	register_service(:foo,
+	#           			app_id: 'registered app id / client id',
+	#           			app_secret: 'registered app secret / client secret',
+	#           			auth_url: "https://foo.bar.com/o/oauth2/auth",
+	#           			token_url: "https://foo.bar.com/oauth2/v3/token",
+	#           			profile_url: "https://foo.bar/oauth2/v1/userinfo",
+	#           			scope: "profile email")
 	#
-	# To use this Controller in your application, make sure the following variables are set:
+	# To enjoy autorgistration for Facebook or Google, make sure the following environment variables are set:
 	#       ENV['FB_APP_ID'] = {facebook_app_id}
 	#       ENV['FB_APP_SECRET'] = {facebook_app_secret}
 	#       ENV['GOOGLE_APP_ID'] = {google_app_id}
@@ -43,15 +55,15 @@ module Plezi
 		# service_name:: the name of the service. i.e. :facebook, :google, etc'.
 		# service_token:: the authentication token returned by the service. This token should be stored for future access
 		# remote_user_id:: service's user id.
-		# remote_user_email:: users primamry email, if registed with the service.
+		# remote_user_email:: user's primamry email, as (and if) registed with the service.
 		# remote_response:: a Hash with the complete user data response (including email and id).
 		#
-		# If the authentication fails for Facebook, the block will be called with the following values `auth_callback.call(nil, ni, {server: :responce, might_be: :empty})`
+		# If the authentication fails for the service, the block will be called with the following values `auth_callback.call(nil, ni, {server: :responce, might_be: :empty})`
 		#
 		# The block will be run in the context of the controller and all the controller's methods will be available to it.
 		#
 		# i.e.:
-		#       OAuth2Ctrl.auth_callback |service, service_token, id, email, res|  cookies["#{service}_pl_auth_token".to_sym], cookies["#{service}_user_id".to_sym], cookies["#{service}_user_email".to_sym] = service_token, id, email }
+		#       OAuth2Ctrl.auth_callback |service, service_token, id, email, full_res|  PL.info "OAuth got: #{full_res.to_s}"; cookies["#{service}_pl_auth_token".to_sym], cookies["#{service}_user_id".to_sym], cookies["#{service}_user_email".to_sym] = service_token, id, email }
 		#
 		# defaults to the example above, which isn't a very sercure behavior, but allows for easy testing.
 		def self.auth_callback &block
@@ -69,20 +81,20 @@ module Plezi
 		# options:: a Hash of options, some of which are required.
 		#
 		# The options are:
-		# app_id:: the aplication's unique ID registered with the service. i.e. ENV[FB_APP_ID] (storing these in environment variables is safer then hardcoding them)
-		# app_secret:: the aplication's unique secret registered with the service.
-		# auth_url:: the authentication URL. This is the url to which the user is redirected. i.e.: "https://www.facebook.com/dialog/oauth"
-		# token_url:: the token request URL. This is the url used to switch the single-use code into a persistant authentication token. i.e.: "https://www.googleapis.com/oauth2/v3/token"
-		# profile_url:: the URL used to ask the service for the user's profile (the service's API url). i.e.: "https://graph.facebook.com/v2.3/me"
+		# app_id:: Required. The aplication's unique ID registered with the service. i.e. ENV[FB_APP_ID] (storing these in environment variables is safer then hardcoding them)
+		# app_secret:: Required. The aplication's unique secret registered with the service.
+		# auth_url:: Required. The authentication URL. This is the url to which the user is redirected. i.e.: "https://www.facebook.com/dialog/oauth"
+		# token_url:: Required. The token request URL. This is the url used to switch the single-use code into a persistant authentication token. i.e.: "https://www.googleapis.com/oauth2/v3/token"
+		# profile_url:: Required. The URL used to ask the service for the user's profile (the service's API url). i.e.: "https://graph.facebook.com/v2.3/me"
 		# scope:: a String representing the scope requested. i.e. 'email profile'.
 		#
-		# There will be an attempt to aitomatically register Facebook and Google login services under these conditions:
+		# There will be an attempt to automatically register Facebook and Google login services under these conditions:
 		#
 		# * For Facebook: Both ENV['FB_APP_ID'] && ENV['FB_APP_SECRET'] have been defined.
 		# * For Google: Both ENV['GOOGLE_APP_ID'] && ENV['GOOGLE_APP_SECRET'] have been defined.
 		#
 		#
-		# Just for reference, at the time of this writing:
+		# The auto registration uses the following urls (updated to June 5, 2015):
 		#
 		# * facebook auth_url: "https://www.facebook.com/dialog/oauth"
 		# * facebook token_url: "https://graph.facebook.com/v2.3/oauth/access_token"
@@ -90,6 +102,8 @@ module Plezi
 		# * google auth_url: "https://accounts.google.com/o/oauth2/auth"
 		# * google token_url: "https://www.googleapis.com/oauth2/v3/token"
 		# * google profile_url: "https://www.googleapis.com/plus/v1/people/me"
+		#
+		# to change the default url's for Facebook or Google, simpley re-register the service using this method.
 		#
 		def self.register_service service_name, options
 			raise "Cannot register service, missing required information." unless service_name && options[:auth_url] && options[:token_url] && options[:profile_url] && options[:app_id] && options[:app_secret]
