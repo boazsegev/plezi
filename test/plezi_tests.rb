@@ -112,10 +112,10 @@ module PleziTestTasks
 	def test_sleep
 		Plezi.run_async do
 			begin
-				puts "Sleeper test: #{RESULTS[URI.parse("http://localhost:3000/sleeper").read == 'slept']}"
-				puts "ASync tasks test: #{RESULTS[true]}"
+				puts "    * Sleeper test: #{RESULTS[URI.parse("http://localhost:3000/sleeper").read == 'slept']}"
+				puts "    * ASync tasks test: #{RESULTS[true]}"
 			rescue => e
-				puts "Sleeper test FAILED TO RUN!!!"
+				puts "    **** Sleeper test FAILED TO RUN!!!"
 				puts e
 			end
 		end
@@ -123,82 +123,82 @@ module PleziTestTasks
 
 	def test_index
 		begin
-			puts "index test: #{RESULTS[URI.parse("http://localhost:3000/").read == 'test']}"
+			puts "    * Index test: #{RESULTS[URI.parse("http://localhost:3000/").read == 'test']}"
 		rescue => e
-			puts "Index test FAILED TO RUN!!!"
+			puts "    **** Index test FAILED TO RUN!!!"
 			puts e
 		end
 	end
 	def test_ssl
-		puts "Connection to non-ssl and unique route test: #{RESULTS[URI.parse("http://localhost:3000/ssl").read == 'false']}"
+		puts "    * Connection to non-ssl and unique route test: #{RESULTS[URI.parse("http://localhost:3000/ssl").read == 'false']}"
 		uri = URI.parse("https://localhost:3030/ssl")
 		Net::HTTP.start(uri.host, uri.port, use_ssl: (uri.scheme == "https"), verify_mode: OpenSSL::SSL::VERIFY_NONE) do |http|
-			puts "Connection to ssl and unique ssl route test: #{RESULTS[ http.request(Net::HTTP::Get.new(uri)).body == 'true' ]}"
+			puts "    * Connection to ssl and unique ssl route test: #{RESULTS[ http.request(Net::HTTP::Get.new(uri)).body == 'true' ]}"
 		end
 		rescue => e
-		puts "SSL Tests FAILED to complete!!!"
+		puts "    **** SSL Tests FAILED to complete!!!"
 		puts e
 	end
 	def test_new
-		puts "New RESTful path test: #{RESULTS[URI.parse("http://localhost:3000/new").read == 'new']}"
+		puts "    * New RESTful path test: #{RESULTS[URI.parse("http://localhost:3000/new").read == 'new']}"
 
 		rescue => e
-		puts "New RESTful path test FAILED TO RUN!!!"
+		puts "    **** New RESTful path test FAILED TO RUN!!!"
 		puts e
 	end
 	def test_show
-		puts "Show RESTful path test: #{RESULTS[URI.parse("http://localhost:3000/3").read == 'show 3']}"
+		puts "    * Show RESTful path test: #{RESULTS[URI.parse("http://localhost:3000/3").read == 'show 3']}"
 
 		rescue => e
-		puts "Show RESTful path test FAILED TO RUN!!!"
+		puts "    **** Show RESTful path test FAILED TO RUN!!!"
 		puts e
 	end
 	def test_update
-		puts "Update RESTful path test: #{RESULTS[Net::HTTP.post_form( URI.parse("http://localhost:3000/"), id: 3).body == 'update 3']}"
+		puts "    * Update RESTful path test: #{RESULTS[Net::HTTP.post_form( URI.parse("http://localhost:3000/"), id: 3).body == 'update 3']}"
 
 		rescue => e
-		puts "Update RESTful path test FAILED TO RUN!!!"
+		puts "    **** Update RESTful path test FAILED TO RUN!!!"
 		puts e
 	end
 	def test_delete
-		puts "Delete RESTful path test: #{RESULTS[Net::HTTP.post_form( URI.parse("http://localhost:3000/"), id: 3, _method: :delete).body == 'delete 3']}"
+		puts "    * Delete RESTful path test: #{RESULTS[Net::HTTP.post_form( URI.parse("http://localhost:3000/"), id: 3, _method: :delete).body == 'delete 3']}"
 
 		rescue => e
-		puts "Delete RESTful path test FAILED TO RUN!!!"
+		puts "    **** Delete RESTful path test FAILED TO RUN!!!"
 		puts e
 	end
 	def test_save
-		puts "Save RESTful path test: #{RESULTS[Net::HTTP.post_form( URI.parse("http://localhost:3000/new"), data: "passed").body == 'passed']}"
+		puts "    * Save RESTful path test: #{RESULTS[Net::HTTP.post_form( URI.parse("http://localhost:3000/new"), data: "passed").body == 'passed']}"
 
 		rescue => e
-		puts "Save RESTful path test FAILED TO RUN!!!"
+		puts "    **** Save RESTful path test FAILED TO RUN!!!"
 		puts e
 	end
 	def test_streamed
 		begin
-			puts "Streaming test: #{RESULTS[URI.parse("http://localhost:3000/streamer").read == 'streamed']}"
+			puts "    * Streaming test: #{RESULTS[URI.parse("http://localhost:3000/streamer").read == 'streamed']}"
 		rescue => e
-			puts "Streaming test FAILED TO RUN!!!"
+			puts "    **** Streaming test FAILED TO RUN!!!"
 			puts e
 		end
 	end
 	def test_404
-		puts "404 not found and router continuity tests: #{RESULTS[ Net::HTTP.get_response(URI.parse "http://localhost:3000/get404" ).code == '404' ]}"
+		puts "    * 404 not found and router continuity tests: #{RESULTS[ Net::HTTP.get_response(URI.parse "http://localhost:3000/get404" ).code == '404' ]}"
 
 		rescue => e
-		puts "404 not found test FAILED TO RUN!!!"
+		puts "    **** 404 not found test FAILED TO RUN!!!"
 		puts e
 	end
 	def test_500
 		workers = Plezi::EventMachine.count_living_workers
-		puts "500 internal error test: #{RESULTS[ Net::HTTP.get_response(URI.parse "http://localhost:3000/fail" ).code == '500' ]}"
+		puts "    * 500 internal error test: #{RESULTS[ Net::HTTP.get_response(URI.parse "http://localhost:3000/fail" ).code == '500' ]}"
 		# cause 10 more exceptions to be raised... testing thread survival.
 		10.times { Net::HTTP.get_response(URI.parse "http://localhost:3000/fail" ).code }
 		workers_after_test = Plezi::EventMachine.count_living_workers
-		puts "Worker survival test: #{RESULTS[workers_after_test == workers]} (#{workers_after_test} out of #{workers})"
+		puts "    * Worker survival test: #{RESULTS[workers_after_test == workers]} (#{workers_after_test} out of #{workers})"
 
 		rescue => e
-		puts "404 not found test FAILED TO RUN!!!"
+		puts "    **** 500 internal error test FAILED TO RUN!!!"
 		puts e		
 	end
 end
@@ -230,6 +230,6 @@ Plezi::DSL.stop_services
 Plezi::EventMachine.shutdown
 
 
-puts "Shutdown test: #{ PleziTestTasks::RESULTS[shoutdown_test] }"
+puts "    * Shutdown test: #{ PleziTestTasks::RESULTS[shoutdown_test] }"
 
 
