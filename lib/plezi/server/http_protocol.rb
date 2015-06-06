@@ -296,6 +296,17 @@ module Plezi
 	end
 end
 
+
+# # HTTPProtocol - to do list
+#
+# XML::
+# support for XML HTTP body types?
+#
+# Charset::
+# parse chareset for incoming content-type in the multipart request body? (or leave if binary?)
+
+
+
 ## Heroku/extra headers info
 
 # All headers are considered to be case-insensitive, as per HTTP Specification.
