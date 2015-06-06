@@ -198,7 +198,7 @@ module Plezi
 				# respond to websocket special case
 				return :pre_connect if request['upgrade'] && request['upgrade'].to_s.downcase == 'websocket' &&  request['connection'].to_s.downcase == 'upgrade'
 				# respond to save 'new' special case
-				return :save if request.request_method.match(/POST|PUT|PATCH/) && params[:id].nil? || params[:id] == 'new'
+				return :save if request.request_method.match(/POST|PUT|PATCH/) && (params[:id].nil? || params[:id] == 'new')
 				# set DELETE method if simulated
 				request.request_method = 'DELETE' if params[:_method].to_s.downcase == 'delete'
 				# respond to special :id routing

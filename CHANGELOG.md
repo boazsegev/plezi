@@ -8,6 +8,10 @@ Change log v.0.8.4
 
 **feature**: a new OAuth2 controller offers an easy support for OAuth2 login services such as facebook and google. to use this feature, require 'plezi/oauth'.
 
+**fix**: fixed an issue where RESTful requests to `new` would be mistakenly routed to the `save` method.
+
+**testing**: some basic testing for the RESTful Plezi framework has been implemented. Please notice that the tests WILL run the Plezi server on ports 3000 (for http) and 3030 (for https) during the test. The test will run Net::HTTP requests against the Plezi server.
+
 ***
 
 Change log v.0.8.3
