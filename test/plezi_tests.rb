@@ -4,14 +4,31 @@ $LOAD_PATH.unshift(lib) unless $LOAD_PATH.include?(lib)
 require 'open-uri'
 require 'plezi'
 
+def report_before_filter(result= true)
+	return true if $before_tested
+	puts("    * Before filter test: #{PleziTestTasks::RESULTS[result]}")
+	$before_tested = true
+	true
+end
+def report_after_filter(result= true)
+	return true if $after_tested
+	puts("    * After filter test: #{PleziTestTasks::RESULTS[result]}")
+	$after_tested = true
+	true
+end
+
 class TestCtrl
+
+
 
 	# this will be called before every request.
 	def before
+		report_before_filter
 	end
 
 	# this will be called after every request.
 	def after
+		report_after_filter
 	end
 
 	# shouldn't be available (return 404).
@@ -103,10 +120,14 @@ end
 module PleziTestTasks
 	module_function
 
-	RESULTS = {true => "passed", false => 'FAILED!'}
+
+	RESULTS = {true => "\e[32mpassed\e[0m"}
+	RESULTS.default =  "\e[31mFAILED!\e[0m"
 
 	def run_tests
 		(public_methods(false)).each {|m| method(m).call if m.to_s.match /^test_/}
+		report_before_filter false
+		report_after_filter false
 		true
 	end
 	def test_sleep
@@ -221,7 +242,10 @@ Plezi::EventMachine.start Plezi.max_threads
 shoutdown_test = false
 Plezi.on_shutdown { shoutdown_test = true }
 
+puts "    --- Starting tests"
+puts "    --- Failed tests should read: #{PleziTestTasks::RESULTS[false]}"
 PleziTestTasks.run_tests
+
 
 Plezi::EventMachine.clear_timers
 
