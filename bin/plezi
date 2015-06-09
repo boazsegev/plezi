@@ -5,6 +5,7 @@ $0="Plezi Builder"
 require 'irb'
 require 'securerandom'
 
+
 ##########
 # this is the template writer
 #
@@ -204,6 +205,10 @@ end
 ##
 ######################################################################
 ######################################################################
+
+# update with http://ruby-doc.org/stdlib-2.2.0/libdoc/optparse/rdoc/OptionParser.html
+
+# require 'optparser'
 
 if ARGV[0] == 'new' || ARGV[0] == 'n' || ARGV[0] == "force"
 	#########

@@ -5,18 +5,14 @@
 module Plezi
 
 	#########################################
-	# This is a social Authentication Controller
+	# This is a social Authentication Controller for OAuth2 services.
+	# This controller allows you to easily deploy Facebook Login, Google Login and any other OAuth2 complient login service.
 	#
 	# To include this controller in your application, you need to require it using:
 	#
 	#       require 'plezi/oauth'
 	#
-	# This controller currently supports:
-	#
-	# - Facebook authentication using the Graph API, v. 2.3 - [see Facebook documentation](https://developers.facebook.com/docs/facebook-login/manually-build-a-login-flow/v2.3).
-	# - Google authentication using the OAuth 2.0 API - [see Google documentation](https://developers.google.com/identity/protocols/OAuth2WebServer).
-	#
-	# It's also possible to manualy register any OAuth 2.0 authentication service using the `register_service` method:
+	# It is possible to manualy register any OAuth 2.0 authentication service using the `register_service` method:
 	# 
 	#           	register_service(:foo,
 	#           			app_id: 'registered app id / client id',
@@ -26,27 +22,38 @@ module Plezi
 	#           			profile_url: "https://foo.bar/oauth2/v1/userinfo",
 	#           			scope: "profile email")
 	#
+	# The `.register_service` method will be automatically called for the following login services:
+	#
+	# - Facebook authentication using the Graph API, v. 2.3 - [see Facebook documentation](https://developers.facebook.com/docs/facebook-login/manually-build-a-login-flow/v2.3).
+	# - Google authentication using the OAuth 2.0 API - [see Google documentation](https://developers.google.com/identity/protocols/OAuth2WebServer).
+	#
 	# To enjoy autorgistration for Facebook or Google, make sure the following environment variables are set:
 	#       ENV['FB_APP_ID'] = {facebook_app_id}
 	#       ENV['FB_APP_SECRET'] = {facebook_app_secret}
 	#       ENV['GOOGLE_APP_ID'] = {google_app_id}
 	#       ENV['GOOGLE_APP_SECRET'] = {google_app_secret}
 	#
-	# Add the following route to routes.rb file (as always, route placement order effects behavior):
+	# To add the OAuth routes to the routes, use the following short-cut method (add it to the `routes.rb`) file:
 	#
 	#       create_auth_shared_route do |service, remote_user_id, email, full_remote_response|	
 	#          # perform any specific app authentication logic such as saving the info.
 	#          # return the current user or false if the callback is called with an authentication failure.
 	#       end
 	#
-	# The `create_auth_shared_route` method is a shortcut for calling the `#shared_route` method with the relevant arguments and setting the OAuth2Ctrl callback.
+	# \* Notice that, as always, route placement order effects behavior, so that routes are checked according to order of creation.
+	#
+	# The `create_auth_shared_route` method is a shortcut taht calls the `#shared_route` method with the relevant arguments and sets the OAuth2Ctrl callback.
 	#
 	# Use the following links for social authentication:
 	#
-	# - Facebook: "/auth/facebook?redirect_after=/foo/bar"
-	# - Google: "/auth/google?redirect_after=/foo/bar"
-	# - foo_service: "/auth/foo_service?redirect_after=/foo/bar"
+	# - Facebook: "/auth/facebook"
+	# - Google: "/auth/google"
+	# - foo_service: "/auth/foo_service"
 	#
+	# You can control the page to which the user will return once authentication is complete
+	# (even when authentication fails) by setting the "redirect_after" parameter into the GET request in the url. for example:
+	# 
+	# - Google: "/auth/google?redirect_after=/foo/bar"
 	class OAuth2Ctrl
 
 		# Sets (or gets) the callback to be called after authentication is attempeted.
@@ -81,7 +88,7 @@ module Plezi
 		# options:: a Hash of options, some of which are required.
 		#
 		# The options are:
-		# app_id:: Required. The aplication's unique ID registered with the service. i.e. ENV[FB_APP_ID] (storing these in environment variables is safer then hardcoding them)
+		# app_id:: Required. The aplication's unique ID registered with the service. i.e. ENV\[FB_APP_ID] (storing these in environment variables is safer then hardcoding them)
 		# app_secret:: Required. The aplication's unique secret registered with the service.
 		# auth_url:: Required. The authentication URL. This is the url to which the user is redirected. i.e.: "https://www.facebook.com/dialog/oauth"
 		# token_url:: Required. The token request URL. This is the url used to switch the single-use code into a persistant authentication token. i.e.: "https://www.googleapis.com/oauth2/v3/token"
@@ -90,8 +97,8 @@ module Plezi
 		#
 		# There will be an attempt to automatically register Facebook and Google login services under these conditions:
 		#
-		# * For Facebook: Both ENV['FB_APP_ID'] && ENV['FB_APP_SECRET'] have been defined.
-		# * For Google: Both ENV['GOOGLE_APP_ID'] && ENV['GOOGLE_APP_SECRET'] have been defined.
+		# * For Facebook: Both ENV\['FB_APP_ID'] && ENV\['FB_APP_SECRET'] have been defined.
+		# * For Google: Both ENV\['GOOGLE_APP_ID'] && ENV\['GOOGLE_APP_SECRET'] have been defined.
 		#
 		#
 		# The auto registration uses the following urls (updated to June 5, 2015):
