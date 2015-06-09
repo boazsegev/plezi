@@ -6,6 +6,8 @@
 
 _(if to para-phrase "People who are serious about their software, should make their own hardware.")_
 
+Find more info in [Plezi's framework, web server and websocket documentation](http://www.rubydoc.info/gems/plezi/)
+
 ## About the Plezi framework \ server
 
 Plezi is an easy to use Ruby Websocket Framework, with full RESTful routing support and HTTP streaming support. It's name comes from the word "fun" in Haitian, since Plezi is really fun to work with and it keeps our code clean and streamlined.
