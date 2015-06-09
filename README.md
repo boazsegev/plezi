@@ -4,9 +4,7 @@
 
 > People who are serious about their frameworks, should write their own servers...
 
-_(if to para-phrase "People who are serious about their software, should make their own hardware.")_
-
-Find more info in [Plezi's framework, web server and websocket documentation](http://www.rubydoc.info/gems/plezi/)
+Find more info on [Plezi's framework, web server and websocket documentation](http://www.rubydoc.info/gems/plezi/)
 
 ## About the Plezi framework \ server
 
