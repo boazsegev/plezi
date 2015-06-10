@@ -12,7 +12,13 @@ module Plezi
 			attr_reader :ssl_socket
 
 			def initialize socket, params
-				if params[:ssl] || params[:ssl_key] || params[:ssl_cert]
+				if params[:ssl_client]
+					context = OpenSSL::SSL::SSLContext.new
+					context.set_params verify_mode: OpenSSL::SSL::VERIFY_NONE # OpenSSL::SSL::VERIFY_PEER #OpenSSL::SSL::VERIFY_NONE
+					@ssl_socket = OpenSSL::SSL::SSLSocket.new(socket, context)
+					@ssl_socket.sync_close = true
+					@ssl_socket.connect
+				elsif params[:ssl] || params[:ssl_key] || params[:ssl_cert]
 					params[:ssl_cert], params[:ssl_key] = SSLConnection.self_cert unless params[:ssl_key] && params[:ssl_cert]
 					context = OpenSSL::SSL::SSLContext.new
 					context.set_params verify_mode: OpenSSL::SSL::VERIFY_NONE # OpenSSL::SSL::VERIFY_PEER #OpenSSL::SSL::VERIFY_NONE
@@ -24,7 +30,7 @@ module Plezi
 					@ssl_socket.sync_close = true
 					@ssl_socket.accept
 				end
-				raise "Not an SSL connection or SSL Socket creation failed" unless ssl_socket
+				raise "Not an SSL connection or SSL Socket creation failed" unless @ssl_socket
 				super
 			end
 
