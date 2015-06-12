@@ -21,7 +21,7 @@ module Plezi
 			ret = false
 			response = HTTPResponse.new request
 			if controller
-				ret = controller.new(request, response, params)._route_path_to_methods_and_set_the_response_
+				ret = controller.new(request, response, params, self)._route_path_to_methods_and_set_the_response_
 			elsif proc
 				ret = proc.call(request, response)
 				# response << ret if ret.is_a?(String)
@@ -62,7 +62,7 @@ module Plezi
 		# a string can be either a simple string `"/users"` or a string with parameters:
 		# `"/static/:required/(:optional)/(:optional_with_format){[\d]*}/:optional_2"`
 		def initialize path, controller, params={}, &block
-			@path_sections , @params = false, params
+			@original_path, @url_array, @params = path, false, params
 			initialize_path path
 			initialize_controller controller, block
 		end
@@ -79,6 +79,91 @@ module Plezi
 			end
 		end
 
+		# # returns the url for THIS route (i.e. `url_for :index`)
+		# #
+		# # This will be usually used by the Controller's #url_for method to get the relative part of the url.
+		# def url_for dest = :index
+		# 	raise NotImplementedError, "#url_for isn't implemented for this router - could this be a Regexp based router?" unless @url_array
+		# 	# convert dest.id and dest[:id] to their actual :id value.
+		# 	dest = (dest.id rescue false) || (raise TypeError, "Expecting a Symbol, Hash, String, Numeric or an object that answers to obj[:id] or obj.id") unless !dest || dest.is_a?(Symbol) || dest.is_a?(String) || dest.is_a?(Numeric) || dest.is_a?(Hash)
+		# 	url = '/'
+		# 	case dest
+		# 	when false, nil, '', :index
+		# 		add = true
+		# 		@url_array.each do |sec|
+		# 			add = false unless sec[0] != :path
+		# 			url << sec[1] if add
+		# 			raise NotImplementedError, '#url_for(index) cannot be implementedfor this path.' if !add && sec[0] == :path
+		# 			# todo: :multi_path
+		# 		end
+		# 	when Hash
+		# 	when Symbol, String, Numeric
+		# 	end
+		# end
+
+
+
+		# returns the url for THIS route (i.e. `url_for :index`)
+		#
+		# This will be usually used by the Controller's #url_for method to get the relative part of the url.
+		def url_for dest = :index
+			raise NotImplementedError, "#url_for isn't implemented for this router - could this be a Regexp based router?" unless @url_array
+			case dest
+			when String
+				dest = {id: dest.dup}
+			when Numeric
+				dest = {id: dest}
+			when Hash
+				dest = dest.dup
+				dest.each {|k,v| dest[k] = v.dup if v.is_a? String }
+			when nil, false
+				dest = {}
+			else
+				# convert dest.id and dest[:id] to their actual :id value.
+				dest = {id: (dest.id rescue false) || (raise TypeError, "Expecting a Symbol, Hash, String, Numeric or an object that answers to obj[:id] or obj.id") }
+			end
+			dest.default_proc = Plezi::Helpers::HASH_SYM_PROC
+
+			url = '/'
+
+			@url_array.each do |sec|
+				raise NotImplementedError, "#url_for isn't implemented for this router - Regexp multi-path routes are still being worked on... use a named parameter instead (i.e. '/foo/(:multi_route){route1|route2}/bar')" if REGEXP_FORMATTED_PATH === sec
+
+				param_name = (REGEXP_OPTIONAL_PARAMS.match(sec) || REGEXP_FORMATTED_OPTIONAL_PARAMS.match(sec) || REGEXP_REQUIRED_PARAMS.match(sec) || REGEXP_FORMATTED_REQUIRED_PARAMS.match(sec))
+				param_name = param_name[1].to_sym if param_name
+
+				if param_name && dest[param_name]
+					url << HTTP.encode(dest.delete(param_name).to_s, :url)
+					url << '/' 
+				elsif !param_name
+					url << sec
+					url << '/' 
+				elsif REGEXP_REQUIRED_PARAMS === sec || REGEXP_OPTIONAL_PARAMS === sec
+					url << '/'
+				elsif REGEXP_FORMATTED_REQUIRED_PARAMS === sec
+					raise ArgumentError, "URL can't be formatted becuse a required parameter (#{param_name.to_s}) isn't specified and it requires a special format (#{REGEXP_FORMATTED_REQUIRED_PARAMS.match(sec)[2]})."
+				end
+			end
+			unless dest.empty?
+				add = '?'
+				dest.each {|k, v| url << "#{add}#{HTTP.encode(k.to_s, :url)}=#{HTTP.encode(v.to_s, :url)}"; add = '&'}
+			end
+			url
+
+		end
+
+
+		# Used to check for routes formatted: /:paramater - required parameters
+		REGEXP_REQUIRED_PARAMS = /^\:([^\(\)\{\}\:]*)$/
+		# Used to check for routes formatted: /(:paramater) - optional parameters
+		REGEXP_OPTIONAL_PARAMS = /^\(\:([^\(\)\{\}\:]*)\)$/
+		# Used to check for routes formatted: /(:paramater){regexp} - optional formatted parameters
+		REGEXP_FORMATTED_OPTIONAL_PARAMS = /^\(\:([^\(\)\{\}\:]*)\)\{(.*)\}$/
+		# Used to check for routes formatted: /:paramater{regexp} - required parameters
+		REGEXP_FORMATTED_REQUIRED_PARAMS = /^\:([^\(\)\{\}\:\/]*)\{(.*)\}$/
+		# Used to check for routes formatted: /{regexp} - required path
+		REGEXP_FORMATTED_PATH = /^\{(.*)\}$/
+
 		# initializes the path by converting the string into a Regexp
 		# and noting any parameters that might need to be extracted for RESTful routes.
 		def initialize_path path
@@ -88,46 +173,16 @@ module Plezi
 			elsif path.is_a? String
 				# prep used prameters
 				param_num = 0
+
 				section_search = "([\\/][^\\/]*)"
 				optional_section_search = "([\\/][^\\/]*)?"
 
-				# to check for routes formatted: /:paramater - required parameters
-				regexp_required_params = /^\:([^\(\)\{\}\:]*)$/
-				# to check for routes formatted: /(:paramater) - optional parameters
-				regexp_optional_params = /^\(\:([^\(\)\{\}\:]*)\)$/
-				# to check for routes formatted: /(:paramater){regexp} - optional formatted parameters
-				regexp_formatted_optional_params = /^\(\:([^\(\)\{\}\:]*)\)\{(.*)\}$/
-				# check for routes formatted: /:paramater{regexp} - required parameters
-				regexp_formatted_required_params = /^\:([^\(\)\{\}\:\/]*)\{(.*)\}$/
-				# check for routes formatted: /{regexp} - required path
-				regexp_formatted_path = /^\{(.*)\}$/
-
 				@path = '^'
-
-				# prep path string
-				# path = path.gsub(/(^\/)|(\/$)/, '')
-
-				# scan for the '/' divider
-				# (split path string only when the '/' is not inside a {} regexp)
-				# level = 0
-				# scn = StringScanner.new(path)
-				# while scn.matched != ''
-				# 	scn.scan_until /[^\\][\/\{\}]|$/
-				# 	case scn.matched
-				# 	when '{'
-				# 		level += 1
-				# 	when '}'
-				# 		level -= 1
-				# 	when '/'
-				# 		split_pos ||= []
-				# 		split_pos << scn.pos if level == 0
-				# 	end
-				# end
+				@url_array = []
 
 				# prep path string and split it where the '/' charected is unescaped.
-				path = path.gsub(/(^\/)|(\/$)/, '').gsub(/([^\\])\//, '\1 - /').split ' - /'
-				@path_sections = path.length
-				path.each.with_index do |section, section_index|
+				@url_array = path.gsub(/(^\/)|(\/$)/, '').gsub(/([^\\])\//, '\1 - /').split ' - /'
+				@url_array.each.with_index do |section, section_index|
 					if section == '*'
 						# create catch all
 						section_index == 0 ? (@path << "(.*)") : (@path << "(\\/.*)?")
@@ -136,42 +191,41 @@ module Plezi
 						return
 
 					# check for routes formatted: /:paramater - required parameters
-					elsif section.match regexp_required_params
+					elsif section.match REGEXP_REQUIRED_PARAMS
 						#create a simple section catcher
 					 	@path << section_search
 					 	# add paramater recognition value
-					 	@fill_parameters[param_num += 1] = section.match(regexp_required_params)[1]
+					 	@fill_parameters[param_num += 1] = section.match(REGEXP_REQUIRED_PARAMS)[1]
 
 					# check for routes formatted: /(:paramater) - optional parameters
-					elsif section.match regexp_optional_params
+					elsif section.match REGEXP_OPTIONAL_PARAMS
 						#create a optional section catcher
 					 	@path << optional_section_search
 					 	# add paramater recognition value
-					 	@fill_parameters[param_num += 1] = section.match(regexp_optional_params)[1]
+				 		@fill_parameters[param_num += 1] = section.match(REGEXP_OPTIONAL_PARAMS)[1]
 
 					# check for routes formatted: /(:paramater){regexp} - optional parameters
-					elsif section.match regexp_formatted_optional_params
+					elsif section.match REGEXP_FORMATTED_OPTIONAL_PARAMS
 						#create a optional section catcher
-					 	@path << (  "(\/(" +  section.match(regexp_formatted_optional_params)[2] + "))?"  )
+					 	@path << (  "(\/(" +  section.match(REGEXP_FORMATTED_OPTIONAL_PARAMS)[2] + "))?"  )
 					 	# add paramater recognition value
-					 	@fill_parameters[param_num += 1] = section.match(regexp_formatted_optional_params)[1]
+					 	@fill_parameters[param_num += 1] = section.match(REGEXP_FORMATTED_OPTIONAL_PARAMS)[1]
 					 	param_num += 1 # we are using two spaces - param_num += should look for () in regex ? /[^\\](/
 
 					# check for routes formatted: /:paramater{regexp} - required parameters
-					elsif section.match regexp_formatted_required_params
+					elsif section.match REGEXP_FORMATTED_REQUIRED_PARAMS
 						#create a simple section catcher
-					 	@path << (  "(\/(" +  section.match(regexp_formatted_required_params)[2] + "))"  )
+					 	@path << (  "(\/(" +  section.match(REGEXP_FORMATTED_REQUIRED_PARAMS)[2] + "))"  )
 					 	# add paramater recognition value
-					 	@fill_parameters[param_num += 1] = section.match(regexp_formatted_required_params)[1]
+					 	@fill_parameters[param_num += 1] = section.match(REGEXP_FORMATTED_REQUIRED_PARAMS)[1]
 					 	param_num += 1 # we are using two spaces - param_num += should look for () in regex ? /[^\\](/
 
 					# check for routes formatted: /{regexp} - formated path
-					elsif section.match regexp_formatted_path
+					elsif section.match REGEXP_FORMATTED_PATH
 						#create a simple section catcher
-					 	@path << (  "\/(" +  section.match(regexp_formatted_path)[1] + ")"  )
+					 	@path << (  "\/(" +  section.match(REGEXP_FORMATTED_PATH)[1] + ")"  )
 					 	# add paramater recognition value
 					 	param_num += 1 # we are using one space - param_num += should look for () in regex ? /[^\\](/
-
 					else
 						@path << "\/"
 						@path << section
@@ -180,7 +234,9 @@ module Plezi
 				unless @fill_parameters.values.include?("id")
 					@path << optional_section_search
 					@fill_parameters[param_num += 1] = "id"
+					@url_array << '(:id)'
 				end
+				# set the Regexp and return the final result.
 				@path = /#{@path}$/
 			else
 				raise "Path cannot be initialized - path must be either a string or a regular experssion."
@@ -228,8 +284,8 @@ module Plezi
 					new_class_name
 				end
 
-				def initialize request, response, host_params
-					@request, @params, @flash, @host_params = request, request.params, response.flash, host_params
+				def initialize request, response, host_params, router
+					@request, @params, @flash, @host_params, @pl_http_router = request, request.params, response.flash, host_params, router
 					@response = response
 					# @response["content-type"] ||= ::Plezi.default_content_type
 

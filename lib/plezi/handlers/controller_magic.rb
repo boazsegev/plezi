@@ -93,6 +93,14 @@ module Plezi
 				true
 			end
 
+			# returns the url for THIS controller (i.e. `url_for :index`)
+			def url_for dest
+				@pl_http_router.url_for dest
+			end
+			def full_url_for dest
+				request.base_url + url_for(dest)
+			end
+
 			# this method adds data to be sent.
 			#
 			# this is usful for sending 'attachments' (data to be downloaded) rather then
@@ -233,7 +241,6 @@ module Plezi
 				@uuid ||= SecureRandom.uuid
 				self.class.__inner_redis_broadcast(uuid, method_name, args, &block) || self.class.__inner_process_broadcast(uuid, method_name.to_sym, args, &block)
 			end
-
 
 			# WebSockets.
 			#

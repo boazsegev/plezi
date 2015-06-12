@@ -1,6 +1,8 @@
 module Plezi
 
 	# Websocket client objects are members of this class.
+	#
+	# this isn't yet implemented.
 	class WebsocketClient
 		attr_accessor :response
 

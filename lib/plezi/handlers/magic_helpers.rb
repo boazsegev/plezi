@@ -14,12 +14,19 @@ module Plezi
 		def []= key, val
 			if key.is_a?(Symbol) && self.has_key?( key.to_s)
 				key = key.to_s
-			elsif key.is_a?(String) && self.has_key?( key.to_sym)
-				key = key.to_sym
+			elsif self.has_key?( key.to_s.to_sym)
+				key = key.to_s.to_sym
 			end
 			@controller.response.set_cookie key, (val ? val.to_s.dup : nil) if @controller
 			super
 		end
+	end
+
+	module Helpers
+		# a proc that allows Hashes to search for key-value pairs while also converting keys from objects to symbols and from symbols to strings.
+		#
+		# (key type agnostic search Hash proc)
+		 HASH_SYM_PROC = Proc.new {|h,k| k = (Symbol === k ? k.to_s : k.to_s.to_sym); h[k] if h.has_key?(k) }
 	end
 
 end
