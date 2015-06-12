@@ -2,6 +2,12 @@
 
 ***
 
+Change log v.0.8.5
+
+**featur**: the Controller can now create easy urls for it's own paths, using the #url_for method. still limited usability, but great for simple urls (url to object by id, url to index etc').
+
+***
+
 Change log v.0.8.4
 
 **core routing changes**: moved the Controller's routing cache out of the global cahce store. This might provide a very slight performance increase.
