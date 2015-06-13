@@ -5,8 +5,8 @@ load ::File.expand_path(File.join("..", "environment.rb"),  __FILE__)
 NO_PLEZI_AUTO_START = true
 
 # create a default task
-desc "The default task does nothing... it's waiting for you to tell it what to do."
+desc "The default task will simply remind you to call 'rake -T'."
 task :default do
-	puts "I don't know what to do."
-	puts `rake -T`
+  puts "I don't know what to do. Please choose a task..."
+  puts "You can print a list of all avaiulable tasks using: rake -T"
 end

@@ -73,6 +73,8 @@ class AppTemplate
 		#set up database stub folders
 		app_tree["db"] ||= {}
 		app_tree["db"]["migrate"] ||= {}
+		app_tree["db"]["fixtures"] ||= {}
+		app_tree["db"]["config.yml"] ||= IO.read(::File.expand_path(File.join("..", "..", "resources" ,"database.yml"),  __FILE__))
 
 		#set up the extras folder, to be filled with future goodies.
 		app_tree["extras"] ||= {}

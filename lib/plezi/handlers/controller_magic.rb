@@ -93,10 +93,24 @@ module Plezi
 				true
 			end
 
-			# returns the url for THIS controller (i.e. `url_for :index`)
-			def url_for dest
-				@pl_http_router.url_for dest
+			# Returns the RELATIVE url for methods in THIS controller (i.e.: "/path_to_controller/restful/params?non=restful&params=foo")
+			#
+			# accepts one parameter:
+			# dest:: a destination object, either a Hash, a Symbol, a Numerical or a String.
+			#
+			# If :dest is a Numerical, a Symbol or a String, it should signify the id of an object or the name of the method this controller should respond to.
+			#
+			# If :dest is a Hash, it should contain all the relevant parameters the url should set (i.e. `url_for id: :new, name: "Jhon Doe"`)
+			#
+			# If :dest is false (or nil), the String returned will be the url to the index.
+			#
+			# * If you use the same controller in different routes, the first route will dictate the returned url's structure (cause by route priority).
+			#
+			# * Not all controllers support this method. Regexp controller paths and multi-path options will throw an exception.
+			def url_for dest = nil
+				self.class.url_for dest
 			end
+			# same as #url_for, but returns the full URL (protocol:port:://host/path?params=foo)
 			def full_url_for dest
 				request.base_url + url_for(dest)
 			end
@@ -281,7 +295,28 @@ module Plezi
 		end
 
 		module ClassMethods
+			protected
+
+			# Sets the HTTP route that is the owner of this controller.
+			#
+			# This is used by the Plezi framework internally and is supplied only for advanced purposes. It is better to avoid using this method. 
+			def set_pl_route route
+				@pl_http_route = route
+			end
+
+			# Gets the HTTP route that is the owner of this controller.
+			#
+			# This is used to utilize the `url_for` method.
+			def get_pl_route
+				@pl_http_route
+			end
+
 			public
+
+			# This class method behaves the same way as the instance method #url_for. See the instance method's documentation for more details.
+			def url_for dest
+				get_pl_route.url_for dest				
+			end
 
 			# lists the available methods that will be exposed to HTTP requests
 			def available_public_methods

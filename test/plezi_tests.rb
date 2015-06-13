@@ -38,7 +38,15 @@ class TestCtrl
 	def index
 		"test"
 	end
+	def headers
+		"HTTP request: #{request[:method]} #{request[:query]} - version: #{request[:version]}\n" + (request.headers.map {|k, v| "#{k}: #{v}"} .join "\n")
+	end
 
+	# returns the url used to access this method
+	def my_url
+		dest = params.dup
+		url_for dest
+	end
 	# should return a 500 internal server error message.
 	def fail
 		raise "Hell!"
@@ -203,6 +211,16 @@ module PleziTestTasks
 			puts e
 		end
 	end
+	def test_url_for
+		test_url = "/some/path/test/my_url/ask/"
+		puts "    * simple #url_for test: #{RESULTS[URI.parse("http://localhost:3000" + test_url).read == test_url]}"
+		test_url = "/some/another_path/my_url/ask/"
+		puts "    * missing arguments #url_for test: #{RESULTS[URI.parse("http://localhost:3000" + test_url).read == test_url]}"
+
+		rescue => e
+		puts "    **** #url_for test FAILED TO RUN!!!"
+		puts e
+	end
 	def test_404
 		puts "    * 404 not found and router continuity tests: #{RESULTS[ Net::HTTP.get_response(URI.parse "http://localhost:3000/get404" ).code == '404' ]}"
 
@@ -234,6 +252,7 @@ route("/ssl") {|req, res| res << "false" }
 listen port: 3030, ssl: true
 route("/ssl") {|req, res| res << "true" }
 
+shared_route '/some/:multi{path|another_path}/(:option){route|test}/(:id)/(:optional)', TestCtrl
 shared_route '/', TestCtrl
 
 
@@ -248,6 +267,8 @@ PleziTestTasks.run_tests
 
 
 Plezi::EventMachine.clear_timers
+
+sleep PLEZI_TEST_TIME if defined? PLEZI_TEST_TIME
 
 Plezi::DSL.stop_services
 

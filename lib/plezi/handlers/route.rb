@@ -21,7 +21,7 @@ module Plezi
 			ret = false
 			response = HTTPResponse.new request
 			if controller
-				ret = controller.new(request, response, params, self)._route_path_to_methods_and_set_the_response_
+				ret = controller.new(request, response, params)._route_path_to_methods_and_set_the_response_
 			elsif proc
 				ret = proc.call(request, response)
 				# response << ret if ret.is_a?(String)
@@ -75,7 +75,7 @@ module Plezi
 			@controller, @proc = controller, block
 			if controller.is_a?(Class)
 				# add controller magic
-				@controller = self.class.make_controller_magic controller
+				@controller = self.class.make_controller_magic controller, self
 			end
 		end
 
@@ -273,19 +273,19 @@ module Plezi
 		# cookies:: the request's cookies.
 		# flash:: an amazing Hash object that sets temporary cookies for one request only - greate for saving data between redirect calls.
 		#
-		def self.make_controller_magic(controller)
+		def self.make_controller_magic(controller, container)
 			new_class_name = "Plezi__#{controller.name.gsub /[\:\-\#\<\>\{\}\(\)\s]/, '_'}"
 			return Module.const_get new_class_name if Module.const_defined? new_class_name
 			# controller.include Plezi::ControllerMagic
-			controller.instance_eval { include Plezi::ControllerMagic }
+			controller.instance_exec(container) {|r| include Plezi::ControllerMagic; set_pl_route r;}
 			ret = Class.new(controller) do
 
 				def name
 					new_class_name
 				end
 
-				def initialize request, response, host_params, router
-					@request, @params, @flash, @host_params, @pl_http_router = request, request.params, response.flash, host_params, router
+				def initialize request, response, host_params
+					@request, @params, @flash, @host_params = request, request.params, response.flash, host_params
 					@response = response
 					# @response["content-type"] ||= ::Plezi.default_content_type
 
@@ -431,6 +431,7 @@ module Plezi
 			end
 			Object.const_set(new_class_name, ret)
 			Module.const_get(new_class_name).reset_routing_cache
+			ret.instance_exec(container) {|r| set_pl_route r;}
 			ret
 		end
 

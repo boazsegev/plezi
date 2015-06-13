@@ -7,19 +7,13 @@
 # 
 ############
 ## ActiveRecord without Rails
-# more info @:
+# more info at:
 # https://www.youtube.com/watch?v=o0SzhgYntK8
 # demo code here:
 # https://github.com/stungeye/ActiveRecord-without-Rails
 if defined? ActiveRecord
-
-	if defined? SQLite3
-		ActiveRecord::Base.establish_connection :adapter => 'sqlite3', :database => Root.join('db','db.sqlite3').to_s, encoding: 'unicode'
-	elsif defined? PG
-		ActiveRecord::Base.establish_connection :adapter => 'postgresql', encoding: 'unicode'
-  else
-    Plezi.logger.warning "ActiveRecord database adapter not auto-set. Update the db_ac_config.rb file"
-	end
+	puts "Loading ActiveRecord database setting: #{ENV['ENV']}"
+	ActiveRecord::Base.establish_connection(  YAML::load(  File.open( Root.join('db', 'config.yml').to_s )  )[ ENV["ENV"].to_s ]  )
 
 	# if debugging purposes, uncomment this line to see the ActiveRecord's generated SQL:
 	# ActiveRecord::Base.logger = Plezi.logger
@@ -27,32 +21,39 @@ if defined? ActiveRecord
 	# Uncomment this line to make the logger output look nicer in Windows.
 	# ActiveSupport::LogSubscriber.colorize_logging = false
 
+	# Load ActiveRecord Tasks, if implemented
 	if defined? Rake
-##########
-# start rake segment
 
-    namespace :db do
+		begin
+			require 'standalone_migrations'
+			StandaloneMigrations::Tasks.load_tasks
+		rescue Exception => e
+			ActiveRecord::Tasks::DatabaseTasks.env = ENV['ENV'] || 'development'
+			ActiveRecord::Tasks::DatabaseTasks.database_configuration = YAML.load(File.read(Root.join('db', 'config.yml').to_s))
+			ActiveRecord::Tasks::DatabaseTasks.db_dir = Root.join('db').to_s
+			ActiveRecord::Tasks::DatabaseTasks.fixtures_path = Root.join( 'db', 'fixtures').to_s
+			ActiveRecord::Tasks::DatabaseTasks.migrations_paths = [Root.join('db', 'migrate').to_s]
+			ActiveRecord::Tasks::DatabaseTasks.seed_loader = Class.new do
+				def self.load_seed
+					filename = Root.join('db', 'seeds.rb').to_s
+					unless File.file?(filename)
+						IO.write filename, ''
+					end
+					load filename
+				end
+			end
+			ActiveRecord::Tasks::DatabaseTasks.root = Root.to_s
 
-      desc "Migrate the database so that it is fully updated, using db/migrate."
-      task :migrate do
-        ActiveRecord::Base.logger = Plezi.logger
-        ActiveRecord::Migrator.migrate(Root.join('db', 'migrate').to_s, ENV["VERSION"] ? ENV["VERSION"].to_i : nil )
-      end
+			task :environment do
+				ActiveRecord::Base.configurations = ActiveRecord::Tasks::DatabaseTasks.database_configuration
+				ActiveRecord::Base.establish_connection ActiveRecord::Tasks::DatabaseTasks.env.to_sym
+			end
 
-      desc "Seed the database using the db/seeds.rb file"
-      task :seed do
-        if ::File.exists? Root.join('db','seeds.rb').to_s
-          load Root.join('db','seeds.rb').to_s
-        else
-          puts "the seeds file doesn't exists. please create a seeds.db file and place it in the db folder for the app."
-        end
-      end
+			load 'active_record/railties/databases.rake'
 
-    end
-
-# end rake segment
-##########
+		end
 	end
+
 
 end
 

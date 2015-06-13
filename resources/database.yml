@@ -1,0 +1,33 @@
+# The following are common database setting as recomended by Heroku:
+default: &default
+  adapter: postgresql
+  host: localhost
+  username: user
+
+development:
+  <<: *default
+  database: app-dev
+
+production:
+  <<: *default
+  database: app-dev
+
+# # Here is an Sqlite3 example DB.
+# # You can use it to update the default if you want to use Sqlite3
+# sqlite3_db:
+#   adapter: sqlite3
+#   pool: 5
+#   timeout: 5000
+#   database: db/db.sqlite3
+
+
+# # Here is a MySQL example DB.
+# # You can use it to update the default if you want to use MySQL
+# mysql_db:
+#   adapter: mysql2
+#   encoding: utf8
+#   username: root
+#   password: password
+#   host: localhost
+#   port: 3306
+#   database: database_name

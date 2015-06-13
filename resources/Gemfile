@@ -86,3 +86,4 @@ gem 'plezi'
 ## but first, please remember that AcriveRecord needs extra attention when multi-threading
 # gem 'activerecord', :require => 'active_record'
 # gem 'bcrypt', '~> 3.1.7'
+# gem 'standalone_migrations' # will provide better rake tasks support for ActiveRecord

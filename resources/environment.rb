@@ -11,14 +11,14 @@ Root ||= Pathname.new(File.dirname(__FILE__)).expand_path
 Dir.chdir Root.to_s
 
 # ensure development mode? (comment before production, environment dependent)
-ENV["RACK_ENV"] ||= "development"
+ENV['ENV'] ||= ENV["RACK_ENV"] ||= "development"
 
 # save the process id (pid) to file - notice Heroku doesn't allow to write files.
 (IO.write File.expand_path(File.join 'tmp','pid'), Process.pid unless ENV["DYNO"]) rescue true
 
 # using bundler to load gems (including the plezi gem)
 require 'bundler'
-Bundler.require
+Bundler.require(:default, ENV['ENV'].to_s.to_sym)
 
 # require tilt/sass in a thread safe way (before multi-threading cycle begins)
 require 'tilt/sass' if defined?(::Slim) && defined?(::Sass)

@@ -16,7 +16,7 @@
 # #
 # require 'plezi/oauth'
 # #
-# # Last, but not least, remember to add the authentication route in the correct placement using:
+# # Last, but not least, remember to add the authentication route in the 'routes.rb' using correct path priority placement:
 # create_auth_shared_route do |service_name, remote_user_id, remote_user_email, remote_response|
 #         # ...callback for authentication.
 #         # This callback should return the app user object or false
