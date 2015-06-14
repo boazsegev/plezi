@@ -4,7 +4,9 @@
 
 Change log v.0.8.5
 
-**featur**: the Controller can now create easy urls for it's own paths, using the #url_for method. still limited usability, but great for simple urls (url to object by id, url to index etc').
+**feature**: the Controller can now create easy urls for it's own paths, using the #url_for method. Works wonderfuly for simple routes (routes such as: '/path/to/restful/controller/(:id)/(:other)/(:simple)/(:options)').
+
+**update**: better ActiveRecord support now adds AC rake tasks.
 
 ***
 
