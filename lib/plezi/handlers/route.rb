@@ -111,7 +111,7 @@ module Plezi
 			case dest
 			when String
 				dest = {id: dest.dup}
-			when Numeric
+			when Numeric, Symbol
 				dest = {id: dest}
 			when Hash
 				dest = dest.dup

@@ -319,6 +319,53 @@ Plezi is ment to be very flexible. please take a look at the Plezi Module for se
 
 Feel free to fork or contribute. right now I am one person, but together we can make something exciting that will help us enjoy Ruby in this brave new world and (hopefully) set an example that will induce progress in the popular mainstream frameworks such as Rails and Sinatra.
 
+## OAuth2 and other Helpers
+
+Plezi has a few helpers that help with common tasks.
+
+For instance, Plezi has a built in controller that allows you to add social authentication using Google, Facebook
+and and other OAuth2 authentication service. For example:
+
+    require 'plezi'
+
+    class Controller
+        def index
+            flash[:login] ? "You are logged in as #{flash[:login]}" : "You aren't logged in. Please visit one of the following:\n\n* #{request.base_url}#{Plezi::OAuth2Ctrl.url_for :google}\n\n* #{request.base_url}#{Plezi::OAuth2Ctrl.url_for :facebook}"
+        end
+    end
+
+    # set up the common social authentication variables for automatic Plezi::OAuth2Ctrl service recognition.
+    ENV["FB_APP_ID"] ||= "facebook_app_id / facebook_client_id"
+    ENV["FB_APP_SECRET"] ||= "facebook_app_secret / facebook_client_secret"
+    ENV['GOOGLE_APP_ID'] = "google_app_id / google_client_id"
+    ENV['GOOGLE_APP_SECRET'] = "google_app_secret / google_client_secret"
+
+    require 'plezi/oauth'
+
+    # manually setup any OAuth2 service (we'll re-setup facebook as an example):
+    Plezi::OAuth2Ctrl.register_service(:facebook, app_id: ENV['FB_APP_ID'],
+                    app_secret: ENV['FB_APP_SECRET'],
+                    auth_url: "https://www.facebook.com/dialog/oauth",
+                    token_url: "https://graph.facebook.com/v2.3/oauth/access_token",
+                    profile_url: "https://graph.facebook.com/v2.3/me",
+                    scope: "public_profile,email") if ENV['FB_APP_ID'] && ENV['FB_APP_SECRET']
+
+
+    listen
+
+    create_auth_shared_route do |service_name, token, remote_user_id, remote_user_email, remote_response|
+        # we will create a temporary cookie storing a login message. replace this code with your app's logic
+        flash[:login] = "#{remote_response['name']} (#{remote_user_email}) from #{service_name}"
+    end
+
+    route "/" , Controller
+
+    exit
+
+Plezi has a some more goodies under the hood.
+
+Whether such goodies are part of the Plezi-App Template (such as rake tasks for ActiveRecord without Rails) or part of the Plezi Framework core (such as descried in the Plezi::ControllerMagic documentation: #flash, #url_for, #render, #send_data, etc'), these goodies are fun to work with and make completion of common tasks a breeze.
+
 ## Contributing
 
 1. Fork it ( https://github.com/boazsegev/plezi/fork )

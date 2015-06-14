@@ -56,7 +56,7 @@ module Plezi
 	# - Google: "/auth/google?redirect_after=/foo/bar"
 	class OAuth2Ctrl
 
-		# Sets (or gets) the callback to be called after authentication is attempeted.
+		# Sets (or gets) the global callback to be called after authentication is attempeted.
 		#
 		# Accepts a block that will be called with the following parameters:
 		# service_name:: the name of the service. i.e. :facebook, :google, etc'.
@@ -74,7 +74,7 @@ module Plezi
 		#
 		# defaults to the example above, which isn't a very sercure behavior, but allows for easy testing.
 		def self.auth_callback &block
-			block_given? ? (@auth_callback = block) : ( @auth_callback ||= (Proc.new {|service, service_token, id, email, res| Plezi.info "deafult callback called for #{service}, with response: #{res.to_s}";  cookies["#{service}_pl_auth_token".to_sym], cookies["#{service}_user_id".to_sym], cookies["#{service}_user_email".to_sym] = service_token, id, email}) )
+			block_given? ? (@@auth_callback = block) : ( @@auth_callback ||= (Proc.new {|service, service_token, id, email, res| Plezi.info "deafult callback called for #{service}, with response: #{res.to_s}";  cookies["#{service}_pl_auth_token".to_sym], cookies["#{service}_user_id".to_sym], cookies["#{service}_user_email".to_sym] = service_token, id, email}) )
 		end
 
 
@@ -88,7 +88,7 @@ module Plezi
 		# options:: a Hash of options, some of which are required.
 		#
 		# The options are:
-		# app_id:: Required. The aplication's unique ID registered with the service. i.e. ENV\[FB_APP_ID] (storing these in environment variables is safer then hardcoding them)
+		# app_id:: Required. The aplication's unique ID registered with the service. i.e. ENV [FB_APP_ID] (storing these in environment variables is safer then hardcoding them)
 		# app_secret:: Required. The aplication's unique secret registered with the service.
 		# auth_url:: Required. The authentication URL. This is the url to which the user is redirected. i.e.: "https://www.facebook.com/dialog/oauth"
 		# token_url:: Required. The token request URL. This is the url used to switch the single-use code into a persistant authentication token. i.e.: "https://www.googleapis.com/oauth2/v3/token"
@@ -97,8 +97,8 @@ module Plezi
 		#
 		# There will be an attempt to automatically register Facebook and Google login services under these conditions:
 		#
-		# * For Facebook: Both ENV\['FB_APP_ID'] && ENV\['FB_APP_SECRET'] have been defined.
-		# * For Google: Both ENV\['GOOGLE_APP_ID'] && ENV\['GOOGLE_APP_SECRET'] have been defined.
+		# * For Facebook: Both ENV ['FB_APP_ID'] && ENV ['FB_APP_SECRET'] have been defined.
+		# * For Google: Both ENV ['GOOGLE_APP_ID'] && ENV ['GOOGLE_APP_SECRET'] have been defined.
 		#
 		#
 		# The auto registration uses the following urls (updated to June 5, 2015):
@@ -222,8 +222,8 @@ end
 #
 # The method can be called only once and will self-destruct.
 def create_auth_shared_route options = {}, &block
-	shared_route "auth/(:id)/(:code)" , Plezi::OAuth2Ctrl
+	shared_route "auth/(:id)" , Plezi::OAuth2Ctrl
 	undef create_auth_shared_route
-	Plezi::OAuth2Ctrl.auth_callback = block if block
+	Plezi::OAuth2Ctrl.auth_callback &block if block
 	Plezi::OAuth2Ctrl
 end
