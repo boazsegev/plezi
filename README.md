@@ -36,13 +36,13 @@ to create a new barebones app using the Plezi framework, run from terminal:
 That's it, now you have a ready to use basic web server (with some demo code), just run it:
 
     $ cd appname
-    $ ./appname.rb # ( or: plezi s )
+    $ ./appname # ( or: plezi s )
 
 now go, in your browser, to: [http://localhost:3000/](http://localhost:3000/)
 
 the default first port for the app is 3000. you can set the first port to listen to by using the `-p ` option (make sure you have permissions for the requested port):
 
-    $ ./appname.rb -p 80
+    $ ./appname -p 80
 
 you now have a smart framework app that will happily eat any gem you feed it. it responds extra well to Haml, Sass and Coffee-Script, which you can enable in it's Gemfile.
 
