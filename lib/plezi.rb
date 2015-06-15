@@ -56,6 +56,8 @@ require 'plezi/server/http_response.rb'
 require 'plezi/server/websocket.rb'
 require 'plezi/server/ws_response.rb'
 
+### websocket client
+require 'plezi/server/websocket_client.rb'
 ### Handlers / Framework
 
 require "plezi/handlers/http_echo"

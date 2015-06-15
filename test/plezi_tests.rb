@@ -240,6 +240,38 @@ module PleziTestTasks
 		puts "    **** 500 internal error test FAILED TO RUN!!!"
 		puts e		
 	end
+	def test_websocket
+		connection_test = broadcast_test = echo_test = false
+		begin
+			ws2 = Plezi::WebsocketClient.connect_to("wss://localhost:3030") do |msg|
+				break unless @is_connected || !(@is_connected = true)
+				puts "    * Websocket broadcast message test: #{RESULTS[broadcast_test = (msg == 'echo test')]}"
+				response.close
+				go_test = false
+			end
+			puts "    * Websocket SSL client test: #{RESULTS[ws2 && true]}"
+			ws1 = Plezi::WebsocketClient.connect_to("ws://localhost:3000") do |msg|
+				unless @connected
+					puts "    * Websocket connection message test: #{RESULTS[connection_test = (msg == 'connected')]}"
+					@connected = true
+					response << "echo test"
+					break
+				end
+				puts "    * Websocket echo message test: #{RESULTS[echo_test = (msg == 'echo test')]}"
+				response.close
+			end
+			
+		rescue => e
+			puts "    **** Websocket tests FAILED TO RUN!!!"
+			puts e.message
+		end
+		remote = Plezi::WebsocketClient.connect_to("wss://echo.websocket.org/") {|msg| puts "    * Extra Websocket Remote test (SSL: echo.websocket.org): #{RESULTS[msg == 'Hello websockets!']}"; response.close}
+		remote << "Hello websockets!"
+		sleep 0.3
+		PL.on_shutdown {puts "    * Websocket connection message test: #{RESULTS[connection_test]}" unless connection_test}
+		PL.on_shutdown {puts "    * Websocket echo message test: #{RESULTS[echo_test]}" unless echo_test}
+		PL.on_shutdown {puts "    * Websocket broadcast message test: #{RESULTS[broadcast_test]}" unless broadcast_test}
+	end
 end
 
 NO_PLEZI_AUTO_START = true

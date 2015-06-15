@@ -4,6 +4,8 @@
 
 Change log v.0.8.5
 
+**feature**: Plezi now includes a very simple Websocket Client (no support for cookies). It's used for testing the integrity of the Plezi Framework and could be used to test the Plezi apps.
+
 **feature**: the Controller can now create easy urls for it's own paths, using the #url_for method. Works wonderfuly for simple routes (routes such as: '/path/to/restful/controller/(:id)/(:other)/(:simple)/(:options)').
 
 **update**: better ActiveRecord support now adds AC rake tasks.

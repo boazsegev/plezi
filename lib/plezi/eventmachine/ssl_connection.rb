@@ -74,7 +74,7 @@ module Plezi
 			def read size = 1048576
 				data = ''
 				begin
-					loop { data << @ssl_socket.read_nonblock(size).to_s }
+					 (data << @ssl_socket.read_nonblock(size).to_s) until data.bytesize >= size
 				rescue => e
 					
 				end
