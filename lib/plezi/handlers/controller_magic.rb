@@ -453,7 +453,7 @@ module Plezi
 				true
 			end
 
-			# WebSockets.
+			# WebSockets: fires an event on all of this controller's active websocket connections.
 			#
 			# Class method.
 			#
@@ -471,9 +471,7 @@ module Plezi
 				__inner_redis_broadcast(nil, nil, method_name, args, &block) || __inner_process_broadcast(nil, nil, method_name.to_sym, args, &block)
 			end
 
-			# WebSockets.
-			#
-			# Class method.
+			# WebSockets: fires an event on a specific websocket connection using it's UUID.
 			#
 			# Use this to unidcast an event to specific websocket connection using it's UUID.
 			#

@@ -299,7 +299,7 @@ module PleziTestTasks
 	end
 	def test_500
 		workers = Plezi::EventMachine.count_living_workers
-		putc "    * 500 internal error test: #{RESULTS[ Net::HTTP.get_response(URI.parse "http://localhost:3000/fail" ).code == '500' ]}"
+		print "    * 500 internal error test: #{RESULTS[ Net::HTTP.get_response(URI.parse "http://localhost:3000/fail" ).code == '500' ]}"
 		# cause 10 more exceptions to be raised... testing thread survival.
 		10.times { putc "."; Net::HTTP.get_response(URI.parse "http://localhost:3000/fail" ).code }
 		putc "\n"
