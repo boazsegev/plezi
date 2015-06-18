@@ -2,6 +2,14 @@
 
 ***
 
+Change log v.0.8.6
+
+**fix**: fixed an issue with the plezi helper script that prevented the script from starting the Plezi app or Plezi console.
+
+**feature**: Unicasting allows you to target a specific Websocket connection using a unique identifier (UUID). Use the controllers `#unicast(target_uuid, mathod_name, *args) to target a specific client. Automatically uses Radis, if Radis is set up, to unicast across processes.
+
+***
+
 Change log v.0.8.5
 
 **feature**: Plezi now includes a very simple Websocket Client (no support for cookies). It's used for testing the integrity of the Plezi Framework and could be used to test the Plezi apps.

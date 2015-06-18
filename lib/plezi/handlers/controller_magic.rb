@@ -44,15 +44,22 @@ module Plezi
 			# the parameters used to create the host (the parameters passed to the `listen` / `add_service` call).
 			attr_reader :host_params
 
-			# a unique UUID to identify the object - used to make sure Radis broadcasts don't triger the
+			# Get's the websocket's unique identifier for unicast transmissions.
+			#
+			# This UUID is also used to make sure Radis broadcasts don't triger the
 			# boadcasting object's event.
-			attr_reader :uuid
+			def uuid
+				@uuid ||= SecureRandom.uuid
+			end
+			alias :unicast_id :uuid
 
 			# checks whether this instance accepts broadcasts (WebSocket instances).
 			def accepts_broadcast?
 				@_accepts_broadcast
 			end
 			# sets the controller to refuse "broadcasts".
+			#
+			# The controller will also refuse any messages directed at it using the `unicast` method.
 			#
 			# This allows some websocket connections to isolate themselves even before they are fully disconnected.
 			#
@@ -253,7 +260,12 @@ module Plezi
 			def broadcast method_name, *args, &block
 				return false unless self.class.public_instance_methods.include?(method_name)
 				@uuid ||= SecureRandom.uuid
-				self.class.__inner_redis_broadcast(uuid, method_name, args, &block) || self.class.__inner_process_broadcast(uuid, method_name.to_sym, args, &block)
+				self.class.__inner_redis_broadcast(uuid, nil, method_name, args, &block) || self.class.__inner_process_broadcast(uuid, nil, method_name.to_sym, args, &block)
+			end
+
+			# {include:ControllerMagic::ClassMethods#unicast}
+			def unicast target_uuid, method_name, *args
+				self.class.unicast target_uuid, method_name, *args
 			end
 
 			# WebSockets.
@@ -370,9 +382,9 @@ module Plezi
 			# end
 
 			
-			# reviews the Redis connection, sets it up if it's missing and returns the Redis connection.
+			# Reviews the Redis connection, sets it up if it's missing and returns the Redis connection.
 			#
-			# a Redis connection will be automatically created if the `ENV['PL_REDIS_URL']` is set.
+			# A Redis connection will be automatically created if the `ENV['PL_REDIS_URL']` is set.
 			# for example:
 			#      ENV['PL_REDIS_URL'] = ENV['REDISCLOUD_URL']`
 			# or
@@ -409,7 +421,7 @@ module Plezi
 							on.message do |channel, msg|
 								args = JSON.parse(msg)
 								params = args.shift
-								__inner_process_broadcast params['_pl_ignore_object'], params['_pl_method_broadcasted'].to_sym, args
+								__inner_process_broadcast params['_pl_ignore_object'], params['_pl_target_object'], params['_pl_method_broadcasted'].to_sym, args
 							end
 						end						
 					rescue Exception => e
@@ -427,16 +439,16 @@ module Plezi
 			end
 
 			# broadcasts messages (methods) for this process
-			def __inner_process_broadcast ignore, method_name, args, &block
-				ObjectSpace.each_object(self) { |controller| Plezi.callback controller, method_name, *args, &block if controller.accepts_broadcast? && (!ignore || controller.uuid != ignore) }
+			def __inner_process_broadcast ignore, target, method_name, args, &block
+				ObjectSpace.each_object(self) { |controller| Plezi.callback controller, method_name, *args, &block if controller.accepts_broadcast? && (!ignore || (controller.uuid != ignore)) && (!target || (controller.uuid == target)) }
 			end
 
 			# broadcasts messages (methods) between all processes (using Redis).
-			def __inner_redis_broadcast ignore, method_name, args, &block
+			def __inner_redis_broadcast ignore, target, method_name, args, &block
 				return false unless redis_connection
 				raise "Radis broadcasts cannot accept blocks (no inter-process callbacks of memory sharing)!" if block
 				# raise "Radis broadcasts accept only one paramater, which is an optional Hash (no inter-process memory sharing)" if args.length > 1 || (args[0] && !args[0].is_a?(Hash))
-				args.unshift ({_pl_method_broadcasted: method_name, _pl_ignore_object: ignore})
+				args.unshift ({_pl_method_broadcasted: method_name, _pl_ignore_object: ignore, _pl_target_object: target})
 				redis_connection.publish(redis_channel_name, args.to_json )
 				true
 			end
@@ -456,7 +468,22 @@ module Plezi
 			# the method will be called asynchrnously for each sibling instance of this Controller class.
 			def broadcast method_name, *args, &block
 				return false unless public_instance_methods.include?(method_name)
-				__inner_redis_broadcast(nil, method_name, args, &block) || __inner_process_broadcast(nil, method_name.to_sym, args, &block)
+				__inner_redis_broadcast(nil, nil, method_name, args, &block) || __inner_process_broadcast(nil, nil, method_name.to_sym, args, &block)
+			end
+
+			# WebSockets.
+			#
+			# Class method.
+			#
+			# Use this to unidcast an event to specific websocket connection using it's UUID.
+			#
+			# accepts:
+			# target_uuid:: the target's unique UUID.
+			# method_name:: a Symbol with the method's name that should respond to the broadcast.
+			# *args:: any arguments that should be passed to the method (IF REDIS IS USED, LIMITATIONS APPLY).
+			def unicast target_uuid, method_name, *args
+				return false unless public_instance_methods.include?(method_name.to_sym)
+				__inner_redis_broadcast(nil, target_uuid, method_name, args) || __inner_process_broadcast(nil, target_uuid, method_name.to_sym, args)
 			end
 
 			# WebSockets.

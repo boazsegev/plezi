@@ -28,11 +28,14 @@ module Plezi
 		end
 
 		def stop_and_wait
-			@workers_lock.synchronize { @workers.each {|w| w.stop }; @workers.each {|w| w.join }; @workers.clear; Worker.reset_wait}
+			@workers.each {|w| w.stop }
+			@workers.each {|w| w.join }
+			@workers_lock.synchronize { @workers.clear }
 		end
 
 		def stop
-			@workers_lock.synchronize { @workers.each {|w| w.stop } ; @workers.clear; Worker.reset_wait}
+			@workers.each {|w| w.stop }
+			@workers_lock.synchronize { @workers.clear;}
 		end
 
 		def running?
@@ -48,9 +51,9 @@ module Plezi
 		SHUTDOWN_CALLBACKS = []
 		# runs the shutdown queue
 		def shutdown
-			stop_and_wait rescue false
 			old_timeout = io_timeout
 			io_timeout = 0.001
+			stop_and_wait rescue false
 			run
 			io_timeout = old_timeout
 			do_job while do_job

@@ -21,7 +21,7 @@ gem 'plezi'
 # 
 # gem 'activesupport', :require => ['active_support', 'active_support/core_ext'] 
 ## or:
-# gem 'activesupport', :require => ['active_support', active_support/all'] 
+# gem 'activesupport', :require => ['active_support', 'active_support/all'] 
 
 
 ####################

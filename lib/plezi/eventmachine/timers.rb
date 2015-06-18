@@ -60,7 +60,7 @@ module Plezi
 		end
 		# clears all timers
 		def clear_timers
-			TIMERS_LOCK.synchronize { TIMERS.clear }
+			TIMERS.clear
 		end
 
 	end

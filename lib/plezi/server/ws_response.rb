@@ -73,10 +73,12 @@ module Plezi
 			self
 		end
 
+		# a closeing Proc
+		CLOSE_PROC = Proc.new {|c| c.send "\x88\x00"; c.close}
+
 		# sends any pending data and closes the connection.
 		def close
-			service.send self.class.frame_data('', 8)
-			service.close
+			service.locker.locked? ? (EventMachine.queue [service], CLOSE_PROC) : (CLOSE_PROC.call(service)) 
 		end
 
 		FRAME_SIZE_LIMIT = 131_072

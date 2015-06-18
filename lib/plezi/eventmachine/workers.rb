@@ -9,6 +9,7 @@ module Plezi
 				@thread = Thread.new { EventMachine.run wait until @stop }
 			end
 			def stop
+				@instances = -1
 				@stop = true
 			end
 			def join
@@ -26,9 +27,6 @@ module Plezi
 				@instances ||= -1
 				@instances += 1 if @instances < 7
 				@primes[@instances] / 10.0
-			end
-			def self.reset_wait
-				@instances = -1
 			end
 		end
 	end

@@ -50,6 +50,7 @@ module Plezi
 		def disconnect
 			@response.close if @response
 		end
+		alias :close :disconnect
 
 		# sends data through the socket. a shortcut for ws_client.response <<
 		def << data
