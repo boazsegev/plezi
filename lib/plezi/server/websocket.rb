@@ -164,7 +164,7 @@ module Plezi
 			case @parser_data[:op_code]
 			when 9 # ping
 				# handle @parser_data[:op_code] == 9 (ping)
-				Plezi.callback @connection, :send_nonblock, "\x8A\x00" # sends pong op_code == 10
+				Plezi.callback @connection, :send_nonblock, WSResponse.frame_data(@parser_data[:body].pack('C*'), 10) # "\x8A\x00" can't be used, because body should be returned. # sends pong op_code == 10
 				@parser_op_code = nil if @parser_op_code == 9
 			when 10 #pong
 				# handle @parser_data[:op_code] == 10 (pong)
