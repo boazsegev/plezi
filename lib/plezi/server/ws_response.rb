@@ -64,12 +64,12 @@ module Plezi
 
 		# pings the connection
 		def ping
-			service.send_nonblock self.class.frame_data('', 9)
+			service.send_nonblock "\x89\x00" # op_code 9
 			self
 		end
 		# pings the connection
 		def pong
-			service.send_nonblock self.class.frame_data('', 10)
+			service.send_nonblock "\x8A\x00" # op_code 10
 			self
 		end
 

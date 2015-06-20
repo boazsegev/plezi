@@ -4,6 +4,12 @@
 
 Change log v.0.8.6
 
+**minor performance**: streamlined the ping/pong Websocket process.
+
+***
+
+Change log v.0.8.6
+
 **fix**: fixed an issue with the plezi helper script that prevented the script from starting the Plezi app or Plezi console.
 
 **feature**: Unicasting allows you to target a specific Websocket connection using a unique identifier (UUID). Use the controllers `#unicast(target_uuid, mathod_name, *args) to target a specific client. Automatically uses Radis, if Radis is set up, to unicast across processes.

@@ -162,13 +162,16 @@ module Plezi
 			@extentions.each {|ex| SUPPORTED_EXTENTIONS[ex[0]][1].call(@parser_data[:body], ex[1..-1]) if SUPPORTED_EXTENTIONS[ex[0]]}
 
 			case @parser_data[:op_code]
-			when 9, 10
-				# handle @parser_data[:op_code] == 9 (ping) / @parser_data[:op_code] == 10 (pong)
-				Plezi.callback @connection, :send_nonblock, WSResponse.frame_data(@parser_data[:body].pack('C*'), 10) # unless @parser_data[:op_code] == 10
-				@parser_op_code = nil if @parser_op_code == 9 || @parser_op_code == 10
+			when 9 # ping
+				# handle @parser_data[:op_code] == 9 (ping)
+				Plezi.callback @connection, :send_nonblock, "\x8A\x00" # sends pong op_code == 10
+				@parser_op_code = nil if @parser_op_code == 9
+			when 10 #pong
+				# handle @parser_data[:op_code] == 10 (pong)
+				@parser_op_code = nil if @parser_op_code == 10
 			when 8
 				# handle @parser_data[:op_code] == 8 (close)
-				Plezi.callback( @connection, :send_nonblock, WSResponse.frame_data('', 8) ) { @connection.disconnect }
+				Plezi.callback( @connection, :send_nonblock, "\x88\x00" ) { @connection.disconnect }
 				@parser_op_code = nil if @parser_op_code == 8
 			else
 				@message << @parser_data[:body].pack('C*')
