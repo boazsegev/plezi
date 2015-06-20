@@ -2,7 +2,7 @@
 
 ***
 
-Change log v.0.8.6
+Change log v.0.8.7
 
 **minor performance**: streamlined the ping/pong Websocket process.
 
