@@ -33,7 +33,7 @@ to create a new barebones app using the Plezi framework, run from terminal:
 
     $ plezi new appname
 
-That's it, now you have a ready to use basic web server (with some demo code), just run it:
+That's it, now you have a ready to use basic web server (with some demo code). If you're on MacOS or linux you can simply double click the `appname` script file in the `appname` folder. Or, from the terminal, you can type:
 
     $ cd appname
     $ ./appname # ( or: plezi s )
