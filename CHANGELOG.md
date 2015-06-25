@@ -6,6 +6,8 @@ Change log v.0.8.7
 
 **minor performance**: streamlined the ping/pong Websocket process.
 
+**fix**: fixed an issue with the auto-utilization of the I18n gem, where one request could set the locale for all subsequent requests that are processed by the same thread.
+
 ***
 
 Change log v.0.8.6
