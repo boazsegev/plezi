@@ -8,6 +8,8 @@ Change log v.0.8.7
 
 **fix**: fixed an issue with the auto-utilization of the I18n gem, where one request could set the locale for all subsequent requests that are processed by the same thread.
 
+**deprecation warning**: The current code for default error pages will be changed in version 0.9.0, so that default error pages will follow a different naming convention and would be searched for in a different location. The updated design will be part of the updated `plezi` helper script. Please review your code before upgrading to the 0.9.0 version.
+
 ***
 
 Change log v.0.8.6
