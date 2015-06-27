@@ -113,7 +113,7 @@ Encoding.default_external = 'utf-8'
 # PL is a shortcut for the Plezi module, so that `PL == Plezi`.
 PL = Plezi
 
-# shortcut for Plezi.listen.
+# shortcut for Plezi::DSL.listen.
 #
 def listen(params = {})
 	Plezi::DSL.listen params

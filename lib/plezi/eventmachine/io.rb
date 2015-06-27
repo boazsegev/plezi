@@ -213,7 +213,7 @@ module Plezi
 				Plezi.run_every(3_600) {GC.start; Plezi.info "Refreshing worker threads."; EventMachine.stop; EventMachine.start Plezi.max_threads}
 				# run_every( 1 , Proc.new() { Plezi.info "#{IO_CONNECTION_DIC.length} active connections ( #{ IO_CONNECTION_DIC.select{|k,v| v.protocol.is_a?(WSProtocol)} .length } websockets)." })
 				# run_every 10 , -> {Plezi.info "Cache report: #{CACHE_STORE.length} objects cached." } 
-				puts "** Deprecation Warning:\n- The current code for default error pages will be changed in version 0.9.0.\n- Default error pages will follow a different naming and location conventions.\n- The updated design will be part of the updated `plezi` helper script.\nPlease review your code before upgrading to the 0.9.0 version.\n"
+				# puts "** Deprecation Warning:\n- The current code for default error pages will be changed in version 0.9.0.\n- Default error pages will follow a different naming and location conventions.\n- The updated design will be part of the updated `plezi` helper script.\nPlease review your code before upgrading to the 0.9.0 version.\n"
 				puts "Services running Plezi version #{Plezi::VERSION}. Press ^C to stop"
 				EventMachine.start Plezi.max_threads
 

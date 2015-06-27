@@ -95,18 +95,17 @@ module Plezi
 		# sends a response for an error code, rendering the relevent file (if exists).
 		def send_by_code request, code, headers = {}
 			begin
-				if params[:root]
-					if defined?(::Slim) && Plezi.file_exists?(File.join(params[:root], "#{code}.slim"))
-						Plezi.cache_data File.join(params[:root], "#{code}.slim"), Slim::Template.new( File.join( params[:root], "#{code}.slim" ) ) unless Plezi.cached? File.join(params[:root], "#{code}.slim")
-						return send_raw_data request, Plezi.get_cached( File.join(params[:root], "#{code}.slim") ).render( self, request: request ), 'text/html', code, headers
-					elsif defined?(::Haml) && Plezi.file_exists?(File.join(params[:root], "#{code}.haml"))
-						Plezi.cache_data File.join(params[:root], "#{code}.haml"), Haml::Engine.new( IO.read( File.join( params[:root], "#{code}.haml" ) ) ) unless Plezi.cached? File.join(params[:root], "#{code}.haml")
-						return send_raw_data request, Plezi.get_cached( File.join(params[:root], "#{code}.haml") ).render( self ), 'text/html', code, headers
-					elsif defined?(::ERB) && Plezi.file_exists?(File.join(params[:root], "#{code}.erb"))
-						return send_raw_data request, ERB.new( Plezi.load_file( File.join(params[:root], "#{code}.erb") ) ).result(binding), 'text/html', code, headers
-					elsif Plezi.file_exists?(File.join(params[:root], "#{code}.html"))
-						return send_file(request, File.join(params[:root], "#{code}.html"), code, headers)
-					end
+				@base_code_path ||= params[:templates] || File.expand_path('.')
+				if defined?(::Slim) && Plezi.file_exists?(fn = File.join(@base_code_path, "#{code}.html.slim"))
+					Plezi.cache_data fn, Slim::Template.new( fn ) unless Plezi.cached? fn
+					return send_raw_data request, Plezi.get_cached( fn ).render( self, request: request ), 'text/html', code, headers
+				elsif defined?(::Haml) && Plezi.file_exists?(fn = File.join(@base_code_path, "#{code}.html.haml"))
+					Plezi.cache_data fn, Haml::Engine.new( IO.read( fn ) ) unless Plezi.cached? fn
+					return send_raw_data request, Plezi.get_cached( File.join(@base_code_path, "#{code}.html.haml") ).render( self ), 'text/html', code, headers
+				elsif defined?(::ERB) && Plezi.file_exists?(fn = File.join(@base_code_path, "#{code}.html.erb"))
+					return send_raw_data request, ERB.new( Plezi.load_file( fn ) ).result(binding), 'text/html', code, headers
+				elsif Plezi.file_exists?(fn = File.join(@base_code_path, "#{code}.html"))
+					return send_file(request, fn, code, headers)
 				end
 				return true if send_raw_data(request, HTTPResponse::STATUS_CODES[code], 'text/plain', code, headers)
 			rescue Exception => e
