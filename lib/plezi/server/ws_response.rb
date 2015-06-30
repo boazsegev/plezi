@@ -17,7 +17,22 @@ module Plezi
 		#the request.
 		attr_accessor :request
 
-		PING_PROC = Proc.new {|res| EventMachine.timed_job 45, 1, [res.ping], PING_PROC unless res.service.disconnected? }
+		# Sets the defalt Websockt auto-ping interval.
+		#
+		# The default ping interval is 45 seconds.
+		#
+		# It's possible to set the ping interval to false, thereby disabling auto-pinging.
+		def self.ping_interval=(val)
+			@ping_interval = val
+		end
+		# Returns the defalt Websockt auto-ping interval.
+		#
+		# Plezi will automatically send a ping frame to keep websocket connections open.
+		# This auto-pinging can be disabled by setting the `ping_interval` to false.
+		def self.ping_interval
+			@ping_interval ||= 45
+		end
+		PING_PROC = Proc.new {|res| EventMachine.timed_job ping_interval, 1, [res.ping], PING_PROC unless res.service.disconnected? || !ping_interval }
 
 		def initialize request
 			@request, @service = request,request.service
@@ -123,4 +138,24 @@ module Plezi
 			frame
 		end
 	end
+
+	module_function
+	# Sets the defalt Websockt auto-ping interval.
+	#
+	# This method accepts one value, which should be either a number in seconds or `false`.
+	#
+	# The default ping interval is 45 seconds.
+	#
+	# It's possible to set the ping interval to false, thereby disabling auto-pinging.
+	def ping_interval=(val)
+		WSResponse.ping_interval = val
+	end
+	# Returns the defalt Websockt auto-ping interval.
+	#
+	# Plezi will automatically send a ping frame to keep websocket connections open.
+	# This auto-pinging can be disabled by setting the `ping_interval` to false.
+	def ping_interval
+		WSResponse.ping_interval
+	end
+
 end
