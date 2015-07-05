@@ -314,7 +314,7 @@ module PleziTestTasks
 			end
 			str = 'a'
 			time_now = Time.now
-			7.times {|i| str = str * 2**i;puts "    * Websocket message size test: sending #{str.bytesize} bytes"; ws.send str; sleep 0.2 }
+			6.times {|i| str = str * 2**i;puts "    * Websocket message size test: sending #{str.bytesize} bytes"; ws.send str; sleep 0.2 }
 			sleep (Time.now - time_now + 1)
 			should_disconnect = true
 			Plezi.ws_message_size_limit = 1024

@@ -96,7 +96,7 @@ module Plezi
 			service.locker.locked? ? (EventMachine.queue [service], CLOSE_PROC) : (CLOSE_PROC.call(service)) 
 		end
 
-		FRAME_SIZE_LIMIT = 65_536 # javascript to test: str = '0123456789'; bigstr = ""; for(i = 0; i<=1033200; i+=1) {bigstr += str}; ws = new WebSocket('ws://localhost:3000/ws/size') ; ws.onmessage = function(e) {console.log(e.data.length)};ws. onopen = function(e) {ws.send(bigstr)}
+		FRAME_SIZE_LIMIT = 131_072 # javascript to test: str = '0123456789'; bigstr = ""; for(i = 0; i<=1033200; i+=1) {bigstr += str}; ws = new WebSocket('ws://localhost:3000/ws/size') ; ws.onmessage = function(e) {console.log(e.data.length)};ws. onopen = function(e) {ws.send(bigstr)}
 
 		# Dangerzone! use `send` instead: formats the data as one or more WebSocket frames.
 		def self.frame_data data, op_code = nil, fin = true

@@ -31,11 +31,11 @@ module Plezi
 		def on_message
 			# parse the request
 			parse_message
-			if (@parser_stage == 1) && @parser_data[:version] >= 1.1
-				# send 100 continue message????? doesn't work! both Crome and Safari go crazy if this is sent after the request was sent (but before all the packets were recieved... msgs over 1 Mb).
-				# Plezi.push_event Proc.new { Plezi.info "sending continue signal."; connection.send_nonblock "100 Continue\r\n\r\n" }
-				# connection.send_unsafe_interrupt "100 Continue\r\n\r\n" # causes double lock on connection
-			end
+			# if (@parser_stage == 1) && @parser_data[:version] >= 1.1
+			# 	# send 100 continue message????? doesn't work! both Crome and Safari go crazy if this is sent after the request was sent (but before all the packets were recieved... msgs over 1 Mb).
+			# 	# Plezi.push_event Proc.new { Plezi.info "sending continue signal."; connection.send_nonblock "100 Continue\r\n\r\n" }
+			# 	# connection.send_unsafe_interrupt "100 Continue\r\n\r\n" # causes double lock on connection
+			# end
 			true
 		end
 

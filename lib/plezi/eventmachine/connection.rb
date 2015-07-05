@@ -74,6 +74,7 @@ module Plezi
 				rescue => e
 					EventMachine.queue( [@socket], REMOVE_CONNECTION_PROC)
 				end
+				true
 			end
 
 			# the non-blocking proc used for send_nonblock
@@ -106,10 +107,13 @@ module Plezi
 					@protocol = false
 				end
 			end
-			# closes the connection.
+
+			# the non-blocking proc used for send_nonblock
+			FLUSH_AND_CLOSE_PROC = Proc.new {|c| c.flush; EventMachine.remove_io c.socket}
+
+			# Closes the connection. This is always asynchronous and will return immidiately.
 			def close
-				flush
-				EventMachine.queue [@socket], REMOVE_CONNECTION_PROC
+				EventMachine.queue [self], FLUSH_AND_CLOSE_PROC
 			end
 			alias :disconnect :close
 
