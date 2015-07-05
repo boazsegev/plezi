@@ -18,7 +18,7 @@ Change log v.0.9.0
 
 **feature**: The Plezi framework can now impose limits on Websocket message sizes (even messages split across a number of frames) by using the `Plezi.ws_message_size_limit=` method.
 
-**fix**: Outgoing Websocket messages would break for messages over 32KB (and sometimes over 16KB). This was caused by an issue in the frame splitting solution which is now resolved.
+**fix**: Outgoing Websocket messages would break for messages over 32KB (and sometimes over 16KB). This was caused by an issue in the frame splitting algorithm which is now resolved.
 
 ***
 

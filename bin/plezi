@@ -60,6 +60,7 @@ class AppTemplate
 		app_tree["assets"] ||= {}
 		app_tree["assets"]["stylesheets"] ||= {}
 		app_tree["assets"]["javascripts"] ||= {}
+		app_tree["assets"]["javascripts"]["websocket.js"] ||= IO.read(::File.expand_path(File.join("..", "..", "resources" ,"websockets.js"),  __FILE__)).gsub('appname', ARGV[1])
 		app_tree["assets"]["welcome.html"] ||= IO.read(::File.expand_path(File.join("..", "..", "resources" ,"welcome_page.html"),  __FILE__)).gsub('appname', ARGV[1])
 
 		# app core files.
