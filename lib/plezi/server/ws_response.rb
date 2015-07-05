@@ -132,7 +132,7 @@ module Plezi
 				frame << 127.chr
 				frame << [data.length].pack('Q>')
 			end
-			# frame.force_encoding(data.encoding)
+			frame.force_encoding(data.encoding)
 			frame << data
 			frame.force_encoding('binary')
 			frame
