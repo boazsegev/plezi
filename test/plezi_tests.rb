@@ -299,27 +299,27 @@ module PleziTestTasks
 		PL.on_shutdown {puts "    * Websocket broadcast message test: #{RESULTS[broadcast_test]}" unless broadcast_test}
 		PL.on_shutdown {puts "    * Websocket unicast message test: #{RESULTS[unicast_test]}"}
 	end
-	# def test_websocket_sizes
-	# 		should_disconnect = false
-	# 		ws = Plezi::WebsocketClient.connect_to("ws://localhost:3000/ws/size") do |msg|
-	# 			if should_disconnect
-	# 				puts "    * Websocket size disconnection test: #{RESULTS[false]}"
-	# 			else
-	# 				puts "    * Websocket message size test: got #{msg.bytesize} bytes"
-	# 			end
+	def test_websocket_sizes
+			should_disconnect = false
+			ws = Plezi::WebsocketClient.connect_to("ws://localhost:3000/ws/size") do |msg|
+				if should_disconnect
+					puts "    * Websocket size disconnection test: #{RESULTS[false]}"
+				else
+					puts "    * Websocket message size test: got #{msg.bytesize} bytes"
+				end
 
-	# 		end
-	# 		ws.on_disconnect do
-	# 			puts "    * Websocket size disconnection test: #{RESULTS[should_disconnect]}"
-	# 		end
-	# 		str = 'a'
-	# 		time_now = Time.now
-	# 		6.times {|i| str = str * 2**i;puts "    * Websocket message size test: sending #{str.bytesize} bytes"; ws.send str; sleep 0.1 }
-	# 		sleep (Time.now - time_now + 1)
-	# 		should_disconnect = true
-	# 		Plezi.ws_message_size_limit = 1024
-	# 		ws << str
-	# end
+			end
+			ws.on_disconnect do
+				puts "    * Websocket size disconnection test: #{RESULTS[should_disconnect]}"
+			end
+			str = 'a'
+			time_now = Time.now
+			7.times {|i| str = str * 2**i;puts "    * Websocket message size test: sending #{str.bytesize} bytes"; ws.send str; sleep 0.2 }
+			sleep (Time.now - time_now + 1)
+			should_disconnect = true
+			Plezi.ws_message_size_limit = 1024
+			ws << str
+	end
 	def test_404
 		puts "    * 404 not found and router continuity tests: #{RESULTS[ Net::HTTP.get_response(URI.parse "http://localhost:3000/get404" ).code == '404' ]}"
 
