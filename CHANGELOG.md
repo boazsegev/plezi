@@ -16,6 +16,10 @@ Change log v.0.9.0
 
 **feature**: auto-pinging can now be customized for different hosting-server timeouts and it can also be disabled using the `Plezi.ping_interval` setter and getter.
 
+**feature**: The Plezi framework can now impose limits on Websocket message sizes (even messages split across a number of frames) by using the `Plezi.ws_message_size_limit=` method.
+
+**fix**: Outgoing Websocket messages would break for messages over 32KB (and sometimes over 16KB). This was caused by an issue in the frame splitting solution which is now resolved.
+
 ***
 
 Change log v.0.8.7

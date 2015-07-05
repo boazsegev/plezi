@@ -96,20 +96,20 @@ module Plezi
 			service.locker.locked? ? (EventMachine.queue [service], CLOSE_PROC) : (CLOSE_PROC.call(service)) 
 		end
 
-		FRAME_SIZE_LIMIT = 131_072
+		FRAME_SIZE_LIMIT = 65_536 # javascript to test: str = '0123456789'; bigstr = ""; for(i = 0; i<=1033200; i+=1) {bigstr += str}; ws = new WebSocket('ws://localhost:3000/ws/size') ; ws.onmessage = function(e) {console.log(e.data.length)};ws. onopen = function(e) {ws.send(bigstr)}
 
-		# Dangerzone! ()alters the string, use `send` instead: formats the data as one or more WebSocket frames.
+		# Dangerzone! use `send` instead: formats the data as one or more WebSocket frames.
 		def self.frame_data data, op_code = nil, fin = true
 			# set up variables
 			frame = ''.force_encoding('binary')
 			op_code ||= (data.encoding.name == 'UTF-8' ? 1 : 2)
 
 
-			if data[FRAME_SIZE_LIMIT]
+			if data[FRAME_SIZE_LIMIT] && fin
 				# fragment big data chuncks into smaller frames - op-code reset for 0 for all future frames.
 				data = data.dup
 				data.force_encoding('binary')
-				[frame << frame_data(data.slice!(0..FRAME_SIZE_LIMIT), op_code, false), op_code = 0] while data.length > FRAME_SIZE_LIMIT # 1048576
+				[frame << frame_data(data.slice!(0...FRAME_SIZE_LIMIT), op_code, false), op_code = 0] while data.length > FRAME_SIZE_LIMIT # 1048576
 				# frame << frame_data(data.slice!(0..1048576), op_code, false)
 				# data = 
 				# op_code = 0
@@ -125,14 +125,14 @@ module Plezi
 
 			if data.length < 125
 				frame << data.length.chr
-			elsif data.length.bit_length < 16					
+			elsif data.length.bit_length <= 16					
 				frame << 126.chr
 				frame << [data.length].pack('S>')
 			else
 				frame << 127.chr
 				frame << [data.length].pack('Q>')
 			end
-			frame.force_encoding(data.encoding)
+			# frame.force_encoding(data.encoding)
 			frame << data
 			frame.force_encoding('binary')
 			frame

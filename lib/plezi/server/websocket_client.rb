@@ -52,9 +52,14 @@ module Plezi
 		end
 		alias :close :disconnect
 
-		# sends data through the socket. a shortcut for ws_client.response <<
+		# Asynchronously sends data through the socket. a shortcut for ws_client.response <<
 		def << data
-			@response << data			
+			@response << data
+		end
+
+		# Synchronously sends data through the socket. a shortcut for ws_client.response <<
+		def send data
+			@response.send data
 		end
 
 		# Create a simple Websocket Client(!)

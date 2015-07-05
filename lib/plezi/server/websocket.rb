@@ -124,6 +124,7 @@ module Plezi
 					end
 					@parser_data[:step] = 0
 					@parser_stage += 1
+					review_message_size
 				end
 				if @parser_stage == 2 && @parser_data[:mask] == 1
 					@parser_data[:mask_key] = data.slice!(0,4)
@@ -187,6 +188,48 @@ module Plezi
 			@parser_data[:body].clear
 			@parser_data[:step] = 0
 		end
+		#reviews the message size and closes the connection if expected message size is over the allowed limit.
+		def review_message_size
+			if ( self.class.message_size_limit.to_i > 0 ) && ( ( @parser_data[:len] + @message.bytesize ) > self.class.message_size_limit.to_i )
+				Plezi.callback @connection, :disconnect
+				@message.clear
+				@parser_data[:step] = 0
+				@parser_data[:body].clear
+				@parser_stage = -1
+				return false
+			end
+			true
+		end
+
+		# Sets the message byte size limit for a Websocket message. Defaults to 0 (no limit)
+		#
+		# Although memory will be allocated for the latest TCP/IP frame,
+		# this allows the websocket to disconnect if the incoming expected message size exceeds the allowed maximum size.
+		#
+		# If the sessage size limit is exceeded, the disconnection will be immidiate as an attack will be assumed. The protocol's normal disconnect sequesnce will be discarded.
+		def self.message_size_limit=val
+			@message_size_limit = val
+		end
+		# Gets the message byte size limit for a Websocket message. Defaults to 0 (no limit)
+		def self.message_size_limit
+			@message_size_limit
+		end
+		message_size_limit = 0
+
+	end
+
+	# Sets the message byte size limit for a Websocket message. Defaults to 0 (no limit)
+	#
+	# Although memory will be allocated for the latest TCP/IP frame,
+	# this allows the websocket to disconnect if the incoming expected message size exceeds the allowed maximum size.
+	#
+	# If the sessage size limit is exceeded, the disconnection will be immidiate as an attack will be assumed. The protocol's normal disconnect sequesnce will be discarded.
+	def self.ws_message_size_limit=val
+		WSProtocol.message_size_limit = val
+	end
+	# Gets the message byte size limit for a Websocket message. Defaults to 0 (no limit)
+	def self.ws_message_size_limit
+		WSProtocol.message_size_limit
 	end
 end
 
