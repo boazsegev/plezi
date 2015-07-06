@@ -64,7 +64,7 @@ p
 {
     font-size: 1em;
     padding: 0 1em;
-    margin: 0.5em 0;		
+    margin: 0.5em 0;        
 }
 a
 {
@@ -96,8 +96,67 @@ pre
     background-color: #444;
     color: #ddd;
 }
+input[type=text]
+{
+    width: 60%;
+    display: inline-block;
+}
 
 </style>
+<script type="text/javascript">
+// Your websocket URI should be an absolute path. The following sets the base URI.
+var ws_uri = 'ws://' + window.location.hostname + (window.location.port == '' ? '' : (':' + window.location.port) );
+// remember to add the specific controller's path to your websocket URI.
+ws_uri += "/";
+// websocket variable.
+var websocket = NaN
+// count failed attempts
+var websocket_fail = 0
+
+function init_websocket()
+{
+    websocket = new WebSocket(ws_uri);
+    websocket.onopen = function(e) {
+        //restart fail count
+        websocket_fail = 0
+        // what do you want to do now?
+        var msg = document.createElement("li");
+        msg.innerHTML = "Connected.";
+        document.getElementById("output").appendChild(msg);
+    };
+
+    websocket.onclose = function(e) {
+        // what do you want to do now?
+        if(websocket_fail == 0) {
+            var msg = document.createElement("li");
+            msg.innerHTML = "Disconnected.";
+            document.getElementById("output").appendChild(msg);
+        };
+        // you probably want to reopen the websocket if it closes (unless the issue repeats).
+        if(websocket_fail <= 5) {websocket_fail += 1; init_websocket(); };
+    };
+    websocket.onerror = function(e) {
+        // what do you want to do now?
+    };
+    websocket.onmessage = function(e) {
+        // what do you want to do now?
+        console.log(e.data);
+        var msg = document.createElement("li");
+        msg.innerHTML = e.data;
+        document.getElementById("output").appendChild(msg);
+        // to use JSON, use:
+        // msg = JSON.parse(e.data); // remember to use JSON also in your Plezi controller.
+    };
+}
+window.addEventListener("load", init_websocket, false); 
+function send_text()
+{
+    var msg = document.getElementById("input").value;
+    document.getElementById("input").value = '';
+    websocket.send(msg);
+    return false;
+}
+</script>
 </head>
 <body>
     <h1>Welcome to  <a href="https://github.com/boazsegev/plezi">Plezi</a></h1>
@@ -125,5 +184,13 @@ pre
         </li>
     </ol>
     <p class="bold">Good Luck!</p>
+    <hr />
+    <form onsubmit='send_text(); return false;'>
+        <p>Broadcast test: <input type='text' id='input' /> <input type='submit' /> </p>
+        <ul id='output'>
+        </ul>
+    </form>
+    
+
 </div>
 </body>

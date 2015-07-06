@@ -98,18 +98,18 @@ class SampleController
 	# called before the protocol is swithed from HTTP to WebSockets.
 	#
 	# this allows setting headers, cookies and other data (such as authentication)
-	# prior to opening a WebSocket.
+	# prior to allowing a WebSocket to open.
 	#
 	# if the method returns false, the connection will be refused and the remaining routes will be attempted.
 	def pre_connect
-		false
+		# false
+		true
 	end
 
 	# called immediately after a WebSocket connection has been established.
-	# here we simply close the connection.
 	def on_connect
-		response.close
-		false
+		# response.close
+		# false
 	end
 
 	# called when new data is recieved
@@ -120,6 +120,7 @@ class SampleController
 	def on_message data
 		# broadcast sends an asynchronous message to all sibling instances, but not to self.
 		broadcast :_print_out, data
+		response << "You said: #{data}"
 	end
 
 	# called when a disconnect packet has been recieved or the connection has been cut
@@ -133,7 +134,7 @@ class SampleController
 	# BUT, broadcasted methods must be public (or the broadcast will quietly fail)... so we have to use
 	# the _underscore for this method.
 	def _print_out data
-		response << "Someone said #{data}"			
+		response << "Someone said: #{data}"			
 	end
 
 end
