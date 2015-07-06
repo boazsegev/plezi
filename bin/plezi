@@ -107,7 +107,6 @@ class AppTemplate
 		app_tree["public"]["assets"]["stylesheets"] ||= {}		
 		app_tree["public"]["assets"]["javascripts"] ||= {}		
 		app_tree["public"]["images"] ||= {}		
-		app_tree["public"]["images"]['plezi_gray.png'] ||= IO.read(::File.expand_path(File.join("..", "..", "resources" ,"plezi_gray.png"),  __FILE__))	
 
 	end
 

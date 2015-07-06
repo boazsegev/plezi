@@ -3,56 +3,62 @@
 
 <link href="https://fonts.googleapis.com/css?family=Architects+Daughter" rel="stylesheet" type="text/css">
 <style type="text/css">
-h1
-{
-    font-family: 'Indie Flower', cursive;
-}
-h2, h3
-{
-    font-family: 'Shadows Into Light', cursive;
-}
-h2:before {
-  content: "//";
-  color: #9ddcff;
-  padding-right: 0.3em;
-  margin-left: -1.5em;
-}
-h3:before {
-  content: "///";
-  color: #9ddcff;
-  padding-right: 0.3em;
-  margin-left: -2em;
-}
-
+/*
+med-blue: #44518E
+dark-gray: #424A70
+blue: #1B2864
+light-blue: #818ECE
+light-gray: #99A3CE
+*/
 body, html
 {
-    background-color: #eee;
+    background-color: #99A3CE;
     padding: 0; margin: 0;
     width: 100%;
     font-size: 1em;
 }
-h1, h2
-{
-    /* background-image: url(/images/plezi_gray.png);
-    background-repeat: no-repeat;
-    background-size: 88% auto;
-    background-attachment: fixed;
-    */
-    background-image: url(color_graphy.png);
-    background-position: center top;
-    background-origin: inherit;
-
-}
 
 h1
 {
-    background-color: #ddd;
-    color: #00a;
+    font-family: 'Indie Flower', cursive;
+    background-color: #1B2864;
+    color: #99A3CE;
     text-align: center;
-    border-bottom: 1px solid #000;
+    border-bottom: 1px solid #424A70;
     margin: 0 0 1em 0;
     padding: 0.5em 0;
     width: 100%;
+
+}
+h2, h3
+{
+    background-color: #44518E;
+    color: #99A3CE;
+    text-align: left;
+    margin: 0 0 1em 0;
+    padding: 0.5em 5%;
+    border-radius: 20px;
+    font-family: 'Shadows Into Light', cursive;
+}
+h2:before {
+  content: "|||";
+  color: #424A70;
+  padding-right: 0.3em;
+  margin-left: -1.5em;
+}
+h3:before {
+  content: "|||||";
+  color: #424A70;
+  padding-right: 0.3em;
+  margin-left: -2em;
+}
+h1 a, h2 a, h3 a
+{
+    color: #EBCD86;
+}
+h1 a:hover, h2 a:hover, h3 a:hover
+{
+    color: #EBD7A6;
 }
 p
 {
@@ -62,12 +68,12 @@ p
 }
 a
 {
-    color: #a04;
+    color: #D0AC54;
     text-decoration: none;
 }
 a:hover
 {
-    color: #70f;
+    color: #927121;
     text-decoration: underline;
 }
 #wrapper
@@ -79,15 +85,7 @@ a:hover
     min-height: 50%;
     color: #007;
 }
-#wrapper h2
-{
-    background-color: #ddd;
-    color: #008;
-    text-align: left;
-    margin: 0 0 1em 0;
-    padding: 0.5em 5%;
-    border-radius: 20px;
-}
+
 #wrapper p{ padding: 0 2%;}
 .bold { font-weight: bold; }
 #wrapper ol li{ padding: 0 2%;}
@@ -104,7 +102,7 @@ pre
 <body>
     <h1>Welcome to  <a href="https://github.com/boazsegev/plezi">Plezi</a></h1>
     <div id="wrapper">
-        <h2>Congratulations, appname is running - What's next?</h2>
+        <h2>Congratulations, <a href='/'>appname</a> is running - What's next?</h2>
         <p><span class="bold">Congratulations</span>, you're now running appname and it has so much potential!</p>
         <p>appname started out <a href="https://github.com/boazsegev/plezi">Plezi</a> and it's your quest to feed it your code and make sure appname grows strong and happy.</p>
         <p>You're the master of this quest, and your next steps might include:</p>
