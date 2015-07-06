@@ -12,12 +12,11 @@
 if defined? Sequel
   
   if defined? PG && ENV['DYNO']
-      # A default Postgres connection for Heroku:
-      DB = Sequel.connect(ENV['HEROKU_POSTGRESQL_RED_URL'])
-    else
-      # use db/config.yaml to connect to database
-      DB = Sequel.connect( YAML::load(  File.open( Root.join('db', 'config.yml').to_s )  )[ ENV["ENV"].to_s ] )
-    end
+    # A default Postgres connection for Heroku:
+    DB = Sequel.connect(ENV['HEROKU_POSTGRESQL_RED_URL'])
+  else
+    # use db/config.yaml to connect to database
+    DB = Sequel.connect( YAML::load(  File.open( Root.join('db', 'config.yml').to_s )  )[ ENV["ENV"].to_s ] )
   end
   if defined? Rake
 ##########
