@@ -180,7 +180,7 @@ end
 # could also be used to define methods with special formatting, such as "humans.txt",
 # until a more refined way to deal with formatting will be implemented.
 def def_special_method name, obj=self, &block
-	obj.instance_eval { define_method name.to_s.to_sym, &block }
+	obj.instance_exec { define_method name.to_s.to_sym, &block }
 end
 
 
