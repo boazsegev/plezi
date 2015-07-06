@@ -14,6 +14,9 @@ Change log v.0.9.0
 
    To update your application **please rename the error code files and move them to the app template's folder** (`appname/app/views`).
 
+- Updated the template's welcome page and database configuration support. Existing applications shouldn't be effected.
+
+
 **feature**: auto-pinging can now be customized for different hosting-server timeouts and it can also be disabled using the `Plezi.ping_interval` setter and getter.
 
 **feature**: The Plezi framework can now impose limits on Websocket message sizes (even messages split across a number of frames) by using the `Plezi.ws_message_size_limit=` method.
