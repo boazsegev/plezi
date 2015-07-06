@@ -24,31 +24,41 @@ h1
     background-color: #1B2864;
     color: #99A3CE;
     text-align: center;
-    border-bottom: 1px solid #424A70;
+    border-bottom: 5px solid #424A70;
     margin: 0 0 1em 0;
     padding: 0.5em 0;
     width: 100%;
 
 }
-h2, h3
+h2
 {
     background-color: #44518E;
-    color: #99A3CE;
+    color: #C6CCE7;
     text-align: left;
     margin: 0 0 1em 0;
     padding: 0.5em 5%;
-    border-radius: 20px;
+    border-radius: 20px 20px 0 0;
     font-family: 'Shadows Into Light', cursive;
+}
+h3
+{
+    font-family: 'Shadows Into Light', cursive;    
+    background-color: #44518E;
+    color: #C6CCE7;
+    text-align: left;
+    margin: 0 0 1em 0;
+    padding: 0.5em 5%;
+    border-radius: 1em 1em 0 0;
 }
 h2:before {
   content: "|||";
-  color: #424A70;
+  color: #99A3CE;
   padding-right: 0.3em;
   margin-left: -1.5em;
 }
 h3:before {
   content: "|||||";
-  color: #424A70;
+  color: #99A3CE;
   padding-right: 0.3em;
   margin-left: -2em;
 }
@@ -184,9 +194,10 @@ function send_text()
         </li>
     </ol>
     <p class="bold">Good Luck!</p>
-    <hr />
+    <h3> Did you try our websocket broadcast? </h3>
+    <p>Your appname app can send <span class="bold">WebSocket</span> broadcasts (and unicasts). Why not try them out? You can even try them across multiple windows.</p>
     <form onsubmit='send_text(); return false;'>
-        <p>Broadcast test: <input type='text' id='input' /> <input type='submit' /> </p>
+        <p>Broadcast: <input type='text' id='input' /> <input type='submit' /> </p>
         <ul id='output'>
         </ul>
     </form>
