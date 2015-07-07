@@ -1,7 +1,5 @@
 <!DOCTYPE html><head><title>appname - Feed Me!</title>
 <link href='http://fonts.googleapis.com/css?family=Shadows+Into+Light|Architects+Daughter' rel='stylesheet' type='text/css'>
-
-<link href="https://fonts.googleapis.com/css?family=Architects+Daughter" rel="stylesheet" type="text/css">
 <style type="text/css">
 /*
 med-blue: #44518E
@@ -20,15 +18,14 @@ body, html
 
 h1
 {
-    font-family: 'Indie Flower', cursive;
+    font-family: 'Shadows Into Light', cursive;
     background-color: #1B2864;
     color: #99A3CE;
     text-align: center;
     border-bottom: 4px solid #424A70;
     margin: 0 0 1em 0;
-    padding: 0.5em 0;
+    padding: 0.4em 0;
     width: 100%;
-
 }
 h2
 {
@@ -38,12 +35,13 @@ h2
     margin: 0 0 1em 0;
     padding: 0.5em 5%;
     border-radius: 20px 20px 0 0;
-    font-family: 'Shadows Into Light', cursive;
+    font-family: 'Architects Daughter', cursive;
     border-bottom: 3px solid #424A70;
+    font-size: 1.2em;
 }
 h3
 {
-    font-family: 'Shadows Into Light', cursive;    
+    font-family: 'Architects Daughter', cursive;    
     background-color: #44518E;
     color: #C6CCE7;
     text-align: left;
@@ -51,18 +49,19 @@ h3
     padding: 0.5em 5%;
     border-radius: 1em 1em 0 0;
     border-bottom: 2px solid #424A70;
+    font-size: 1.1em;
 }
 h2:before {
   content: "|||";
   color: #99A3CE;
   padding-right: 0.3em;
-  margin-left: -1.5em;
+  margin-left: -0.5em;
 }
 h3:before {
   content: "|||||";
   color: #99A3CE;
   padding-right: 0.3em;
-  margin-left: -2em;
+  margin-left: -1em;
 }
 h1 a, h2 a, h3 a
 {
@@ -111,9 +110,52 @@ pre
 input[type=text]
 {
     width: 60%;
+    font-size: 1.1em;
     display: inline-block;
+    background-color: #fff;
+    color: #424A70;
+    border-radius: 0.5em;
+    border: 1px solid #424A70;
+    outline: none;
+    box-sizing: border-box;
+    padding: 0 1em;
+}
+input[type=submit]
+{
+    font-size: 1.1em;
+    color: #424A70;
+    border-radius: 0.5em;
+    box-sizing: border-box;
+    border: 1px solid #424A70;
+    background-color: #fff;
+    padding: 0 0.4em;
+}
+input[type=submit]:hover
+{
+    background-color: #818ECE; color:#fff;
+}
+input[type=submit]:active
+{
+    background-color: #1B2864; color:#fff;
 }
 
+#monitor
+{
+    margin: 0 5%; padding: 0.5em 3em;
+    box-sizing: border-box;
+    width: 90%;
+    font-size: 1.1em;
+    display: inline-block;
+    background-color: #C6CCE7;
+    color: #424A70;
+    border-radius: 0.5em;
+    border: 1px solid #424A70;    
+}
+#monitor p
+{
+    text-align: center;
+}
+.system_message { color: #1B2864; font-style: italic;}
 </style>
 <script type="text/javascript">
 // Your websocket URI should be an absolute path. The following sets the base URI.
@@ -133,6 +175,7 @@ function init_websocket()
         websocket_fail = 0
         // what do you want to do now?
         var msg = document.createElement("li");
+        msg.className = 'system_message'
         msg.innerHTML = "Connected.";
         document.getElementById("output").appendChild(msg);
     };
@@ -141,6 +184,7 @@ function init_websocket()
         // what do you want to do now?
         if(websocket_fail == 0) {
             var msg = document.createElement("li");
+            msg.className = 'system_message'
             msg.innerHTML = "Disconnected.";
             document.getElementById("output").appendChild(msg);
         };
@@ -198,12 +242,10 @@ function send_text()
     <p class="bold">Good Luck!</p>
     <h3> Did you try our websocket broadcast? </h3>
     <p>Your appname app can send <span class="bold">WebSocket</span> broadcasts (and unicasts). Why not try them out? You can even try them across multiple windows.</p>
-    <form onsubmit='send_text(); return false;'>
-        <p>Broadcast: <input type='text' id='input' /> <input type='submit' /> </p>
+    <form onsubmit='send_text(); return false;' id='monitor'>
+        <p><input type='text' id='input' placeholder='Your message' /> <input type='submit'  value='Broadcast'/> </p>
         <ul id='output'>
         </ul>
     </form>
-    
-
 </div>
 </body>
