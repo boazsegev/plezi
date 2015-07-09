@@ -2,6 +2,15 @@
 
 ***
 
+Change log v.0.9.1
+
+**changed**: Template Gemfile now enforces the Plezi version. Also, the template's demo page now demonstrates WebSocket broadcasting.
+
+Minor updates.
+
+
+***
+
 Change log v.0.9.0
 
 **changes** (might break code):
