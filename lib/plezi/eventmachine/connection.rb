@@ -178,9 +178,9 @@ module Plezi
 			def _send data
 				@active_time += 7200
 				len = data.bytesize
-				act = @socket.send data, 0
-				while len > act
-					act += @socket.send data.byteslice(act..-1) , 0
+				i = act = @socket.send data, 0
+				while len > act && i!=0
+					act += (i = @socket.send data.byteslice(act..-1) , 0)
 				end
 				touch
 			end
