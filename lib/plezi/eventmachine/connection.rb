@@ -121,7 +121,7 @@ module Plezi
 
 			# returns true if the service is disconnected
 			def disconnected?
-				(@socket.closed? || socket.stat.mode == 0140222) rescue true # if mode is read only, it's the same as closed.
+				(@socket.closed? || socket.stat.mode != 0140666) rescue true # if mode is read only, it's the same as closed.
 			end
 
 			# returns true if the socket has content to be read.
