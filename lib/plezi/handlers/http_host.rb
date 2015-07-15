@@ -33,57 +33,27 @@ module Plezi
 		#
 		# since hosts are required to handle the requests (send 404 errors if resources arrn't found),
 		# this method always returns true.
-		def on_request request
+		def on_request request, response
 			begin
 				# render any assets?
-				return true if render_assets request
+				return true if render_assets request, response
 
 				# send static file, if exists and root is set.
-				return true if send_static_file request
+				return true if send_static_file request, response
 
 				# return if a route answered the request
-				routes.each {|r| return true if r.on_request(request) }
+				routes.each {|r| ret = r.on_request(request, response); return ret if ret}
 
 				# send folder listing if root is set, directory listing is set and folder exists
 
 				#to-do
 
 				#return error code or 404 not found
-				send_by_code request, 404			
+				send_by_code request, response, 404			
 			rescue Exception => e
 				# return 500 internal server error.
-				Plezi.error e
-				send_by_code request, 500
-			end
-			true
-		end
-
-		# Dresses up as a Rack app (If you don't like WebSockets, it's a reasonable aaproach).
-		def call request
-			request = Rack::Request.new request if defined? Rack
-			ret = nil
-			begin
-				# render any assets?
-				ret = render_assets request
-				return ret if ret
-
-				# send static file, if exists and root is set.
-				ret = send_static_file request
-				return ret if ret
-
-				# return if a route answered the request
-				routes.each {|r| ret = r.call(request); return ret if ret }
-
-				# send folder listing if root is set, directory listing is set and folder exists
-
-				#to-do
-
-				#return error code or 404 not found
-				return send_by_code request, 404			
-			rescue Exception => e
-				# return 500 internal server error.
-				Plezi.error e
-				return send_by_code request, 500
+				GReactor.error e
+				send_by_code request, response, 500
 			end
 			true
 		end
@@ -93,21 +63,21 @@ module Plezi
 		## (error codes and static files)
 
 		# sends a response for an error code, rendering the relevent file (if exists).
-		def send_by_code request, code, headers = {}
+		def send_by_code request, response, code, headers = {}
 			begin
 				@base_code_path ||= params[:templates] || File.expand_path('.')
 				if defined?(::Slim) && Plezi.file_exists?(fn = File.join(@base_code_path, "#{code}.html.slim"))
 					Plezi.cache_data fn, Slim::Template.new( fn ) unless Plezi.cached? fn
-					return send_raw_data request, Plezi.get_cached( fn ).render( self, request: request ), 'text/html', code, headers
+					return send_raw_data request, response, Plezi.get_cached( fn ).render( self, request: request ), 'text/html', code, headers
 				elsif defined?(::Haml) && Plezi.file_exists?(fn = File.join(@base_code_path, "#{code}.html.haml"))
 					Plezi.cache_data fn, Haml::Engine.new( IO.read( fn ) ) unless Plezi.cached? fn
-					return send_raw_data request, Plezi.get_cached( File.join(@base_code_path, "#{code}.html.haml") ).render( self ), 'text/html', code, headers
+					return send_raw_data request, response, Plezi.get_cached( File.join(@base_code_path, "#{code}.html.haml") ).render( self ), 'text/html', code, headers
 				elsif defined?(::ERB) && Plezi.file_exists?(fn = File.join(@base_code_path, "#{code}.html.erb"))
-					return send_raw_data request, ERB.new( Plezi.load_file( fn ) ).result(binding), 'text/html', code, headers
+					return send_raw_data request, response, ERB.new( Plezi.load_file( fn ) ).result(binding), 'text/html', code, headers
 				elsif Plezi.file_exists?(fn = File.join(@base_code_path, "#{code}.html"))
-					return send_file(request, fn, code, headers)
+					return send_file(request, response, fn, code, headers)
 				end
-				return true if send_raw_data(request, HTTPResponse::STATUS_CODES[code], 'text/plain', code, headers)
+				return true if send_raw_data(request, response, HTTPResponse::STATUS_CODES[code], 'text/plain', code, headers)
 			rescue Exception => e
 				Plezi.error e
 			end
@@ -117,32 +87,30 @@ module Plezi
 		# attempts to send a static file by the request path (using `send_file` and `send_raw_data`).
 		#
 		# returns true if data was sent.
-		def send_static_file request
+		def send_static_file request, response
 			return false unless params[:root]
 			file_requested = request[:path].to_s.split('/')
 			unless file_requested.include? '..'
 				file_requested.shift
 				file_requested = File.join(params[:root], *file_requested)
-				return true if send_file request, file_requested
-				return send_file request, File.join(file_requested, params[:index_file])
+				return true if send_file request, response, file_requested
+				return send_file request, response, File.join(file_requested, params[:index_file])
 			end
 			false
 		end
 
 		# sends a file/cacheed data if it exists. otherwise returns false.
-		def send_file request, filename, status_code = 200, headers = {}
+		def send_file request, response, filename, status_code = 200, headers = {}
 			if Plezi.file_exists?(filename) && !::File.directory?(filename)
-				return send_raw_data request, Plezi.load_file(filename), MimeTypeHelper::MIME_DICTIONARY[::File.extname(filename)], status_code, headers
+				return send_raw_data request, response, Plezi.load_file(filename), MimeTypeHelper::MIME_DICTIONARY[::File.extname(filename)], status_code, headers
 			end
 			return false
 		end
 		# sends raw data through the connection. always returns true (data send).
-		def send_raw_data request, data, mime, status_code = 200, headers = {}
-			response = HTTPResponse.new request, status_code, headers
+		def send_raw_data request, response, data, mime, status_code = 200, headers = {}
 			response['cache-control'] = 'public, max-age=86400'					
 			response << data
 			response['content-length'] = data.bytesize
-			response.finish
 			true
 		end
 
@@ -150,7 +118,7 @@ module Plezi
 		## asset rendering and responses
 
 		# renders assets, if necessary, and places the rendered result in the cache and in the public folder.
-		def render_assets request
+		def render_assets request, response
 			# contine only if assets are defined and called for
 			return false unless @params[:assets] && request.path.match(/^#{params[:assets_public]}\/.+/)
 			# review callback, if defined
@@ -169,7 +137,7 @@ module Plezi
 			# send the file if it exists (no render needed)
 			if File.exists?(source_file)
 				data = Plezi.cache_needs_update?(source_file) ? Plezi.save_file(target_file, Plezi.reload_file(source_file), params[:save_assets]) : Plezi.load_file(source_file)
-				return (data ? send_raw_data(request, data, MimeTypeHelper::MIME_DICTIONARY[::File.extname(source_file)]) : false)
+				return (data ? send_raw_data(request, response, data, MimeTypeHelper::MIME_DICTIONARY[::File.extname(source_file)]) : false)
 			end
 
 			# render supported assets
@@ -187,7 +155,7 @@ module Plezi
 					Plezi.save_file (target_file + ".map"), map, params[:save_assets]
 				end
 				# try to send the cached css file which started the request.
-				return send_file request, target_file
+				return send_file request, response, target_file
 			when /\.js$/
 				coffee = source_file.gsub /js$/i, 'coffee'
 				return false unless Plezi.file_exists?(coffee)
@@ -198,7 +166,7 @@ module Plezi
 					Plezi.save_file target_file, CoffeeScript.compile(IO.read coffee), params[:save_assets]
 				end
 				# try to send the cached js file which started the request.
-				return send_file request, target_file
+				return send_file request, response, target_file
 			end
 			false
 		end

@@ -13,18 +13,16 @@ module Plezi
 		attr_reader :params
 
 		# lets the route answer the request. returns false if no response has been sent.
-		def on_request request
+		def on_request request, response
 			fill_parameters = match request.path
 			return false unless fill_parameters
 			old_params = request.params.dup
 			fill_parameters.each {|k,v| HTTP.add_param_to_hash k, v, request.params }
 			ret = false
-			response = HTTPResponse.new request
 			if controller
 				ret = controller.new(request, response, params)._route_path_to_methods_and_set_the_response_
 			elsif proc
 				ret = proc.call(request, response)
-				# response << ret if ret.is_a?(String)
 			elsif controller == false
 				request.path = path.match(request.path).to_a.last.to_s
 				return false
@@ -33,26 +31,7 @@ module Plezi
 				request.params.replace old_params unless fill_parameters.empty?
 				return false
 			end
-			response.try_finish
 			return ret
-		end
-
-		# handles Rack requests (dresses up as Rack).
-		def call request
-			fill_parameters = match request.path_info
-			return false unless fill_parameters
-			fill_parameters.each {|k,v| HTTP.add_param_to_hash k, v, request.params }
-			response = HTTPResponse.new request
-			if controller
-				ret = controller.new(request, response, params)._route_path_to_methods_and_set_the_response_
-				return response if ret
-			elsif proc
-				ret = proc.call(request, response)
-				return response if ret
-			elsif controller == false
-				request.path_info = path.match(request.path_info).to_a.last
-			end
-			return false
 		end
 
 		# the initialize method accepts a Regexp or a String and creates the path object.
@@ -339,15 +318,12 @@ module Plezi
 					#check request is valid and call requested method
 					ret = requested_method
 					return false unless self.class.available_routing_methods.include?(ret)
-					return false unless (ret = self.method(ret).call)
+					ret = self.method(ret).call
+					return false unless ret
 					#run :after filter
 					return false if self.class.available_routing_methods.include?(:after) && self.after == false
 					# review returned type for adding String to response
-					if ret.is_a?(String)
-						response << ret
-						response['content-length'] = ret.bytesize if response.body.empty? && !response.headers_sent?
-					end
-					return true
+					return ret
 				end
 				# a callback that resets the class router whenever a method (a potential route) is added
 				def self.method_added(id)

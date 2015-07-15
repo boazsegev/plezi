@@ -6,13 +6,13 @@
 
 Find more info on [Plezi's framework, web server and websocket documentation](http://www.rubydoc.info/gems/plezi/)
 
-## About the Plezi framework \ server
+## About the Plezi framework
 
 Plezi is an easy to use Ruby Websocket Framework, with full RESTful routing support and HTTP streaming support. It's name comes from the word "fun" in Haitian, since Plezi is really fun to work with and it keeps our code clean and streamlined.
 
 Plezi works as an asynchronous multi-threaded Ruby alternative to a Rack/Rails/Sintra/Faye/EM-Websockets combo. It's also great as an alternative to socket.io, allowing for both websockets and long pulling.
 
-Plezi contains an object-oriented server, divided into parts that can be changed/updated and removed easily and dynamically. This allows - much like Node.js - native WebSocket support (and, if you would like to write your own Protocol or Handler, native SMPT or any other custom protocol you might wish to implement).
+Plezi runs over the [GRHttp server](https://github.com/boazsegev/HTTP-WS-GR), which is a pure Ruby HTTP and Websocket Generic Server build using [GReactor](https://github.com/boazsegev/GReactor) - a multi-threaded pure ruby alternative to EventMachine with basic process forking support.
 
 You can follow our [tutorial to write your first Plezi Chatroom](http://boazsegev.github.io/plezi/websockets.html) - but it's better to start with this readme and explore the WebSockets example given here.
 

@@ -43,25 +43,14 @@ module Plezi
 		end
 		
 		# handles requests send by the HTTP Protocol (HTTPRequest objects)
-		def on_request request
-			request.service.timeout = 300
+		def call request, response
 			if request[:host_name] && hosts[request[:host_name].to_s.downcase]
-				hosts[request[:host_name].downcase].on_request request
+				return hosts[request[:host_name].downcase].on_request request, response
 			elsif hosts[:default]
-				hosts[:default].on_request request
+				return hosts[:default].on_request request, response
 			else
-				HTTPResponse.new( request, 404, {'content-type' => 'text/plain', 'content-length' => '15'}, ['host not found.']).finish
-			end
-			request.service.timeout = 5
-		end
-		# handles requests send by Rack - dresses up as Middleware, for Rack (if you're don't like WebSockets, go ahead...)
-		def call env
-			if env['HOST'] && hosts[env['HOST'].downcase]
-				hosts[env['HOST'].downcase].call env
-			elsif hosts[:default]
-				hosts[:default].call env
-			else
-				[404, {'content-type' => 'text/plain', 'content-length' => '15'}, ['host not found.'] ]
+				response.clear && (response.status=404) && (response['content-type']  = 'text/plain') && ( response.body << 'host not found.')
+				return true
 			end
 		end
 	end
