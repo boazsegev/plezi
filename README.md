@@ -1,3 +1,9 @@
+# This Branch is a major update and isn't finished...
+
+I just started moving the Plezi framework to the new GRHttp server. By splitting the concerns, it is easier to optimise and test each component.
+
+At the moment, this revised version is broken
+
 # Plezi, The Rack Free Ruby framework for realtime web-apps
 [![Gem Version](https://badge.fury.io/rb/plezi.svg)](http://badge.fury.io/rb/plezi)
 [![Inline docs](http://inch-ci.org/github/boazsegev/plezi.svg?branch=master)](http://inch-ci.org/github/boazsegev/plezi)
