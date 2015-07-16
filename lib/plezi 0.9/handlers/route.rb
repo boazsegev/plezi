@@ -20,7 +20,7 @@ module Plezi
 			fill_parameters.each {|k,v| HTTP.add_param_to_hash k, v, request.params }
 			ret = false
 			if controller
-				ret = controller.new(request, response)._route_path_to_methods_and_set_the_response_
+				ret = controller.new(request, response, params)._route_path_to_methods_and_set_the_response_
 			elsif proc
 				ret = proc.call(request, response)
 			elsif controller == false
@@ -101,7 +101,7 @@ module Plezi
 				# convert dest.id and dest[:id] to their actual :id value.
 				dest = {id: (dest.id rescue false) || (raise TypeError, "Expecting a Symbol, Hash, String, Numeric or an object that answers to obj[:id] or obj.id") }
 			end
-			dest.default_proc = Plezi::Base::Helpers::HASH_SYM_PROC
+			dest.default_proc = Plezi::Helpers::HASH_SYM_PROC
 
 			url = '/'
 
@@ -263,15 +263,17 @@ module Plezi
 					new_class_name
 				end
 
-				def initialize request, response
-					@request = request
-					@params = request.params
-					@flash = response.flash
-					@host_params = request.io[:params]
+				def initialize request, response, host_params
+					@request, @params, @flash, @host_params = request, request.params, response.flash, host_params
 					@response = response
-					@cookies = request.cookies
 					# @response["content-type"] ||= ::Plezi.default_content_type
+
 					@_accepts_broadcast = false
+
+					# create magical cookies
+					@cookies = request.cookies
+					@cookies.set_controller self
+
 					super()
 				end
 
