@@ -17,7 +17,7 @@ module Plezi
 			fill_parameters = match request.path
 			return false unless fill_parameters
 			old_params = request.params.dup
-			fill_parameters.each {|k,v| HTTP.add_param_to_hash k, v, request.params }
+			fill_parameters.each {|k,v| GRHttp::HTTP.add_param_to_hash k, v, request.params }
 			ret = false
 			if controller
 				ret = controller.new(request, response)._route_path_to_methods_and_set_the_response_
@@ -112,7 +112,7 @@ module Plezi
 				param_name = param_name[1].to_sym if param_name
 
 				if param_name && dest[param_name]
-					url << HTTP.encode(dest.delete(param_name).to_s, :url)
+					url << GRHttp::HTTP.encode(dest.delete(param_name).to_s, :url)
 					url << '/' 
 				elsif !param_name
 					url << sec
@@ -125,7 +125,7 @@ module Plezi
 			end
 			unless dest.empty?
 				add = '?'
-				dest.each {|k, v| url << "#{add}#{HTTP.encode(k.to_s, :url)}=#{HTTP.encode(v.to_s, :url)}"; add = '&'}
+				dest.each {|k, v| url << "#{add}#{GRHttp::HTTP.encode(k.to_s, :url)}=#{GRHttp::HTTP.encode(v.to_s, :url)}"; add = '&'}
 			end
 			url
 
@@ -229,7 +229,7 @@ module Plezi
 			# m = nil
 			# unless @fill_parameters.values.include?("format")
 			# 	if (m = path.match /([^\.]*)\.([^\.\/]+)$/)
-			# 		HTTP.add_param_to_hash 'format', m[2], hash
+			# 		GRHttp::HTTP.add_param_to_hash 'format', m[2], hash
 			# 		path = m[1]
 			# 	end
 			# end
@@ -259,9 +259,9 @@ module Plezi
 			controller.instance_exec(container) {|r| include Plezi::ControllerMagic; set_pl_route r;}
 			ret = Class.new(controller) do
 
-				def name
-					new_class_name
-				end
+				# def name
+				# 	new_class_name
+				# end
 
 				def initialize request, response
 					@request = request
@@ -283,28 +283,33 @@ module Plezi
 				# (with a protocol instance of WSProtocol and an instance of the Controller class set as a handler)
 				def pre_connect
 					# make sure this is a websocket controller
-					return false unless self.class.public_instance_methods.include?(:on_message)
+					return false unless self.class.available_routing_methods.include?(:on_message)
 					# call the controller's original method, if exists, and check connection.
 					return false if (defined?(super) && !super)
 					# finish if the response was sent
 					return true if response.headers_sent?
 					# complete handshake
-					return false unless WSProtocol.new( request.service, request.service.params).http_handshake request, response, self
-					# set up controller as WebSocket handler
-					@response = WSResponse.new request
-					# create the redis connection (in case this in the first instance of this class)
-					self.class.redis_connection
+					return true
+				end
+				# handles websocket opening.
+				def on_open ws
 					# set broadcasts and return true
 					@_accepts_broadcast = true
+					@response = ws
+					ws.autopong = 45 ###FIX THIS
+					# create the redis connection (in case this in the first instance of this class)
+					self.class.redis_connection
+					super() if defined?(super)
 				end
-
-
+				# def on_message ws
+				# 	super(ws.data) if defined?(super)
+				# end
 				# WebSockets.
 				#
 				# stops broadcasts from being called on closed sockets that havn't been collected by the garbage collector.
-				def on_disconnect
+				def on_close ws
 					@_accepts_broadcast = false
-					super if defined? super
+					super() if defined? super
 				end
 
 				# Inner Routing

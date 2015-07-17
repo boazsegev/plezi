@@ -140,29 +140,14 @@ module Plezi
 			#
 			def send_data data, options = {}
 				raise 'Cannot use "send_data" after headers were sent' if response.headers_sent?
-				# write data to response object
+				Plezi.warn 'HTTP response buffer is cleared by `#send_data`' if response.body && response.body.any? && response.body.clear
 				response << data
 
 				# set headers
-				content_disposition = 'attachment'
+				content_disposition = options[:inline] ? 'inline' : 'attachment'
+				content_disposition << "; filename=#{options[:filename]}" if options[:filename]
 
-				options[:type] ||= MimeTypeHelper::MIME_DICTIONARY[::File.extname(options[:filename])] if options[:filename]
-
-				if options[:type]
-					response['content-type'] = options[:type]
-					options.delete :type
-				end
-				if options[:inline]
-					content_disposition = 'inline'
-					options.delete :inline
-				end
-				if options[:attachment]
-					options.delete :attachment
-				end
-				if options[:filename]
-					content_disposition << "; filename=#{options[:filename]}"
-					options.delete :filename
-				end
+				response['content-type'] = options[:type] ||= MimeTypeHelper::MIME_DICTIONARY[::File.extname(options[:filename])] if options[:filename]
 				response['content-length'] = data.bytesize rescue true
 				response['content-disposition'] = content_disposition
 				response.finish
@@ -216,7 +201,7 @@ module Plezi
 
 			# returns the initial method called (or about to be called) by the router for the HTTP request.
 			#
-			# this is can be very useful within the before / after filters:
+			# this can be very useful within the before / after filters:
 			#   def before
 			#     return false unless "check credentials" && [:save, :update, :delete].include?(requested_method)
 			#
@@ -225,7 +210,7 @@ module Plezi
 			# (which is the last method called before the protocol is switched from HTTP to WebSockets).
 			def requested_method
 				# respond to websocket special case
-				return :pre_connect if request['upgrade'] && request['upgrade'].to_s.downcase == 'websocket' &&  request['connection'].to_s.downcase == 'upgrade'
+				return :pre_connect if request.upgrade?
 				# respond to save 'new' special case
 				return :save if request.request_method.match(/POST|PUT|PATCH/) && (params[:id].nil? || params[:id] == 'new')
 				# set DELETE method if simulated
@@ -333,12 +318,12 @@ module Plezi
 			# lists the available methods that will be exposed to HTTP requests
 			def available_public_methods
 				# set class global to improve performance while checking for supported methods
-				@available_public_methods ||= (available_routing_methods - [:before, :after, :save, :show, :update, :delete, :initialize, :on_message, :pre_connect, :on_connect, :on_disconnect]).to_set
+				@available_public_methods ||= (available_routing_methods - [:before, :after, :save, :show, :update, :delete, :initialize, :on_message, :pre_connect, :on_open, :on_close]).to_set
 			end
 
 			# lists the available methods that will be exposed to the HTTP router
 			def available_routing_methods
-				@available_routing_methods ||= ( ( (public_instance_methods - Object.public_instance_methods) - Plezi::ControllerMagic::InstanceMethods.instance_methods).delete_if {|m| m.to_s[0] == '_'}).to_set
+				@available_routing_methods ||= ( ( (public_instance_methods(false) - Object.public_instance_methods) - Plezi::ControllerMagic::InstanceMethods.instance_methods).delete_if {|m| m.to_s[0] == '_'}).to_set
 			end
 
 			# resets this controller's router, to allow for dynamic changes
@@ -413,8 +398,9 @@ module Plezi
 				return false unless defined?(Redis) && ENV['PL_REDIS_URL']
 				return Plezi.get_cached(self.superclass.name + '_b') if Plezi.cached?(self.superclass.name + '_b')
 				@@redis_uri ||= URI.parse(ENV['PL_REDIS_URL'])
-				Plezi.cache_data self.superclass.name + '_b', Redis.new(host: @@redis_uri.host, port: @@redis_uri.port, password: @@redis_uri.password)
-				raise "Redis connction failed for: #{ENV['PL_REDIS_URL']}" unless Plezi.cached?(self.superclass.name + '_b')
+				b = nil
+				Plezi.cache_data self.superclass.name + '_b', (b = Redis.new(host: @@redis_uri.host, port: @@redis_uri.port, password: @@redis_uri.password) )
+				raise "Redis connction failed for: #{ENV['PL_REDIS_URL']}" unless b
 				t = Thread.new do
 					begin
 						Redis.new(host: @@redis_uri.host, port: @@redis_uri.port, password: @@redis_uri.password).subscribe(redis_channel_name) do |on|
@@ -430,7 +416,7 @@ module Plezi
 					end
 				end
 				Plezi.cache_data self.superclass.name + '_t', t
-				Plezi.get_cached(self.superclass.name + '_b')
+				b
 			end
 
 			# returns a Redis channel name for this controller.
