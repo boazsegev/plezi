@@ -49,25 +49,10 @@ module Plezi
 			# This UUID is also used to make sure Radis broadcasts don't triger the
 			# boadcasting object's event.
 			def uuid
-				@uuid ||= SecureRandom.uuid
+				return @response.uuid if @response.is_a?(GRHttp::WSEvent)
+				nil
 			end
 			alias :unicast_id :uuid
-
-			# checks whether this instance accepts broadcasts (WebSocket instances).
-			def accepts_broadcast?
-				@_accepts_broadcast
-			end
-			# sets the controller to refuse "broadcasts".
-			#
-			# The controller will also refuse any messages directed at it using the `unicast` method.
-			#
-			# This allows some websocket connections to isolate themselves even before they are fully disconnected.
-			#
-			# call this method once it is clear the websocket connection should be terminated.
-			def refuse_broadcasts
-				@_accepts_broadcast = false
-				self
-			end
 
 			# this method does two things.
 			#
@@ -323,7 +308,7 @@ module Plezi
 
 			# lists the available methods that will be exposed to the HTTP router
 			def available_routing_methods
-				@available_routing_methods ||= ( ( (public_instance_methods(false) - Object.public_instance_methods) - Plezi::ControllerMagic::InstanceMethods.instance_methods).delete_if {|m| m.to_s[0] == '_'}).to_set
+				@available_routing_methods ||= ( ( (public_instance_methods - Class.public_instance_methods) - Plezi::ControllerMagic::InstanceMethods.instance_methods).delete_if {|m| m.to_s[0] == '_'}).to_set
 			end
 
 			# resets this controller's router, to allow for dynamic changes
