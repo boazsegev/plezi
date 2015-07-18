@@ -30,6 +30,7 @@ require "plezi/version"
 require 'plezi/common/defer.rb'
 require 'plezi/common/cache.rb'
 require 'plezi/common/dsl.rb'
+require 'plezi/common/settings.rb'
 
 ### helpers
 

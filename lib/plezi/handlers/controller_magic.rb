@@ -44,16 +44,6 @@ module Plezi
 			# the parameters used to create the host (the parameters passed to the `listen` / `add_service` call).
 			attr_reader :host_params
 
-			# Get's the websocket's unique identifier for unicast transmissions.
-			#
-			# This UUID is also used to make sure Radis broadcasts don't triger the
-			# boadcasting object's event.
-			def uuid
-				return @response.uuid if @response.is_a?(GRHttp::WSEvent)
-				nil
-			end
-			alias :unicast_id :uuid
-
 			# this method does two things.
 			#
 			# 1. sets redirection headers for the response.
@@ -217,53 +207,36 @@ module Plezi
 
 			## WebSockets Magic
 
+			# Get's the websocket's unique identifier for unicast transmissions.
+			#
+			# This UUID is also used to make sure Radis broadcasts don't triger the
+			# boadcasting object's event.
+			def uuid
+				return @response.uuid if @response.is_a?(GRHttp::WSEvent)
+				nil
+			end
+			alias :unicast_id :uuid
+
 			# WebSockets.
 			#
 			# Use this to brodcast an event to all 'sibling' websockets (websockets that have been created using the same Controller class).
 			#
-			# accepts:
+			# Accepts:
 			# method_name:: a Symbol with the method's name that should respond to the broadcast.
-			# *args:: any arguments that should be passed to the method (IF REDIS IS USED, LIMITATIONS APPLY).
+			# args*:: The method's argumenst - It MUST be possible to stringify the arguments into a JSON string, or broadcasting and unicasting will fail when scaling beyond one process / one machine.
 			#
-			# the method will be called asynchrnously for each sibling instance of this Controller class.
+			# The method will be called asynchrnously for each sibling instance of this Controller class.
 			#
-			def broadcast method_name, *args, &block
-				return false unless self.class.public_instance_methods.include?(method_name)
-				@uuid ||= SecureRandom.uuid
+			def broadcast method_name, *args
+				
+				return false unless @response.is_a?(GRHttp::WSEvent) && self.class.public_instance_methods.include?(method_name)
+				@response.broadcast data
 				self.class.__inner_redis_broadcast(uuid, nil, method_name, args, &block) || self.class.__inner_process_broadcast(uuid, nil, method_name.to_sym, args, &block)
 			end
 
 			# {include:ControllerMagic::ClassMethods#unicast}
 			def unicast target_uuid, method_name, *args
 				self.class.unicast target_uuid, method_name, *args
-			end
-
-			# WebSockets.
-			#
-			# Use this to collect data from all 'sibling' websockets (websockets that have been created using the same Controller class).
-			#
-			# This method will call the requested method on all instance siblings and return an Array of the returned values (including nil values).
-			#
-			# This method will block the excecution unless a block is passed to the method - in which case
-			#  the block will used as a callback and recieve the Array as a parameter.
-			#
-			# i.e.
-			#
-			# this will block: `collect :_get_id`
-			#
-			# this will not block: `collect(:_get_id) {|a| puts "got #{a.length} responses."; a.each { |id| puts "#{id}"} }
-			#
-			# accepts:
-			# method_name:: a Symbol with the method's name that should respond to the broadcast.
-			# *args:: any arguments that should be passed to the method.
-			# &block:: an optional block to be used as a callback.
-			#
-			# the method will be called asynchrnously for each sibling instance of this Controller class.
-			def collect method_name, *args, &block
-				return Plezi.callback(self, :collect, *args, &block) if block
-				r = []
-				ObjectSpace.each_object(self.class) { |controller|  r << controller.method(method_name).call(*args) if controller.accepts_broadcast?  && (controller.object_id != self.object_id) }
-				return r
 			end
 
 
@@ -308,7 +281,7 @@ module Plezi
 
 			# lists the available methods that will be exposed to the HTTP router
 			def available_routing_methods
-				@available_routing_methods ||= ( ( (public_instance_methods - Class.public_instance_methods) - Plezi::ControllerMagic::InstanceMethods.instance_methods).delete_if {|m| m.to_s[0] == '_'}).to_set
+				@available_routing_methods ||= ( ( (public_instance_methods - Class.new.public_instance_methods) - Plezi::ControllerMagic::InstanceMethods.instance_methods).delete_if {|m| m.to_s[0] == '_'}).to_set
 			end
 
 			# resets this controller's router, to allow for dynamic changes

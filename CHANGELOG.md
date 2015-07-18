@@ -8,7 +8,8 @@ Change log v.0.10.0
 
 - The Plezi IO Reactor was extracted to an external gem called [GReactor](https://github.com/boazsegev/GReactor) and optimized.
 - The Plezi HTTP and Websocket Server was extracted to an external gem called [GRHttp](https://github.com/boazsegev/GRHttp) and optimized.
-- The Websocket API, implementation and engine were all revised.
+- The Websocket API, implementation and engine were all revised. CAREFUL: **Old Websocket API deprecated**.
+
 
 ***
 

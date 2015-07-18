@@ -48,7 +48,7 @@ module Plezi
 			# adds a route to all existing hosts.
 			def add_shared_route path, controller, &block
 				raise 'No Host defined.' if @hosts.empty?
-				@hosts.each {|n, h| h << Route.new(path, controller, &block) }
+				@hosts.each {|n, h| h.routes << Route.new(path, controller, &block) }
 			end
 
 			# handles requests send by the HTTP Protocol (HTTPRequest objects)

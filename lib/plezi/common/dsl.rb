@@ -91,7 +91,7 @@ module Plezi
 
 			# adds a shared route to all existing services and hosts.
 			def shared_route(path, controller = nil, &block)
-				raise "Must have created at least one Pleze service before calling `shared_route` - use `Plezi.listen`." unless @@listeners
+				raise "Must have created at least one Pleze service before calling `shared_route` - use `Plezi.listen`." unless @listeners
 				@listeners.values.each {|p| p[:http_handler].add_shared_route path, controller, &block }
 			end
 
