@@ -31,7 +31,7 @@ module Plezi
 				# (with a protocol instance of WSProtocol and an instance of the Controller class set as a handler)
 				def pre_connect
 					# make sure this is a websocket controller
-					return false unless self.class.available_routing_methods.include?(:on_message)
+					return false unless self.superclass.available_routing_methods.include?(:on_message)
 					# call the controller's original method, if exists, and check connection.
 					return false if (defined?(super) && !super)
 					# finish if the response was sent
@@ -66,14 +66,14 @@ module Plezi
 				#
 				def _route_path_to_methods_and_set_the_response_
 					#run :before filter
-					return false if self.class.available_routing_methods.include?(:before) && self.before == false 
+					return false if self.superclass.available_routing_methods.include?(:before) && self.before == false 
 					#check request is valid and call requested method
 					ret = requested_method
-					return false unless self.class.available_routing_methods.include?(ret)
+					return false unless self.superclass.available_routing_methods.include?(ret)
 					ret = self.method(ret).call
 					return false unless ret
 					#run :after filter
-					return false if self.class.available_routing_methods.include?(:after) && self.after == false
+					return false if self.superclass.available_routing_methods.include?(:after) && self.after == false
 					# review returned type for adding String to response
 					return ret
 				end
@@ -85,14 +85,17 @@ module Plezi
 
 				# a callback that resets the class router whenever a method (a potential route) is added
 				def method_added(id)
+					self.superclass.reset_routing_cache
 					reset_routing_cache
 				end
 				# a callback that resets the class router whenever a method (a potential route) is removed
 				def method_removed(id)
+					self.superclass.reset_routing_cache
 					reset_routing_cache
 				end
 				# a callback that resets the class router whenever a method (a potential route) is undefined (using #undef_method).
 				def method_undefined(id)
+					self.superclass.reset_routing_cache
 					reset_routing_cache
 				end
 
