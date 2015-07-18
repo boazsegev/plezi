@@ -2,6 +2,16 @@
 
 ***
 
+Change log v.0.10.0
+
+**Major Revesion**:
+
+- The Plezi IO Reactor was extracted to an external gem called [GReactor](https://github.com/boazsegev/GReactor) and optimized.
+- The Plezi HTTP and Websocket Server was extracted to an external gem called [GRHttp](https://github.com/boazsegev/GRHttp) and optimized.
+- The Websocket API, implementation and engine were all revised.
+
+***
+
 Change log v.0.9.1
 
 **changed**: Template Gemfile now enforces the Plezi version. Also, the template's demo page now demonstrates WebSocket broadcasting.
