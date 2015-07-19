@@ -10,6 +10,17 @@ Change log v.0.10.0
 - The Plezi HTTP and Websocket Server was extracted to an external gem called [GRHttp](https://github.com/boazsegev/GRHttp) and optimized.
 - The Websocket API, implementation and engine were all revised. CAREFUL: **Old Websocket API deprecated**.
 
+**WebSocket API revisions**:
+
+- The `#on_connect` callback had been renamed to `#on_open`, for clarity and to conform with the Javascript API.
+- The `#on_disconnect` callback had been renamed to `#on_close`, for clarity and to conform with the Javascript API.
+- The `#collect` method had been deprecated due to scaling limitations it had imposed.
+- The `#broadcast` and `Controller.broadcast` methods had been altered and would no longer accept an optional block of code.
+- The Redis support had been altered and the redis connection object (if exists) is now available using `Plezi.redis_connection` instead of the older Controller method.
+
+**Settings API revisions**:
+
+- The settings API had been moved to the namespace `Plezi::Settings`.
 
 ***
 
