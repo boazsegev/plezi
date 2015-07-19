@@ -94,7 +94,7 @@ module Plezi
 		end
 
 		# called immediately after a WebSocket connection has been established.
-		def on_connect
+		def on_open
 			true
 		end
 
@@ -108,7 +108,7 @@ module Plezi
 
 		# called when a disconnect packet has been recieved or the connection has been cut
 		# (ISN'T called after a disconnect message has been sent).
-		def on_disconnect
+		def on_close
 		end
 
 		# a demo event method that recieves a broadcast from instance siblings.

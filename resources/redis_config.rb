@@ -2,6 +2,8 @@
 
 if defined? Redis
 
+	Plezi::Settings.redis_channel_name = 'appsecret'
+
 	# ## Plezi Redis Automation
 	# ## ====
 	# ##
