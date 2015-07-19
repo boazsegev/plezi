@@ -219,8 +219,11 @@ def start_services
 	undef route
 	undef shared_route
 	undef start_services
+	puts "Starting Plezi #{Plezi::VERSION} Services using the GRHttp #{GRHttp::VERSION} server."
+	puts "Press ^C to exit."
+	GReactor.on_shutdown { puts "Plezi shutdown. It was fun to serve you."  }
 	GReactor.start unless GReactor.running?
-	GReactor.join { puts 'Starting shutdown sequesnce. Press ^C to force quit.'}
+	GReactor.join { puts "\r\nStarting shutdown sequesnce. Press ^C to force quit."}
 end
 
 # restarts the Plezi app with the same arguments as when it was started.
