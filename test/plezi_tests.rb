@@ -101,7 +101,7 @@ class TestCtrl
 	## WebSockets
 
 	# called once the websocket was connected
-	def on_connect
+	def on_open
 		response << "connected"
 	end
 
@@ -125,7 +125,7 @@ class TestCtrl
 
 	# called when a disconnect packet has been recieved or the connection has been cut
 	# (ISN'T called after a disconnect message has been sent).
-	def on_disconnect
+	def on_close
 	end
 
 	# a demo event method that recieves a broadcast from instance siblings.
@@ -242,54 +242,54 @@ module PleziTestTasks
 	def test_websocket
 		connection_test = broadcast_test = echo_test = unicast_test = false
 		begin
-			ws4 = GRHttp::WSClient.connect_to("wss://localhost:3030") do |msg|
-				if msg == "unicast"
+			ws4 = GRHttp::WSClient.connect_to("wss://localhost:3030") do |ws|
+				if ws.data == "unicast"
 					puts "    * Websocket unicast testing: #{RESULTS[false]}"
 					unicast_test = :failed
 				end
 			end
-			ws2 = GRHttp::WSClient.connect_to("wss://localhost:3030") do |msg|
+			ws2 = GRHttp::WSClient.connect_to("wss://localhost:3030") do |ws|
 				next unless @is_connected || !(@is_connected = true)
-				if msg == "unicast"
+				if ws.data == "unicast"
 					puts "    * Websocket unicast message test: #{RESULTS[false]}"
 					unicast_test = :failed
 					next
 				else
-					puts "    * Websocket broadcast message test: #{RESULTS[broadcast_test = (msg == 'echo test')]}"
+					puts "    * Websocket broadcast message test: #{RESULTS[broadcast_test = (ws.data == 'echo test')]}"
 					go_test = false
 				end
 			end
-			ws3 = GRHttp::WSClient.connect_to("ws://localhost:3000") do |msg|
-				if msg.match /uuid: ([^s]*)/
-					ws2 << "to: #{msg.match(/^uuid: ([^s]*)/)[1]}"
-					puts "    * Websocket UUID for unicast testing: #{msg.match(/^uuid: ([^s]*)/)[1]}"
-				elsif msg == "unicast"
+			ws3 = GRHttp::WSClient.connect_to("ws://localhost:3000") do |ws|
+				if ws.data.match /uuid: ([^s]*)/
+					ws2 << "to: #{ws.data.match(/^uuid: ([^s]*)/)[1]}"
+					puts "    * Websocket UUID for unicast testing: #{ws.data.match(/^uuid: ([^s]*)/)[1]}"
+				elsif ws.data == "unicast"
 					puts "    * Websocket unicast testing: #{RESULTS[:waiting]}"
 					unicast_test ||= true
 				end
 			end
 			ws3 << 'get uuid'
 			puts "    * Websocket SSL client test: #{RESULTS[ws2 && true]}"
-			ws1 = GRHttp::WSClient.connect_to("ws://localhost:3000") do |msg|
+			ws1 = GRHttp::WSClient.connect_to("ws://localhost:3000") do |ws|
 				unless @connected
-					puts "    * Websocket connection message test: #{RESULTS[connection_test = (msg == 'connected')]}"
+					puts "    * Websocket connection message test: #{RESULTS[connection_test = (ws.data == 'connected')]}"
 					@connected = true
 					response << "echo test"
 					next
 				end
-				if msg == "unicast"
+				if ws.data == "unicast"
 					puts "    * Websocket unicast testing: #{RESULTS[false]}"
 					unicast_test = :failed
 					next
 				end
-				puts "    * Websocket echo message test: #{RESULTS[echo_test = (msg == 'echo test')]}"
+				puts "    * Websocket echo message test: #{RESULTS[echo_test = (ws.data == 'echo test')]}"
 			end
 			
 		rescue => e
 			puts "    **** Websocket tests FAILED TO RUN!!!"
 			puts e.message
 		end
-		remote = GRHttp::WSClient.connect_to("wss://echo.websocket.org/") {|msg| puts "    * Extra Websocket Remote test (SSL: echo.websocket.org): #{RESULTS[msg == 'Hello websockets!']}"; response.close}
+		remote = GRHttp::WSClient.connect_to("wss://echo.websocket.org/") {|ws| puts "    * Extra Websocket Remote test (SSL: echo.websocket.org): #{RESULTS[ws.data == 'Hello websockets!']}"; response.close}
 		remote << "Hello websockets!"
 		sleep 0.5
 		[ws1, ws2, ws3, ws4, remote].each {|ws| ws.close}
@@ -300,11 +300,11 @@ module PleziTestTasks
 	end
 	def test_websocket_sizes
 			should_disconnect = false
-			ws = GRHttp::WSClient.connect_to("ws://localhost:3000/ws/size") do |msg|
+			ws = GRHttp::WSClient.connect_to("ws://localhost:3000/ws/size") do |ws|
 				if should_disconnect
 					puts "    * Websocket size disconnection test: #{RESULTS[false]}"
 				else
-					puts "    * Websocket message size test: got #{msg.bytesize} bytes"
+					puts "    * Websocket message size test: got #{ws.data.bytesize} bytes"
 				end
 
 			end
@@ -327,17 +327,17 @@ module PleziTestTasks
 		puts e
 	end
 	def test_500
-		workers = GReactor.instance_exec {@threads.select {|t| t.alive?} .count}
-		print "    * 500 internal error test: #{RESULTS[ Net::HTTP.get_response(URI.parse "http://localhost:3000/fail" ).code == '500' ]}"
-		# cause 10 more exceptions to be raised... testing thread survival.
-		10.times { putc "."; Net::HTTP.get_response(URI.parse "http://localhost:3000/fail" ).code }
-		putc "\n"
-		workers_after_test = GReactor.instance_exec {@threads.select {|t| t.alive?} .count}
-		puts "    * Worker survival test: #{RESULTS[workers_after_test == workers]} (#{workers_after_test} out of #{workers})"
+		# workers = GReactor.instance_exec {@threads.select {|t| t.alive?} .count}
+		# print "    * 500 internal error test: #{RESULTS[ Net::HTTP.get_response(URI.parse "http://localhost:3000/fail" ).code == '500' ]}"
+		# # cause 10 more exceptions to be raised... testing thread survival.
+		# 10.times { putc "."; Net::HTTP.get_response(URI.parse "http://localhost:3000/fail" ).code }
+		# putc "\n"
+		# workers_after_test = GReactor.instance_exec {@threads.select {|t| t.alive?} .count}
+		# puts "    * Worker survival test: #{RESULTS[workers_after_test == workers]} (#{workers_after_test} out of #{workers})"
 
-		rescue => e
-		puts "    **** 500 internal error test FAILED TO RUN!!!"
-		puts e
+		# rescue => e
+		# puts "    **** 500 internal error test FAILED TO RUN!!!"
+		# puts e
 	end
 end
 
