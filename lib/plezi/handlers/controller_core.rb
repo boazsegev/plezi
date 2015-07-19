@@ -43,7 +43,7 @@ module Plezi
 				def on_open ws
 					# set broadcasts and return true
 					@response = ws
-					ws.autopong = 45 ###FIX THIS
+					ws.autopong Plezi.autoping
 					# create the redis connection (in case this in the first instance of this class)
 					self.class.redis_connection
 					super() if defined?(super)
@@ -58,7 +58,15 @@ module Plezi
 				end
 				# handles websocket being closed.
 				def on_broadcast ws
-					return super(ws.data) if defined? super
+					data = ws.data
+					unless (data[:type] || data[:target]) && data[:method] && data[:data]
+						GReactor.warn "Broadcast message unknown... falling back on base broadcasting"
+						return super(data) if defined? super
+						return false
+					end
+					return false if data[:type] && !self.is_a?(data[:type])
+					return false unless self.class.has_method?(data[:method])
+					self.method(data[:method]).call *data[:data]
 				end
 
 				# Inner Routing
@@ -69,7 +77,7 @@ module Plezi
 					return false if self.class.available_routing_methods.include?(:before) && self.before == false 
 					#check request is valid and call requested method
 					ret = requested_method
-					return false unless self.class.superclass.available_routing_methods.include?(ret)
+					return false unless self.class.available_routing_methods.include?(ret)
 					ret = self.method(ret).call
 					return false unless ret
 					#run :after filter
@@ -97,6 +105,15 @@ module Plezi
 				def method_undefined(id)
 					self.superclass.reset_routing_cache
 					reset_routing_cache
+				end
+
+				def has_method? method_name
+					@methods_list ||= self.instance_methods
+					@methods_list.include? method_name
+				end
+				def has_super_method? method_name
+					@super_methods_list ||= self.superclass.instance_methods
+					@super_methods_list.include? method_name
 				end
 
 			end

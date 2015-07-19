@@ -10,6 +10,13 @@ module Plezi
 		@max_threads = val
 	end
 
+	def autoping
+		@autoping ||= 45
+	end
+	def autoping=val
+		@autoping = 45
+	end
+
 	# Sets the message byte size limit for a Websocket message. Defaults to 0 (no limit)
 	#
 	# Although memory will be allocated for the latest TCP/IP frame,

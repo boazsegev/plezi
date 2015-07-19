@@ -7,6 +7,7 @@ require 'digest/sha1'
 require 'securerandom'
 require 'time'
 require 'json'
+require 'yaml'
 require 'uri'
 require 'set'
 
