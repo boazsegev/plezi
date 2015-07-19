@@ -239,6 +239,7 @@ end
 
 # sets to start the services once dsl script is finished loading.
 at_exit { start_services }
+GReactor::Settings.force_graceful = false
 
 # sets information to be used when restarting
 $PL_SCRIPT = $0

@@ -27,7 +27,7 @@ require 'tilt/sass' if defined?(::Slim) && defined?(::Sass)
 GReactor.create_logger File.expand_path(File.join 'logs','server.log'), ENV["RACK_ENV"]=="development" unless ENV['DYNO']
 
 ## Allow forking? ONLY if your code is fully scalable across processes.
-# GReactor.set_forking 4
+# GReactor::Settings.set_forking 4
 
 # load all config files
 Dir[File.join "{config}", "**" , "*.rb"].each {|file| load File.expand_path(file)}
