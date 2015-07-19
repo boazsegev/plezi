@@ -31,7 +31,11 @@ load ::File.expand_path(File.join("..", "environment.rb"),  __FILE__)
 load ::File.expand_path(File.join("..", "routes.rb"),  __FILE__)
 
 # start the plezi EM, to make sure that the plezi async code doesn't break.
+GReactor.clear_listeners
 GReactor.start Plezi::Settings.max_threads
 
-# run the Rack app
-run Plezi::Base::DSL
+# run the Rack app - not yet supported
+# run Plezi::Base::Rack
+
+# # exit rack to start the plezi server
+# Process.kill 'TERM'

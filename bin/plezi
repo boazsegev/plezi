@@ -90,8 +90,8 @@ class AppTemplate
 		app_tree["db"]["config.yml"] ||= IO.read(::File.expand_path(File.join("..", "..", "resources" ,"database.yml"),  __FILE__))
 
 		#set up the extras folder, to be filled with future goodies.
-		app_tree["extras"] ||= {}
-		app_tree["extras"]["config.ru"] ||= IO.read ::File.expand_path(File.join("..", "..", "resources" ,"config.ru"),  __FILE__)
+		# app_tree["extras"] ||= {}
+		# app_tree["extras"]["config.ru"] ||= IO.read ::File.expand_path(File.join("..", "..", "resources" ,"config.ru"),  __FILE__)
 
 		#set up I18n stub
 		app_tree["locales"] ||= {}
