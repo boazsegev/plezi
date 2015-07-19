@@ -23,6 +23,6 @@ Gem::Specification.new do |spec|
   spec.add_development_dependency "rake", "~> 10.0"
 
   spec.post_install_message = "Thank you for installing Plezi, the native Ruby Framework for real time web-apps."
-  # spec.post_install_message = "** Deprecation Warning:\n- The current code for default error pages will be changed in version 0.9.0.\n- Default error pages will follow a different naming and location conventions.\n- The updated design will be part of the updated `plezi` helper script.\nPlease review your code before upgrading to the 0.9.0 version.\n\nThank you for installing Plezi, the native Ruby Framework for real time web-apps."
+  # spec.post_install_message = "** Deprecation Warning:\n\nThank you for installing Plezi, the native Ruby Framework for real time web-apps."
 
 end

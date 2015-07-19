@@ -44,7 +44,6 @@ Change log v.0.9.1
 
 Minor updates.
 
-
 ***
 
 Change log v.0.9.0
