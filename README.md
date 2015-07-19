@@ -149,9 +149,9 @@ Let's make the classic 'Hello World' use HTTP Streaming:
         route '*' , Controller
 ```
 
-Notice you can nest calls to the `response.stream_async` method.
+Notice you can nest calls to the `response.stream_async` method, allowing you to breakdown big blocking tasks into smaller chunks. `response.stream_async` will return immediately, scheduling the task for background processing.
 
-You can also handle tasks asynchronously using the [GReactor API](http://www.rubydoc.info/gems/greactor)'s.
+You can also handle other tasks asynchronously using the [GReactor API](http://www.rubydoc.info/gems/greactor)'s.
 
 More on asynchronous events and timers later.
 
@@ -253,6 +253,9 @@ Asynchronous callbacks (works only while services are active and running):
 
     # an asynchronous method call with an optional callback block
     GReactor.callback(Kernel, :puts, "Plezi will start eating our code once we exit terminal.") {puts 'first output finished'}
+
+    GReactor.run_async {puts "notice that the background tasks will only start once the Plezi's engine is running."}
+    GReactor.run_async {puts "exit Plezi to observe the shutdown callbacks."}
 
 ## Re-write Routes
 
