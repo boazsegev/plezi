@@ -350,77 +350,12 @@ module Plezi
 			end
 
 			def __inner_redis_broadcast data
-				return redis_connection.publish(redis_channel_name, data.to_ymal ) if redis_connection
+				conn = Plezi.redis_connection
+				data[:server] = Plezi::Settings::UUID
+				return conn.publish( Plezi::Settings.redis_channel_name, data.to_yaml ) if conn
 				false
 			end
-
-
-
-			
-			# Reviews the Redis connection, sets it up if it's missing and returns the Redis connection.
-			#
-			# A Redis connection will be automatically created if the `ENV['PL_REDIS_URL']` is set.
-			# for example:
-			#      ENV['PL_REDIS_URL'] = ENV['REDISCLOUD_URL']`
-			# or
-			#      ENV['PL_REDIS_URL'] = "redis://username:password@my.host:6379"
-			def redis_connection
-				# return false unless defined?(Redis) && ENV['PL_REDIS_URL']
-				# return @redis if defined?(@redis_sub_thread) && @redis
-				# @@redis_uri ||= URI.parse(ENV['PL_REDIS_URL'])
-				# @redis ||= Redis.new(host: @@redis_uri.host, port: @@redis_uri.port, password: @@redis_uri.password)
-				# @redis_sub_thread = Thread.new do
-				# 	begin
-				# 		Redis.new(host: @@redis_uri.host, port: @@redis_uri.port, password: @@redis_uri.password).subscribe(redis_channel_name) do |on|
-				# 			on.message do |channel, msg|
-				# 				args = JSON.parse(msg)
-				# 				params = args.shift
-				# 				__inner_process_broadcast params['_pl_ignore_object'], params['_pl_method_broadcasted'].to_sym, args
-				# 			end
-				# 		end						
-				# 	rescue Exception => e
-				# 		Plezi.error e
-				# 		retry
-				# 	end
-				# end
-				# raise "Redis connction failed for: #{ENV['PL_REDIS_URL']}" unless @redis
-				# @redis
-				return false unless defined?(Redis) && ENV['PL_REDIS_URL']
-				return Plezi.get_cached(self.superclass.name + '_b') if Plezi.cached?(self.superclass.name + '_b')
-				@@redis_uri ||= URI.parse(ENV['PL_REDIS_URL'])
-				b = nil
-				Plezi.cache_data self.superclass.name + '_b', (b = Redis.new(host: @@redis_uri.host, port: @@redis_uri.port, password: @@redis_uri.password) )
-				raise "Redis connction failed for: #{ENV['PL_REDIS_URL']}" unless b
-				t = Thread.new do
-					begin
-						Redis.new(host: @@redis_uri.host, port: @@redis_uri.port, password: @@redis_uri.password).subscribe(redis_channel_name) do |on|
-							on.message do |channel, msg|
-								data = YAML.load(msg)
-								if data[:target]
-									GRHttp::Base::WSHandler.unicast data[:target], data
-								else
-									GRHttp::Base::WSHandler.broadcast data
-								end
-							end
-						end						
-					rescue Exception => e
-						Plezi.error e
-						retry
-					end
-				end
-				Plezi.cache_data self.superclass.name + '_t', t
-				b
-			end
-
-			# returns a Redis channel name for this controller.
-			def redis_channel_name
-				self.superclass.name.to_s
-			end
-
 		end
-
-		module_function
-
 
 	end
 end

@@ -11,28 +11,33 @@ module Plezi
 	# or
 	#      ENV['PL_REDIS_URL'] = "redis://username:password@my.host:6379"
 	def redis_connection
-		return false unless defined?(Redis) && ENV['PL_REDIS_URL']
 		return @redis if (@redis_sub_thread && @redis_sub_thread.alive?) && @redis
+		return false unless defined?(Redis) && ENV['PL_REDIS_URL']
 		@redis_uri ||= URI.parse(ENV['PL_REDIS_URL'])
 		@redis ||= Redis.new(host: @redis_uri.host, port: @redis_uri.port, password: @redis_uri.password)
+		raise "Redis connction failed for: #{ENV['PL_REDIS_URL']}" unless @redis
 		@redis_sub_thread = Thread.new do
-			Redis.new(host: @redis_uri.host, port: @redis_uri.port, password: @redis_uri.password).subscribe(@redis_channel_name) do |on|
 			begin
+			Redis.new(host: @redis_uri.host, port: @redis_uri.port, password: @redis_uri.password).subscribe(Plezi::Settings.redis_channel_name) do |on|
 					on.message do |channel, msg|
-						data = YAML.load(msg)
-						if data[:target]
-							GRHttp::Base::WSHandler.unicast data[:target], data
-						else
-							GRHttp::Base::WSHandler.broadcast data
+						begin
+							data = YAML.load(msg)
+							next if data[:server] == Plezi::Settings::UUID
+							if data[:target]
+								GRHttp::Base::WSHandler.unicast data[:target], data
+							else
+								GRHttp::Base::WSHandler.broadcast data
+							end
+						rescue => e
+							Plezi.error e
 						end
 					end
-				rescue Exception => e
-					Plezi.error e
-					retry
 				end
-			end						
+			rescue => e
+				Plezi.error e
+				retry
+			end
 		end
-		raise "Redis connction failed for: #{ENV['PL_REDIS_URL']}" unless @redis
 		@redis
 	end
 end

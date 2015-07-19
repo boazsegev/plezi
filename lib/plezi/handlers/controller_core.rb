@@ -43,9 +43,9 @@ module Plezi
 				def on_open ws
 					# set broadcasts and return true
 					@response = ws
-					ws.autopong Plezi.autoping
+					ws.autopong Plezi::Settings.autoping unless Plezi::Settings.autoping
 					# create the redis connection (in case this in the first instance of this class)
-					self.class.redis_connection
+					Plezi.redis_connection
 					super() if defined?(super)
 				end
 				# handles websocket messages.
