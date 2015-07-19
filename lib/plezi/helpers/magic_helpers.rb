@@ -1,6 +1,10 @@
 module Plezi
 
+	# use GRHttp's helpers for escaping data etc'.
+	HTTP = GRHttp::HTTP
+
 	module Base
+		# some helper methods used internally.
 		module Helpers
 			# a proc that allows Hashes to search for key-value pairs while also converting keys from objects to symbols and from symbols to strings.
 			#
