@@ -220,7 +220,7 @@ if ARGV[0] == 'new' || ARGV[0] == 'n' || ARGV[0] == "force"
 	#########
 	## set up building environment
 	require 'plezi/version'
-	BUILDING_PLEZI_TEMPLATE = true
+	NO_PLEZI_AUTO_START = true
 	ARGV[1] = ARGV[1].gsub /[^a-zA-Z0-9]/, '_'
 	if Dir.exists?(ARGV[1]) && ARGV[0] != "force"
 		puts ""

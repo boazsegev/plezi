@@ -125,6 +125,16 @@ module Plezi
 			end
 		end
 	end
+
+	def start
+		return if GReactor.running?
+		Object.const_set("NO_PLEZI_AUTO_START", true) unless defined?(NO_PLEZI_AUTO_START)
+		puts "Starting Plezi #{Plezi::VERSION} Services using the GRHttp #{GRHttp::VERSION} server."
+		puts "Press ^C to exit."
+		GReactor.on_shutdown { puts "Plezi shutdown. It was fun to serve you."  }
+		GReactor.start
+		GReactor.join { puts "\r\nStarting shutdown sequesnce. Press ^C to force quit."}
+	end
 end
 
 Encoding.default_internal = 'utf-8'
@@ -212,18 +222,12 @@ end
 # it is recommended that you DO NOT CALL this method.
 # if any post shut-down actions need to be performed, use Plezi.on_shutdown instead.
 def start_services
-	return 0 if ( defined?(NO_PLEZI_AUTO_START) || defined?(BUILDING_PLEZI_TEMPLATE) || defined?(PLEZI_ON_RACK) )
-	Object.const_set "NO_PLEZI_AUTO_START", true
+	return 0 if defined?(NO_PLEZI_AUTO_START)
 	undef listen
 	undef host
 	undef route
 	undef shared_route
-	undef start_services
-	puts "Starting Plezi #{Plezi::VERSION} Services using the GRHttp #{GRHttp::VERSION} server."
-	puts "Press ^C to exit."
-	GReactor.on_shutdown { puts "Plezi shutdown. It was fun to serve you."  }
-	GReactor.start unless GReactor.running?
-	GReactor.join { puts "\r\nStarting shutdown sequesnce. Press ^C to force quit."}
+	Plezi.start
 end
 
 # restarts the Plezi app with the same arguments as when it was started.
@@ -234,7 +238,7 @@ def restart_plezi_app
 end
 
 # sets to start the services once dsl script is finished loading.
-at_exit { start_services } unless ( defined?(NO_PLEZI_AUTO_START) || defined?(BUILDING_PLEZI_TEMPLATE) || defined?(PLEZI_ON_RACK) )
+at_exit { start_services }
 
 # sets information to be used when restarting
 $PL_SCRIPT = $0

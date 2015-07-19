@@ -22,7 +22,7 @@
 # 2. you have better control over Middleware then you could have with Plezi.
 # ("wait", you might say, "there is no Middleware in Plezi!"... "Ahhh", I will answer, "so much to discover...")
 
-PLEZI_ON_RACK = true
+NO_PLEZI_AUTO_START = true
 
 # load all framework and gems
 load ::File.expand_path(File.join("..", "environment.rb"),  __FILE__)
@@ -31,7 +31,7 @@ load ::File.expand_path(File.join("..", "environment.rb"),  __FILE__)
 load ::File.expand_path(File.join("..", "routes.rb"),  __FILE__)
 
 # start the plezi EM, to make sure that the plezi async code doesn't break.
-Plezi::EventMachine.start Plezi.max_threads
+GReactor.start Plezi::Settings.max_threads
 
 # run the Rack app
-run Plezi::DSL
+run Plezi::Base::DSL
