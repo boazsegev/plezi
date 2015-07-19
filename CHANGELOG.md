@@ -24,6 +24,20 @@ Change log v.0.10.0
 
 ***
 
+Change log v.0.9.2
+
+**Some API deprecation notice**
+
+V.0.10.0 will be a major revision. It will _also_ change the Websocket API so that it conforms to the Javascript API, making it clearer.
+
+Also, V. 0.10.0 will utilize the [GReactor](https://github.com/boazsegev/GReactor) IO reactor and the [GRHttp](https://github.com/boazsegev/GRHttp) HTTP and Websocket server gems. Both are native Ruby, so no C or Java extentions should be introduced.
+
+This means that asynchronous tasking will now be handled by GReactor's API.
+
+Make sure to test your app before upgrading to the 0.10.0 version.
+
+***
+
 Change log v.0.9.1
 
 **changed**: Template Gemfile now enforces the Plezi version. Also, the template's demo page now demonstrates WebSocket broadcasting.
