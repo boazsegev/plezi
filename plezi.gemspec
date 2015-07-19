@@ -21,7 +21,16 @@ Gem::Specification.new do |spec|
   spec.add_development_dependency "bundler", "~> 1.7"
   spec.add_development_dependency "rake", "~> 10.0"
 
-  spec.post_install_message = "Thank you for installing Plezi, the native Ruby Framework for real time web-apps."
-  # spec.post_install_message = "** Deprecation Warning:\n- The current code for default error pages will be changed in version 0.9.0.\n- Default error pages will follow a different naming and location conventions.\n- The updated design will be part of the updated `plezi` helper script.\nPlease review your code before upgrading to the 0.9.0 version.\n\nThank you for installing Plezi, the native Ruby Framework for real time web-apps."
+  # spec.post_install_message = "Thank you for installing Plezi, the native Ruby Framework for real time web-apps."
+  spec.post_install_message = "** Deprecation Warning:\n
+  V.0.10.0 will be a major revision. It will also change the Websocket API so that it conforms to the Javascript API, making it clearer.
+
+Also, V. 0.10.0 will utilize the GReactor IO reactor and the GRHttp HTTP and Websocket server gems. Both are native Ruby, so no C or Java extentions should be introduced.
+
+This means that asynchronous tasking will now be handled by GReactor's API.
+
+Make sure to test your app before upgrading to the 0.10.0 version.
+
+Thank you for installing Plezi, the native Ruby Framework for real time web-apps."
 
 end
