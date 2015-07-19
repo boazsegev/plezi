@@ -2,6 +2,14 @@
 
 ***
 
+Change log v.0.10.1
+
+**fix**: fixed an issue where the new Controller's inner router might route to RESTful methods that weren't defined (:show, :save, etc').
+
+**fix**: fixed an issue with the new Controller's inner router might not reset it's cache when methods are added to the controller after the service has begun.
+
+***
+
 Change log v.0.10.0
 
 **Major Revesion**:
