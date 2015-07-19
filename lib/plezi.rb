@@ -2,73 +2,51 @@
 
 require 'singleton'
 require 'pathname'
-require 'logger'
-require 'socket'
-require 'openssl'
-require 'strscan'
 require 'base64'
 require 'digest/sha1'
 require 'securerandom'
 require 'time'
 require 'json'
+require 'yaml'
 require 'uri'
 require 'set'
+
+# GRHttp servet
+require 'grhttp'
+
 
 ## erb templating
 begin
 	require 'erb'
-rescue Exception => e
-	
+rescue => e
+
 end
 
 ### version
 
 require "plezi/version"
 
-### common helpers
+### common
 
-require 'plezi/common/logging.rb'
+require 'plezi/common/defer.rb'
 require 'plezi/common/cache.rb'
 require 'plezi/common/dsl.rb'
+require 'plezi/common/redis.rb'
+require 'plezi/common/settings.rb'
 
-### event machine
+### helpers
 
-require "plezi/eventmachine/em.rb"
-
-require 'plezi/eventmachine/queue.rb'
-require 'plezi/eventmachine/workers.rb'
-require 'plezi/eventmachine/timers.rb'
-require 'plezi/eventmachine/io.rb'
-require 'plezi/eventmachine/protocol.rb'
-require 'plezi/eventmachine/connection.rb'
-require 'plezi/eventmachine/ssl_connection.rb'
-
-### http and websocket server
+require 'plezi/helpers/http_sender.rb'
+require 'plezi/helpers/magic_helpers.rb'
+require 'plezi/helpers/mime_types.rb'
 
 
-require 'plezi/server/mime_types.rb'
-
-require 'plezi/server/http.rb'
-require 'plezi/server/http_protocol.rb'
-require 'plezi/server/http_request.rb'
-require 'plezi/server/http_response.rb'
-
-require 'plezi/server/websocket.rb'
-require 'plezi/server/ws_response.rb'
-
-### websocket client
-require 'plezi/server/websocket_client.rb'
-### Handlers / Framework
-
-require "plezi/handlers/http_echo"
-require "plezi/handlers/http_host"
-require "plezi/handlers/http_router"
-
-require "plezi/handlers/controller_magic"
-require "plezi/handlers/magic_helpers"
-require "plezi/handlers/route"
-
-require "plezi/handlers/stubs"
+### HTTP and WebSocket Handlers
+require 'plezi/handlers/http_router.rb'
+require 'plezi/handlers/route.rb'
+require 'plezi/handlers/controller_magic.rb'
+require 'plezi/handlers/controller_core.rb'
+require 'plezi/handlers/stubs.rb'
 
 
 ##############################################################################

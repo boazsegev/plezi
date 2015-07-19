@@ -81,8 +81,7 @@ class TestCtrl
 	end
 	# path to test for chuncked encoding and response streaming.
 	def streamer
-		response.start_http_streaming
-		PL.callback(self, :_stream_out) { PL.callback(response, :finish) }
+		response.stream_async &method(:_stream_out)
 		true
 	end
 	def _stream_out
@@ -102,7 +101,7 @@ class TestCtrl
 	## WebSockets
 
 	# called once the websocket was connected
-	def on_connect
+	def on_open
 		response << "connected"
 	end
 
@@ -126,7 +125,7 @@ class TestCtrl
 
 	# called when a disconnect packet has been recieved or the connection has been cut
 	# (ISN'T called after a disconnect message has been sent).
-	def on_disconnect
+	def on_close
 	end
 
 	# a demo event method that recieves a broadcast from instance siblings.
@@ -243,54 +242,54 @@ module PleziTestTasks
 	def test_websocket
 		connection_test = broadcast_test = echo_test = unicast_test = false
 		begin
-			ws4 = Plezi::WebsocketClient.connect_to("wss://localhost:3030") do |msg|
-				if msg == "unicast"
+			ws4 = GRHttp::WSClient.connect_to("wss://localhost:3030") do |ws|
+				if ws.data == "unicast"
 					puts "    * Websocket unicast testing: #{RESULTS[false]}"
 					unicast_test = :failed
 				end
 			end
-			ws2 = Plezi::WebsocketClient.connect_to("wss://localhost:3030") do |msg|
+			ws2 = GRHttp::WSClient.connect_to("wss://localhost:3030") do |ws|
 				next unless @is_connected || !(@is_connected = true)
-				if msg == "unicast"
+				if ws.data == "unicast"
 					puts "    * Websocket unicast message test: #{RESULTS[false]}"
 					unicast_test = :failed
 					next
 				else
-					puts "    * Websocket broadcast message test: #{RESULTS[broadcast_test = (msg == 'echo test')]}"
+					puts "    * Websocket broadcast message test: #{RESULTS[broadcast_test = (ws.data == 'echo test')]}"
 					go_test = false
 				end
 			end
-			ws3 = Plezi::WebsocketClient.connect_to("ws://localhost:3000") do |msg|
-				if msg.match /uuid: ([^s]*)/
-					ws2 << "to: #{msg.match(/^uuid: ([^s]*)/)[1]}"
-					puts "    * Websocket UUID for unicast testing: #{msg.match(/^uuid: ([^s]*)/)[1]}"
-				elsif msg == "unicast"
+			ws3 = GRHttp::WSClient.connect_to("ws://localhost:3000") do |ws|
+				if ws.data.match /uuid: ([^s]*)/
+					ws2 << "to: #{ws.data.match(/^uuid: ([^s]*)/)[1]}"
+					puts "    * Websocket UUID for unicast testing: #{ws.data.match(/^uuid: ([^s]*)/)[1]}"
+				elsif ws.data == "unicast"
 					puts "    * Websocket unicast testing: #{RESULTS[:waiting]}"
 					unicast_test ||= true
 				end
 			end
 			ws3 << 'get uuid'
 			puts "    * Websocket SSL client test: #{RESULTS[ws2 && true]}"
-			ws1 = Plezi::WebsocketClient.connect_to("ws://localhost:3000") do |msg|
+			ws1 = GRHttp::WSClient.connect_to("ws://localhost:3000") do |ws|
 				unless @connected
-					puts "    * Websocket connection message test: #{RESULTS[connection_test = (msg == 'connected')]}"
+					puts "    * Websocket connection message test: #{RESULTS[connection_test = (ws.data == 'connected')]}"
 					@connected = true
 					response << "echo test"
 					next
 				end
-				if msg == "unicast"
+				if ws.data == "unicast"
 					puts "    * Websocket unicast testing: #{RESULTS[false]}"
 					unicast_test = :failed
 					next
 				end
-				puts "    * Websocket echo message test: #{RESULTS[echo_test = (msg == 'echo test')]}"
+				puts "    * Websocket echo message test: #{RESULTS[echo_test = (ws.data == 'echo test')]}"
 			end
 			
 		rescue => e
 			puts "    **** Websocket tests FAILED TO RUN!!!"
 			puts e.message
 		end
-		remote = Plezi::WebsocketClient.connect_to("wss://echo.websocket.org/") {|msg| puts "    * Extra Websocket Remote test (SSL: echo.websocket.org): #{RESULTS[msg == 'Hello websockets!']}"; response.close}
+		remote = GRHttp::WSClient.connect_to("wss://echo.websocket.org/") {|ws| puts "    * Extra Websocket Remote test (SSL: echo.websocket.org): #{RESULTS[ws.data == 'Hello websockets!']}"; response.close}
 		remote << "Hello websockets!"
 		sleep 0.5
 		[ws1, ws2, ws3, ws4, remote].each {|ws| ws.close}
@@ -301,23 +300,23 @@ module PleziTestTasks
 	end
 	def test_websocket_sizes
 			should_disconnect = false
-			ws = Plezi::WebsocketClient.connect_to("ws://localhost:3000/ws/size") do |msg|
+			ws = GRHttp::WSClient.connect_to("ws://localhost:3000/ws/size") do |ws|
 				if should_disconnect
 					puts "    * Websocket size disconnection test: #{RESULTS[false]}"
 				else
-					puts "    * Websocket message size test: got #{msg.bytesize} bytes"
+					puts "    * Websocket message size test: got #{ws.data.bytesize} bytes"
 				end
 
 			end
-			ws.on_disconnect do
+			ws.on_close do
 				puts "    * Websocket size disconnection test: #{RESULTS[should_disconnect]}"
 			end
 			str = 'a'
 			time_now = Time.now
-			6.times {|i| str = str * 2**i;puts "    * Websocket message size test: sending #{str.bytesize} bytes"; ws.send str; sleep 0.2 }
+			6.times {|i| str = str * 2**i;puts "    * Websocket message size test: sending #{str.bytesize} bytes"; ws << str; sleep 0.2 }
 			sleep (Time.now - time_now + 1)
 			should_disconnect = true
-			Plezi.ws_message_size_limit = 1024
+			Plezi::Settings.ws_message_size_limit = 1024
 			ws << str
 	end
 	def test_404
@@ -328,24 +327,24 @@ module PleziTestTasks
 		puts e
 	end
 	def test_500
-		workers = Plezi::EventMachine.count_living_workers
-		print "    * 500 internal error test: #{RESULTS[ Net::HTTP.get_response(URI.parse "http://localhost:3000/fail" ).code == '500' ]}"
-		# cause 10 more exceptions to be raised... testing thread survival.
-		10.times { putc "."; Net::HTTP.get_response(URI.parse "http://localhost:3000/fail" ).code }
-		putc "\n"
-		workers_after_test = Plezi::EventMachine.count_living_workers
-		puts "    * Worker survival test: #{RESULTS[workers_after_test == workers]} (#{workers_after_test} out of #{workers})"
+		# workers = GReactor.instance_exec {@threads.select {|t| t.alive?} .count}
+		# print "    * 500 internal error test: #{RESULTS[ Net::HTTP.get_response(URI.parse "http://localhost:3000/fail" ).code == '500' ]}"
+		# # cause 10 more exceptions to be raised... testing thread survival.
+		# 10.times { putc "."; Net::HTTP.get_response(URI.parse "http://localhost:3000/fail" ).code }
+		# putc "\n"
+		# workers_after_test = GReactor.instance_exec {@threads.select {|t| t.alive?} .count}
+		# puts "    * Worker survival test: #{RESULTS[workers_after_test == workers]} (#{workers_after_test} out of #{workers})"
 
-		rescue => e
-		puts "    **** 500 internal error test FAILED TO RUN!!!"
-		puts e
+		# rescue => e
+		# puts "    **** 500 internal error test FAILED TO RUN!!!"
+		# puts e
 	end
 end
 
 NO_PLEZI_AUTO_START = true
 
 PL.create_logger '/dev/null'
-# PL.max_threads = 4
+# PL::Settings.max_threads = 4
 
 listen port: 3000
 
@@ -359,7 +358,9 @@ shared_route '/some/:multi{path|another_path}/(:option){route|test}/(:id)/(:opti
 shared_route '/', TestCtrl
 
 
-Plezi::EventMachine.start Plezi.max_threads
+GRHttp.start Plezi::Settings.max_threads
+
+# start_services
 
 shoutdown_test = false
 Plezi.on_shutdown { shoutdown_test = true }
@@ -373,15 +374,7 @@ PleziTestTasks.run_tests
 
 sleep PLEZI_TEST_TIME if defined? PLEZI_TEST_TIME
 
-Plezi::DSL.stop_services
-puts "#{Plezi::EventMachine::EM_IO.count} connections awaiting shutdown."
-Plezi::EventMachine.stop_connections
-puts "#{Plezi::EventMachine::EM_IO.count} connections awaiting shutdown after connection close attempt."
-if Plezi::EventMachine::EM_IO.count > 0
-	Plezi::EventMachine.forget_connections
-	puts "#{Plezi::EventMachine::EM_IO.count} connections awaiting shutdown after connections were forgotten."
-end
-Plezi::EventMachine.shutdown
+Plezi.stop
 
 
 puts "    * Shutdown test: #{ PleziTestTasks::RESULTS[shoutdown_test] }"

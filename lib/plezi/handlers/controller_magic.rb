@@ -44,31 +44,6 @@ module Plezi
 			# the parameters used to create the host (the parameters passed to the `listen` / `add_service` call).
 			attr_reader :host_params
 
-			# Get's the websocket's unique identifier for unicast transmissions.
-			#
-			# This UUID is also used to make sure Radis broadcasts don't triger the
-			# boadcasting object's event.
-			def uuid
-				@uuid ||= SecureRandom.uuid
-			end
-			alias :unicast_id :uuid
-
-			# checks whether this instance accepts broadcasts (WebSocket instances).
-			def accepts_broadcast?
-				@_accepts_broadcast
-			end
-			# sets the controller to refuse "broadcasts".
-			#
-			# The controller will also refuse any messages directed at it using the `unicast` method.
-			#
-			# This allows some websocket connections to isolate themselves even before they are fully disconnected.
-			#
-			# call this method once it is clear the websocket connection should be terminated.
-			def refuse_broadcasts
-				@_accepts_broadcast = false
-				self
-			end
-
 			# this method does two things.
 			#
 			# 1. sets redirection headers for the response.
@@ -140,29 +115,14 @@ module Plezi
 			#
 			def send_data data, options = {}
 				raise 'Cannot use "send_data" after headers were sent' if response.headers_sent?
-				# write data to response object
+				Plezi.warn 'HTTP response buffer is cleared by `#send_data`' if response.body && response.body.any? && response.body.clear
 				response << data
 
 				# set headers
-				content_disposition = 'attachment'
+				content_disposition = options[:inline] ? 'inline' : 'attachment'
+				content_disposition << "; filename=#{options[:filename]}" if options[:filename]
 
-				options[:type] ||= MimeTypeHelper::MIME_DICTIONARY[::File.extname(options[:filename])] if options[:filename]
-
-				if options[:type]
-					response['content-type'] = options[:type]
-					options.delete :type
-				end
-				if options[:inline]
-					content_disposition = 'inline'
-					options.delete :inline
-				end
-				if options[:attachment]
-					options.delete :attachment
-				end
-				if options[:filename]
-					content_disposition << "; filename=#{options[:filename]}"
-					options.delete :filename
-				end
+				response['content-type'] = options[:type] ||= MimeTypeHelper::MIME_DICTIONARY[::File.extname(options[:filename])] if options[:filename]
 				response['content-length'] = data.bytesize rescue true
 				response['content-disposition'] = content_disposition
 				response.finish
@@ -216,7 +176,7 @@ module Plezi
 
 			# returns the initial method called (or about to be called) by the router for the HTTP request.
 			#
-			# this is can be very useful within the before / after filters:
+			# this can be very useful within the before / after filters:
 			#   def before
 			#     return false unless "check credentials" && [:save, :update, :delete].include?(requested_method)
 			#
@@ -225,13 +185,13 @@ module Plezi
 			# (which is the last method called before the protocol is switched from HTTP to WebSockets).
 			def requested_method
 				# respond to websocket special case
-				return :pre_connect if request['upgrade'] && request['upgrade'].to_s.downcase == 'websocket' &&  request['connection'].to_s.downcase == 'upgrade'
+				return :pre_connect if request.upgrade?
 				# respond to save 'new' special case
 				return :save if request.request_method.match(/POST|PUT|PATCH/) && (params[:id].nil? || params[:id] == 'new')
 				# set DELETE method if simulated
 				request.request_method = 'DELETE' if params[:_method].to_s.downcase == 'delete'
 				# respond to special :id routing
-				return params[:id].to_s.to_sym if params[:id] && self.class.available_public_methods.include?(params[:id].to_s.to_sym)
+				return params[:id].to_s.to_sym if params[:id] && self.class.has_exposed_method?(params[:id].to_s.to_sym)
 				#review general cases
 				case request.request_method
 				when 'GET', 'HEAD'
@@ -247,53 +207,34 @@ module Plezi
 
 			## WebSockets Magic
 
+			# Get's the websocket's unique identifier for unicast transmissions.
+			#
+			# This UUID is also used to make sure Radis broadcasts don't triger the
+			# boadcasting object's event.
+			def uuid
+				return @response.uuid if @response.is_a?(GRHttp::WSEvent)
+				nil
+			end
+			alias :unicast_id :uuid
+
 			# WebSockets.
 			#
 			# Use this to brodcast an event to all 'sibling' websockets (websockets that have been created using the same Controller class).
 			#
-			# accepts:
+			# Accepts:
 			# method_name:: a Symbol with the method's name that should respond to the broadcast.
-			# *args:: any arguments that should be passed to the method (IF REDIS IS USED, LIMITATIONS APPLY).
+			# args*:: The method's argumenst - It MUST be possible to stringify the arguments into a YAML string, or broadcasting and unicasting will fail when scaling beyond one process / one machine.
 			#
-			# the method will be called asynchrnously for each sibling instance of this Controller class.
+			# The method will be called asynchrnously for each sibling instance of this Controller class.
 			#
-			def broadcast method_name, *args, &block
-				return false unless self.class.public_instance_methods.include?(method_name)
-				@uuid ||= SecureRandom.uuid
-				self.class.__inner_redis_broadcast(uuid, nil, method_name, args, &block) || self.class.__inner_process_broadcast(uuid, nil, method_name.to_sym, args, &block)
+			def broadcast method_name, *args
+				return false unless self.class.has_method? method_name
+				self.class._inner_broadcast({ method: method_name, data: args, type: self.class}, @response.io)
 			end
 
 			# {include:ControllerMagic::ClassMethods#unicast}
 			def unicast target_uuid, method_name, *args
-				self.class.unicast target_uuid, method_name, *args
-			end
-
-			# WebSockets.
-			#
-			# Use this to collect data from all 'sibling' websockets (websockets that have been created using the same Controller class).
-			#
-			# This method will call the requested method on all instance siblings and return an Array of the returned values (including nil values).
-			#
-			# This method will block the excecution unless a block is passed to the method - in which case
-			#  the block will used as a callback and recieve the Array as a parameter.
-			#
-			# i.e.
-			#
-			# this will block: `collect :_get_id`
-			#
-			# this will not block: `collect(:_get_id) {|a| puts "got #{a.length} responses."; a.each { |id| puts "#{id}"} }
-			#
-			# accepts:
-			# method_name:: a Symbol with the method's name that should respond to the broadcast.
-			# *args:: any arguments that should be passed to the method.
-			# &block:: an optional block to be used as a callback.
-			#
-			# the method will be called asynchrnously for each sibling instance of this Controller class.
-			def collect method_name, *args, &block
-				return Plezi.callback(self, :collect, *args, &block) if block
-				r = []
-				ObjectSpace.each_object(self.class) { |controller|  r << controller.method(method_name).call(*args) if controller.accepts_broadcast?  && (controller.object_id != self.object_id) }
-				return r
+				self.class._inner_broadcast method: method_name, data: args, target: target_uuid
 			end
 
 
@@ -307,6 +248,38 @@ module Plezi
 		end
 
 		module ClassMethods
+			public
+
+			# WebSockets: fires an event on all of this controller's active websocket connections.
+			#
+			# Class method.
+			#
+			# Use this to brodcast an event to all connections.
+			#
+			# accepts:
+			# method_name:: a Symbol with the method's name that should respond to the broadcast.
+			# *args:: any arguments that should be passed to the method (IF REDIS IS USED, LIMITATIONS APPLY).
+			#
+			# this method accepts and optional block (NON-REDIS ONLY) to be used as a callback for each sibling's event.
+			#
+			# the method will be called asynchrnously for each sibling instance of this Controller class.
+			def broadcast method_name, *args
+				return false unless has_method? method_name
+				_inner_broadcast method: method_name, data: args, type: self
+			end
+
+			# WebSockets: fires an event on a specific websocket connection using it's UUID.
+			#
+			# Use this to unidcast an event to specific websocket connection using it's UUID.
+			#
+			# accepts:
+			# target_uuid:: the target's unique UUID.
+			# method_name:: a Symbol with the method's name that should respond to the broadcast.
+			# *args:: any arguments that should be passed to the method (IF REDIS IS USED, LIMITATIONS APPLY).
+			def unicast target_uuid, method_name, *args
+				_inner_broadcast method: method_name, data: args, target: target_uuid
+			end
+
 			protected
 
 			# Sets the HTTP route that is the owner of this controller.
@@ -330,24 +303,6 @@ module Plezi
 				get_pl_route.url_for dest				
 			end
 
-			# lists the available methods that will be exposed to HTTP requests
-			def available_public_methods
-				# set class global to improve performance while checking for supported methods
-				@available_public_methods ||= (available_routing_methods - [:before, :after, :save, :show, :update, :delete, :initialize, :on_message, :pre_connect, :on_connect, :on_disconnect]).to_set
-			end
-
-			# lists the available methods that will be exposed to the HTTP router
-			def available_routing_methods
-				@available_routing_methods ||= ( ( (public_instance_methods - Object.public_instance_methods) - Plezi::ControllerMagic::InstanceMethods.instance_methods).delete_if {|m| m.to_s[0] == '_'}).to_set
-			end
-
-			# resets this controller's router, to allow for dynamic changes
-			def reset_routing_cache
-				@available_routing_methods = false
-				@available_public_methods = false
-				available_routing_methods
-				available_public_methods
-			end
 
 			# a callback that resets the class router whenever a method (a potential route) is added
 			def method_added(id)
@@ -361,163 +316,28 @@ module Plezi
 			def method_undefined(id)
 				reset_routing_cache
 			end
-			# # lists the available methods that will be exposed to HTTP requests
-			# def available_public_methods
-			# 	# set class global to improve performance while checking for supported methods
-			# 	Plezi.cached?(self.superclass.name + '_p&rt') ? Plezi.get_cached(self.superclass.name + "_p&rt") : Plezi.cache_data(self.superclass.name + "_p&rt", (available_routing_methods - [:before, :after, :save, :show, :update, :delete, :initialize, :on_message, :pre_connect, :on_connect, :on_disconnect]).to_set )
-			# end
 
-			# # lists the available methods that will be exposed to the HTTP router
-			# def available_routing_methods
-			# 	# set class global to improve performance while checking for supported methods
-			# 	Plezi.cached?(self.superclass.name + '_r&rt') ? Plezi.get_cached(self.superclass.name + "_r&rt") : Plezi.cache_data(self.superclass.name + "_r&rt",  (((public_instance_methods - Object.public_instance_methods) - Plezi::ControllerMagic::InstanceMethods.instance_methods).delete_if {|m| m.to_s[0] == '_'}).to_set  )
-			# end
 
-			# # resets this controller's router, to allow for dynamic changes
-			# def reset_routing_cache
-			# 	Plezi.clear_cached(self.superclass.name + '_p&rt')
-			# 	Plezi.clear_cached(self.superclass.name + '_r&rt')
-			# 	available_routing_methods
-			# 	available_public_methods
-			# end
+			# WebSockets
 
-			
-			# Reviews the Redis connection, sets it up if it's missing and returns the Redis connection.
-			#
-			# A Redis connection will be automatically created if the `ENV['PL_REDIS_URL']` is set.
-			# for example:
-			#      ENV['PL_REDIS_URL'] = ENV['REDISCLOUD_URL']`
-			# or
-			#      ENV['PL_REDIS_URL'] = "redis://username:password@my.host:6379"
-			def redis_connection
-				# return false unless defined?(Redis) && ENV['PL_REDIS_URL']
-				# return @redis if defined?(@redis_sub_thread) && @redis
-				# @@redis_uri ||= URI.parse(ENV['PL_REDIS_URL'])
-				# @redis ||= Redis.new(host: @@redis_uri.host, port: @@redis_uri.port, password: @@redis_uri.password)
-				# @redis_sub_thread = Thread.new do
-				# 	begin
-				# 		Redis.new(host: @@redis_uri.host, port: @@redis_uri.port, password: @@redis_uri.password).subscribe(redis_channel_name) do |on|
-				# 			on.message do |channel, msg|
-				# 				args = JSON.parse(msg)
-				# 				params = args.shift
-				# 				__inner_process_broadcast params['_pl_ignore_object'], params['_pl_method_broadcasted'].to_sym, args
-				# 			end
-				# 		end						
-				# 	rescue Exception => e
-				# 		Plezi.error e
-				# 		retry
-				# 	end
-				# end
-				# raise "Redis connction failed for: #{ENV['PL_REDIS_URL']}" unless @redis
-				# @redis
-				return false unless defined?(Redis) && ENV['PL_REDIS_URL']
-				return Plezi.get_cached(self.superclass.name + '_b') if Plezi.cached?(self.superclass.name + '_b')
-				@@redis_uri ||= URI.parse(ENV['PL_REDIS_URL'])
-				Plezi.cache_data self.superclass.name + '_b', Redis.new(host: @@redis_uri.host, port: @@redis_uri.port, password: @@redis_uri.password)
-				raise "Redis connction failed for: #{ENV['PL_REDIS_URL']}" unless Plezi.cached?(self.superclass.name + '_b')
-				t = Thread.new do
-					begin
-						Redis.new(host: @@redis_uri.host, port: @@redis_uri.port, password: @@redis_uri.password).subscribe(redis_channel_name) do |on|
-							on.message do |channel, msg|
-								args = JSON.parse(msg)
-								params = args.shift
-								__inner_process_broadcast params['_pl_ignore_object'], params['_pl_target_object'], params['_pl_method_broadcasted'].to_sym, args
-							end
-						end						
-					rescue Exception => e
-						Plezi.error e
-						retry
-					end
+			# sends the broadcast
+			def _inner_broadcast data, ignore_io = nil
+				if data[:target]
+					__inner_redis_broadcast data unless GRHttp::Base::WSHandler.unicast data[:target], data
+				else
+					GRHttp::Base::WSHandler.broadcast data, ignore_io
+					__inner_redis_broadcast data				
 				end
-				Plezi.cache_data self.superclass.name + '_t', t
-				Plezi.get_cached(self.superclass.name + '_b')
-			end
-
-			# returns a Redis channel name for this controller.
-			def redis_channel_name
-				self.superclass.name.to_s
-			end
-
-			# broadcasts messages (methods) for this process
-			def __inner_process_broadcast ignore, target, method_name, args, &block
-				ObjectSpace.each_object(self) { |controller| Plezi.callback controller, method_name, *args, &block if controller.accepts_broadcast? && (!ignore || (controller.uuid != ignore)) && (!target || (controller.uuid == target)) }
-			end
-
-			# broadcasts messages (methods) between all processes (using Redis).
-			def __inner_redis_broadcast ignore, target, method_name, args, &block
-				return false unless redis_connection
-				raise "Radis broadcasts cannot accept blocks (no inter-process callbacks of memory sharing)!" if block
-				# raise "Radis broadcasts accept only one paramater, which is an optional Hash (no inter-process memory sharing)" if args.length > 1 || (args[0] && !args[0].is_a?(Hash))
-				args.unshift ({_pl_method_broadcasted: method_name, _pl_ignore_object: ignore, _pl_target_object: target})
-				redis_connection.publish(redis_channel_name, args.to_json )
 				true
 			end
 
-			# WebSockets: fires an event on all of this controller's active websocket connections.
-			#
-			# Class method.
-			#
-			# Use this to brodcast an event to all connections.
-			#
-			# accepts:
-			# method_name:: a Symbol with the method's name that should respond to the broadcast.
-			# *args:: any arguments that should be passed to the method (IF REDIS IS USED, LIMITATIONS APPLY).
-			#
-			# this method accepts and optional block (NON-REDIS ONLY) to be used as a callback for each sibling's event.
-			#
-			# the method will be called asynchrnously for each sibling instance of this Controller class.
-			def broadcast method_name, *args, &block
-				return false unless public_instance_methods.include?(method_name)
-				__inner_redis_broadcast(nil, nil, method_name, args, &block) || __inner_process_broadcast(nil, nil, method_name.to_sym, args, &block)
-			end
-
-			# WebSockets: fires an event on a specific websocket connection using it's UUID.
-			#
-			# Use this to unidcast an event to specific websocket connection using it's UUID.
-			#
-			# accepts:
-			# target_uuid:: the target's unique UUID.
-			# method_name:: a Symbol with the method's name that should respond to the broadcast.
-			# *args:: any arguments that should be passed to the method (IF REDIS IS USED, LIMITATIONS APPLY).
-			def unicast target_uuid, method_name, *args
-				return false unless public_instance_methods.include?(method_name.to_sym)
-				__inner_redis_broadcast(nil, target_uuid, method_name, args) || __inner_process_broadcast(nil, target_uuid, method_name.to_sym, args)
-			end
-
-			# WebSockets.
-			#
-			# Class method.
-			#
-			# Use this to collect data from all websockets for the calling class (websockets that have been created using the same Controller class).
-			#
-			# This method will call the requested method on all instance and return an Array of the returned values (including nil values).
-			#
-			# This method will block the excecution unless a block is passed to the method - in which case
-			#  the block will used as a callback and recieve the Array as a parameter.
-			#
-			# i.e.
-			#
-			# this will block: `collect :_get_id`
-			#
-			# this will not block: `collect(:_get_id) {|a| puts "got #{a.length} responses."; a.each { |id| puts "#{id}"} }
-			#
-			# accepts:
-			# method_name:: a Symbol with the method's name that should respond to the broadcast.
-			# *args:: any arguments that should be passed to the method.
-			# &block:: an optional block to be used as a callback.
-			#
-			# the method will be called asynchrnously for each instance of this Controller class.
-			def collect method_name, *args, &block				
-				return Plezi.push_event(self.method(:collect), *args, &block) if block
-
-				r = []
-				ObjectSpace.each_object(self) { |controller|  r << controller.method(method_name).call(*args) if controller.accepts_broadcast? }
-				return r
+			def __inner_redis_broadcast data
+				conn = Plezi.redis_connection
+				data[:server] = Plezi::Settings::UUID
+				return conn.publish( Plezi::Settings.redis_channel_name, data.to_yaml ) if conn
+				false
 			end
 		end
-
-		module_function
-
 
 	end
 end

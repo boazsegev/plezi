@@ -1,20 +1,18 @@
 # Plezi, The Rack Free Ruby framework for realtime web-apps
 [![Gem Version](https://badge.fury.io/rb/plezi.svg)](http://badge.fury.io/rb/plezi)
-[![Inline docs](http://inch-ci.org/github/boazsegev/plezi.svg?branch=master)](http://inch-ci.org/github/boazsegev/plezi)
+[![Inline docs](http://inch-ci.org/github/boazsegev/plezi.svg?branch=master)](http://www.rubydoc.info/gems/plezi/)
 
 > People who are serious about their frameworks, should write their own servers...
 
-Find more info on [Plezi's framework, web server and websocket documentation](http://www.rubydoc.info/gems/plezi/)
+Find more info on [Plezi's framework documentation](http://www.rubydoc.info/gems/plezi/)
 
-## About the Plezi framework \ server
+## About the Plezi framework
 
 Plezi is an easy to use Ruby Websocket Framework, with full RESTful routing support and HTTP streaming support. It's name comes from the word "fun" in Haitian, since Plezi is really fun to work with and it keeps our code clean and streamlined.
 
 Plezi works as an asynchronous multi-threaded Ruby alternative to a Rack/Rails/Sintra/Faye/EM-Websockets combo. It's also great as an alternative to socket.io, allowing for both websockets and long pulling.
 
-Plezi contains an object-oriented server, divided into parts that can be changed/updated and removed easily and dynamically. This allows - much like Node.js - native WebSocket support (and, if you would like to write your own Protocol or Handler, native SMPT or any other custom protocol you might wish to implement).
-
-You can follow our [tutorial to write your first Plezi Chatroom](http://boazsegev.github.io/plezi/websockets.html) - but it's better to start with this readme and explore the WebSockets example given here.
+Plezi runs over the [GRHttp server](https://github.com/boazsegev/GRHttp), which is a pure Ruby HTTP and Websocket Generic Server build using [GReactor](https://github.com/boazsegev/GReactor) - a multi-threaded pure ruby alternative to EventMachine with basic process forking support (enjoy it, if your code is scaling ready).
 
 ## Installation
 
@@ -23,6 +21,7 @@ Add this line to your application's Gemfile:
 ```ruby
 gem 'plezi'
 ```
+
 Or install it yourself as:
 
     $ gem install plezi
@@ -33,7 +32,9 @@ to create a new barebones app using the Plezi framework, run from terminal:
 
     $ plezi new appname
 
-That's it, now you have a ready to use basic web server (with some demo code). If you're on MacOS or linux you can simply double click the `appname` script file in the `appname` folder. Or, from the terminal, you can type:
+That's it, now you have a ready to use basic web server (with some demo code, such as a websocket chatroom).
+
+If you're on MacOS or linux you can simply double click the `appname` script file in the `appname` folder. Or, from the terminal, you can type:
 
     $ cd appname
     $ ./appname # ( or: plezi s )
@@ -44,11 +45,11 @@ the default first port for the app is 3000. you can set the first port to listen
 
     $ ./appname -p 80
 
-you now have a smart framework app that will happily eat any gem you feed it. it responds extra well to Haml, Sass and Coffee-Script, which you can enable in it's Gemfile.
+you now have a smart framework app that will happily assimilate any gem you feed it. it responds extra well to Haml, Sass and Coffee-Script, which you can enable in it's Gemfile.
 
 ## Barebones Web Service
 
-this example is basic, useless, but required for every doc out there...
+This example is basic, useless, but required for every doc out there...
 
 "Hello World!" in 3 lines - try it in irb (exit irb to start server):
 
@@ -56,11 +57,11 @@ this example is basic, useless, but required for every doc out there...
 		listen
 		route(/.?/) { |req, res| res << "Hello World!" }
 
-After you exited irb, the Plezi server started up. go to http://localhost:3000/ and see it run :)
+After you exit irb, the Plezi server will start up. Go to http://localhost:3000/ and see it run :)
 
 ## Plezi Controller classes
 
-One of the best things about the Plezi is it's ability to take in any class as a controller class and route to the classes methods with special support for RESTful methods (`index`, `show`, `new`, `save`, `update`, `delete`, `before` and `after`) and for WebSockets (`pre_connect`, `on_connect`, `on_message(data)`, `on_disconnect`, `broadcast`, `collect`):
+One of the best things about the Plezi is it's ability to take in any class as a controller class and route to the classes methods with special support for RESTful methods (`index`, `show`, `new`, `save`, `update`, `delete`, `before` and `after`) and for WebSockets (`pre_connect`, `on_open`, `on_message(data)`, `on_close`, `broadcast`, `unicast`, `on_broadcast(data)`):
 
         require 'plezi'
 
@@ -77,11 +78,11 @@ Except for WebSockets, returning a String will automatically add the string to t
 
 Controllers can even be nested (order matters) or have advanced uses that are definitly worth exploring.
 
-**please read the demo code for Plezi::StubRESTCtrl and Plezi::StubWSCtrl to learn more.**
+\* please read the demo code for Plezi::StubRESTCtrl and Plezi::StubWSCtrl to learn more. Also, read more about the [GRHttp server](GRHttp websocket and HTTP server) at the core of Plezi to get more information about the amazing [HTTPRequest](http://www.rubydoc.info/gems/grhttp/0.0.6/GRHttp/HTTPRequest) and [HTTPResponse](http://www.rubydoc.info/gems/grhttp/GRHttp/HTTPResponse) objects.
 
 ## Native Websocket and Redis support
 
-Plezi Controllers have access to native websocket support through the `pre_connect`, `on_connect`, `on_message(data)`, `on_disconnect`, `broadcast` and `collect` methods.
+Plezi Controllers have access to native websocket support through the `pre_connect`, `on_open`, `on_message(data)`, `on_close`, `broadcast` and `unicast` methods.
 
 Here is some demo code for a simple Websocket broadcasting server, where messages sent to the server will be broadcasted back to all the **other** active connections (the connection sending the message will not recieve the broadcast).
 
@@ -128,15 +129,18 @@ method names starting with an underscore ('_') will NOT be made public by the ro
 
 Plezi comes with native HTTP streaming support, alowing you to use Plezi Events and Timers to send an Asynchronous response.
 
-Let's make the classic 'Hello World' use HTTP Streaming and Asynchronous Plezi Events:
+Let's make the classic 'Hello World' use HTTP Streaming:
 
 ```ruby
         require 'plezi'
 
         class Controller
             def index
-                response.start_http_streaming
-                PL.callback(response, :send, "Hello World") { response.finish }
+                response.stream_async do
+                    sleep 0.5
+                    response << "Hello ";
+                    response.stream_async{ sleep 0.5; response << "World" }
+                end
                 true
             end
         end
@@ -145,7 +149,9 @@ Let's make the classic 'Hello World' use HTTP Streaming and Asynchronous Plezi E
         route '*' , Controller
 ```
 
-Notice the easy use of Asynchronous Events using the PL#callback method. The optional block passed to this method (`response.finish`) will be executed only after the asynchronous call for the response#send method with the "Hello World" argument has completed.
+Notice you can nest calls to the `response.stream_async` method, allowing you to breakdown big blocking tasks into smaller chunks. `response.stream_async` will return immediately, scheduling the task for background processing.
+
+You can also handle other tasks asynchronously using the [GReactor API](http://www.rubydoc.info/gems/greactor)'s.
 
 More on asynchronous events and timers later.
 
@@ -153,7 +159,7 @@ More on asynchronous events and timers later.
 
 Plezi supports magic routes, in similar formats found in other systems, such as: `route "/:required/(:optional_with_format){[\\d]*}/(:optional)", Plezi::StubRESTCtrl`.
 
-Plezi assummes all simple string routes to be RESTful routes with the parameter `:id` ( `"/user" == "/user/(:id)"` ).
+Plezi assummes all simple routes to be RESTful routes with the parameter `:id` ( `"/user" == "/user/(:id)"` ).
 
     require 'plezi'
     listen
@@ -172,7 +178,7 @@ now visit:
 
 ## Plezi Virtual Hosts
 
-Plezi can be used to create virtual hosts for the same service:
+Plezi can be used to create virtual hosts for the same service, allowing you to handle different domains and subdomains with one app:
 
     require 'plezi'
     listen
@@ -203,7 +209,7 @@ Now visit:
 
 ## Plezi Logging
 
-The Plezi module (also `PL`) has methods to help with logging as well as the support you already noticed for dynamic routes, dynamic services and more.
+The Plezi module (also `PL`) delegates to the GReactor methods, helping with logging as well as the support you already noticed for dynamic routes, dynamic services and more.
 
 Logging:
 
@@ -211,6 +217,7 @@ Logging:
 
     # simple logging of strings
     PL.info 'log info'
+    GReactor.info 'This is the same, but more direct.'
     PL.warn 'log warning'
     PL.error 'log error'
     PL.fatal "log a fatal error (shuoldn't be needed)."
@@ -223,9 +230,11 @@ Logging:
         PL.error e
     end
 
+Please notice it is faster to use the GReactor API directly when using API that is delegated to GReactor.
+
 ## Plezi Events and Timers
 
-The Plezi module (also `PL`) also has methods to help with asynchronous tasking, callbacks, timers and customized shutdown cleanup.
+The Plezi module (also `PL`) also delegates to the [GReactor's API](http://www.rubydoc.info/gems/greactor/GReactor) to help with asynchronous tasking, callbacks, timers and customized shutdown cleanup.
 
 Asynchronous callbacks (works only while services are active and running):
 
@@ -236,14 +245,17 @@ Asynchronous callbacks (works only while services are active and running):
     end
 
     # shutdown callbacks
-    PL.on_shutdown(Kernel, :my_shutdown_proc, Time.now) { puts "this will run after shutdown." }
-    PL.on_shutdown() { puts "this will run too." }
+    GReactor.on_shutdown(Kernel, :my_shutdown_proc, Time.now) { puts "this will run after shutdown." }
+    GReactor.on_shutdown() { puts "this will run too." }
 
     # a timer
-    PL.run_after 2, -> {puts "this will wait 2 seconds to run... too late. for this example"}
+    GReactor.run_after 2, -> {puts "this will wait 2 seconds to run... too late. for this example"}
 
     # an asynchronous method call with an optional callback block
-    PL.callback(Kernel, :puts, "Plezi will start eating our code once we exit terminal.") {puts 'first output finished'}
+    GReactor.callback(Kernel, :puts, "Plezi will start eating our code once we exit terminal.") {puts 'first output finished'}
+
+    GReactor.run_async {puts "notice that the background tasks will only start once the Plezi's engine is running."}
+    GReactor.run_async {puts "exit Plezi to observe the shutdown callbacks."}
 
 ## Re-write Routes
 
@@ -313,12 +325,6 @@ As you can see in the example above, Plezi supports Proc routes as well as Class
 
 Please notice that there are some differences between the two. Proc routes less friedly, but plenty powerful and are great for custom 404 error handling.
 
-## Plezi Settings
-
-Plezi is ment to be very flexible. please take a look at the Plezi Module for settings you might want to play with (max_threads, idle_sleep, create_logger) or any monkey patching you might enjoy.
-
-Feel free to fork or contribute. right now I am one person, but together we can make something exciting that will help us enjoy Ruby in this brave new world and (hopefully) set an example that will induce progress in the popular mainstream frameworks such as Rails and Sinatra.
-
 ## OAuth2 and other Helpers
 
 Plezi has a few helpers that help with common tasks.
@@ -365,6 +371,13 @@ and and other OAuth2 authentication service. For example:
 Plezi has a some more goodies under the hood.
 
 Whether such goodies are part of the Plezi-App Template (such as rake tasks for ActiveRecord without Rails) or part of the Plezi Framework core (such as descried in the Plezi::ControllerMagic documentation: #flash, #url_for, #render, #send_data, etc'), these goodies are fun to work with and make completion of common tasks a breeze.
+
+
+## Plezi Settings
+
+Plezi is meant to be very flexible. please take a look at the Plezi Module for settings you might want to play with (max_threads, idle_sleep, create_logger) or any monkey patching you might enjoy.
+
+Feel free to fork or contribute. right now I am one person, but together we can make something exciting that will help us enjoy Ruby in this brave new world and (hopefully) set an example that will induce progress in the popular mainstream frameworks such as Rails and Sinatra.
 
 ## Contributing
 

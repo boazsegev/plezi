@@ -139,6 +139,10 @@ end
 # Accept-Language: en-us
 # Accept-Encoding: gzip, deflate
 # Connection: keep-alive
+# Content-Length: 13
+
+# Hello World
+
 #
 # => "GET / HTTP/1.1\n\rHost: localhost:2000\n\rAccept: text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8\n\rCookie: user_token=2INa32_vDgx8Aa1qe43oILELpSdIe9xwmT8GTWjkS-w\n\rUser-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_10) AppleWebKit/600.1.25 (KHTML, like Gecko) Version/8.0 Safari/600.1.25\n\rAccept-Language: en-us\n\rAccept-Encoding: gzip, deflate\n\rConnection: keep-alive\n\r\n\r"
 # => "GET /people/are/friendly HTTP/1.1\n\rHost: localhost:2000\n\rAccept: text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8\n\rCookie: user_token=2INa32_vDgx8Aa1qe43oILELpSdIe9xwmT8GTWjkS-w\n\rUser-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_10) AppleWebKit/600.1.25 (KHTML, like Gecko) Version/8.0 Safari/600.1.25\n\rAccept-Language: en-us\n\rAccept-Encoding: gzip, deflate\n\rConnection: keep-alive\n\r\n\r"

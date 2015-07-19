@@ -17,10 +17,10 @@ module Plezi
 			fill_parameters = match request.path
 			return false unless fill_parameters
 			old_params = request.params.dup
-			fill_parameters.each {|k,v| GRHttp::HTTP.add_param_to_hash k, v, request.params }
+			fill_parameters.each {|k,v| HTTP.add_param_to_hash k, v, request.params }
 			ret = false
 			if controller
-				ret = controller.new(request, response)._route_path_to_methods_and_set_the_response_
+				ret = controller.new(request, response, params)._route_path_to_methods_and_set_the_response_
 			elsif proc
 				ret = proc.call(request, response)
 			elsif controller == false
@@ -101,7 +101,7 @@ module Plezi
 				# convert dest.id and dest[:id] to their actual :id value.
 				dest = {id: (dest.id rescue false) || (raise TypeError, "Expecting a Symbol, Hash, String, Numeric or an object that answers to obj[:id] or obj.id") }
 			end
-			dest.default_proc = Plezi::Base::Helpers::HASH_SYM_PROC
+			dest.default_proc = Plezi::Helpers::HASH_SYM_PROC
 
 			url = '/'
 
@@ -112,7 +112,7 @@ module Plezi
 				param_name = param_name[1].to_sym if param_name
 
 				if param_name && dest[param_name]
-					url << GRHttp::HTTP.encode(dest.delete(param_name).to_s, :url)
+					url << HTTP.encode(dest.delete(param_name).to_s, :url)
 					url << '/' 
 				elsif !param_name
 					url << sec
@@ -125,7 +125,7 @@ module Plezi
 			end
 			unless dest.empty?
 				add = '?'
-				dest.each {|k, v| url << "#{add}#{GRHttp::HTTP.encode(k.to_s, :url)}=#{GRHttp::HTTP.encode(v.to_s, :url)}"; add = '&'}
+				dest.each {|k, v| url << "#{add}#{HTTP.encode(k.to_s, :url)}=#{HTTP.encode(v.to_s, :url)}"; add = '&'}
 			end
 			url
 
@@ -229,7 +229,7 @@ module Plezi
 			# m = nil
 			# unless @fill_parameters.values.include?("format")
 			# 	if (m = path.match /([^\.]*)\.([^\.\/]+)$/)
-			# 		GRHttp::HTTP.add_param_to_hash 'format', m[2], hash
+			# 		HTTP.add_param_to_hash 'format', m[2], hash
 			# 		path = m[1]
 			# 	end
 			# end
@@ -256,9 +256,154 @@ module Plezi
 			new_class_name = "Plezi__#{controller.name.gsub /[\:\-\#\<\>\{\}\(\)\s]/, '_'}"
 			return Module.const_get new_class_name if Module.const_defined? new_class_name
 			# controller.include Plezi::ControllerMagic
-			controller.instance_exec(container) {|r| include Plezi::ControllerMagic; }
+			controller.instance_exec(container) {|r| include Plezi::ControllerMagic; set_pl_route r;}
 			ret = Class.new(controller) do
-				include Plezi::Base::ControllerCore
+
+				def name
+					new_class_name
+				end
+
+				def initialize request, response, host_params
+					@request, @params, @flash, @host_params = request, request.params, response.flash, host_params
+					@response = response
+					# @response["content-type"] ||= ::Plezi.default_content_type
+
+					@_accepts_broadcast = false
+
+					# create magical cookies
+					@cookies = request.cookies
+					@cookies.set_controller self
+
+					super()
+				end
+
+				# WebSockets.
+				#
+				# this method handles the protocol and handler transition between the HTTP connection
+				# (with a protocol instance of HTTPProtocol and a handler instance of HTTPRouter)
+				# and the WebSockets connection
+				# (with a protocol instance of WSProtocol and an instance of the Controller class set as a handler)
+				def pre_connect
+					# make sure this is a websocket controller
+					return false unless self.class.public_instance_methods.include?(:on_message)
+					# call the controller's original method, if exists, and check connection.
+					return false if (defined?(super) && !super)
+					# finish if the response was sent
+					return true if response.headers_sent?
+					# complete handshake
+					return false unless WSProtocol.new( request.service, request.service.params).http_handshake request, response, self
+					# set up controller as WebSocket handler
+					@response = WSResponse.new request
+					# create the redis connection (in case this in the first instance of this class)
+					self.class.redis_connection
+					# set broadcasts and return true
+					@_accepts_broadcast = true
+				end
+
+
+				# WebSockets.
+				#
+				# stops broadcasts from being called on closed sockets that havn't been collected by the garbage collector.
+				def on_disconnect
+					@_accepts_broadcast = false
+					super if defined? super
+				end
+
+				# Inner Routing
+				#
+				#
+				def _route_path_to_methods_and_set_the_response_
+					#run :before filter
+					return false if self.class.available_routing_methods.include?(:before) && self.before == false 
+					#check request is valid and call requested method
+					ret = requested_method
+					return false unless self.class.available_routing_methods.include?(ret)
+					ret = self.method(ret).call
+					return false unless ret
+					#run :after filter
+					return false if self.class.available_routing_methods.include?(:after) && self.after == false
+					# review returned type for adding String to response
+					return ret
+				end
+				# a callback that resets the class router whenever a method (a potential route) is added
+				def self.method_added(id)
+					reset_routing_cache
+				end
+				# a callback that resets the class router whenever a method (a potential route) is removed
+				def self.method_removed(id)
+					reset_routing_cache
+				end
+				# a callback that resets the class router whenever a method (a potential route) is undefined (using #undef_method).
+				def self.method_undefined(id)
+					reset_routing_cache
+				end
+
+				# # lists the available methods that will be exposed to HTTP requests
+				# def self.available_public_methods
+				# 	# set class global to improve performance while checking for supported methods
+				# 	@@___available_public_methods___ ||= available_routing_methods - [:before, :after, :save, :show, :update, :delete, :initialize, :on_message, :pre_connect, :on_connect, :on_disconnect]
+				# end
+
+				# # lists the available methods that will be exposed to the HTTP router
+				# def self.available_routing_methods
+				# 	# set class global to improve performance while checking for supported methods
+				# 	@@___available_routing_methods___ ||= (((public_instance_methods - Object.public_instance_methods) - Plezi::ControllerMagic::InstanceMethods.instance_methods).delete_if {|m| m.to_s[0] == '_'})
+				# end
+
+				# # resets this controller's router, to allow for dynamic changes
+				# def self.reset_routing_cache
+				# 	@@___available_routing_methods___ = @@___available_public_methods___ = nil
+				# 	available_routing_methods
+				# 	available_public_methods
+				# end
+
+				
+				# # reviews the Redis connection, sets it up if it's missing and returns the Redis connection.
+				# #
+				# # todo: review thread status? (incase an exception killed it)
+				# def self.redis_connection
+				# 	return false unless defined?(Redis) && ENV['PL_REDIS_URL']
+				# 	return @@redis if defined?(@@redis_sub_thread) && @@redis
+				# 	@@redis_uri ||= URI.parse(ENV['PL_REDIS_URL'])
+				# 	@@redis ||= Redis.new(host: @@redis_uri.host, port: @@redis_uri.port, password: @@redis_uri.password)
+				# 	@@redis_sub_thread = Thread.new do
+				# 		begin
+				# 			Redis.new(host: @@redis_uri.host, port: @@redis_uri.port, password: @@redis_uri.password).subscribe(redis_channel_name) do |on|
+				# 				on.message do |channel, msg|
+				# 					args = JSON.parse(msg)
+				# 					params = args.shift
+				# 					__inner_process_broadcast params['_pl_ignore_object'], params['_pl_method_broadcasted'].to_sym, args
+				# 				end
+				# 			end						
+				# 		rescue Exception => e
+				# 			Plezi.error e
+				# 			retry
+				# 		end
+				# 	end
+				# 	raise "Redis connction failed for: #{ENV['PL_REDIS_URL']}" unless @@redis
+				# 	@@redis
+				# end
+
+				# # returns a Redis channel name for this controller.
+				# def self.redis_channel_name
+				# 	self.name.to_s
+				# end
+
+				# # broadcasts messages (methods) for this process
+				# def self.__inner_process_broadcast ignore, method_name, args, &block
+				# 	ObjectSpace.each_object(self) { |controller| Plezi.callback controller, method_name, *args, &block if controller.accepts_broadcast? && (!ignore || controller.uuid != ignore) }
+				# end
+
+				# # broadcasts messages (methods) between all processes (using Redis).
+				# def self.__inner_redis_broadcast ignore, method_name, args, &block
+				# 	return false unless redis_connection
+				# 	raise "Radis broadcasts cannot accept blocks (no inter-process callbacks of memory sharing)!" if block
+				# 	# raise "Radis broadcasts accept only one paramater, which is an optional Hash (no inter-process memory sharing)" if args.length > 1 || (args[0] && !args[0].is_a?(Hash))
+				# 	args.unshift ({_pl_method_broadcasted: method_name, _pl_ignore_object: ignore})
+				# 	redis_connection.publish(redis_channel_name, args.to_json )
+				# 	true
+				# end
+
 			end
 			Object.const_set(new_class_name, ret)
 			Module.const_get(new_class_name).reset_routing_cache

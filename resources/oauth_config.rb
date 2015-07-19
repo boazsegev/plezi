@@ -20,5 +20,5 @@
 # create_auth_shared_route do |service_name, auth_token, remote_user_id, remote_user_email, remote_response|
 #         # ...callback for authentication.
 #         # This callback should return the app user object or false
-#         # This callback hass access to the magic controller methods (request, cookies, etc')
+#         # This callback has access to the magic controller methods (request, cookies, etc')
 # end
