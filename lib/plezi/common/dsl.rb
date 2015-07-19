@@ -127,12 +127,12 @@ module Plezi
 	end
 
 	def self.start
-		return if GReactor.running?
+		return GReactor.start if GReactor.running?
 		Object.const_set("NO_PLEZI_AUTO_START", true) unless defined?(NO_PLEZI_AUTO_START)
 		puts "Starting Plezi #{Plezi::VERSION} Services using the GRHttp #{GRHttp::VERSION} server."
 		puts "Press ^C to exit."
 		GReactor.on_shutdown { puts "Plezi shutdown. It was fun to serve you."  }
-		GReactor.start
+		GReactor.start Plezi::Settings.max_threads
 		GReactor.join { puts "\r\nStarting shutdown sequesnce. Press ^C to force quit."}
 	end
 end

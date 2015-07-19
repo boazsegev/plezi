@@ -2,6 +2,14 @@
 
 ***
 
+Change log v.0.10.3
+
+**Update**: updated the starting process, so that Plezi's engine (based on GReactor) could be started and restarted if needed.
+
+**Fix**: the startup process ignored the `max_thread` settings. This is now fixed.
+
+***
+
 Change log v.0.10.2
 
 **Fix**: fixed an issue where the Redis connection couldn't broadcast due to limited acess to the controller's methods.
