@@ -2,6 +2,12 @@
 
 ***
 
+Change log v.0.10.4
+
+**Fix**: updated the server version to fix socket status code issues on Debian OS (resolve socket disconnection issues).
+
+***
+
 Change log v.0.10.3
 
 **Update**: updated the starting process, so that Plezi's engine (based on GReactor) could be started and restarted if needed.
