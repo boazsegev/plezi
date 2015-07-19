@@ -52,7 +52,9 @@ module Plezi
 		end
 
 		# This Server's UUID
-		UUID = SecureRandom.uuid
+		def uuid
+			@uuid ||= SecureRandom.uuid
+		end
 	end
 end
 

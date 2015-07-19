@@ -323,6 +323,8 @@ module Plezi
 				(@inheritance ||= [].to_set) << sub
 			end
 
+			public
+
 
 			# WebSockets
 
@@ -339,7 +341,7 @@ module Plezi
 
 			def __inner_redis_broadcast data
 				conn = Plezi.redis_connection
-				data[:server] = Plezi::Settings::UUID
+				data[:server] = Plezi::Settings.uuid
 				return conn.publish( Plezi::Settings.redis_channel_name, data.to_yaml ) if conn
 				false
 			end

@@ -2,9 +2,17 @@
 
 ***
 
+Change log v.0.10.2
+
+**Fix**: fixed an issue where the Redis connection couldn't broadcast due to limited acess to the controller's methods.
+
+**Fix**: fixed an issue with the server's UUID being set before the GReactor's forking, thereby disabling Redis communications between processed over te same machine.
+
+***
+
 Change log v.0.10.1
 
-**fix**: fixed an issue where the new Controller's inner router might route to RESTful methods that weren't defined (:show, :save, etc').
+**Fix**: fixed an issue where the new Controller's inner router might route to RESTful methods that weren't defined (:show, :save, etc').
 
 **fix**: fixed an issue with the new Controller's inner router might not reset it's cache when methods are added to the controller after the service has begun.
 

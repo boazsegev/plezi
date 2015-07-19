@@ -22,23 +22,26 @@ module Plezi
 					on.message do |channel, msg|
 						begin
 							data = YAML.load(msg)
-							next if data[:server] == Plezi::Settings::UUID
+							next if data[:server] == Plezi::Settings.uuid
 							if data[:target]
 								GRHttp::Base::WSHandler.unicast data[:target], data
 							else
 								GRHttp::Base::WSHandler.broadcast data
 							end
 						rescue => e
-							Plezi.error e
+							Reactor.error e
 						end
 					end
 				end
 			rescue => e
-				Plezi.error e
+				Reactor.error e
 				retry
 			end
 		end
 		@redis
+	rescue => e
+		Reactor.error e
+		false
 	end
 end
 

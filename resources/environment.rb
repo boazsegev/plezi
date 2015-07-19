@@ -23,8 +23,11 @@ Bundler.require(:default, ENV['ENV'].to_s.to_sym)
 # require tilt/sass in a thread safe way (before multi-threading cycle begins)
 require 'tilt/sass' if defined?(::Slim) && defined?(::Sass)
 
-# set up Plezi logs - Heroku logs to STDOUT, this machine logs to log file
-Plezi.create_logger File.expand_path(File.join 'logs','server.log'), ENV["RACK_ENV"]=="development" unless ENV['DYNO']
+# set up Plezi's logs - Heroku logs to STDOUT, this machine logs to log file
+GReactor.create_logger File.expand_path(File.join 'logs','server.log'), ENV["RACK_ENV"]=="development" unless ENV['DYNO']
+
+## Allow forking? ONLY if your code is fully scalable across processes.
+# GReactor.set_forking 4
 
 # load all config files
 Dir[File.join "{config}", "**" , "*.rb"].each {|file| load File.expand_path(file)}
