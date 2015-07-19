@@ -126,7 +126,7 @@ module Plezi
 		end
 	end
 
-	def start
+	def self.start
 		return if GReactor.running?
 		Object.const_set("NO_PLEZI_AUTO_START", true) unless defined?(NO_PLEZI_AUTO_START)
 		puts "Starting Plezi #{Plezi::VERSION} Services using the GRHttp #{GRHttp::VERSION} server."
