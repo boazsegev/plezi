@@ -316,7 +316,7 @@ module PleziTestTasks
 			6.times {|i| str = str * 2**i;puts "    * Websocket message size test: sending #{str.bytesize} bytes"; ws << str; sleep 0.2 }
 			sleep (Time.now - time_now + 1)
 			should_disconnect = true
-			Plezi.ws_message_size_limit = 1024
+			Plezi::Settings.ws_message_size_limit = 1024
 			ws << str
 	end
 	def test_404
@@ -344,7 +344,7 @@ end
 NO_PLEZI_AUTO_START = true
 
 PL.create_logger '/dev/null'
-# PL.max_threads = 4
+# PL::Settings.max_threads = 4
 
 listen port: 3000
 
@@ -358,7 +358,9 @@ shared_route '/some/:multi{path|another_path}/(:option){route|test}/(:id)/(:opti
 shared_route '/', TestCtrl
 
 
-GRHttp.start Plezi.max_threads
+GRHttp.start Plezi::Settings.max_threads
+
+# start_services
 
 shoutdown_test = false
 Plezi.on_shutdown { shoutdown_test = true }
