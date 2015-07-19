@@ -187,7 +187,7 @@ module Plezi
 				# respond to websocket special case
 				return :pre_connect if request.upgrade?
 				# respond to save 'new' special case
-				return :save if request.request_method.match(/POST|PUT|PATCH/) && (params[:id].nil? || params[:id] == 'new')
+				return (self.class.has_method?(:save) ? :save : false) if request.request_method.match(/POST|PUT|PATCH/) && (params[:id].nil? || params[:id] == 'new')
 				# set DELETE method if simulated
 				request.request_method = 'DELETE' if params[:_method].to_s.downcase == 'delete'
 				# respond to special :id routing
@@ -195,12 +195,12 @@ module Plezi
 				#review general cases
 				case request.request_method
 				when 'GET', 'HEAD'
-					return :index unless params[:id]
-					return :show
+					return (self.class.has_method?(:index) ? :index : false) unless params[:id]
+					return (self.class.has_method?(:show) ? :show : false)
 				when 'POST', 'PUT', 'PATCH'
-					return :update
+					return (self.class.has_method?(:update) ? :update : false)
 				when 'DELETE'
-					return :delete
+					return (self.class.has_method?(:delete) ? :delete : false)
 				end
 				false
 			end
@@ -280,6 +280,16 @@ module Plezi
 				_inner_broadcast method: method_name, data: args, target: target_uuid
 			end
 
+			# This class method behaves the same way as the instance method #url_for. See the instance method's documentation for more details.
+			def url_for dest
+				get_pl_route.url_for dest				
+			end
+
+			# resets the routing cache
+			def reset_routing_cache
+				@inheritance.each {|sub| sub.reset_routing_cache}
+			end
+
 			protected
 
 			# Sets the HTTP route that is the owner of this controller.
@@ -296,14 +306,6 @@ module Plezi
 				@pl_http_route
 			end
 
-			public
-
-			# This class method behaves the same way as the instance method #url_for. See the instance method's documentation for more details.
-			def url_for dest
-				get_pl_route.url_for dest				
-			end
-
-
 			# a callback that resets the class router whenever a method (a potential route) is added
 			def method_added(id)
 				reset_routing_cache
@@ -315,6 +317,10 @@ module Plezi
 			# a callback that resets the class router whenever a method (a potential route) is undefined (using #undef_method).
 			def method_undefined(id)
 				reset_routing_cache
+			end
+
+			def inherited sub
+				(@inheritance ||= [].to_set) << sub
 			end
 
 
