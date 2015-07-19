@@ -191,7 +191,7 @@ module Plezi
 				# set DELETE method if simulated
 				request.request_method = 'DELETE' if params[:_method].to_s.downcase == 'delete'
 				# respond to special :id routing
-				return params[:id].to_s.to_sym if params[:id] && self.class.available_public_methods.include?(params[:id].to_s.to_sym)
+				return params[:id].to_s.to_sym if params[:id] && self.class.has_exposed_method?(params[:id].to_s.to_sym)
 				#review general cases
 				case request.request_method
 				when 'GET', 'HEAD'
@@ -303,24 +303,6 @@ module Plezi
 				get_pl_route.url_for dest				
 			end
 
-			# lists the available methods that will be exposed to HTTP requests
-			def available_public_methods
-				# set class global to improve performance while checking for supported methods
-				@available_public_methods ||= (available_routing_methods - [:before, :after, :save, :show, :update, :delete, :initialize, :on_message, :pre_connect, :on_open, :on_close]).to_set
-			end
-
-			# lists the available methods that will be exposed to the HTTP router
-			def available_routing_methods
-				@available_routing_methods ||= ( ( (public_instance_methods - Class.new.public_instance_methods) - Plezi::ControllerMagic::InstanceMethods.instance_methods).delete_if {|m| m.to_s[0] == '_'}).to_set
-			end
-
-			# resets this controller's router, to allow for dynamic changes
-			def reset_routing_cache
-				@available_routing_methods = false
-				@available_public_methods = false
-				available_routing_methods
-				available_public_methods
-			end
 
 			# a callback that resets the class router whenever a method (a potential route) is added
 			def method_added(id)
