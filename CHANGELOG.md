@@ -4,7 +4,7 @@
 
 Change log v.0.10.6
 
-**Performance Boost**: updated the GRHttp server version, to leverage the new Websocket engine, which offers a significant performance boost and allows for larger data to be transmitted over the websocket connection (tested with more than 200MB of data).
+**Performance Boost**: updated the GRHttp server version, to leverage the new Websocket engine, which offers a significant performance boost and allows for larger data to be transmitted over the websocket connection (tested with more than 250MB of data).
 
 ***
 
