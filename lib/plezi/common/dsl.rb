@@ -126,14 +126,29 @@ module Plezi
 		end
 	end
 
+	# starts the Plezi framework server and hangs until the exit signal is given.
 	def self.start
-		return GReactor.start if GReactor.running?
+		start_async
+		puts "\nPress ^C to exit.\n"
+		GReactor.join { puts "\r\nStarting shutdown sequesnce. Press ^C to force quit."}
+	end
+	# starts the Plezi framework and returns immidiately,
+	# allowing you to run the Plezi framework along side another framework. 
+	def self.start_async
 		Object.const_set("NO_PLEZI_AUTO_START", true) unless defined?(NO_PLEZI_AUTO_START)
+		return GReactor.start if GReactor.running?
 		puts "Starting Plezi #{Plezi::VERSION} Services using the GRHttp #{GRHttp::VERSION} server."
-		puts "Press ^C to exit."
 		GReactor.on_shutdown { puts "Plezi shutdown. It was fun to serve you."  }
 		GReactor.start Plezi::Settings.max_threads
-		GReactor.join { puts "\r\nStarting shutdown sequesnce. Press ^C to force quit."}
+	end
+	# This allows you to run the Plezi framework along side another framework - WITHOUT running the actual server.
+	#
+	# The server will not be initiatet and instead you will be able to use Plezi controllers and the Redis auto-config
+	# to broadcast Plezi messages to other Plezi processes - allowing for scalable intigration of Plezi into other frameworks.
+	def self.placebo
+		GReactor.clear_listeners
+		puts "* Plezi #{Plezi::VERSION} Services will start with no Server...\n"
+		start_async
 	end
 end
 
