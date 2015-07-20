@@ -126,6 +126,7 @@ Remember to connect to the service from at least two browser windows - to truly 
 method names starting with an underscore ('_') will NOT be made public by the router: so while both '/hello' and '/humans.txt' are public ( [try it](http://localhost:3000/humans.txt) ), '/_send_message' will return a 404 not found error ( [try it](http://localhost:3000/_send_message) ).
 
 ## Augmenting a Rails/Sinatra with Websocket broadcasting
+### (Get the full API on v. 0.10.7 - Some of the helpers are still being tested)
 
 You already have an amazing WebApp, but now you want to add websocket broadcasting and unicasting support - Plezi makes connection your existing WebApp with your Plezi Websocket backend as easy as it gets.
 
@@ -140,14 +141,14 @@ require './my_plezi_app/routes.rb'
 
 ENV['PL_REDIS_URL'] = "redis://username:password@my.host:6379"
 
-Plezi.placebo
+Plezi.placebo # befor version 0.10.7 write: GReactor.clear_listeners; GReactor.start
 ```
 
 That's it!
 
 Plezi will automatically set up the Redis connections and pub/sub to connect your existing WebApp with Plezi's Websocket backend - which you can safely scale over processes or machines.
 
-Now you can use Plezi from withing your existing App's code. For example, if your Plezi app has a controller named `ClientCtrl`, you might use:
+Now you can use Plezi from withing your existing App's code. For example, if your Plezi app has a controller named `ClientPleziCtrl`, you might use:
 
 ```ruby
 
@@ -159,17 +160,89 @@ class ClientsController < ApplicationController
      # now unicast data to your client on the websocket
      # (assume his websocket uuid was saved in @client.ws_uuid)
 
-     ClientCtrl.unicast @client.ws_uuid, :method_name, @client.attributes
+     ClientPleziCtrl.unicast @client.ws_uuid, :method_name, @client.attributes
 
      # or broadcast data to your all your the clients currently connected
 
-     ClientCtrl.broadcast :method_name, @client.attributes
+     ClientPleziCtrl.broadcast :method_name, @client.attributes
 
   end
 end
 ```
 
 Easy.
+
+\- "But wait...", you might say to me, "How do we get information back FROM the back end?"
+
+Oh, that's easy too.
+
+With a few more lines of code, we can have the websocket connections _broadcast_ back to us using the `Plezi.Placebo` API\*.
+
+\*The Placebo API is still being tested and will be released with v.0.10.7. For now, you can add the Placebu code from Github.
+
+On your Rails app, add:
+
+```ruby
+
+class MyReciever
+    def my_reciever_method arg1, arg2, arg3, arg4...
+        # your app's logic
+    end
+end
+
+Plezi.Placebo.new MyReciever
+
+```
+
+Plezi will now take your class and add mimick an IO connection (the Placebo connection) on it's GRHttp serever. This Placebo connection will answer the Redis broadcasts just as if your class was a websocket controller...
+
+On the Plezi, use simple broadcasting, from ANY controller:
+
+```ruby
+
+class ClientPleziCtrl
+    def on_message data
+        # app logic here
+        broadcast :my_reciever_method, arg1, arg2, arg3, arg4...
+    end
+end
+```
+
+That's it! Now you have your listening object... but careful - to be scaled up this communication you might consider using unicasting instead of broadcasting...
+
+On your Rails app, add:
+
+```ruby
+#...
+class MyReciever
+    def get_controller sender
+        ClientPleziCtrl.unicast sender, :_set_controller_uuid, uuid
+    end
+    def my_reciever_method arg1, arg2, arg3, arg4...
+        # ...
+    end
+end
+
+Plezi.Placebo.new MyReciever
+
+```
+On the Plezi, save the data and use unicasting when possible:
+
+```ruby
+class ClientPleziCtrl
+    def on_open
+       broadcast :get_controller, uuid
+    end
+    def on_message data
+        # app logic here
+        unicast @main_controller, :my_reciever_method, arg1, arg2, arg3, arg4... if @main_controller
+    end
+    def _controller_uuid controller_uuid
+        @main_controller = controller_uuid
+    end
+end
+
+```
 
 ## Native HTTP streaming with Asynchronous events
 
