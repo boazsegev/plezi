@@ -130,7 +130,7 @@ method names starting with an underscore ('_') will NOT be made public by the ro
 
 You already have an amazing WebApp, but now you want to add websocket broadcasting and unicasting support - Plezi makes connection your existing WebApp with your Plezi Websocket backend as easy as it gets.
 
-Simply include the Plezi App in your existing app and call `Plezi.placebo` - now you can access all the websocket API that you want from your existing WebApp.
+Simply include the Plezi App in your existing app and call `Plezi.start_placebo` - now you can access all the websocket API that you want from your existing WebApp.
 
 For instance, add the following code to your environment on a Rails or Sinatra app:
 
@@ -141,7 +141,7 @@ require './my_plezi_app/routes.rb'
 
 ENV['PL_REDIS_URL'] = "redis://username:password@my.host:6379"
 
-Plezi.placebo # befor version 0.10.7 write: GReactor.clear_listeners; GReactor.start
+Plezi.start_placebo # befor version 0.10.7 write: GReactor.clear_listeners; GReactor.start
 ```
 
 That's it!
@@ -176,7 +176,7 @@ Easy.
 
 Oh, that's easy too.
 
-With a few more lines of code, we can have the websocket connections _broadcast_ back to us using the `Plezi.Placebo` API\*.
+With a few more lines of code, we can have the websocket connections _broadcast_ back to us using the `Plezi::Placebo` API\*.
 
 \*The Placebo API is still being tested and will be released with v.0.10.7. For now, you can add the Placebu code from Github.
 
@@ -190,7 +190,7 @@ class MyReciever
     end
 end
 
-Plezi.Placebo.new MyReciever
+Plezi::Placebo.new MyReciever
 
 ```
 
@@ -223,7 +223,7 @@ class MyReciever
     end
 end
 
-Plezi.Placebo.new MyReciever
+Plezi::Placebo.new MyReciever
 
 ```
 On the Plezi, save the data and use unicasting when possible:
