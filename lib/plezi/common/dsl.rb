@@ -145,7 +145,7 @@ module Plezi
 	#
 	# The server will not be initiatet and instead you will be able to use Plezi controllers and the Redis auto-config
 	# to broadcast Plezi messages to other Plezi processes - allowing for scalable intigration of Plezi into other frameworks.
-	def self.placebo
+	def self.start_placebo
 		GReactor.clear_listeners
 		redis_connection # make sure the redis connection is activated
 		puts "* Plezi #{Plezi::VERSION} Services will start with no Server...\n"
