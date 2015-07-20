@@ -313,11 +313,13 @@ module PleziTestTasks
 			end
 			str = 'a'
 			time_now = Time.now
-			6.times {|i| str = str * 2**i;puts "    * Websocket message size test: sending #{str.bytesize} bytes"; ws << str; sleep 0.2 }
-			sleep (Time.now - time_now + 1)
+			8.times {|i| str = str * 2**i;puts "    * Websocket message size test: sending #{str.bytesize} bytes"; ws << str; }
+			to_sleep = (Time.now - time_now)*2 + 1
+			puts "will now sleep for #{to_sleep} seconds, waiting allowing the server to respond"
+			sleep to_sleep rescue true
 			should_disconnect = true
 			Plezi::Settings.ws_message_size_limit = 1024
-			ws << str
+			ws << ('0123'*258)
 	end
 	def test_404
 		puts "    * 404 not found and router continuity tests: #{RESULTS[ Net::HTTP.get_response(URI.parse "http://localhost:3000/get404" ).code == '404' ]}"
@@ -358,23 +360,24 @@ shared_route '/some/:multi{path|another_path}/(:option){route|test}/(:id)/(:opti
 shared_route '/', TestCtrl
 
 
-GRHttp.start Plezi::Settings.max_threads
+GReactor.run_async do
+	puts "    --- Starting tests"
+	puts "    --- Failed tests should read: #{PleziTestTasks::RESULTS[false]}"
+	PleziTestTasks.run_tests
+	puts "\n    --- Press ^C to complete tests."
+end
 
 # start_services
 
 shoutdown_test = false
+# GReactor::Settings.set_forking 4
 Plezi.on_shutdown { shoutdown_test = true }
 
-puts "    --- Starting tests"
-puts "    --- Failed tests should read: #{PleziTestTasks::RESULTS[false]}"
-PleziTestTasks.run_tests
 
-
+Plezi.start
 # Plezi::EventMachine.clear_timers
 
-sleep PLEZI_TEST_TIME if defined? PLEZI_TEST_TIME
-
-Plezi.stop
+# sleep PLEZI_TEST_TIME if defined? PLEZI_TEST_TIME
 
 
 puts "    * Shutdown test: #{ PleziTestTasks::RESULTS[shoutdown_test] }"

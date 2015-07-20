@@ -10,7 +10,7 @@ module Plezi
 	end
 	# Defers any missing methods to the GReactor Library.
 	def respond_to_missing?(name, include_private = false)
-		REACTOR_METHODS.include?(name) or super
+		REACTOR_METHODS.include?(name) || super
 	end
 
 	protected
