@@ -10,7 +10,7 @@ Find more info on [Plezi's framework documentation](http://www.rubydoc.info/gems
 
 Plezi is an easy to use Ruby Websocket Framework, with full RESTful routing support and HTTP streaming support. It's name comes from the word "fun" in Haitian, since Plezi is really fun to work with and it keeps our code clean and streamlined.
 
-Plezi works as an asynchronous multi-threaded Ruby alternative to a Rack/Rails/Sintra/Faye/EM-Websockets combo. It's also great as an alternative to socket.io, allowing for both websockets and long pulling.
+Plezi can both augment an existing Rails/Sinatra app, by providing it with easy Websocket and Asynchronous Events support, as well as offer an alternative to a Rack/Rails/Sintra/Faye/EM-Websockets combo. It's also great as an alternative to socket.io, allowing for both websockets and long pulling.
 
 Plezi runs over the [GRHttp server](https://github.com/boazsegev/GRHttp), which is a pure Ruby HTTP and Websocket Generic Server build using [GReactor](https://github.com/boazsegev/GReactor) - a multi-threaded pure ruby alternative to EventMachine with basic process forking support (enjoy it, if your code is scaling ready).
 
@@ -124,6 +124,52 @@ Remember to connect to the service from at least two browser windows - to truly 
 ```
 
 method names starting with an underscore ('_') will NOT be made public by the router: so while both '/hello' and '/humans.txt' are public ( [try it](http://localhost:3000/humans.txt) ), '/_send_message' will return a 404 not found error ( [try it](http://localhost:3000/_send_message) ).
+
+## Augmenting a Rails/Sinatra with Websocket broadcasting
+
+You already have an amazing WebApp, but now you want to add websocket broadcasting and unicasting support - Plezi makes connection your existing WebApp with your Plezi Websocket backend as easy as it gets.
+
+Simply include the Plezi App in your existing app and call `Plezi.placebo` - now you can access all the websocket API that you want from your existing WebApp.
+
+For instance, add the following code to your environment on a Rails or Sinatra app:
+
+```ruby
+
+require './my_plezi_app/environment.rb'
+require './my_plezi_app/routes.rb'
+
+ENV['PL_REDIS_URL'] = "redis://username:password@my.host:6379"
+
+Plezi.placebo
+```
+
+That's it!
+
+Plezi will automatically set up the Redis connections and pub/sub to connect your existing WebApp with Plezi's Websocket backend - which you can safely scale over processes or machines.
+
+Now you can use Plezi from withing your existing App's code. For example, if your Plezi app has a controller named `ClientCtrl`, you might use:
+
+```ruby
+
+class ClientsController < ApplicationController
+  def update
+     #... your original logic here
+     @client = Client.find(params[:id])
+
+     # now unicast data to your client on the websocket
+     # (assume his websocket uuid was saved in @client.ws_uuid)
+
+     ClientCtrl.unicast @client.ws_uuid, :method_name, @client.attributes
+
+     # or broadcast data to your all your the clients currently connected
+
+     ClientCtrl.broadcast :method_name, @client.attributes
+
+  end
+end
+```
+
+Easy.
 
 ## Native HTTP streaming with Asynchronous events
 
