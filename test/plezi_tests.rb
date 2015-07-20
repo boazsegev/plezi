@@ -143,6 +143,20 @@ class WSsizeTestCtrl
 	end
 end
 
+class PlaceboTestCtrl
+	# called when new Websocket data is recieved
+	#
+	# data is a string that contains binary or UTF8 (message dependent) data.
+	def on_open
+		broadcast :send_back, uuid: uuid, test: true, type: 'broadcast'
+	end
+	def on_messade data		
+	end
+	def _get_uuid data
+		puts "    * Placebo send #{data[:type]} test: #{RESULTS[data[:test]]}"
+		unicast data[:uuid], :send_back, test: true, type: 'broadcast' if data[:uuid]
+	end
+end
 module PleziTestTasks
 	module_function
 
@@ -238,6 +252,12 @@ module PleziTestTasks
 		rescue => e
 		puts "    **** #url_for test FAILED TO RUN!!!"
 		puts e
+	end
+	def test_placebo
+		ws = GRHttp::WSClient.connect_to("ws://localhost:3000/ws/placebo") do |ws|
+			true
+		end
+		sleep 0.5
 	end
 	def test_websocket
 		connection_test = broadcast_test = echo_test = unicast_test = false
@@ -343,6 +363,19 @@ module PleziTestTasks
 	end
 end
 
+class PlaceboCtrl
+	def send_back data
+		puts "    * Placebo recieve test for #{data[:type]}: #{PleziTestTasks::RESULTS[data[:test]]}"
+		if data[:uuid]
+			unicast uuid, :_get_uuid, test: true, uuid: uuid, type: 'unicast'
+		else
+			broadcast WSsizeTestCtrl, test: true
+		end
+	end
+end
+r = Plezi::Placebo.new PlaceboCtrl
+puts "    * Create Placebo test: #{PleziTestTasks::RESULTS[r && true]}"
+
 NO_PLEZI_AUTO_START = true
 
 PL.create_logger '/dev/null'
@@ -354,6 +387,7 @@ route("/ssl") {|req, res| res << "false" }
 listen port: 3030, ssl: true
 route("/ssl") {|req, res| res << "true" }
 
+shared_route 'ws/placebo', PlaceboTestCtrl
 shared_route 'ws/size', WSsizeTestCtrl
 
 shared_route '/some/:multi{path|another_path}/(:option){route|test}/(:id)/(:optional)', TestCtrl
@@ -372,6 +406,9 @@ end
 shoutdown_test = false
 # GReactor::Settings.set_forking 4
 Plezi.on_shutdown { shoutdown_test = true }
+
+Plezi.start_async
+puts "    --- Plezi ran async and should now hang"
 
 
 Plezi.start

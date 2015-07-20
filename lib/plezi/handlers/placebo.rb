@@ -74,6 +74,19 @@ module Plezi
 						io[:uuid] ||= SecureRandom.uuid
 					end
 
+					def unicast target_uuid, method_name, data
+						__send_to_redis data: data, target: target_uuid, method: method_name
+					end
+					def broadcast controller_class, method_name, data
+						__send_to_redis data: data, type: controller_class, method: method_name
+					end
+					protected
+					def __send_to_redis data
+						conn = Plezi.redis_connection
+						data[:server] = Plezi::Settings.uuid
+						return conn.publish( Plezi::Settings.redis_channel_name, data.to_yaml ) if conn
+						false
+					end
 				end
 				module ClassMethods
 					public
