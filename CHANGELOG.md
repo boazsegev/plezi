@@ -2,7 +2,13 @@
 
 ***
 
-Change log v.0.10.4
+Change log v.0.10.6
+
+**Performance Boost**: updated the GRHttp server version, to leverage the new Websocket engine, which offers a significant performance boost and allows for larger data to be transmitted over the websocket connection (tested with more than 200MB of data).
+
+***
+
+Change log v.0.10.5
 
 **Fix**: updated the server version to fix socket status code issues on Debian OS (resolve socket disconnection issues).
 
