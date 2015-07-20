@@ -65,6 +65,7 @@ module Plezi
 						return false
 					end
 					return false if data[:type] && !self.is_a?(data[:type])
+					return false if data[:target] && data[:target] != ws.uuid
 					return false unless self.class.has_method?(data[:method])
 					self.method(data[:method]).call *data[:data]
 				end
