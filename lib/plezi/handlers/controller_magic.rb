@@ -237,6 +237,18 @@ module Plezi
 				self.class._inner_broadcast method: method_name, data: args, target: target_uuid
 			end
 
+			# Use this to multicast an event to ALL websocket connections on EVERY controller, including Placebo controllers.
+			#
+			# Accepts:
+			# method_name:: a Symbol with the method's name that should respond to the broadcast.
+			# args*:: The method's argumenst - It MUST be possible to stringify the arguments into a YAML string, or broadcasting and unicasting will fail when scaling beyond one process / one machine.
+			#
+			# The method will be called asynchrnously for each sibling instance of this Controller class.
+			#
+			def multicast method_name, *args
+				self.class._inner_broadcast({ method: method_name, data: args, type: :all}, @response.io)
+			end
+
 
 			# # will (probably NOT), in the future, require authentication or, alternatively, return an Array [user_name, password]
 			# #
