@@ -12,12 +12,12 @@ module Plezi
 			# sends a response for an error code, rendering the relevent file (if exists).
 			def send_by_code request, response, code, headers = {}
 				begin
-					base_code_path = request.io[:params][:templates] || File.expand_path('.')
+					base_code_path = request.io.params[:templates] || File.expand_path('.')
 					if defined?(::Slim) && Plezi.file_exists?(fn = File.join(base_code_path, "#{code}.html.slim"))
 						Plezi.cache_data fn, Slim::Template.new( fn ) unless Plezi.cached? fn
 						return send_raw_data request, response, Plezi.get_cached( fn ).render( self, request: request ), 'text/html', code, headers
 					elsif defined?(::Haml) && Plezi.file_exists?(fn = File.join(base_code_path, "#{code}.html.haml"))
-						Plezi.cache_data fn, Haml::Engine.new( IO.read( fn ) ) unless Plezi.cached? fn
+						Plezi.cache_data fn, Haml::Engine.new( IO.binread( fn ) ) unless Plezi.cached? fn
 						return send_raw_data request, response, Plezi.get_cached( File.join(base_code_path, "#{code}.html.haml") ).render( self ), 'text/html', code, headers
 					elsif defined?(::ERB) && Plezi.file_exists?(fn = File.join(base_code_path, "#{code}.html.erb"))
 						return send_raw_data request, response, ERB.new( Plezi.load_file( fn ) ).result(binding), 'text/html', code, headers

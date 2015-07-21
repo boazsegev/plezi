@@ -97,8 +97,7 @@ module Plezi
 
 			# adds a host to the last server created
 			#
-			# accepts the same parameter(s) as the `listen` command (see Plezi.add_service), except :protocol and :handler are ignored:
-			# alias:: a String or an Array of Strings which represent alternative host names (i.e. `alias: ["admin.google.com", "admin.gmail.com"]`).
+			# accepts a host name and a parameter(s) Hash which are the same parameter(s) as {Plezi.listen} accepts:
 			def host(host_name, params)
 				raise "Must define a listener before adding a route - use `Plezi.listen`." unless @active_router
 				@active_router.add_host host_name, params

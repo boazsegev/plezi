@@ -40,6 +40,12 @@ module Plezi
 						@io[:websocket_handler] = self
 						super()
 					end
+					# notice of disconnect
+					def on_close
+						return super() if defined? super
+						GR.warn "Placebo #{self.class.superclass.name} disconnected. Ignore if this message appears during shutdown."
+					end
+
 					# handles broadcasts / unicasts
 					def on_broadcast ws
 						data = ws.data
@@ -91,6 +97,19 @@ module Plezi
 					end
 				end
 			end
+			class PlaceboIO < GReactor::BasicIO
+				def clear?
+					io.closed?
+				end
+				def call
+					self.read
+					GR.warn "Placebo IO recieved IO signal - this is unexpected..."
+				end
+				def on_disconnect
+					@params[:out].close rescue nil
+					@cache[:websocket_handler].on_close if @cache[:websocket_handler]
+				end
+			end
 		end
 		module_function
 		def new placebo_class
@@ -104,8 +123,8 @@ module Plezi
 				Object.const_set(new_class_name, new_class)
 			end
 			i, o = IO.pipe
-			o.close
-			io = GReactor.add_io i, handler: (Proc.new {|io| io.read })
+			io = Placebo::Base::PlaceboIO.new i, out: o
+			io = GReactor.add_raw_io i, io
 			new_class.new(io)
 		end
 	end

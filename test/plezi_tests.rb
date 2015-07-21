@@ -246,6 +246,7 @@ module PleziTestTasks
 		ws = GRHttp::WSClient.connect_to("ws://localhost:3000/ws/placebo") {|ws| 'ME?'}
 		ws << "    * Placebo WS connected."
 		sleep 2
+		ws.close
 		rescue => e
 		puts "    **** Placebo test FAILED TO RUN!!!"
 		puts e
@@ -387,7 +388,7 @@ end
 r = Plezi::Placebo.new PlaceboCtrl
 puts "    * Create Placebo test: #{PleziTestTasks::RESULTS[r && true]}"
 
-PL.create_logger '/dev/null'
+PL.create_logger nil
 # PL::Settings.max_threads = 4
 
 listen port: 3000

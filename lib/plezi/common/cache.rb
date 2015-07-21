@@ -39,16 +39,16 @@ module Plezi
 		# force a file onto the cache (only if it is cachable - otherwise will load the file but will not cache it).
 		def reload_file filename
 			if CACHABLE.include? filename.match(/\.([^\.]+)$/)[1]
-				return cache_data filename, IO.read(filename), File.mtime(filename)
+				return cache_data filename, IO.binread(filename), File.mtime(filename)
 			else
-				return IO.read(filename)
+				return IO.binread(filename)
 			end
 		end
 		# places data into the cache, and attempts to save the data to a file name.
 		def save_file filename, data, save_to_disk = false
 			cache_data filename, data if CACHABLE.include? filename.match(/\.([^\.]+)$/)[1]
 			begin
-				IO.write filename, data if save_to_disk
+				IO.binwrite filename, data if save_to_disk
 			rescue Exception => e
 				Plezi.warn("File couldn't be written (#{filename}) - file system error?")
 			end

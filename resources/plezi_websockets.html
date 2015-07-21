@@ -14,7 +14,7 @@
   </style>
   <script>
   	var websocket = NaN;
-  	function connect() { websocket = new WebSocket('ws://' + window.location.hostname + (window.location.port == '' ? '' : (':' + window.location.port) ) + "/" ); }
+  	function connect() { websocket = new WebSocket( (window.location.protocol.match(/https/) ? 'wws' : 'ws') + '://' + window.location.hostname + (window.location.port == '' ? '' : (':' + window.location.port) ) + "/" ); }
 	function init()
 	{
 		connect()

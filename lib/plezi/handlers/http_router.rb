@@ -38,7 +38,7 @@ module Plezi
 				@sass_cache = Sass::CacheStores::Memory.new if defined?(::Sass)
 			end
 
-			# adds a host to the router (or activates an existing host to add new routes). accepts a host name and any parameters not related to the service (see `Plezi.add_service`)
+			# adds a host to the router (or activates an existing host to add new routes). accepts a host name and any parameters not related to the actual connection (ssl etc') (see {Plezi.listen})
 			def add_host host_name, params = {}
 				host_name = (host_name ? host_name.to_s.downcase : :default)
 				@active_host = get_host(host_name) || ( @hosts[host_name] = Host.new(params) )
@@ -142,7 +142,7 @@ module Plezi
 					if defined?(::CoffeeScript) && Plezi.cache_needs_update?(coffee)
 						# render coffee to cache
 						Plezi.cache_data coffee, nil
-						Plezi.save_file target_file, CoffeeScript.compile(IO.read coffee), params[:save_assets]
+						Plezi.save_file target_file, CoffeeScript.compile(IO.binread coffee), params[:save_assets]
 					end
 					# try to send the cached js file which started the request.
 					return Base::HTTPSender.send_file request, response, target_file
