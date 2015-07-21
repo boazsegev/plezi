@@ -56,7 +56,7 @@ module Plezi
 				def on_close ws
 					super() if defined? super
 				end
-				# handles websocket being closed.
+				# handles websocket multicasting/broadcasting/unicasting.
 				def on_broadcast ws
 					data = ws.data
 					unless (data[:type] || data[:target]) && data[:method] && data[:data]

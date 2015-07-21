@@ -196,19 +196,19 @@ Plezi::Placebo.new MyReciever
 
 Plezi will now take your class and add mimick an IO connection (the Placebo connection) on it's GRHttp serever. This Placebo connection will answer the Redis broadcasts just as if your class was a websocket controller...
 
-On the Plezi, use simple broadcasting, from ANY controller:
+On the Plezi side, use multicasting, from ANY controller:
 
 ```ruby
 
 class ClientPleziCtrl
     def on_message data
         # app logic here
-        broadcast :my_reciever_method, arg1, arg2, arg3, arg4...
+        multicast :my_reciever_method, arg1, arg2, arg3, arg4...
     end
 end
 ```
 
-That's it! Now you have your listening object... but careful - to be scaled up this communication you might consider using unicasting instead of broadcasting...
+That's it! Now you have your listening object... but careful - to saafely scale up this communication you might consider using unicasting instead of broadcasting...
 
 On your Rails app, add:
 
@@ -231,7 +231,7 @@ On the Plezi, save the data and use unicasting when possible:
 ```ruby
 class ClientPleziCtrl
     def on_open
-       broadcast :get_controller, uuid
+       multicast :get_controller, uuid
     end
     def on_message data
         # app logic here
@@ -239,6 +239,8 @@ class ClientPleziCtrl
     end
     def _controller_uuid controller_uuid
         @main_controller = controller_uuid
+        # send ready flag to client using JSON?
+        response << "{\"state\":\"ready\""
     end
 end
 
