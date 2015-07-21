@@ -14,7 +14,6 @@ module Plezi
 			#
 			# use the`listen`, `host` and `route` functions rather then accessing this object.
 			#
-			@servers = {}
 			@active_router = nil
 
 
