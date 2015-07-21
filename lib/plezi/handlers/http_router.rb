@@ -15,6 +15,17 @@ module Plezi
 				end
 			end
 
+			# return the upgrade handler (the self.on_upgrade method)
+			def upgrade_proc
+				self.method :on_upgrade
+			end
+			#handles websocket connection requests.
+			def on_upgrade request, response
+				# return if a route answered the request
+				host.routes.each {|r| a = r.on_request(request, response); return a if a}
+				# websockets should cut out here
+				false
+			end
 			# initializes an HTTP router (the normal Handler for HTTP requests)
 			#
 			# the router holds the different hosts and sends them messages/requests.

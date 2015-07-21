@@ -72,7 +72,8 @@ module Plezi
 				@listeners[parameters[:port]] = parameters
 
 				# make sure the protocol exists.
-				parameters[:upgrade_handler] = parameters[:http_handler] = HTTPRouter.new
+				parameters[:http_handler] = HTTPRouter.new
+				parameters[:upgrade_handler] = parameters[:http_handler].upgrade_proc
 
 				GRHttp.listen parameters
 				# set the active router to the handler or the protocol.

@@ -6,6 +6,8 @@ Change log v.0.10.7
 
 **Fix**: Forces the use of a better version of the GRHttp server, now as fully tested as I could manage. This fixes an issue where the lasy byte on a Websocket message might have been corrupt.
 
+**Fix**: fixed an issue where websocket connections would be quietly established (messages would be ignored) even though they should have been declined.
+
 **Update**: Better support for intigration of Plezi with other frameworks, using `Plezi.start_async` and `Plezi.placebo` to get all the benifits of Plezi without distrupting the host framework.
 
 ***
