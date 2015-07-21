@@ -2,11 +2,15 @@
 module Plezi
 
 	# File and Object Caching for Plezi
+	#
+	# Be aware that the cache is local, per process. It's possible to limit file caching by limiting the supported_types in Plezi::Cache::CACHABLE.
+	#
+	# Template rendering engines are always cached.
 	module Cache
 		# contains the cached data, in the format: CACHE_STORE["filename"] = CacheObject
 		CACHE_STORE = {}
 		CACHE_LOCK = Mutex.new
-		CACHABLE = %w{cache object slim haml css map js html scss sass coffee txt xml json yaml rb}
+		CACHABLE = (%w{cache object slim haml css map js html scss sass coffee txt xml json yaml rb}).to_set
 
 		@cache_to_disk = true
 
