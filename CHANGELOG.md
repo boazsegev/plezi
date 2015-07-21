@@ -2,6 +2,13 @@
 
 ***
 
+Change log v.0.10.9
+
+**Minor**: minor update to the cache system, might improve performance somewhat.
+
+
+***
+
 Change log v.0.10.8
 
 **Fix**: Fixed an issue with the new websocket upgrade handler. It is unclear how come the issue did not show up during the testing.
