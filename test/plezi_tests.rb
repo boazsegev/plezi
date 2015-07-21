@@ -17,6 +17,8 @@ def report_after_filter(result= true)
 	true
 end
 
+class Nothing
+end
 class TestCtrl
 
 
@@ -143,20 +145,6 @@ class WSsizeTestCtrl
 	end
 end
 
-class PlaceboTestCtrl
-	# called when new Websocket data is recieved
-	#
-	# data is a string that contains binary or UTF8 (message dependent) data.
-	def on_open
-		broadcast :send_back, uuid: uuid, test: true, type: 'broadcast'
-	end
-	def on_messade data		
-	end
-	def _get_uuid data
-		puts "    * Placebo send #{data[:type]} test: #{RESULTS[data[:test]]}"
-		unicast data[:uuid], :send_back, test: true, type: 'broadcast' if data[:uuid]
-	end
-end
 module PleziTestTasks
 	module_function
 
@@ -254,10 +242,13 @@ module PleziTestTasks
 		puts e
 	end
 	def test_placebo
-		ws = GRHttp::WSClient.connect_to("ws://localhost:3000/ws/placebo") do |ws|
-			true
-		end
-		sleep 0.5
+		puts "    * Starting placebo tests..."
+		ws = GRHttp::WSClient.connect_to("ws://localhost:3000/ws/placebo") {|ws| 'ME?'}
+		ws << "    * Placebo WS connected."
+		sleep 2
+		rescue => e
+		puts "    **** Placebo test FAILED TO RUN!!!"
+		puts e
 	end
 	def test_websocket
 		connection_test = broadcast_test = echo_test = unicast_test = false
@@ -363,20 +354,38 @@ module PleziTestTasks
 	end
 end
 
+class PlaceboTestCtrl
+	# called when new Websocket data is recieved
+	#
+	# data is a string that contains binary or UTF8 (message dependent) data.
+	def index
+		false
+	end
+	def on_open
+		puts "    * Placebo multicasting to placebo test: #{PleziTestTasks::RESULTS[ multicast :send_back, uuid: uuid, test: true, type: 'multicast' ] }"
+	end
+	def on_message data
+		puts data
+	end
+	def _get_uuid data
+		puts "    * Placebo send #{data[:type]} test: #{PleziTestTasks::RESULTS[data[:test]]}"
+		unicast( data[:uuid], :send_back, {test: true, type: 'unicast'}) if data[:uuid]
+	end
+end
+
 class PlaceboCtrl
 	def send_back data
 		puts "    * Placebo recieve test for #{data[:type]}: #{PleziTestTasks::RESULTS[data[:test]]}"
 		if data[:uuid]
-			unicast uuid, :_get_uuid, test: true, uuid: uuid, type: 'unicast'
+			unicast( data[:uuid], :_get_uuid, {test: true, uuid: uuid, type: 'unicast'})
 		else
-			broadcast WSsizeTestCtrl, test: true
+			broadcast WSsizeTestCtrl, :_get_uuid, test: true, type: 'broadcast'
+			multicast :_get_uuid, test: true, type: 'multicast'
 		end
 	end
 end
 r = Plezi::Placebo.new PlaceboCtrl
 puts "    * Create Placebo test: #{PleziTestTasks::RESULTS[r && true]}"
-
-NO_PLEZI_AUTO_START = true
 
 PL.create_logger '/dev/null'
 # PL::Settings.max_threads = 4
@@ -387,6 +396,7 @@ route("/ssl") {|req, res| res << "false" }
 listen port: 3030, ssl: true
 route("/ssl") {|req, res| res << "true" }
 
+shared_route 'ws/no', Nothing
 shared_route 'ws/placebo', PlaceboTestCtrl
 shared_route 'ws/size', WSsizeTestCtrl
 
@@ -394,22 +404,19 @@ shared_route '/some/:multi{path|another_path}/(:option){route|test}/(:id)/(:opti
 shared_route '/', TestCtrl
 
 
-GReactor.run_async do
-	puts "    --- Starting tests"
-	puts "    --- Failed tests should read: #{PleziTestTasks::RESULTS[false]}"
-	PleziTestTasks.run_tests
-	puts "\n    --- Press ^C to complete tests."
-end
+Plezi.start_async
+puts "    --- Plezi will ran async, performing some tests that than hang"
+
+puts "    --- Starting tests"
+puts "    --- Failed tests should read: #{PleziTestTasks::RESULTS[false]}"
+PleziTestTasks.run_tests
+puts "\n    --- Press ^C to complete tests."
 
 # start_services
 
 shoutdown_test = false
 # GReactor::Settings.set_forking 4
 Plezi.on_shutdown { shoutdown_test = true }
-
-Plezi.start_async
-puts "    --- Plezi ran async and should now hang"
-
 
 Plezi.start
 # Plezi::EventMachine.clear_timers
