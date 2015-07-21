@@ -8,7 +8,11 @@ Change log v.0.10.7
 
 **Fix**: fixed an issue where websocket connections would be quietly established (messages would be ignored) even though they should have been declined.
 
-**Update**: Better support for intigration of Plezi with other frameworks, using `Plezi.start_async` and `Plezi.placebo` to get all the benifits of Plezi without distrupting the host framework.
+**Update**: Better support for intigration of Plezi with other frameworks, using `Plezi.start_async` and `Plezi.start_placebo` to get all the benifits of Plezi without distrupting the host framework.
+
+**Update**: added the multicasting feature - allows you to send a message to ALL the websocket connections that defined a method to handle the message - use `multicast :method_name, arg1, arg2, arg3...`.
+
+**Update**: Added the Placebo API to support websocket broadcasting on normal classes - allows for super-easy framework integration with other Ruby frameworks such as Rails and Sinatra.
 
 ***
 

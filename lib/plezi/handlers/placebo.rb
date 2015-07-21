@@ -22,31 +22,6 @@ module Plezi
 	# more methods were injected into it's subclass.
 	module Placebo
 		module Base
-			class PsedoIO
-				attr_reader :cache, :params
-				def initialize handler
-					@cache = { websocket_handler: handler}
-					@params = {}
-					handler.io = self
-				end
-				def call
-					false
-				end
-				def clear?
-					false
-				end
-				def on_disconnect
-					false
-				end
-				# Access data stored in the IO's wrapper cache.
-				def [] key
-					@cache[key]
-				end
-				# Store data in the IO's wrapper cache.
-				def []= key, val
-					@cache[key] = val
-				end
-			end
 			module Core
 				def self.included base
 					base.send :include, InstanceMethods
@@ -56,6 +31,11 @@ module Plezi
 				module InstanceMethods
 					public
 					attr_accessor :io
+					def initialize io
+						@io = io
+						@io[:websocket_handler] = self
+						super()
+					end
 					# handles broadcasts / unicasts
 					def on_broadcast ws
 						data = ws.data
@@ -74,14 +54,22 @@ module Plezi
 						io[:uuid] ||= SecureRandom.uuid
 					end
 
-					def unicast target_uuid, method_name, data
-						__send_to_redis data: data, target: target_uuid, method: method_name
+					def unicast target_uuid, method_name, *args
+						GRHttp::Base::WSHandler.unicast target_uuid, data: args, target: target_uuid, method: method_name
+						__send_to_redis data: args, target: target_uuid, method: method_name
 					end
-					def broadcast controller_class, method_name, data
-						__send_to_redis data: data, type: controller_class, method: method_name
+					# broadcast to a specific controller
+					def broadcast controller_class, method_name, *args
+						GRHttp::Base::WSHandler.broadcast({data: args, type: controller_class, method: method_name}, self)
+						__send_to_redis data: args, type: controller_class, method: method_name
+					end
+					def multicast method_name, *args
+						GRHttp::Base::WSHandler.broadcast({method: method_name, data: args, type: :all}, self)
+						__send_to_redis method: method_name, data: args, type: :all
 					end
 					protected
 					def __send_to_redis data
+						raise "Wrong method name for websocket broadcasting - expecting type Symbol" unless data[:method].is_a?(Symbol) || data[:method].is_a?(Symbol)
 						conn = Plezi.redis_connection
 						data[:server] = Plezi::Settings.uuid
 						return conn.publish( Plezi::Settings.redis_channel_name, data.to_yaml ) if conn
@@ -108,9 +96,10 @@ module Plezi
 				end
 				Object.const_set(new_class_name, new_class)
 			end
-			handler = new_class.new
-			GReactor.add_raw_io_to_stack nil, Placebo::Base::PsedoIO.new(handler)
-			handler
+			i, o = IO.pipe
+			o.close
+			io = GReactor.add_io i, handler: (Proc.new {|io| io.read })
+			new_class.new(io)
 		end
 	end
 end
