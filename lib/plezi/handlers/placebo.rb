@@ -21,6 +21,8 @@ module Plezi
 	# Returns an instance that is a member of the class passed, after that class was inherited by Plezi and
 	# more methods were injected into it's subclass.
 	module Placebo
+
+		# the base module exposes some of the core functionality, but shouldn't be relied upon as far as it's API goes.
 		module Base
 			module Core
 				def self.included base
@@ -54,6 +56,7 @@ module Plezi
 						io[:uuid] ||= SecureRandom.uuid
 					end
 
+					# Performs a websocket unicast to the specified target.
 					def unicast target_uuid, method_name, *args
 						GRHttp::Base::WSHandler.unicast target_uuid, data: args, target: target_uuid, method: method_name
 						__send_to_redis data: args, target: target_uuid, method: method_name
@@ -63,6 +66,7 @@ module Plezi
 						GRHttp::Base::WSHandler.broadcast({data: args, type: controller_class, method: method_name}, self)
 						__send_to_redis data: args, type: controller_class, method: method_name
 					end
+					# multicast to all handlers.
 					def multicast method_name, *args
 						GRHttp::Base::WSHandler.broadcast({method: method_name, data: args, type: :all}, self)
 						__send_to_redis method: method_name, data: args, type: :all

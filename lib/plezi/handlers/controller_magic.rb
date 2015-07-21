@@ -243,7 +243,7 @@ module Plezi
 			# method_name:: a Symbol with the method's name that should respond to the broadcast.
 			# args*:: The method's argumenst - It MUST be possible to stringify the arguments into a YAML string, or broadcasting and unicasting will fail when scaling beyond one process / one machine.
 			#
-			# The method will be called asynchrnously for each sibling instance of this Controller class.
+			# The method will be called asynchrnously for ALL websocket connections.
 			#
 			def multicast method_name, *args
 				self.class._inner_broadcast({ method: method_name, data: args, type: :all}, @response.io)
@@ -290,6 +290,18 @@ module Plezi
 			# *args:: any arguments that should be passed to the method (IF REDIS IS USED, LIMITATIONS APPLY).
 			def unicast target_uuid, method_name, *args
 				_inner_broadcast method: method_name, data: args, target: target_uuid
+			end
+
+			# Use this to multicast an event to ALL websocket connections on EVERY controller, including Placebo controllers.
+			#
+			# Accepts:
+			# method_name:: a Symbol with the method's name that should respond to the broadcast.
+			# args*:: The method's argumenst - It MUST be possible to stringify the arguments into a YAML string, or broadcasting and unicasting will fail when scaling beyond one process / one machine.
+			#
+			# The method will be called asynchrnously for ALL websocket connections.
+			#
+			def multicast method_name, *args
+				_inner_broadcast({ method: method_name, data: args, type: :all}, @response.io)
 			end
 
 			# This class method behaves the same way as the instance method #url_for. See the instance method's documentation for more details.
