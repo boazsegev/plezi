@@ -1,10 +1,10 @@
 # Plezi, The Rack Free Ruby framework for realtime web-apps
 [![Gem Version](https://badge.fury.io/rb/plezi.svg)](http://badge.fury.io/rb/plezi)
-[![Inline docs](http://inch-ci.org/github/boazsegev/plezi.svg?branch=master)](http://www.rubydoc.info/gems/plezi/0.10.8)
+[![Inline docs](http://inch-ci.org/github/boazsegev/plezi.svg?branch=master)](http://rubydoc.info/github/boazsegev/plezi/master/frames)
 
 > People who are serious about their frameworks, should write their own servers...
 
-Find more info on [Plezi's framework documentation](http://www.rubydoc.info/gems/plezi/0.10.8)
+Find more info on [Plezi's framework documentation](http://rubydoc.info/github/boazsegev/plezi/master/frames)
 
 ## About the Plezi framework
 
