@@ -24,12 +24,14 @@ module Plezi
 
 		# the base module exposes some of the core functionality, but shouldn't be relied upon as far as it's API goes.
 		module Base
+			#the methods here will be injected to the Placebo controller.
 			module Core
 				def self.included base
 					base.send :include, InstanceMethods
 					base.extend ClassMethods
 				end
 
+				#the methods here will be injected to the Placebo controller as Instance methods.
 				module InstanceMethods
 					public
 					attr_accessor :io
@@ -80,6 +82,7 @@ module Plezi
 						false
 					end
 				end
+				#the methods here will be injected to the Placebo controller as class methods.
 				module ClassMethods
 					public
 					def has_super_method? method_name
