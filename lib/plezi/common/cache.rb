@@ -21,7 +21,8 @@ module Plezi
 
 			# initialize a Cached object
 			def initialize d = nil, t = Time.now
-				@data, @mtime = d, t
+				@data = t
+				@mtime = d
 			end
 		end
 
