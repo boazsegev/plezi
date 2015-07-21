@@ -26,10 +26,10 @@ module Plezi
 			# the request object, class: HTTPRequest.
 			attr_reader :request
 
-			# the ::params variable contains all the parameters set by the request (/path?locale=he  => params["locale"] == "he").
+			# the :params variable contains all the parameters set by the request (/path?locale=he  => params ["locale"] == "he").
 			attr_reader :params
 
-			# a cookie-jar to get and set cookies (set: `cookie\[:name] = data` or get: `cookie\[:name]`).
+			# a cookie-jar to get and set cookies (set: `cookie [:name] = data` or get: `cookie [ :name ]`).
 			#
 			# Cookies and some other data must be set BEFORE the response's headers are sent.
 			attr_reader :cookies
@@ -37,7 +37,7 @@ module Plezi
 			# the HTTPResponse **OR** the WSResponse object that formats the response and sends it. use `response << data`. This object can be used to send partial data (such as headers, or partial html content) in blocking mode as well as sending data in the default non-blocking mode.
 			attr_reader :response
 
-			# the ::flash is a little bit of a magic hash that sets and reads temporary cookies.
+			# the :flash is a little bit of a magic hash that sets and reads temporary cookies.
 			# these cookies will live for one successful request to a Controller and will then be removed.
 			attr_reader :flash
 
