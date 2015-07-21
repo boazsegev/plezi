@@ -21,6 +21,9 @@ module Plezi
 			end
 			#handles websocket connection requests.
 			def on_upgrade request, response
+				host = get_host(request[:host_name].to_s.downcase) || @hosts[:default]
+				return false unless host
+				request.io[:params] = host.params
 				# return if a route answered the request
 				host.routes.each {|r| a = r.on_request(request, response); return a if a}
 				# websockets should cut out here

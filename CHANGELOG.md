@@ -2,7 +2,15 @@
 
 ***
 
-Change log v.0.10.7
+Change log v.0.10.8
+
+**Fix**: Fixed an issue with the new websocket upgrade handler. It is unclear how come the issue did not show up during the testing.
+
+\* (All the changes in version 0.10.7 still apply)
+
+***
+
+Change log v.0.10.7 (yanked)
 
 **Fix**: Forces the use of a better version of the GRHttp server, now as fully tested as I could manage. This fixes an issue where the lasy byte on a Websocket message might have been corrupt.
 
