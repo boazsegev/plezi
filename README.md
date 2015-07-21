@@ -126,7 +126,6 @@ Remember to connect to the service from at least two browser windows - to truly 
 method names starting with an underscore ('_') will NOT be made public by the router: so while both '/hello' and '/humans.txt' are public ( [try it](http://localhost:3000/humans.txt) ), '/_send_message' will return a 404 not found error ( [try it](http://localhost:3000/_send_message) ).
 
 ## Augmenting a Rails/Sinatra with Websocket broadcasting
-### (Get the full API on v. 0.10.7 - Some of the helpers are still being tested)
 
 You already have an amazing WebApp, but now you want to add websocket broadcasting and unicasting support - Plezi makes connection your existing WebApp with your Plezi Websocket backend as easy as it gets.
 
@@ -141,7 +140,7 @@ require './my_plezi_app/routes.rb'
 
 ENV['PL_REDIS_URL'] = "redis://username:password@my.host:6379"
 
-Plezi.start_placebo # befor version 0.10.7 write: GReactor.clear_listeners; GReactor.start
+Plezi.start_placebo
 ```
 
 That's it!
@@ -176,9 +175,7 @@ Easy.
 
 Oh, that's easy too.
 
-With a few more lines of code, we can have the websocket connections _broadcast_ back to us using the `Plezi::Placebo` API\*.
-
-\*The Placebo API is still being tested and will be released with v.0.10.7. For now, you can add the Placebu code from Github.
+With a few more lines of code, we can have the websocket connections _broadcast_ back to us using the `Plezi::Placebo` API.
 
 On your Rails app, add:
 
