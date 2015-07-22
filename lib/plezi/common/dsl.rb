@@ -32,12 +32,6 @@ module Plezi
 			# ssl_key:: the public key for the SSL service.
 			# ssl_cert:: the certificate for the SSL service.
 			#
-			# some further options, which are unstable and might be removed in future versions, are:
-			# protocol:: the protocol objects (usually a class, but any object answering `#call` will do).
-			# handler:: an optional handling object, to be called upon by the protocol (i.e. #on_message, #on_connect, etc'). this option is used to allow easy protocol switching, such as from HTTP to Websockets. 
-			#
-			# Duringn normal Plezi behavior, the optional `handler` object will be returned if `listen` is called more than once for the same port.
-			#
 			# assets:
 			#
 			# assets support will render `.sass`, `.scss` and `.coffee` and save them as local files (`.css`, `.css`, and `.js` respectively)

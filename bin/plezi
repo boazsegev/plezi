@@ -49,6 +49,7 @@ class AppTemplate
 		app_tree["Gemfile"] ||= ''
 		app_tree["Gemfile"] << "source 'https://rubygems.org'\n\n####################\n# core gems\n\n# include the basic plezi framework and server\ngem 'plezi', '~> #{Plezi::VERSION}'\n"
 		app_tree["Gemfile"] << "\n\n\nruby '#{RUBY_VERSION}'\n"
+		finalize
 	end
 
 	def build

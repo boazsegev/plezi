@@ -25,8 +25,8 @@
 class MyController
 	# HTTP
 	def index
-		"Hello World!\r\n\r\nThis appname mini-app is an example hello world and websocket chatroom.\r\n\r\n" +
-		"pleave visit http://www.websocket.org/echo.html and connect to: ws://localhost:3000/nickname"
+		"Hello World!\r\n\r\nThis appname mini-app is an example hello world and websocket chatroom.\r\n
+		\r\nplease visit http://www.websocket.org/echo.html and connect to: ws://localhost:3000/nickname"
 	end
 	def websockets
 		redirect_to "http://www.websocket.org/echo.html"
@@ -52,10 +52,11 @@ end
 
 # start a web service to listen on the first default port (3000 or the port set by the command-line).
 # you can change some of the default settings here.
-listen 	root: nil, # Root.join('public').to_s,
-		assets: nil, # Root.join('assets').to_s,
-		assets_public: nil, #'/assets',
-		templates: nil, # Root.join('app','views').to_s,
+listen 	host: :default,
+		# root: Root.join('public').to_s,
+		# assets: Root.join('assets').to_s,
+		# assets_public: '/assets',
+		# templates: Root.join('app','views').to_s,
 		ssl: false
 
 ## Optional stuff:
@@ -73,5 +74,5 @@ listen 	root: nil, # Root.join('public').to_s,
 
 
 # adds your controller as the root of the application
-route '/', MyController
+route '/(:id)', MyController
 
