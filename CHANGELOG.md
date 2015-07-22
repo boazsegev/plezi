@@ -2,13 +2,17 @@
 
 ***
 
+Change log v.0.10.10
+
+**Fix**: Autopinging wasn't senf doe to a typo (`unless` instead of `if`).. this is now fixed. Autopinging will keep your Websocket connections alive.
+
+***
+
 Change log v.0.10.9
 
 **Minor**: minor update to the cache system, might improve performance somewhat and might fix rare issues related to some binary files. Updated GRHttp server version required.
 
 **Fix**: fixed an issue with Placebo listeners where they might be thrown from the IO stack and thereby stop listening ()or, alternatively, consume CPU) . This issue was caused by GReactor's 'BasicIO#clear?' code enforcing two-way connectivity.
-
-**Fix**: Autopinging wasn't senf doe to a typo (`unless` instead of `if`).. this is now fixed. Autopinging will keep your Websocket connections alive.
 
 ***
 
