@@ -43,7 +43,7 @@ module Plezi
 				def on_open ws
 					# set broadcasts and return true
 					@response = ws
-					ws.autopong Plezi::Settings.autoping unless Plezi::Settings.autoping
+					ws.autoping Plezi::Settings.autoping if Plezi::Settings.autoping
 					# create the redis connection (in case this in the first instance of this class)
 					Plezi.redis_connection
 					super() if defined?(super)

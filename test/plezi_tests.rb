@@ -3,6 +3,7 @@ lib = File.expand_path('../lib', __FILE__)
 $LOAD_PATH.unshift(lib) unless $LOAD_PATH.include?(lib)
 require 'open-uri'
 require 'plezi'
+require 'objspace'
 
 def report_before_filter(result= true)
 	return true if $before_tested
@@ -326,6 +327,7 @@ module PleziTestTasks
 			str = 'a'
 			time_now = Time.now
 			8.times {|i| str = str * 2**i;puts "    * Websocket message size test: sending #{str.bytesize} bytes"; ws << str; }
+			str.clear
 			to_sleep = (Time.now - time_now)*2 + 1
 			puts "will now sleep for #{to_sleep} seconds, waiting allowing the server to respond"
 			sleep to_sleep rescue true
@@ -385,8 +387,6 @@ class PlaceboCtrl
 		end
 	end
 end
-r = Plezi::Placebo.new PlaceboCtrl
-puts "    * Create Placebo test: #{PleziTestTasks::RESULTS[r && true]}"
 
 PL.create_logger nil
 # PL::Settings.max_threads = 4
@@ -404,6 +404,22 @@ shared_route 'ws/size', WSsizeTestCtrl
 shared_route '/some/:multi{path|another_path}/(:option){route|test}/(:id)/(:optional)', TestCtrl
 shared_route '/', TestCtrl
 
+
+mem_print_proc = Proc.new do
+	h = GC.stat.merge ObjectSpace.count_objects_size
+	ObjectSpace.each_object {|o| h[o.class] = h[o.class].to_i + 1}
+	puts (h.to_a.map {|i| i.join ': '} .join "\n")
+	h.clear
+	GC.start
+end
+# puts ("\n\n*** GC.stat:\n" + ((GC.stat.merge ObjectSpace.count_objects_size).to_a.map {|i| i.join ': '} .join "\n"))
+# mem_print_proc.call
+# GR.run_every 30, &mem_print_proc
+
+
+
+r = Plezi::Placebo.new PlaceboCtrl
+puts "    * Create Placebo test: #{PleziTestTasks::RESULTS[r && true]}"
 
 Plezi.start_async
 puts "    --- Plezi will ran async, performing some tests that than hang"
