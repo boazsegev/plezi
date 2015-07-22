@@ -2,6 +2,18 @@
 
 ***
 
+Change log v.0.10.11
+
+**Feature**: added the mini-app template, for quick websocket oriented apps that are meant to be attached to other frameworks.
+
+**Feature**: allow Regexp hosts in the `listen` and `host` methods.
+
+**Fix**: An error in the chache system was introduced when performing slight performance enhancements (two variable names were switched). The issue is now fixed.
+
+**Fix**: Correctly handle multiple `listen` calls with the same port number.
+
+***
+
 Change log v.0.10.10
 
 **Fix**: Autopinging wasn't senf doe to a typo (`unless` instead of `if`).. this is now fixed. Autopinging will keep your Websocket connections alive.
