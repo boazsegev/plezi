@@ -4,7 +4,7 @@
 
 Change log v.0.10.11
 
-**Feature**: added the mini-app template, for quick websocket oriented apps that are meant to be attached to other frameworks.
+**Feature**: added the mini-app template, for quick websocket oriented apps that are meant to be attached to other frameworks (use `$ plezi mini appname` or `$ plezi m appname`).
 
 **Feature**: allow Regexp hosts in the `listen` and `host` methods.
 
