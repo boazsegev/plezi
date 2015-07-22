@@ -8,7 +8,7 @@ Change log v.0.10.11
 
 **Feature**: allow Regexp hosts in the `listen` and `host` methods.
 
-**Fix**: An error in the chache system was introduced when performing slight performance enhancements (two variable names were switched). The issue is now fixed.
+**Fix**: An error in the cache system was introduced when performing slight performance enhancements (two variable names were switched). The issue is now fixed.
 
 **Fix**: Correctly handle multiple `listen` calls with the same port number.
 
