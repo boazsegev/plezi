@@ -49,6 +49,18 @@ module Plezi
 				parameters[:assets_public] ||= '/assets'
 				parameters[:assets_public].chomp! '/'
 
+				if !parameters[:port] && defined? ARGV
+					if ARGV.find_index('-p')
+						port_index = ARGV.find_index('-p') + 1
+						parameters[:port] ||= ARGV[port_index].to_i
+						ARGV[port_index] = (parameters[:port] + 1).to_s
+					else
+						ARGV << '-p'
+						ARGV << '3001'
+						parameters[:port] ||= 3000
+					end
+				end
+
 				#keeps information of past ports.
 				@listeners ||= {}
 				@listeners_locker = Mutex.new
@@ -57,7 +69,7 @@ module Plezi
 				@listeners_locker.synchronize do
 					if @listeners[parameters[:port]]
 						puts "WARNING: port aleady in use! returning existing service and attemptin to add host (maybe multiple hosts? use `host` instead)."
-						@active_router = @listeners[parameters[:port]].params[:http_handler]
+						@active_router = @listeners[parameters[:port]][:http_handler]
 						@active_router.add_host parameters[:host], parameters if @active_router.is_a?(HTTPRouter)
 						return @active_router
 					end
