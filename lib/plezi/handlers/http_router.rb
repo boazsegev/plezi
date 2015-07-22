@@ -40,7 +40,7 @@ module Plezi
 
 			# adds a host to the router (or activates an existing host to add new routes). accepts a host name and any parameters not related to the actual connection (ssl etc') (see {Plezi.listen})
 			def add_host host_name, params = {}
-				host_name = (host_name ? host_name.to_s.downcase : :default)
+				host_name = (host_name ? (host_name.is_a?(String) ? host_name.to_s.downcase : host_name) : :default)
 				@active_host = get_host(host_name) || ( @hosts[host_name] = Host.new(params) )
 				add_alias host_name, *params[:alias] if params[:alias]
 				@active_host
