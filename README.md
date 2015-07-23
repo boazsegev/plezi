@@ -2,13 +2,7 @@
 [![Gem Version](https://badge.fury.io/rb/plezi.svg)](http://badge.fury.io/rb/plezi)
 [![Inline docs](http://inch-ci.org/github/boazsegev/plezi.svg?branch=master)](http://www.rubydoc.info/github/boazsegev/plezi/master)
 
-> People who are serious about their frameworks, should write their own servers...
-
-Find more info on [Plezi's framework documentation](http://www.rubydoc.info/github/boazsegev/plezi/master)
-
-## About the Plezi framework
-
-Plezi is an easy to use Ruby Websocket Framework, with full RESTful routing support and HTTP streaming support. It's name comes from the word "fun" in Haitian, since Plezi is really fun to work with and it keeps our code clean and streamlined.
+Plezi is an easy to use Ruby Websocket Framework, with full RESTful routing support and HTTP streaming support. It's name comes from the word "fun", or "pleasure", since Plezi is a pleasure to work with.
 
 Plezi can both augment an existing Rails/Sinatra app, by providing it with easy Websocket and Asynchronous Events support, as well as offer an alternative to a Rack/Rails/Sintra/Faye/EM-Websockets combo. It's also great as an alternative to socket.io, allowing for both websockets and long pulling.
 
