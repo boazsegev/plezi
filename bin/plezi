@@ -99,6 +99,7 @@ class AppTemplate
 		app_tree["config"]["sequel.rb"] ||= IO.read(::File.expand_path(File.join("..", "..", "resources" ,"db_sequel_config.rb"),  __FILE__))
 		app_tree["config"]["datamapper.rb"] ||= IO.read(::File.expand_path(File.join("..", "..", "resources" ,"db_dm_config.rb"),  __FILE__))
 		app_tree["config"]["haml.rb"] ||= IO.read(::File.expand_path(File.join("..", "..", "resources" ,"haml_config.rb"),  __FILE__))
+		app_tree["config"]["slim.rb"] ||= IO.read(::File.expand_path(File.join("..", "..", "resources" ,"slim_config.rb"),  __FILE__))
 		app_tree["config"]["i18n.rb"] ||= IO.read(::File.expand_path(File.join("..", "..", "resources" ,"i18n_config.rb"),  __FILE__))
 		app_tree["config"]["redis.rb"] ||= (IO.read(::File.expand_path(File.join("..", "..", "resources" ,"redis_config.rb"),  __FILE__))).gsub('appsecret', "#{ARGV[1]}_#{SecureRandom.hex}")
 
