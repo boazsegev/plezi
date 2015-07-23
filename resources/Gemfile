@@ -23,6 +23,11 @@
 ## Coffee Script makes Javascript more fun to code.
 # gem "coffee-script"
 
+## Markdown
+# gem 'redcarpet'
+## syntax highlighting
+# gem 'rouge'
+
 ####################
 # Internationalization
 
