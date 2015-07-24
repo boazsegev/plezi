@@ -37,56 +37,37 @@ module Plezi
 		parameters[:assets_public] ||= '/assets'
 		parameters[:assets_public].chomp! '/'
 
-		if !parameters[:port] && defined? ARGV
-			if ARGV.find_index('-p')
-				port_index = ARGV.find_index('-p') + 1
-				parameters[:port] ||= ARGV[port_index].to_i
-				ARGV[port_index] = (parameters[:port] + 1).to_s
-			else
-				ARGV << '-p'
-				ARGV << '3001'
-				parameters[:port] ||= 3000
-			end
-		end
-
-		#keeps information of past ports.
-		@listeners ||= {}
-		@listeners_locker = Mutex.new
-
 		# check if the port is used twice.
-		@listeners_locker.synchronize do
-			if @listeners[parameters[:port]]
-				puts "WARNING: port aleady in use! returning existing service and attemptin to add host (maybe multiple hosts? use `host` instead)."
-				@active_router = @listeners[parameters[:port]][:upgrade_handler]
-				@active_router.add_host parameters[:host], parameters if @active_router.is_a?(::Plezi::Base::HTTPRouter)
-				return @active_router
+		@routers_locker.synchronize do
+			@active_router = GRHttp.listen(parameters)
+			unless @active_router[:upgrade_handler]
+				@routers << (@active_router[:http_handler] = ::Plezi::Base::HTTPRouter.new)
+				@active_router[:upgrade_handler] = @active_router[:http_handler].upgrade_proc
+			else
+				@active_router.delete :alias
 			end
+			@active_router[:http_handler].add_host(parameters[:host], @active_router.merge(parameters) )
+			@active_router = @active_router[:http_handler]
 		end
-		@listeners[parameters[:port]] = parameters
-
-		# make sure the protocol exists.
-		parameters[:http_handler] = ::Plezi::Base::HTTPRouter.new
-		parameters[:upgrade_handler] = parameters[:http_handler].upgrade_proc
-
-		GRHttp.listen parameters
-		# set the active router to the handler or the protocol.
-		@active_router = parameters[:http_handler]
-		@active_router.add_host(parameters[:host], parameters)
-
 		# return the current handler or the protocol..
 		@active_router
+	end
+
+	# clears all the listeners and routes defined
+	def clear_app
+		@routers_locker.synchronize {GReactor.clear_listeners; @routers.clear}
 	end
 	# adds a route to the last server created
 	def route(path, controller = nil, &block)
 		raise "Must define a listener before adding a route - use `Plezi.listen`." unless @active_router
-		@active_router.add_route path, controller, &block
+		@routers_locker.synchronize { @active_router.add_route path, controller, &block }
 	end
 
 
 	# adds a shared route to all existing services and hosts.
 	def shared_route(path, controller = nil, &block)
-		raise "Must have created at least one Pleze service before calling `shared_route` - use `Plezi.listen`." unless @listeners
-		@listeners.values.each {|p| p[:http_handler].add_shared_route path, controller, &block }
+		raise "Must have created at least one Pleze service before calling `shared_route` - use `Plezi.listen`." unless @routers
+		@routers_locker.synchronize { @routers.each {|r| r.add_shared_route path, controller, &block } }
 	end
 
 	# adds a host to the last server created
@@ -94,7 +75,7 @@ module Plezi
 	# accepts a host name and a parameter(s) Hash which are the same parameter(s) as {Plezi.listen} accepts:
 	def host(host_name, params)
 		raise "Must define a listener before adding a route - use `Plezi.listen`." unless @active_router
-		@active_router.add_host host_name, params
+		@routers_locker.synchronize { @active_router.add_host host_name, params }
 	end
 
 	# starts the Plezi framework server and hangs until the exit signal is given.
@@ -128,6 +109,8 @@ module Plezi
 	# use the`listen`, `host` and `route` functions rather then accessing this object.
 	#
 	@active_router = nil
+	@routers_locker = Mutex.new
+	@routers ||= [].to_set
 end
 
 Encoding.default_internal = 'utf-8'
