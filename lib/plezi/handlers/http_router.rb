@@ -78,7 +78,7 @@ module Plezi
 					# return if a route answered the request
 					host.routes.each {|r| a = r.on_request(request, response); return a if a}
 					#return error code or 404 not found
-					Base::HTTPSender.send_by_code request, response, 404
+					return Base::HTTPSender.send_by_code request, response, 404 unless request[:io].params[:http_handler] == ::GRHttp::Base::Rack
 				rescue => e				
 					# return 500 internal server error.
 					GReactor.error e

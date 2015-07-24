@@ -1,10 +1,12 @@
-# Plezi, The Rack Free Ruby framework for realtime web-apps
+# Plezi, The Ruby framework for realtime web-apps
 [![Gem Version](https://badge.fury.io/rb/plezi.svg)](http://badge.fury.io/rb/plezi)
 [![Inline docs](http://inch-ci.org/github/boazsegev/plezi.svg?branch=master)](http://www.rubydoc.info/github/boazsegev/plezi/master)
 
 Plezi is an easy to use Ruby Websocket Framework, with full RESTful routing support and HTTP streaming support. It's name comes from the word "fun", or "pleasure", since Plezi is a pleasure to work with.
 
-Plezi can both augment an existing Rails/Sinatra app, by providing it with easy Websocket and Asynchronous Events support, as well as offer an alternative to a Rack/Rails/Sintra/Faye/EM-Websockets combo. It's also great as an alternative to socket.io, allowing for both websockets and long pulling.
+I Believe that Plezi is a wonderful backend solution for developing SPAs, both with it's real-time native Websocket API and with it's RESTful routes that work great for writing easy AJAX requests.
+
+Plezi can both provide a wonderful alternative to existing complex platforms (i.e. Rails/Sinatra/Faye/EM) and augment an existing Rails/Sinatra app, by providing it with easy Websocket and Asynchronous Events support. It's also great as an alternative to socket.io, allowing for both websockets and long pulling.
 
 Plezi runs over the [GRHttp server](https://github.com/boazsegev/GRHttp), which is a pure Ruby HTTP and Websocket Generic Server build using [GReactor](https://github.com/boazsegev/GReactor) - a multi-threaded pure ruby alternative to EventMachine with basic process forking support (enjoy it, if your code is scaling ready).
 

@@ -5,13 +5,6 @@ module Plezi
 
 	# Defines methods used to set up the Plezi app.
 
-	# this module contains the methods that are used as a DSL and sets up easy access to the Plezi framework.
-	#
-	# use the`listen`, `host` and `route` functions rather then accessing this object.
-	#
-	@active_router = nil
-
-
 	# public API to add a service to the framework.
 	# accepts a Hash object with any of the following options (Hash keys):
 	# port:: port number. defaults to 3000 or the port specified when the script was called.
@@ -64,15 +57,15 @@ module Plezi
 		@listeners_locker.synchronize do
 			if @listeners[parameters[:port]]
 				puts "WARNING: port aleady in use! returning existing service and attemptin to add host (maybe multiple hosts? use `host` instead)."
-				@active_router = @listeners[parameters[:port]][:http_handler]
-				@active_router.add_host parameters[:host], parameters if @active_router.is_a?(HTTPRouter)
+				@active_router = @listeners[parameters[:port]][:upgrade_handler]
+				@active_router.add_host parameters[:host], parameters if @active_router.is_a?(::Plezi::Base::HTTPRouter)
 				return @active_router
 			end
 		end
 		@listeners[parameters[:port]] = parameters
 
 		# make sure the protocol exists.
-		parameters[:http_handler] = HTTPRouter.new
+		parameters[:http_handler] = ::Plezi::Base::HTTPRouter.new
 		parameters[:upgrade_handler] = parameters[:http_handler].upgrade_proc
 
 		GRHttp.listen parameters
@@ -129,7 +122,15 @@ module Plezi
 		puts "* Plezi #{Plezi::VERSION} Services will start with no Server...\n"
 		start_async
 	end
+
+	# this module contains the methods that are used as a DSL and sets up easy access to the Plezi framework.
+	#
+	# use the`listen`, `host` and `route` functions rather then accessing this object.
+	#
+	@active_router = nil
 end
 
 Encoding.default_internal = 'utf-8'
 Encoding.default_external = 'utf-8'
+
+NO_PLEZI_AUTO_START = true if defined?(::Rack)
