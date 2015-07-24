@@ -1,57 +1,114 @@
 doctype html
 head
 	css:
+		/*
+		med-blue: #44518E
+		dark-gray: #424A70
+		blue: #1B2864
+		light-blue: #818ECE
+		light-gray: #99A3CE
+		*/
 		body, html
 		{
-			background-color: #eee;
+			background-color: #99A3CE;
 			padding: 0; margin: 0;
 			width: 100%;
+			font-size: 1em;
 		}
+
 		h1
 		{
-			background-color: #ddd;
-			color: #008;
+			font-family: 'Shadows Into Light', cursive;
+			background-color: #1B2864;
+			color: #99A3CE;
 			text-align: center;
-			border-bottom: 1px solid #000;
-			margin: 0;
-			padding: 0.5em;
-			width: auto;
+			border-bottom: 4px solid #424A70;
+			margin: 0 0 1em 0;
+			padding: 0.4em 0;
+			width: 100%;
+		}
+		h2
+		{
+			background-color: #44518E;
+			color: #C6CCE7;
+			text-align: left;
+			margin: 0 0 1em 0;
+			padding: 0.5em 5%;
+			border-radius: 20px 20px 0 0;
+			font-family: 'Architects Daughter', cursive;
+			border-bottom: 3px solid #424A70;
+			font-size: 1.2em;
+		}
+		h3
+		{
+			font-family: 'Architects Daughter', cursive;    
+			background-color: #44518E;
+			color: #C6CCE7;
+			text-align: left;
+			margin: 0 0 1em 0;
+			padding: 0.5em 5%;
+			border-radius: 1em 1em 0 0;
+			border-bottom: 2px solid #424A70;
+			font-size: 1.1em;
+		}
+		h2:before {
+			content: "|||";
+			color: #99A3CE;
+			padding-right: 0.3em;
+			margin-left: -0.5em;
+		}
+		h3:before {
+			content: "|||||";
+			color: #99A3CE;
+			padding-right: 0.3em;
+			margin-left: -1em;
+		}
+		h1 a, h2 a, h3 a
+		{
+			color: #EBCD86;
+		}
+		h1 a:hover, h2 a:hover, h3 a:hover
+		{
+			color: #EBD7A6;
 		}
 		p
 		{
-			color:#004;
-			font-size: 1.2em;
+			font-size: 1em;
 			padding: 0 1em;
+			margin: 0.5em 0;        
+		}
+		a
+		{
+			color: #D0AC54;
+			text-decoration: none;
+		}
+		a:hover
+		{
+			color: #927121;
+			text-decoration: underline;
 		}
 		#wrapper
 		{
 			background-color: #fff;
 			margin: 1em 5%;
-			padding: 0 0 2% 0;
+			padding: 0 0 2%;
 			border-radius: 20px;
 			min-height: 50%;
 			color: #007;
 		}
-		#wrapper h2
+
+		#wrapper p{ padding: 0 2%;}
+		.bold { font-weight: bold; }
+		#wrapper ol li{ padding: 0 2%;}
+		pre
 		{
-			background-color: #ddd;
-			color: #008;
-			text-align: center;
-			margin: 0 0 1em 0;
-			padding: 0.5em 0;
-			width: 100%;
 			border-radius: 20px;
-		}
-		#wrapper p { padding: 0 2%; }
-		#wrapper #missing
-		{
-			color:#904;
-			font-size: 1.4em;
 			padding: 0.5em 0;
-			text-align: center;
-			background-color: #fee;
-			border-bottom: 1px solid #800;
-			margin: 0;
+			background-color: #444;
+			color: #ddd;
+		}
+		@media screen and (max-width: 680px)
+		{
 		}
 body
 	h1 Plezi 404 error code (missing, not broken)...
