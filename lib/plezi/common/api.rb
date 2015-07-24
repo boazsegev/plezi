@@ -84,6 +84,22 @@ module Plezi
 		puts "\nPress ^C to exit.\n"
 		GReactor.join { puts "\r\nStarting shutdown sequesnce. Press ^C to force quit."}
 	end
+
+	# Makes sure the GRHttp server will be used by Rack (if Rack is available) and disables Plezi's autostart feature.
+	#
+	# This method is a both a fail safe and a shortcut. Plezi will automatically attempt to diable autostart when discovering Rack
+	# but this method also makes sure that the GRHttp is set as the Rack server by setting the ENV\["RACK_HANDLER"] variable.
+	#
+	# This is used as an alternative to {Plezi.start_placebo}.
+	#
+	# Use {Plezi.start_placebo} to augment an existing app while operating Plezi on a different process or server.
+	#
+	# Use {Plezi.start_rack} to augment an existing Rack app (i.e. Rails/Sinatra) by loading both Plezi and the existing Rack app
+	# to the GRHtto server (it will set up GRHttp as the Rack server).
+	def start_rack
+		Object.const_set("NO_PLEZI_AUTO_START", true) unless defined?(NO_PLEZI_AUTO_START)
+		ENV["RACK_HANDLER"] = 'grhttp'
+	end
 	# starts the Plezi framework and returns immidiately,
 	# allowing you to run the Plezi framework along side another framework. 
 	def start_async

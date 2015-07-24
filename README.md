@@ -125,7 +125,37 @@ method names starting with an underscore ('_') will NOT be made public by the ro
 
 You already have an amazing WebApp, but now you want to add websocket broadcasting and unicasting support - Plezi makes connection your existing WebApp with your Plezi Websocket backend as easy as it gets.
 
-Simply include the Plezi App in your existing app and call `Plezi.start_placebo` - now you can access all the websocket API that you want from your existing WebApp.
+
+There are two easy ways to augment your existing WebApp, depending on your needs and preferences:
+
+1. Let Plezi and GRHttp run your application as a fallback position, defering to your application for anything Plezi doesn't handle (Plezi Websockets and routes will recieve priority).
+
+2. Run Plezi on a seperate process/server and set up communication between the two apps.
+
+### The super easy augmentation - run together
+
+The easiest way to augment your existing application is to use GRHttp's Rack adapter to run your Rack app, while Plezi will use GRHttp's native features (such as Websockets and HTTP streaming).
+
+You can eaither use your existing Plezi application or create a new mini plezi application inside your existing app folder using:
+
+    $   plezi mini appname
+
+Next, add the `plezi` gem to your `Gemfile` and add the following line somewhere in your apps code:
+
+```ruby
+require './appname/appname.rb'
+Plezi.start_rack
+```
+
+That's it! Now you can use the Plezi API and your existing application's API at the same time and they are both running on the same server.
+
+Plezi's route have priority, so that your app can keep handling the 404 (not found) error page.
+
+In the next section we will explore how to set up the placebo API for cross process apps... since you are sharing the same space, you won't need it - but you can still use most of the Placebo API if you wish to do so (just **don't** call `Plezi.start_placebo`)
+
+### The easy (but not super easy) augmentation - talking from afar
+
+To use Plezi and your App on different processes, without mixing them together, simply include the Plezi App in your existing app and call `Plezi.start_placebo` - now you can access all the websocket API that you want from your existing WebApp.
 
 For instance, add the following code to your environment on a Rails or Sinatra app:
 
