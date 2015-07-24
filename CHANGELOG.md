@@ -2,6 +2,16 @@
 
 ***
 
+Change log v.0.10.12
+
+**BIG Feature**: Run both your existing Rack app and plezi on he same GRHttp server - augment your app with all of Plezi's amasing features (two frameworks in one).
+
+**Updates** updates to the mini template, the testing, the core API code and many more minor updates.
+
+**API published**: Most of the private API in the Plezi::Base::DSL module was just made public (moving the methods to the main Plezi namespace). Your app should work as before unless you used private method calls instead of Plezi's published API.
+
+***
+
 Change log v.0.10.11
 
 **Feature**: added the mini-app template, for quick websocket oriented apps that are meant to be attached to other frameworks (use `$ plezi mini appname` or `$ plezi m appname`).
