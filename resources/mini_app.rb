@@ -1,16 +1,19 @@
 # encoding: UTF-8
 
 ## Set working directory, load gems and create logs
-	# Using pathname extentions for setting public folder
+	## Using pathname extentions for setting public folder
 	require 'pathname'
-	#set up root object, it might be used by the environment and\or the plezi extension gems.
+	## Set up root object, it might be used by the environment and\or the plezi extension gems.
 	Root ||= Pathname.new(File.dirname(__FILE__)).expand_path
-	# make sure all file access and file loading is relative to the application's root folder
-	Dir.chdir Root.to_s
-	# using bundler to load gems (including the plezi gem)
+	## make sure all file access and file loading is relative to the application's root folder
+	# Dir.chdir Root.to_s
+
+	## Commet the following in order to use use your original app's Gemfile.
+	## If this app is independant, use bundler to load gems (including the plezi gem).
 	require 'bundler'
 	Bundler.require(:default, ENV['ENV'].to_s.to_sym)
-	## uncomment to create a log file
+
+	## Uncomment to create a log file
 	# GReactor.create_logger File.expand_path(Root.join('server.log').to_s)
 
 ## Options for Scaling the app (across processes or machines):
