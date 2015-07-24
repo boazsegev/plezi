@@ -4,6 +4,14 @@
 
 Change log v.0.10.12
 
+**Placebo API**: The Placebo API was reviews and revamped slightly, to allow you a better experience and better error feedback.
+
+**Template**: The template's error pages were restyled with Plezi's new color scheme.
+
+***
+
+Change log v.0.10.12
+
 **BIG Feature**: Run both your existing Rack app and plezi on he same GRHttp server - augment your app with all of Plezi's amasing features (two frameworks in one).
 
 **Updates** updates to the mini template, the testing, the core API code and many more minor updates.
