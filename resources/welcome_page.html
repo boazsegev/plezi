@@ -175,13 +175,13 @@ input[type=submit]:active
 </style>
 <script type="text/javascript">
 // Your websocket URI should be an absolute path. The following sets the base URI.
-var ws_uri = (window.location.protocol.match(/https/) ? 'wss' : 'ws') + '://' + window.location.hostname + (window.location.port == '' ? '' : (':' + window.location.port) ) + window.location.pathname;
-// remember to add the specific controller's path to your websocket URI.
-ws_uri += "/";
+// remember to update to the specific controller's path to your websocket URI.
+var ws_controller_path = '/' // window.location.pathname; // change to '/controller/path'
+var ws_uri = (window.location.protocol.match(/https/) ? 'wss' : 'ws') + '://' + window.location.hostname + (window.location.port == '' ? '' : (':' + window.location.port) ) + ws_controller_path
 // websocket variable.
 var websocket = NaN
 // count failed attempts
-var websocket_fail = 0
+var websocket_fail_count = 0
 
 function init_websocket()
 {

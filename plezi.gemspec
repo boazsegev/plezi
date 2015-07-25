@@ -8,8 +8,8 @@ Gem::Specification.new do |spec|
   spec.version       = Plezi::VERSION
   spec.authors       = ["Boaz Segev"]
   spec.email         = ['boaz@2be.co.il']
-  spec.summary       = %q{Plezi is the native Ruby Framework for real time web-apps. An easy way to write Websockets, RESTful routing and HTTP streaming apps.}
-  spec.description   = %q{Plezi is the native Ruby Framework for real time web-apps. An easy way to write Websockets, RESTful routing and HTTP streaming apps.}
+  spec.summary       = %q{Plezi - the easy way to add Websockets, RESTful routing and HTTP streaming serviced to Ruby Web-Apps.}
+  spec.description   = %q{Plezi - the easy way to add Websockets, RESTful routing and HTTP streaming serviced to Ruby Web-Apps.}
   spec.homepage      = "http://boazsegev.github.io/plezi/"
   spec.license       = "MIT"
 

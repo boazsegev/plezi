@@ -4,11 +4,15 @@
 
 Plezi is an easy to use Ruby Websocket Framework, with full RESTful routing support and HTTP streaming support. It's name comes from the word "fun", or "pleasure", since Plezi is a pleasure to work with.
 
-I Believe that Plezi is a wonderful backend solution for developing SPAs, both with it's real-time native Websocket API and with it's RESTful routes that work great for writing easy AJAX requests.
+With Plezi, you can easily:
 
-Plezi can both provide a wonderful alternative to existing complex platforms (i.e. Rails/Sinatra/Faye/EM) and augment an existing Rails/Sinatra app, by providing it with easy Websocket and Asynchronous Events support. It's also great as an alternative to socket.io, allowing for both websockets and long pulling.
+1. Add Websocket services and RESTful HTTP Streaming to your existing Web-App, (Rails/Sinatra or any other Rack based Ruby app).
 
-Plezi runs over the [GRHttp server](https://github.com/boazsegev/GRHttp), which is a pure Ruby HTTP and Websocket Generic Server build using [GReactor](https://github.com/boazsegev/GReactor) - a multi-threaded pure ruby alternative to EventMachine with basic process forking support (enjoy it, if your code is scaling ready).
+2. Create an easily scalable backend for your SPA.
+
+3. Create a full fledged Ruby web application, taking full advantage of RESTful routing, HTTP streaming and scalable Websocket features.
+
+Plezi leverages [GRHttp server](https://github.com/boazsegev/GRHttp)'s new architecture. GRHttp is a pure Ruby HTTP and Websocket Generic Server built using [GReactor](https://github.com/boazsegev/GReactor) - a multi-threaded pure ruby alternative to EventMachine with basic process forking support (enjoy forking, if your code is scaling ready).
 
 ## Installation
 
@@ -43,21 +47,11 @@ the default first port for the app is 3000. you can set the first port to listen
 
 you now have a smart framework app that will happily assimilate any gem you feed it. it responds extra well to Haml, Sass and Coffee-Script, which you can enable in it's Gemfile.
 
-## Barebones Web Service
-
-This example is basic, useless, but required for every doc out there...
-
-"Hello World!" in 3 lines - try it in irb (exit irb to start server):
-
-		require 'plezi'
-		listen
-		route(/.?/) { |req, res| res << "Hello World!" }
-
-After you exit irb, the Plezi server will start up. Go to http://localhost:3000/ and see it run :)
-
 ## Plezi Controller classes
 
-One of the best things about the Plezi is it's ability to take in any class as a controller class and route to the classes methods with special support for RESTful methods (`index`, `show`, `new`, `save`, `update`, `delete`, `before` and `after`) and for WebSockets (`pre_connect`, `on_open`, `on_message(data)`, `on_close`, `broadcast`, `unicast`, `on_broadcast(data)`):
+One of the best things about the Plezi is it's ability to take in any class as a controller class and route to the classes methods with special support for RESTful methods (`index`, `show`, `new`, `save`, `update`, `delete`, `before` and `after`) and for WebSockets (`pre_connect`, `on_open`, `on_message(data)`, `on_close`, `broadcast`, `unicast`, `multicast`, `on_broadcast(data)`).
+
+Here is a Hello World using a Controller class (run in `irb`):
 
         require 'plezi'
 
@@ -70,11 +64,13 @@ One of the best things about the Plezi is it's ability to take in any class as a
         listen
         route '*' , Controller
 
-Except for WebSockets, returning a String will automatically add the string to the response before sending the response - which makes for cleaner code. It's also possible to send the response as it is (by returning true).
+        exit # Plezi will autostart once you exit irb.
 
-Controllers can even be nested (order matters) or have advanced uses that are definitly worth exploring.
+Except while using WebSockets, returning a String will automatically add the string to the response before sending the response - which makes for cleaner code. It's also possible to use the `response` object to set the response or stream HTTP (return true instead of a stream when you're done).
 
-\* please read the demo code for Plezi::StubRESTCtrl and Plezi::StubWSCtrl to learn more. Also, read more about the [GRHttp server](GRHttp websocket and HTTP server) at the core of Plezi to get more information about the amazing [HTTPRequest](http://www.rubydoc.info/gems/grhttp/0.0.6/GRHttp/HTTPRequest) and [HTTPResponse](http://www.rubydoc.info/gems/grhttp/GRHttp/HTTPResponse) objects.
+It's also possible to define a number of controllers for a similar route. The controllers will answer in the order in which the routes are defined (this allows to group code by logic instead of url).
+
+\* please read the demo code for Plezi::StubRESTCtrl and Plezi::StubWSCtrl to learn more. Also, read more about the [GRHttp Websocket and HTTP server](https://github.com/boazsegev/GRHttp) at the core of Plezi to get more information about the amazing [HTTPRequest](http://www.rubydoc.info/github/boazsegev/GRHttp/master/GRHttp/HTTPRequest) and [HTTPResponse](http://www.rubydoc.info/github/boazsegev/GRHttp/master/GRHttp/HTTPResponse) objects.
 
 ## Native Websocket and Redis support
 

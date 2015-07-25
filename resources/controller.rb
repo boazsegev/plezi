@@ -122,7 +122,8 @@ class SampleController
 		data = Plezi::HTTP.escape data
 		broadcast :_print_out, data
 		response << "You said: #{data}"
-	end
+		response << (request.ssl? ? "FYI: Yes, This is an SSL connection..." : "FYI: Nope, this isn't an SSL connection (clear text).") if data.match /ssl\?/i
+end
 
 	# called when a disconnect packet has been recieved or the connection has been cut
 	# (ISN'T called after a disconnect message has been sent).
