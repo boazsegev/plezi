@@ -397,10 +397,10 @@ class PlaceboStressTestCtrl
 	def review start_time, fin = false, uni = false
 		if fin
 			time_now = Time.now
-			avrage = (((time_now - start_time)*1.0/(LISTENERS*REPEATS))*1000.0).round(4)
+			average = (((time_now - start_time)*1.0/(LISTENERS*REPEATS))*1000.0).round(4)
 			total = (time_now - start_time).round(3)
 			puts "    * Placebo stress test - Total of #{LISTENERS*REPEATS} events) finished in #{total} seconds"
-			puts "    * Placebo stress test - avrage: (#{avrage} seconds per event."
+			puts "    * Placebo stress test - average: (#{average} seconds per event."
 			PlaceboStressTestCtrl.run_unicast_test unless uni
 		end
 	end
@@ -459,23 +459,26 @@ end
 
 
 
-r = Plezi::Placebo.new PlaceboCtrl
-puts "    * Create Placebo test: #{PleziTestTasks::RESULTS[r && true]}"
 
-Plezi.start_async
 puts "    --- Plezi will ran async, performing some tests that than hang"
 
 puts "    --- Starting tests"
 puts "    --- Failed tests should read: #{PleziTestTasks::RESULTS[false]}"
+Plezi.start_async
 PleziTestTasks.run_tests
-puts "\n    --- Press ^C to complete tests."
 
+r = Plezi::Placebo.new PlaceboCtrl
+puts "    * Create Placebo test: #{PleziTestTasks::RESULTS[r && true]}"
+
+# ENV['PL_REDIS_URL'] ||= ENV['REDIS_URL'] || ENV['REDISCLOUD_URL'] || ENV['REDISTOGO_URL'] || "redis://test:1234@pub-redis-11008.us-east-1-4.5.ec2.garantiadata.com:11008"
+# # GReactor::Settings.set_forking 4
+# GR.run_async { PleziTestTasks.run_tests }
 # start_services
 
 shoutdown_test = false
-# GReactor::Settings.set_forking 4
 Plezi.on_shutdown { shoutdown_test = true }
 
+puts "\n    --- Press ^C to complete tests."
 Plezi.start
 # Plezi::EventMachine.clear_timers
 

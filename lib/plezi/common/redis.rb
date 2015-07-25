@@ -1,16 +1,6 @@
 
 module Plezi
 
-	module Base
-		module PLRedis
-			module_function
-			def private_channel
-				@private_channel ||= Plezi::Settings.redis_channel_name + Plezi::Settings.uuid
-			end
-		end
-	end
-
-
 	module_function
 
 	# Reviews the Redis connection, sets it up if it's missing and returns the Redis connection.
@@ -31,7 +21,7 @@ module Plezi
 			raise "Redis connction failed for: #{ENV['PL_REDIS_URL']}" unless @redis
 			@redis_sub_thread = Thread.new do
 				begin
-				Redis.new(host: @redis_uri.host, port: @redis_uri.port, password: @redis_uri.password).subscribe(Plezi::Settings.redis_channel_name, Plezi::Base::PLRedis.private_channel) do |on|
+				Redis.new(host: @redis_uri.host, port: @redis_uri.port, password: @redis_uri.password).subscribe(Plezi::Settings.redis_channel_name, Plezi::Settings.uuid) do |on|
 						on.message do |channel, msg|
 							begin
 								data = YAML.load(msg)

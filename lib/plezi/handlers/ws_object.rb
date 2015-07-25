@@ -179,8 +179,7 @@ module Plezi
 				# sends the broadcast
 				def _inner_broadcast data, ignore_io = nil
 					if data[:target]
-						return GRHttp::Base::WSHandler.unicast(data[:target], data) if data[:to_server] == Plezi::Settings.uuid
-						return __inner_redis_broadcast data 
+						return ( (data[:to_server].nil? || data[:to_server] == Plezi::Settings.uuid) ? GRHttp::Base::WSHandler.unicast(data[:target], data) : false ) || __inner_redis_broadcast(data)
 					else
 						GRHttp::Base::WSHandler.broadcast data, ignore_io
 						__inner_redis_broadcast data				
@@ -191,7 +190,7 @@ module Plezi
 				def __inner_redis_broadcast data
 					return unless conn = Plezi.redis_connection
 					data[:server] = Plezi::Settings.uuid
-					return conn.publish( ( data[:to_server] ? (Plezi::Settings.redis_channel_name + data[:to_server]) : Plezi::Base::PLRedis.private_channel ), data.to_yaml ) if conn
+					return conn.publish( ( data[:to_server] ? data[:to_server] : Plezi::Settings.redis_channel_name ), data.to_yaml ) if conn
 					false
 				end
 
