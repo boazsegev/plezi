@@ -51,7 +51,7 @@ module Plezi
 			GRHttp.ws_message_size_limit
 		end
 
-		# This Server's UUID
+		# This Server's UUID, for Redis and unicasting identification.
 		def uuid
 			@uuid ||= SecureRandom.uuid
 		end

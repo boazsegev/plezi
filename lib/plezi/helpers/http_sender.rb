@@ -35,7 +35,7 @@ module Plezi
 			#
 			# returns true if data was sent.
 			def send_static_file request, response
-				root = request.io[:params][:root]
+				root = request.io[:params][:public]
 				return false unless root
 				file_requested = request[:path].to_s.split('/')
 				unless file_requested.include? '..'

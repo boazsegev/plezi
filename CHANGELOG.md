@@ -1,5 +1,13 @@
 #Change Log
 
+Change log v.0.10.13
+
+**Fix**: The Placebo API was tested and an issue with the new Placebo class broadcast method was fixed.
+
+**Update**: Websocket code refactoring unified Placebo and Controller's API and bahavior.
+
+**Update**: Unicasting performance using Redis was improved by addressing the unicast only to the process containing the receiver - this means that apps using unicasting can scale freely while apps using broadcasting need to address boradcasting considirations (broadcasting causes ALL the websocket connections - in ALL processes - to answer a broadcast, which raises scaling considirations).
+
 ***
 
 Change log v.0.10.12

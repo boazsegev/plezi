@@ -204,105 +204,10 @@ module Plezi
 				end
 				false
 			end
-
-			## WebSockets Magic
-
-			# Get's the websocket's unique identifier for unicast transmissions.
-			#
-			# This UUID is also used to make sure Radis broadcasts don't triger the
-			# boadcasting object's event.
-			def uuid
-				return @response.uuid if @response.is_a?(GRHttp::WSEvent)
-				nil
-			end
-			alias :unicast_id :uuid
-
-			# WebSockets.
-			#
-			# Use this to brodcast an event to all 'sibling' websockets (websockets that have been created using the same Controller class).
-			#
-			# Accepts:
-			# method_name:: a Symbol with the method's name that should respond to the broadcast.
-			# args*:: The method's argumenst - It MUST be possible to stringify the arguments into a YAML string, or broadcasting and unicasting will fail when scaling beyond one process / one machine.
-			#
-			# The method will be called asynchrnously for each sibling instance of this Controller class.
-			#
-			def broadcast method_name, *args
-				return false unless self.class.has_method? method_name
-				self.class._inner_broadcast({ method: method_name, data: args, type: self.class}, @response.io)
-			end
-
-			# {include:ControllerMagic::ClassMethods#unicast}
-			def unicast target_uuid, method_name, *args
-				self.class._inner_broadcast method: method_name, data: args, target: target_uuid
-			end
-
-			# Use this to multicast an event to ALL websocket connections on EVERY controller, including Placebo controllers.
-			#
-			# Accepts:
-			# method_name:: a Symbol with the method's name that should respond to the broadcast.
-			# args*:: The method's argumenst - It MUST be possible to stringify the arguments into a YAML string, or broadcasting and unicasting will fail when scaling beyond one process / one machine.
-			#
-			# The method will be called asynchrnously for ALL websocket connections.
-			#
-			def multicast method_name, *args
-				self.class._inner_broadcast({ method: method_name, data: args, type: :all}, @response.io)
-			end
-
-
-			# # will (probably NOT), in the future, require authentication or, alternatively, return an Array [user_name, password]
-			# #
-			# #
-			# def request_http_auth realm = false, auth = 'Digest'
-			# 	return request.service.handler.hosts[request[:host] || :default].send_by_code request, 401, "WWW-Authenticate" => "#{auth}#{realm ? "realm=\"#{realm}\"" : ''}" unless request['authorization']
-			# 	request['authorization']
-			# end
 		end
 
 		module ClassMethods
 			public
-
-			# WebSockets: fires an event on all of this controller's active websocket connections.
-			#
-			# Class method.
-			#
-			# Use this to brodcast an event to all connections.
-			#
-			# accepts:
-			# method_name:: a Symbol with the method's name that should respond to the broadcast.
-			# *args:: any arguments that should be passed to the method (IF REDIS IS USED, LIMITATIONS APPLY).
-			#
-			# this method accepts and optional block (NON-REDIS ONLY) to be used as a callback for each sibling's event.
-			#
-			# the method will be called asynchrnously for each sibling instance of this Controller class.
-			def broadcast method_name, *args
-				return false unless has_method? method_name
-				_inner_broadcast method: method_name, data: args, type: self
-			end
-
-			# WebSockets: fires an event on a specific websocket connection using it's UUID.
-			#
-			# Use this to unidcast an event to specific websocket connection using it's UUID.
-			#
-			# accepts:
-			# target_uuid:: the target's unique UUID.
-			# method_name:: a Symbol with the method's name that should respond to the broadcast.
-			# *args:: any arguments that should be passed to the method (IF REDIS IS USED, LIMITATIONS APPLY).
-			def unicast target_uuid, method_name, *args
-				_inner_broadcast method: method_name, data: args, target: target_uuid
-			end
-
-			# Use this to multicast an event to ALL websocket connections on EVERY controller, including Placebo controllers.
-			#
-			# Accepts:
-			# method_name:: a Symbol with the method's name that should respond to the broadcast.
-			# args*:: The method's argumenst - It MUST be possible to stringify the arguments into a YAML string, or broadcasting and unicasting will fail when scaling beyond one process / one machine.
-			#
-			# The method will be called asynchrnously for ALL websocket connections.
-			#
-			def multicast method_name, *args
-				_inner_broadcast({ method: method_name, data: args, type: :all}, @response.io)
-			end
 
 			# This class method behaves the same way as the instance method #url_for. See the instance method's documentation for more details.
 			def url_for dest
@@ -311,7 +216,7 @@ module Plezi
 
 			# resets the routing cache
 			def reset_routing_cache
-				@inheritance.each {|sub| sub.reset_routing_cache}
+				@inheritance.each {|sub| sub.reset_routing_cache} if @inheritance
 			end
 
 			protected
@@ -345,29 +250,6 @@ module Plezi
 
 			def inherited sub
 				(@inheritance ||= [].to_set) << sub
-			end
-
-			public
-
-
-			# WebSockets
-
-			# sends the broadcast
-			def _inner_broadcast data, ignore_io = nil
-				if data[:target]
-					__inner_redis_broadcast data unless GRHttp::Base::WSHandler.unicast data[:target], data
-				else
-					GRHttp::Base::WSHandler.broadcast data, ignore_io
-					__inner_redis_broadcast data				
-				end
-				true
-			end
-
-			def __inner_redis_broadcast data
-				conn = Plezi.redis_connection
-				data[:server] = Plezi::Settings.uuid
-				return conn.publish( Plezi::Settings.redis_channel_name, data.to_yaml ) if conn
-				false
 			end
 		end
 

@@ -10,9 +10,9 @@ module Plezi
 	# port:: port number. defaults to 3000 or the port specified when the script was called.
 	# host:: the host name. defaults to any host not explicitly defined (a catch-all). NOTICE: in order to allow for hostname aliases, this is host emulation and the listening socket will bind to all the addresses available. To limit the actual binding use the `:bind` parameter as set by the GReactor's API - in which case host aliases might not work.
 	# alias:: a String or an Array of Strings which represent alternative host names (i.e. `alias: ["admin.google.com", "admin.gmail.com"]`).
-	# root:: the public root folder. if this is defined, static files will be served from the location.
+	# public:: the public root folder. if this is defined, static files will be served from this folder and all it's sub-folders. Plezi does NOT support file indexing.
 	# assets:: the assets root folder. defaults to nil (no assets support). if the path is defined, assets will be served from `/assets/...` (or the public_asset path defined) before any static files. assets will not be served if the file in the /public/assets folder if up to date (a rendering attempt will be made for systems that allow file writing).
-	# assets_public:: the assets public uri location (uri format, NOT a file path). defaults to `/assets`. assets will be saved (or rendered) to the assets public folder and served as static files.
+	# assets_public:: the assets public uri location (uri format, NOT a file path). defaults to `/assets`. `save_assets` will set if assets should be saved to the assets public folder as static files (defaults to false).
 	# assets_callback:: a method that accepts two parameters: (request, response) and renders any custom assets. the method should return `false` unless it had set the response.
 	# save_assets:: saves the rendered assets to the filesystem, under the public folder. defaults to false.
 	# templates:: the templates root folder. defaults to nil (no template support). templates can be rendered by a Controller class, using the `render` method.
@@ -20,14 +20,16 @@ module Plezi
 	# ssl_key:: the public key for the SSL service.
 	# ssl_cert:: the certificate for the SSL service.
 	#
-	# assets:
+	# Assets:
 	#
-	# assets support will render `.sass`, `.scss` and `.coffee` and save them as local files (`.css`, `.css`, and `.js` respectively)
+	# Assets support will render `.sass`, `.scss` and `.coffee` and save them as local files (`.css`, `.css`, and `.js` respectively)
 	# before sending them as static files.
 	#
+	# Should you need to render a different type of asset, you can define an assets_callback (or submit a pull request with a patch). 
+	# 
 	# templates:
 	#
-	# ERB, Slim and Haml are natively supported. Otherwise define an assets_callback (or submit a pull request with a patch). 
+	# Plezi's controller.render ERB, Slim and Haml are natively supported.
 	#
 	# @returns [Plezi::Router]
 	#
@@ -36,6 +38,8 @@ module Plezi
 		parameters[:index_file] ||= 'index.html'
 		parameters[:assets_public] ||= '/assets'
 		parameters[:assets_public].chomp! '/'
+		parameters[:public] ||= parameters[:root] # backwards compatability
+		puts "Warning: 'root' option is being depracated. use 'public' instead."
 
 		# check if the port is used twice.
 		@routers_locker.synchronize do

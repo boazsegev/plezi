@@ -45,6 +45,7 @@ require 'plezi/helpers/mime_types.rb'
 ### HTTP and WebSocket Handlers
 require 'plezi/handlers/http_router.rb'
 require 'plezi/handlers/route.rb'
+require 'plezi/handlers/ws_object.rb'
 require 'plezi/handlers/controller_magic.rb'
 require 'plezi/handlers/controller_core.rb'
 require 'plezi/handlers/placebo.rb'

@@ -7,11 +7,15 @@
 	Root ||= Pathname.new(File.dirname(__FILE__)).expand_path
 	## make sure all file access and file loading is relative to the application's root folder
 	# Dir.chdir Root.to_s
+	## load code from a subfolder called 'code'
+	# Dir[File.join "{code}", "**" , "*.rb"].each {|file| load File.expand_path(file)}
 
-	## Commet the following in order to use use your original app's Gemfile.
 	## If this app is independant, use bundler to load gems (including the plezi gem).
-	require 'bundler'
-	Bundler.require(:default, ENV['ENV'].to_s.to_sym)
+	## Else, use the original app's Gemfile and start Plezi's Rack mode.
+		require 'bundler'
+		Bundler.require(:default, ENV['ENV'].to_s.to_sym)
+		## OR:
+		# Plesi.start_rack # remember 
 
 	## Uncomment to create a log file
 	# GReactor.create_logger File.expand_path(Root.join('server.log').to_s)
@@ -58,8 +62,7 @@ end
 listen 	host: :default,
 		# root: Root.join('public').to_s,
 		# assets: Root.join('assets').to_s,
-		# assets_public: '/assets',
-		# templates: Root.join('app','views').to_s,
+		# templates: Root.join('templates').to_s,
 		ssl: false
 
 ## Optional stuff:

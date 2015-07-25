@@ -4,6 +4,7 @@ module Plezi
 		# the methods defined in this module will be injected into the Controller's Core class (inherited from the controller).
 		module ControllerCore
 			def self.included base
+				base.send :include, Plezi::Base::WSObject
 				base.send :include, InstanceMethods
 				base.extend ClassMethods
 			end
@@ -65,7 +66,7 @@ module Plezi
 						return false
 					end
 					return false if data[:type] && data[:type] != :all && !self.is_a?(data[:type])
-					return false if data[:target] && data[:target] != ws.uuid
+					# return false if data[:target] && data[:target] != ws.uuid + Plezi::Settings.uuid # already reviewed by the GRHttp
 					return false unless self.class.has_method?(data[:method])
 					self.method(data[:method]).call *data[:data]
 				end
@@ -90,43 +91,6 @@ module Plezi
 			end
 
 			module ClassMethods
-				public
-
-				def reset_routing_cache
-					@methods_list = nil
-					@exposed_methods_list = nil
-					@super_methods_list = nil
-					has_method? nil
-					has_exposed_method? nil
-					has_super_method? nil
-				end
-				def has_method? method_name
-					@methods_list ||= self.instance_methods.to_set
-					@methods_list.include? method_name
-				end
-				def has_exposed_method? method_name
-					@exposed_methods_list ||= ( (self.public_instance_methods - Class.new.instance_methods - Plezi::ControllerMagic::InstanceMethods.instance_methods - [:before, :after, :save, :show, :update, :delete, :initialize, :on_message, :on_broadcast, :pre_connect, :on_open, :on_close]).delete_if {|m| m.to_s[0] == '_'} ).to_set
-					@exposed_methods_list.include? method_name
-				end
-				def has_super_method? method_name
-					@super_methods_list ||= self.superclass.instance_methods.to_set
-					@super_methods_list.include? method_name
-				end
-
-				protected
-
-				# a callback that resets the class router whenever a method (a potential route) is added
-				def method_added(id)
-					reset_routing_cache
-				end
-				# a callback that resets the class router whenever a method (a potential route) is removed
-				def method_removed(id)
-					reset_routing_cache
-				end
-				# a callback that resets the class router whenever a method (a potential route) is undefined (using #undef_method).
-				def method_undefined(id)
-					reset_routing_cache
-				end
 			end
 		end
 	end

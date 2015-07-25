@@ -312,28 +312,32 @@ module PleziTestTasks
 		PL.on_shutdown {puts "    * Websocket unicast message test: #{RESULTS[unicast_test]}"}
 	end
 	def test_websocket_sizes
-			should_disconnect = false
-			ws = GRHttp::WSClient.connect_to("ws://localhost:3000/ws/size") do |ws|
-				if should_disconnect
-					puts "    * Websocket size disconnection test: #{RESULTS[false]}"
-				else
-					puts "    * Websocket message size test: got #{ws.data.bytesize} bytes"
-				end
+			# should_disconnect = false
+			# ws = GRHttp::WSClient.connect_to("ws://localhost:3000/ws/size") do |ws|
+			# 	if should_disconnect
+			# 		puts "    * Websocket size disconnection test: #{RESULTS[false]}"
+			# 	else
+			# 		puts "    * Websocket message size test: got #{ws.data.bytesize} bytes"
+			# 	end
 
-			end
-			ws.on_close do
-				puts "    * Websocket size disconnection test: #{RESULTS[should_disconnect]}"
-			end
-			str = 'a'
-			time_now = Time.now
-			8.times {|i| str = str * 2**i;puts "    * Websocket message size test: sending #{str.bytesize} bytes"; ws << str; }
-			str.clear
-			to_sleep = (Time.now - time_now)*2 + 1
-			puts "will now sleep for #{to_sleep} seconds, waiting allowing the server to respond"
-			sleep to_sleep rescue true
-			should_disconnect = true
-			Plezi::Settings.ws_message_size_limit = 1024
-			ws << ('0123'*258)
+			# end
+			# ws.on_close do
+			# 	puts "    * Websocket size disconnection test: #{RESULTS[should_disconnect]}"
+			# end
+			# str = 'a'
+			# time_now = Time.now
+			# 8.times {|i| str = str * 2**i;puts "    * Websocket message size test: sending #{str.bytesize} bytes"; ws << str; }
+			# str.clear
+			# to_sleep = (Time.now - time_now)*2 + 1
+			# puts "will now sleep for #{to_sleep} seconds, waiting allowing the server to respond"
+			# sleep to_sleep rescue true
+			# should_disconnect = true
+			# Plezi::Settings.ws_message_size_limit = 1024
+			# ws << ('0123'*258)
+	end
+	def test_broadcast_stress
+		PlaceboStressTestCtrl.create_listeners
+		PlaceboStressTestCtrl.run_test
 	end
 	def test_404
 		puts "    * 404 not found and router continuity tests: #{RESULTS[ Net::HTTP.get_response(URI.parse "http://localhost:3000/get404" ).code == '404' ]}"
@@ -343,17 +347,17 @@ module PleziTestTasks
 		puts e
 	end
 	def test_500
-		# workers = GReactor.instance_exec {@threads.select {|t| t.alive?} .count}
-		# print "    * 500 internal error test: #{RESULTS[ Net::HTTP.get_response(URI.parse "http://localhost:3000/fail" ).code == '500' ]}"
-		# # cause 10 more exceptions to be raised... testing thread survival.
-		# 10.times { putc "."; Net::HTTP.get_response(URI.parse "http://localhost:3000/fail" ).code }
-		# putc "\n"
-		# workers_after_test = GReactor.instance_exec {@threads.select {|t| t.alive?} .count}
-		# puts "    * Worker survival test: #{RESULTS[workers_after_test == workers]} (#{workers_after_test} out of #{workers})"
+		workers = GReactor.instance_exec {@threads.select {|t| t.alive?} .count}
+		print "    * 500 internal error test: #{RESULTS[ Net::HTTP.get_response(URI.parse "http://localhost:3000/fail" ).code == '500' ]}"
+		# cause 10 more exceptions to be raised... testing thread survival.
+		10.times { putc "."; Net::HTTP.get_response(URI.parse "http://localhost:3000/fail" ).code }
+		putc "\n"
+		workers_after_test = GReactor.instance_exec {@threads.select {|t| t.alive?} .count}
+		puts "    * Worker survival test: #{RESULTS[workers_after_test == workers]} (#{workers_after_test} out of #{workers})"
 
-		# rescue => e
-		# puts "    **** 500 internal error test FAILED TO RUN!!!"
-		# puts e
+		rescue => e
+		puts "    **** 500 internal error test FAILED TO RUN!!!"
+		puts e
 	end
 end
 
@@ -388,6 +392,40 @@ class PlaceboCtrl
 	end
 end
 
+
+class PlaceboStressTestCtrl
+	def review start_time, fin = false, uni = false
+		if fin
+			time_now = Time.now
+			avrage = (((time_now - start_time)*1.0/(LISTENERS*REPEATS))*1000.0).round(4)
+			total = (time_now - start_time).round(3)
+			puts "    * Placebo stress test - Total of #{LISTENERS*REPEATS} events) finished in #{total} seconds"
+			puts "    * Placebo stress test - avrage: (#{avrage} seconds per event."
+			PlaceboStressTestCtrl.run_unicast_test unless uni
+		end
+	end
+	def self.run_test
+		puts "\n    * Placebo Broadcast stress test starting - (#{LISTENERS} listening objects with #{REPEATS} messages."
+		start_time = Time.now
+		(REPEATS - 1).times {|i| PlaceboStressTestCtrl.broadcast :review, start_time}
+		PlaceboStressTestCtrl.unicast @uuid, :review, start_time, true
+		puts "    * Placebo stress test - sending messages required: (#{Time.now - start_time} seconds."
+	end
+	def self.run_unicast_test
+		puts "\n    * Placebo Unicast stress test starting - (#{LISTENERS} listening objects with #{REPEATS} messages."
+		start_time = Time.now
+		(REPEATS - 1).times {|i| PlaceboStressTestCtrl.unicast @uuid, :review, start_time, false, true}
+		PlaceboStressTestCtrl.unicast @uuid, :review, start_time, true, true
+		puts "    * Placebo stress test - sending messages required: (#{Time.now - start_time} seconds."
+	end
+	def self.create_listeners
+		@uuid = nil
+		LISTENERS.times {@uuid = Plezi::Placebo.new(PlaceboStressTestCtrl).uuid}
+	end
+	REPEATS = 1000
+	LISTENERS = 600
+end
+
 PL.create_logger nil
 # PL::Settings.max_threads = 4
 
@@ -400,6 +438,9 @@ route("/ssl") {|req, res| res << "true" }
 shared_route 'ws/no', Nothing
 shared_route 'ws/placebo', PlaceboTestCtrl
 shared_route 'ws/size', WSsizeTestCtrl
+
+
+# puts Nothing.ancestors.join "\n"
 
 shared_route '/some/:multi{path|another_path}/(:option){route|test}/(:id)/(:optional)', TestCtrl
 shared_route '/', TestCtrl
