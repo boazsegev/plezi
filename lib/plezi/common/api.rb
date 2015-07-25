@@ -39,7 +39,7 @@ module Plezi
 		parameters[:assets_public] ||= '/assets'
 		parameters[:assets_public].chomp! '/'
 		parameters[:public] ||= parameters[:root] # backwards compatability
-		puts "Warning: 'root' option is being depracated. use 'public' instead."
+		puts "Warning: 'root' option is being depracated. use 'public' instead." if parameters[:root]
 
 		# check if the port is used twice.
 		@routers_locker.synchronize do
