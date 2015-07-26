@@ -97,7 +97,7 @@ module Plezi
 				request.base_url + url_for(dest)
 			end
 
-			# this method adds data to be sent.
+			# Send raw data to be saved as a file or viewed as an attachment. Browser should believe it had recieved a file.
 			#
 			# this is usful for sending 'attachments' (data to be downloaded) rather then
 			# a regular response.
