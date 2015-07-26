@@ -49,6 +49,8 @@ class AppTemplate
 		app_tree["Gemfile"] ||= ''
 		app_tree["Gemfile"] << "source 'https://rubygems.org'\n\n####################\n# core gems\n\n# include the basic plezi framework and server\ngem 'plezi', '~> #{Plezi::VERSION}'\n"
 		app_tree["Gemfile"] << "\n\n\nruby '#{RUBY_VERSION}'\n"
+		app_tree["404.html.erb"] ||= IO.read(::File.expand_path(File.join("..", "..", "resources" ,"404.erb"),  __FILE__))
+		app_tree["500.html.erb"] ||= IO.read(::File.expand_path(File.join("..", "..", "resources" ,"500.erb"),  __FILE__))
 		finalize
 	end
 
