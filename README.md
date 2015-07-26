@@ -117,18 +117,19 @@ Remember to connect to the service from at least two browser windows - to truly 
 
 method names starting with an underscore ('_') will NOT be made public by the router: so while both '/hello' and '/humans.txt' are public ( [try it](http://localhost:3000/humans.txt) ), '/_send_message' will return a 404 not found error ( [try it](http://localhost:3000/_send_message) ).
 
-## Adding Websickets to your existing Rails/Sinatra/Rack application
+## Adding Websockets to your existing Rails/Sinatra/Rack application
 
 You already have an amazing WebApp, but now you want to add websocket broadcasting and unicasting support - Plezi makes connecting your existing WebApp with your Plezi Websocket backend as easy as it gets.
 
 
 There are two easy ways to add Plezi websockets to your existing WebApp, depending on your needs and preferences:
 
-1. The super easy way - a Hybrid app:
+1. **The super easy way - a Hybrid app**:
 
      Plezi plays well with others, so you can add Plezi to your existing framework and let it catch any incoming websocket connections. Your application will still handle anything you didn't ask Plezi to handle (Plezi Websockets and routes will recieve priority, so your app can keep handling the 404 response).
 
-2. The Placebo API:
+
+2. **The Placebo API**:
 
      Plezi has a Placebo API, allowing you to add Plezi features without running a Plezi app.
 
