@@ -12,7 +12,7 @@ With Plezi, you can easily:
 
 3. Create a full fledged Ruby web application, taking full advantage of RESTful routing, HTTP streaming and scalable Websocket features.
 
-Plezi leverages [GRHttp server](https://github.com/boazsegev/GRHttp)'s new architecture. GRHttp is a pure Ruby HTTP and Websocket Generic Server built using [GReactor](https://github.com/boazsegev/GReactor) - a multi-threaded pure ruby alternative to EventMachine with basic process forking support (enjoy forking, if your code is scaling ready).
+Plezi leverages [GRHttp server's](https://github.com/boazsegev/GRHttp) new architecture. GRHttp is a pure Ruby HTTP and Websocket Generic Server built using [GReactor](https://github.com/boazsegev/GReactor) - a multi-threaded pure ruby alternative to EventMachine with basic process forking support (enjoy forking, if your code is scaling ready).
 
 ## Installation
 
@@ -117,20 +117,26 @@ Remember to connect to the service from at least two browser windows - to truly 
 
 method names starting with an underscore ('_') will NOT be made public by the router: so while both '/hello' and '/humans.txt' are public ( [try it](http://localhost:3000/humans.txt) ), '/_send_message' will return a 404 not found error ( [try it](http://localhost:3000/_send_message) ).
 
-## Augmenting a Rails/Sinatra with Websocket broadcasting
+## Adding Websickets to your existing Rails/Sinatra/Rack application
 
-You already have an amazing WebApp, but now you want to add websocket broadcasting and unicasting support - Plezi makes connection your existing WebApp with your Plezi Websocket backend as easy as it gets.
+You already have an amazing WebApp, but now you want to add websocket broadcasting and unicasting support - Plezi makes connecting your existing WebApp with your Plezi Websocket backend as easy as it gets.
 
 
-There are two easy ways to augment your existing WebApp, depending on your needs and preferences:
+There are two easy ways to add Plezi websockets to your existing WebApp, depending on your needs and preferences:
 
-1. Let Plezi and GRHttp run your application as a fallback position, defering to your application for anything Plezi doesn't handle (Plezi Websockets and routes will recieve priority).
+1. The super easy way - a Hybrid app:
 
-2. Run Plezi on a seperate process/server and set up communication between the two apps.
+     Plezi plays well with others, so you can add Plezi to your existing framework and let it catch any incoming websocket connections. Your application will still handle anything you didn't ask Plezi to handle (Plezi Websockets and routes will recieve priority, so your app can keep handling the 404 response).
 
-### The super easy augmentation - run together
+2. The Placebo API:
 
-The easiest way to augment your existing application is to use GRHttp's Rack adapter to run your Rack app, while Plezi will use GRHttp's native features (such as Websockets and HTTP streaming).
+     Plezi has a Placebo API, allowing you to add Plezi features without running a Plezi app.
+
+     By adding the Plezi Placebo to your app, you can easily communicate between your existing app and a remote Plezi process/server. So, although websocket connections are made to a different server, your app can still send and recieve data through the websocket connection (using Redis).
+
+### The super easy way - a Hybrid app
+
+The easiest way to add Plezi websockets to your existing application is to use [GRHttp's](https://github.com/boazsegev/GRHttp) Rack adapter to run your Rack app, while Plezi will use GRHttp's native features (such as Websockets and HTTP streaming).
 
 You can eaither use your existing Plezi application or create a new mini plezi application inside your existing app folder using:
 
@@ -145,22 +151,21 @@ Plezi.start_rack
 
 That's it! Now you can use the Plezi API and your existing application's API at the same time and they are both running on the same server.
 
-Plezi's route have priority, so that your app can keep handling the 404 (not found) error page.
+Plezi's routes will be attempted first, so that your app can keep handling the 404 (not found) error page.
 
-In the next section we will explore how to set up the placebo API for cross process apps... since you are sharing the same space, you won't need it - but you can still use most of the Placebo API if you wish to do so (just **don't** call `Plezi.start_placebo`)
+### The Plezi Placebo API - talking from afar
 
-### The easy (but not super easy) augmentation - talking from afar
+To use Plezi and your App on different processes, without mixing them together, simply include the Plezi App in your existing app and call `Plezi.start_placebo` - now you can access all the websocket API that you want from your existing WebApp, but Plezi will not interfere with your WebApp in any way.
 
-To use Plezi and your App on different processes, without mixing them together, simply include the Plezi App in your existing app and call `Plezi.start_placebo` - now you can access all the websocket API that you want from your existing WebApp.
-
-For instance, add the following code to your environment on a Rails or Sinatra app:
+For instance, add the following code to your environment setup on a Rails or Sinatra app:
 
 ```ruby
 
 require './my_plezi_app/environment.rb'
 require './my_plezi_app/routes.rb'
 
-ENV['PL_REDIS_URL'] = "redis://username:password@my.host:6379"
+# # Make sure the following is already in your 'my_plezi_app/environment.rb' file:
+# ENV['PL_REDIS_URL'] = "redis://username:password@my.host:6379"
 
 Plezi.start_placebo
 ```
@@ -172,7 +177,7 @@ Plezi will automatically set up the Redis connections and pub/sub to connect you
 Now you can use Plezi from withing your existing App's code. For example, if your Plezi app has a controller named `ClientPleziCtrl`, you might use:
 
 ```ruby
-
+# Demo a Rails Controller:
 class ClientsController < ApplicationController
   def update
      #... your original logic here
@@ -199,23 +204,20 @@ Oh, that's easy too.
 
 With a few more lines of code, we can have the websocket connections _broadcast_ back to us using the `Plezi::Placebo` API.
 
-On your Rails app, add:
+In your Rails app, add the logic:
 
 ```ruby
-
 class MyReciever
     def my_reciever_method arg1, arg2, arg3, arg4...
         # your app's logic
     end
 end
-
 Plezi::Placebo.new MyReciever
-
 ```
 
 Plezi will now take your class and add mimick an IO connection (the Placebo connection) on it's GRHttp serever. This Placebo connection will answer the Redis broadcasts just as if your class was a websocket controller...
 
-On the Plezi side, use multicasting, from ANY controller:
+On the Plezi side, use multicasting or unicasting (but not broadcasting), from ANY controller:
 
 ```ruby
 
@@ -227,39 +229,33 @@ class ClientPleziCtrl
 end
 ```
 
-That's it! Now you have your listening object... but careful - to saafely scale up this communication you might consider using unicasting instead of broadcasting...
+That's it! Now you have your listening object... but be aware - to safely scale up this communication you might consider using unicasting instead of broadcasting.
+
+We recommend saving the uuid of the Rails process to a Redis key and picking it up from there.
 
 On your Rails app, add:
 
 ```ruby
 #...
 class MyReciever
-    def get_controller sender
-        ClientPleziCtrl.unicast sender, :_set_controller_uuid, uuid
-    end
     def my_reciever_method arg1, arg2, arg3, arg4...
         # ...
     end
 end
 
-Plezi::Placebo.new MyReciever
+pl = Plezi::Placebo.new MyReciever
+
+Plezi.redis_connection.set 'MainUUIDs', pl.uuid
 
 ```
-On the Plezi, save the data and use unicasting when possible:
+In your Plezi app, use unicasting when possible:
 
 ```ruby
 class ClientPleziCtrl
-    def on_open
-       multicast :get_controller, uuid
-    end
     def on_message data
         # app logic here
-        unicast @main_controller, :my_reciever_method, arg1, arg2, arg3, arg4... if @main_controller
-    end
-    def _controller_uuid controller_uuid
-        @main_controller = controller_uuid
-        # send ready flag to client using JSON?
-        response << "{\"state\":\"ready\""
+        main_uuid = Plezi.redis_connection.get 'MainUUIDs'
+        unicast main_uuid, :my_reciever_method, arg1, arg2, arg3, arg4... if main_uuid
     end
 end
 
