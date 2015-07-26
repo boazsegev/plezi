@@ -20,10 +20,10 @@ module Plezi
 		end
 
 		module InstanceMethods
-			module_function
+
 			public
 
-			# the request object, class: HTTPRequest.
+			# the request object, type HTTPRequest.
 			attr_reader :request
 
 			# the :params variable contains all the parameters set by the request (/path?locale=he  => params ["locale"] == "he").

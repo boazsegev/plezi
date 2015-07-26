@@ -19,7 +19,7 @@ module Plezi
 					@host_params = request.io[:params]
 					@response = response
 					@cookies = request.cookies
-					# @response["content-type"] ||= ::Plezi.default_content_type
+					# # \@response["content-type"] ||= ::Plezi.default_content_type
 					super()
 				end
 

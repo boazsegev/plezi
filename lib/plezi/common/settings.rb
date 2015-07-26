@@ -32,7 +32,8 @@ module Plezi
 			raise "Can't change channel name after Redis subscription had been initiated." if @redis
 			@redis_channel_name = val
 		end
-		# @return [String] Returns the Redis Channel Name.
+		# Returns the Redis Channel Name used by this app.
+		# @return [String]
 		def redis_channel_name
 			@redis_channel_name ||= 'Plezi_Redis_Channel'
 		end

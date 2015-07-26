@@ -31,7 +31,7 @@ module Plezi
 	#
 	# Plezi's controller.render ERB, Slim and Haml are natively supported.
 	#
-	# @returns [Plezi::Router]
+	# @return [Plezi::Router]
 	#
 	def listen parameters = {}
 		# update default values
