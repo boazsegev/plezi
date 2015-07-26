@@ -35,6 +35,7 @@ module Plezi
 						return false
 					end
 					return false if data[:type] && data[:type] != :all && !self.is_a?(data[:type])
+					# return ( self.class.placebo? ? true : we.write(ws.data)) if :method == :to_client
 					return ((data[:type] == :all) ? false : (raise "Broadcasting recieved but no method can handle it - dump:\r\n #{data.to_s}") ) unless self.class.has_super_method?(data[:method])
 					self.method(data[:method]).call *data[:data]
 				end
@@ -129,6 +130,9 @@ module Plezi
 
 			module SuperClassMethods
 				public
+
+				# answers the question if this is a placebo object.
+				def placebo?; false end
 
 				# WebSockets: fires an event on all of this controller's active websocket connections.
 				#
