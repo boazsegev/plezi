@@ -57,19 +57,6 @@ module Plezi
 				def on_close ws
 					super() if defined? super
 				end
-				# handles websocket multicasting/broadcasting/unicasting.
-				def on_broadcast ws
-					data = ws.data
-					unless (data[:type] || data[:target]) && data[:method] && data[:data]
-						GReactor.warn "Broadcast message unknown... falling back on base broadcasting"
-						return super(data) if defined? super
-						return false
-					end
-					return false if data[:type] && data[:type] != :all && !self.is_a?(data[:type])
-					# return false if data[:target] && data[:target] != ws.uuid + Plezi::Settings.uuid # already reviewed by the GRHttp
-					return false unless self.class.has_method?(data[:method])
-					self.method(data[:method]).call *data[:data]
-				end
 
 				# Inner Routing
 				#
