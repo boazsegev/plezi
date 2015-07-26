@@ -3,7 +3,7 @@
 // Your websocket URI should be an absolute path. The following sets the base URI.
 // remember to update to the specific controller's path to your websocket URI.
 var ws_controller_path = window.location.pathname; // change to '/controller/path'
-var ws_uri = (window.location.protocol.match(/https/) ? 'wss' : 'ws') + '://' + window.location.hostname + (window.location.port == '' ? '' : (':' + window.location.port) ) + ws_controller_path
+var ws_uri = (window.location.protocol.match(/https/) ? 'wss' : 'ws') + '://' + window.document.location.host + ws_controller_path
 // websocket variable.
 var websocket = NaN
 // count failed attempts
