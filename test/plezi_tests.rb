@@ -312,28 +312,28 @@ module PleziTestTasks
 		PL.on_shutdown {puts "    * Websocket unicast message test: #{RESULTS[unicast_test]}"}
 	end
 	def test_websocket_sizes
-			# should_disconnect = false
-			# ws = GRHttp::WSClient.connect_to("ws://localhost:3000/ws/size") do |ws|
-			# 	if should_disconnect
-			# 		puts "    * Websocket size disconnection test: #{RESULTS[false]}"
-			# 	else
-			# 		puts "    * Websocket message size test: got #{ws.data.bytesize} bytes"
-			# 	end
+			should_disconnect = false
+			ws = GRHttp::WSClient.connect_to("ws://localhost:3000/ws/size") do |ws|
+				if should_disconnect
+					puts "    * Websocket size disconnection test: #{RESULTS[false]}"
+				else
+					puts "    * Websocket message size test: got #{ws.data.bytesize} bytes"
+				end
 
-			# end
-			# ws.on_close do
-			# 	puts "    * Websocket size disconnection test: #{RESULTS[should_disconnect]}"
-			# end
-			# str = 'a'
-			# time_now = Time.now
-			# 8.times {|i| str = str * 2**i;puts "    * Websocket message size test: sending #{str.bytesize} bytes"; ws << str; }
-			# str.clear
-			# to_sleep = (Time.now - time_now)*2 + 1
-			# puts "will now sleep for #{to_sleep} seconds, waiting allowing the server to respond"
-			# sleep to_sleep rescue true
-			# should_disconnect = true
-			# Plezi::Settings.ws_message_size_limit = 1024
-			# ws << ('0123'*258)
+			end
+			ws.on_close do
+				puts "    * Websocket size disconnection test: #{RESULTS[should_disconnect]}"
+			end
+			str = 'a'
+			time_now = Time.now
+			7.times {|i| str = str * 2**i;puts "    * Websocket message size test: sending #{str.bytesize} bytes"; ws << str; }
+			str.clear
+			to_sleep = (Time.now - time_now)*2 + 1
+			puts "will now sleep for #{to_sleep} seconds, waiting allowing the server to respond"
+			sleep to_sleep rescue true
+			should_disconnect = true
+			Plezi::Settings.ws_message_size_limit = 1024
+			ws << ('0123'*258)
 	end
 	def test_broadcast_stress
 		PlaceboStressTestCtrl.create_listeners
@@ -464,11 +464,15 @@ puts "    --- Plezi will ran async, performing some tests that than hang"
 
 puts "    --- Starting tests"
 puts "    --- Failed tests should read: #{PleziTestTasks::RESULTS[false]}"
-Plezi.start_async
-PleziTestTasks.run_tests
 
 r = Plezi::Placebo.new PlaceboCtrl
 puts "    * Create Placebo test: #{PleziTestTasks::RESULTS[r && true]}"
+puts "    * Placebo admists to being placebo: #{PleziTestTasks::RESULTS[PlaceboCtrl.placebo?]}"
+puts "    * Regular controller answers placebo: #{PleziTestTasks::RESULTS[!PlaceboTestCtrl.placebo?]}"
+
+
+Plezi.start_async
+PleziTestTasks.run_tests
 
 # ENV['PL_REDIS_URL'] ||= ENV['REDIS_URL'] || ENV['REDISCLOUD_URL'] || ENV['REDISTOGO_URL'] || "redis://test:1234@pub-redis-11008.us-east-1-4.5.ec2.garantiadata.com:11008"
 # # GReactor::Settings.set_forking 4
