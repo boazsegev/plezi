@@ -1,5 +1,15 @@
 #Change Log
 
+Change log v.0.10.14
+
+**Deprecation notice**: Setting the public root folder is now done using the option `public` instead of the option `root`.
+
+**Fix**: Yard documentation failed due to duplicate entries. The issue was fixed.
+
+**Update**: removed duplicate code and updated the server for better Rack support.
+
+***
+
 Change log v.0.10.13
 
 **Fix**: The Placebo API was tested and an issue with the new Placebo class broadcast method was fixed.
