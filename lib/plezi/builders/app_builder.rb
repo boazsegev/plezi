@@ -1,4 +1,4 @@
-require 'plezi/builders/builder.rb'
+require 'plezi/builders/builder'
 module Plezi
 
 
@@ -118,7 +118,7 @@ module Plezi
 			Dir.chdir ARGV[1]
 			puts "starting to write template data...".red
 			puts ""
-			write_files app_tree
+			Builder.write_files app_tree
 			File.chmod 0775, "#{ARGV[1]}"
 			puts "tried to update execution permissions. this is system dependent and might have failed.".pink
 			puts "use: chmod +x ./#{ARGV[1]} to set execution permissions on Unix machines."
