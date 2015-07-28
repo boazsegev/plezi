@@ -34,11 +34,7 @@
 class MyController
 	# HTTP
 	def index
-		"Hello World!\r\n\r\nThis appname mini-app is an example hello world and websocket chatroom.\r\n
-		\r\nplease visit http://www.websocket.org/echo.html and connect to: ws://localhost:3000/nickname"
-	end
-	def websockets
-		redirect_to "http://www.websocket.org/echo.html"
+		render :welcome
 	end
 	# Websockets
 	def on_message data
@@ -62,9 +58,9 @@ end
 # start a web service to listen on the first default port (3000 or the port set by the command-line).
 # you can change some of the default settings here.
 listen 	host: :default,
+		assets: Root.join('assets').to_s,
+		templates: Root.join('templates').to_s,
 		# public: Root.join('public').to_s,
-		# assets: Root.join('assets').to_s,
-		# templates: Root.join('templates').to_s,
 		ssl: false
 
 ## Optional stuff:

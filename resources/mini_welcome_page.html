@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<head>
+<title>appname - Feed Me!</title>
+<meta content="width=device-width, initial-scale=1, maximum-scale=2.0, user-scalable=yes, minimal-ui=yes" name="viewport">
+<link href='http://fonts.googleapis.com/css?family=Shadows+Into+Light|Architects+Daughter' rel='stylesheet' type='text/css'>
+<style type="text/css">
+/*
+med-blue: #44518E
+dark-gray: #424A70
+blue: #1B2864
+light-blue: #818ECE
+light-gray: #99A3CE
+*/
+body, html
+{
+    background-color: #99A3CE;
+    padding: 0; margin: 0;
+    width: 100%;
+    font-size: 1em;
+}
+
+h1
+{
+    font-family: 'Shadows Into Light', cursive;
+    background-color: #1B2864;
+    color: #99A3CE;
+    text-align: center;
+    border-bottom: 4px solid #424A70;
+    margin: 0 0 1em 0;
+    padding: 0.4em 0;
+    width: 100%;
+}
+h2
+{
+    background-color: #44518E;
+    color: #C6CCE7;
+    text-align: left;
+    margin: 0 0 1em 0;
+    padding: 0.5em 5%;
+    border-radius: 20px 20px 0 0;
+    font-family: 'Architects Daughter', cursive;
+    border-bottom: 3px solid #424A70;
+    font-size: 1.2em;
+}
+h3
+{
+    font-family: 'Architects Daughter', cursive;    
+    background-color: #44518E;
+    color: #C6CCE7;
+    text-align: left;
+    margin: 0 0 1em 0;
+    padding: 0.5em 5%;
+    border-radius: 1em 1em 0 0;
+    border-bottom: 2px solid #424A70;
+    font-size: 1.1em;
+}
+h2:before {
+  content: "|||";
+  color: #99A3CE;
+  padding-right: 0.3em;
+  margin-left: -0.5em;
+}
+h3:before {
+  content: "|||||";
+  color: #99A3CE;
+  padding-right: 0.3em;
+  margin-left: -1em;
+}
+h1 a, h2 a, h3 a
+{
+    color: #EBCD86;
+}
+h1 a:hover, h2 a:hover, h3 a:hover
+{
+    color: #EBD7A6;
+}
+p
+{
+    font-size: 1em;
+    padding: 0 1em;
+    margin: 0.5em 0;        
+}
+a
+{
+    color: #D0AC54;
+    text-decoration: none;
+}
+a:hover
+{
+    color: #927121;
+    text-decoration: underline;
+}
+#wrapper
+{
+    background-color: #fff;
+    margin: 1em 5%;
+    padding: 0 0 2%;
+    border-radius: 20px;
+    min-height: 50%;
+    color: #007;
+}
+
+#wrapper p{ padding: 0 2%;}
+.bold { font-weight: bold; }
+#wrapper ol li{ padding: 0 2%;}
+pre
+{
+    border-radius: 20px;
+    padding: 0.5em 0;
+    background-color: #444;
+    color: #ddd;
+}
+input[type=text]
+{
+    width: 60%;
+    font-size: 1.1em;
+    display: inline-block;
+    background-color: #fff;
+    color: #424A70;
+    border-radius: 0.5em;
+    border: 1px solid #424A70;
+    outline: none;
+    box-sizing: border-box;
+    padding: 0 1em;
+}
+input[type=submit]
+{
+    font-size: 1.1em;
+    color: #424A70;
+    border-radius: 0.5em;
+    box-sizing: border-box;
+    border: 1px solid #424A70;
+    background-color: #fff;
+    padding: 0 0.4em;
+}
+input[type=submit]:hover
+{
+    background-color: #818ECE; color:#fff;
+}
+input[type=submit]:active
+{
+    background-color: #1B2864; color:#fff;
+}
+
+#monitor
+{
+    margin: 0 5%; padding: 0.5em 3em;
+    box-sizing: border-box;
+    width: 90%;
+    font-size: 1.1em;
+    display: inline-block;
+    background-color: #C6CCE7;
+    color: #424A70;
+    border-radius: 0.5em;
+    border: 1px solid #424A70;    
+}
+#monitor p
+{
+    text-align: center;
+}
+.system_message { color: #1B2864; font-style: italic;}
+@media screen and (max-width: 680px)
+{
+    input[type=submit], input[type=text] {
+        font-size: 1em;
+    }
+    input[type=text] { width: 100%;}
+    #monitor
+    {
+        margin: 0 3%; padding: 0.5em 1em;
+    }
+    ul {padding: 0 1em;}
+}
+
+</style>
+<script type="text/javascript">
+// Your websocket URI should be an absolute path. The following sets the base URI.
+// remember to update to the specific controller's path to your websocket URI.
+var ws_controller_path = '/' // window.location.pathname; // change to '/controller/path'
+var ws_uri = (window.location.protocol.match(/https/) ? 'wss' : 'ws') + '://' + window.document.location.host + ws_controller_path
+// websocket variable.
+var websocket = NaN
+// count failed attempts
+var websocket_fail_count = 0
+
+function init_websocket()
+{
+    websocket = new WebSocket(ws_uri);
+    websocket.onopen = function(e) {
+        //restart fail count
+        websocket_fail = 0
+        // what do you want to do now?
+        var msg = document.createElement("li");
+        msg.className = 'system_message'
+        msg.innerHTML = "Connected.";
+        document.getElementById("output").appendChild(msg);
+    };
+
+    websocket.onclose = function(e) {
+        // what do you want to do now?
+        if(websocket_fail == 0) {
+            var msg = document.createElement("li");
+            msg.className = 'system_message'
+            msg.innerHTML = "Disconnected.";
+            document.getElementById("output").appendChild(msg);
+        };
+        // you probably want to reopen the websocket if it closes (unless the issue repeats).
+        if(websocket_fail <= 5) {websocket_fail += 1; init_websocket(); };
+    };
+    websocket.onerror = function(e) {
+        // what do you want to do now?
+    };
+    websocket.onmessage = function(e) {
+        // what do you want to do now?
+        console.log(e.data);
+        var msg = document.createElement("li");
+        msg.innerHTML = e.data;
+        document.getElementById("output").appendChild(msg);
+        // to use JSON, use:
+        // msg = JSON.parse(e.data); // remember to use JSON also in your Plezi controller.
+    };
+}
+window.addEventListener("load", init_websocket, false); 
+function send_text()
+{
+    var msg = document.getElementById("input").value;
+    document.getElementById("input").value = '';
+    websocket.send(msg);
+    return false;
+}
+</script>
+</head>
+<body>
+    <h1>Welcome to  <a href="https://github.com/boazsegev/plezi">Plezi</a></h1>
+    <div id="wrapper">
+        <h2>Congratulations, <a href='/'>appname</a> is running - What's next?</h2>
+        <p><span class="bold">Congratulations</span>, you're now running appname and it has so much potential!</p>
+        <p>appname started out <a href="https://github.com/boazsegev/plezi">Plezi</a> and it's your quest to feed it your code and make sure appname grows strong and happy.</p>
+        <p>You're the master of this quest, and your next steps might include:</p>
+        <ol><li><p class="bold">Deciding which gems to use:</p>
+            <ul>
+                <li>edit Gemfile in the appname folder.</li>
+            </ul>
+        </li>
+        <li>
+            <p class="bold">Reviewing the sample code and feeding <a href="https://github.com/boazsegev/plezi">Plezi</a> your code:</p>
+            <ul>
+                <li>Review and update MyController in your 'appname.rb'.</li>
+                <li>Delete this file (appname/templates/welcome.html.erb).</li>
+                <li>Write your own controller and code, using a sub-foler as suggested in the 'appname.rb' file.</li>
+                <li>Set up your routes in the 'appname.rb' file.</li>
+                <li>Edit the javascript for the client in your 'appname/websockets.js' file.</li>
+            </ul>
+        </li>
+        <li>
+            <p><span class="bold">Having fun</span> and submitting any issues you discover to the <a href="https://github.com/boazsegev/plezi">Plezi Github Project.</a></p>
+        </li>
+    </ol>
+    <p class="bold">Good Luck!</p>
+    <h3> Did you try our websocket broadcast? </h3>
+    <p>Your appname app can send <span class="bold">WebSocket</span> broadcasts (and unicasts). Why not try them out? You can even try them across multiple windows.</p>
+    <form onsubmit='send_text(); return false;' id='monitor'>
+        <p><input type='text' id='input' placeholder='Your message' /> <input type='submit'  value='Broadcast'/> </p>
+        <ul id='output'>
+        </ul>
+    </form>
+</div>
+</body>
