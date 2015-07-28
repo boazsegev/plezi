@@ -1,5 +1,9 @@
 #Change Log
 
+Change log v.0.10.15
+
+**Fix**: Fixed the autostart feature that was diabled to to changed in the GRHttp server.
+
 Change log v.0.10.14
 
 **Deprecation notice**: Setting the public root folder is now done using the option `public` instead of the option `root`.
