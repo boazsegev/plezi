@@ -34,6 +34,7 @@
 class MyController
 	# HTTP
 	def index
+		# return response << "Hello World!" # for a hello world app
 		render :welcome
 	end
 	# Websockets
