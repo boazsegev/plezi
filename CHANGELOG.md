@@ -2,7 +2,7 @@
 
 Change log v.0.10.15
 
-**Fix**: Fixed the autostart feature that was diabled to to changed in the GRHttp server.
+**Fix**: Fixed the autostart feature that was diabled due to a changed in the GRHttp server's code for Rack support.
 
 Change log v.0.10.14
 
