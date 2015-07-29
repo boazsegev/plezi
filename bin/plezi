@@ -64,7 +64,7 @@ if ARGV[0] == 'new' || ARGV[0] == 'n' || ARGV[0] == "force" || ARGV[0] == 'mini'
 	end
 
 	# building
-	template = Plezi::AppBuilder.new ::File.expand_path(File.join(File.dirname(__FILE__), '..'))
+	template = Plezi::AppBuilder.new
 	(ARGV[0] == 'mini' || ARGV[0] == 'm' ) ? template.build_mini : template.build
 elsif ARGV[0] == 'server' || ARGV[0] == 'start' || ARGV[0] == 's'
 	ARGV.shift

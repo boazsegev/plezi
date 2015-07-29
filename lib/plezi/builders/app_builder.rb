@@ -3,10 +3,10 @@ module Plezi
 
 
 	class AppBuilder
-		def initialize gem_root
+		def initialize
 			@end_comments = []
 			@app_tree ||= {}
-			@root = gem_root
+			@root = ::Plezi::Builder::GEM_ROOT
 		end
 		def app_tree
 			@app_tree ||= {}

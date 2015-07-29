@@ -1,5 +1,8 @@
 module Plezi
 	module Builder
+
+		GEM_ROOT = ::File.expand_path(File.join(File.dirname(__FILE__), '..', '..', '..'))
+
 		def self.write_files files, parent = "."
 			if files.is_a? Hash
 				files.each do |k, v|
