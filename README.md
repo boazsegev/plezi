@@ -1,4 +1,4 @@
-# Plezi, The Ruby framework for realtime web-apps
+# [Plezi](https://github.com/boazsegev/plezi), The Ruby framework for realtime web-apps
 [![Gem Version](https://badge.fury.io/rb/plezi.svg)](http://badge.fury.io/rb/plezi)
 [![Inline docs](http://inch-ci.org/github/boazsegev/plezi.svg?branch=master)](http://www.rubydoc.info/github/boazsegev/plezi/master)
 
