@@ -19,6 +19,7 @@ module Plezi
 					@host_params = request.io[:params]
 					@response = response
 					@cookies = request.cookies
+					@session = response.session
 					# # \@response["content-type"] ||= ::Plezi.default_content_type
 					super()
 				end
@@ -46,7 +47,7 @@ module Plezi
 					@response = ws
 					ws.autoping Plezi::Settings.autoping if Plezi::Settings.autoping
 					# create the redis connection (in case this in the first instance of this class)
-					Plezi.redis_connection
+					Plezi.redis
 					super() if defined?(super)
 				end
 				# handles websocket messages.

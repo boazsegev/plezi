@@ -119,7 +119,7 @@ module Plezi
 	# to broadcast Plezi messages to other Plezi processes - allowing for scalable intigration of Plezi into other frameworks.
 	def start_placebo
 		GReactor.clear_listeners
-		redis_connection # make sure the redis connection is activated
+		redis # make sure the redis connection is activated
 		puts "* Plezi #{Plezi::VERSION} Services will start with no Server...\n"
 		start_async
 	end

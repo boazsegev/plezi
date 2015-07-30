@@ -10,7 +10,7 @@ module Plezi
 	#      ENV['PL_REDIS_URL'] = ENV['REDISCLOUD_URL']`
 	# or
 	#      ENV['PL_REDIS_URL'] = "redis://username:password@my.host:6379"
-	def redis_connection
+	def redis
 		return @redis if (@redis_sub_thread && @redis_sub_thread.alive?) && @redis
 		return false unless defined?(Redis) && ENV['PL_REDIS_URL']
 		@redis_locker ||= Mutex.new
@@ -47,5 +47,6 @@ module Plezi
 		Reactor.error e
 		false
 	end
+	alias :redis_connection :redis
 end
 
