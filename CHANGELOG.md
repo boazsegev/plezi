@@ -1,8 +1,20 @@
 #Change Log
 
+***
+
+Change log v.0.10.16
+
+**Fix**: Requires a newer version of the GRHttp server, which fixs an issue with Firefox's websocket implementation. 
+
+**New Feature**: Persistent and synchronized Session data(!) using Redis (if supplied) with a fallback to temporary memory storage. Session lifetime is 5 days.
+
+***
+
 Change log v.0.10.15
 
 **Fix**: Fixed the autostart feature that was diabled due to a changed in the GRHttp server's code for Rack support.
+
+***
 
 Change log v.0.10.14
 

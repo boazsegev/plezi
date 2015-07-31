@@ -14,6 +14,9 @@ module Plezi
 	# fetch(key, default = nil) (aliased as []);
 	# delete(key); clear;
 	class Session
+
+		# The session's lifetime in seconds = 5 days. This is only true when using the built in support for the Redis persistent storage.
+		SESSION_LIFETIME = 432_000
 		# called by the Plezi framework to initiate a session with the id requested
 		def initialize id
 			@id = id
@@ -29,6 +32,7 @@ module Plezi
 		def [] key
 			key = key.to_s
 			if conn=Plezi.redis
+				conn.expire @id, SESSION_LIFETIME
 				@data[key] = conn.hget @id, key
 			end
 			@data[key]
@@ -43,6 +47,7 @@ module Plezi
 			key = key.to_s
 			if (conn=Plezi.redis)
 				conn.hset @id, key, value
+				conn.expire @id, SESSION_LIFETIME
 			end
 			@data[key] = value
 		end
@@ -51,6 +56,7 @@ module Plezi
 		# @return [Hash] returns a shallow copy of the current session data as a Hash.
 		def to_h
 			if (conn=Plezi.redis) 
+				conn.expire @id, SESSION_LIFETIME
 				return (@data=conn.hgetall(@id)).dup
 			end
 			@data.dup
@@ -60,6 +66,7 @@ module Plezi
 		def delete key
 			key = key.to_s
 			if (conn=Plezi.redis)
+				conn.expire @id, SESSION_LIFETIME
 				conn.hdel @id, key
 			end				
 			@data.delete key	
