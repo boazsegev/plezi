@@ -74,7 +74,7 @@ module Plezi
 		#
 		# defaults to the example above, which isn't a very sercure behavior, but allows for easy testing.
 		def self.auth_callback &block
-			block_given? ? (@@auth_callback = block) : ( @@auth_callback ||= (Proc.new {|service, service_token, id, email, res| Plezi.info "deafult callback called for #{service}, with response: #{res.to_s}";  cookies["#{service}_pl_auth_token".to_sym], cookies["#{service}_user_id".to_sym], cookies["#{service}_user_email".to_sym] = service_token, id, email}) )
+			block_given? ? (@@auth_callback = block) : ( @@auth_callback ||= (Proc.new {|service, service_token, id, email, res| Plezi.info "deafult callback called for #{service}, with response: #{res.to_s}";  session["#{service}_pl_auth_token"], session["#{service}_user_id"], session["#{service}_user_email"] = service_token, id, email}) )
 		end
 
 
