@@ -26,6 +26,9 @@ require 'tilt/sass' if defined?(::Slim) && defined?(::Sass)
 # set up Plezi's logs - Heroku logs to STDOUT, this machine logs to log file
 GReactor.create_logger File.expand_path(File.join 'logs','server.log'), ENV["RACK_ENV"]=="development" unless ENV['DYNO']
 
+# set the session token name
+GRHttp.session_token = 'appname_uui'
+
 ## Allow forking? ONLY if your code is fully scalable across processes.
 # GReactor::Settings.set_forking 4
 
