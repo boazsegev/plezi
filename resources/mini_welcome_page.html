@@ -2,7 +2,8 @@
 <head>
 <title>appname - Feed Me!</title>
 <meta content="width=device-width, initial-scale=1, maximum-scale=2.0, user-scalable=yes, minimal-ui=yes" name="viewport">
-<link href='http://fonts.googleapis.com/css?family=Shadows+Into+Light|Architects+Daughter' rel='stylesheet' type='text/css'>
+<link href='https://fonts.googleapis.com/css?family=Shadows+Into+Light|Architects+Daughter' rel='stylesheet' type='text/css'>
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.4/jquery.min.js"></script>
 <style type="text/css">
 /*
 med-blue: #44518E
@@ -185,6 +186,7 @@ var websocket_fail_count = 0
 
 function init_websocket()
 {
+    if(websocket && websocket.readyState == 1) return true; // console.log('no need to renew socket connection');
     websocket = new WebSocket(ws_uri);
     websocket.onopen = function(e) {
         //restart fail count

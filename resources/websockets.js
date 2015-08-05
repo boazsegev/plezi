@@ -14,6 +14,7 @@ var websocket_fail_limit = NaN
 
 function init_websocket()
 {
+	if(websocket && websocket.readyState == 1) return true; // console.log('no need to renew socket connection');
 	websocket = new WebSocket(ws_uri);
 	websocket.onopen = function(e) {
 		// reset the count.
