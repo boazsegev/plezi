@@ -4,6 +4,12 @@
 
 Change log v.0.10.16
 
+**Fix**: Requires a newer version of the GRHttp server, building on it's WSClient and HTTP decoding improvements.
+
+***
+
+Change log v.0.10.16
+
 **Fix**: Requires a newer version of the GRHttp server, which fixs an issue with Firefox's websocket implementation. 
 
 **New Feature**: Persistent and synchronized Session data(!) using Redis (if supplied) with a fallback to temporary memory storage. Session lifetime is 5 days.

@@ -3,7 +3,6 @@
 
 Dir.chdir '/Users/2Be/Ruby/plezi/plezi/'
 
-require 'redis'
 require 'benchmark'
 require "bundler/setup"
 require "plezi"

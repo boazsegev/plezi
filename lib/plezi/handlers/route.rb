@@ -112,7 +112,7 @@ module Plezi
 				param_name = param_name[1].to_sym if param_name
 
 				if param_name && dest[param_name]
-					url << GRHttp::HTTP.encode(dest.delete(param_name).to_s, :url)
+					url << GRHttp::HTTP.encode_url(dest.delete(param_name))
 					url << '/' 
 				elsif !param_name
 					url << sec

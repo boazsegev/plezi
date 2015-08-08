@@ -5,7 +5,7 @@
 	require 'pathname'
 	## Set up root object, it might be used by the environment and\or the plezi extension gems.
 	Root ||= Pathname.new(File.dirname(__FILE__)).expand_path
-	## Set a persistant session token id name
+	## Set a persistent session token id name
 	GRHttp.session_token = 'appname_uui'
 	## make sure all file access and file loading is relative to the application's root folder
 	# Dir.chdir Root.to_s
