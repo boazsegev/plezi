@@ -125,7 +125,7 @@ module Plezi
 			end
 			unless dest.empty?
 				add = '?'
-				dest.each {|k, v| url << "#{add}#{GRHttp::HTTP.encode(k.to_s, :url)}=#{GRHttp::HTTP.encode(v.to_s, :url)}"; add = '&'}
+				dest.each {|k, v| url << "#{add}#{GRHttp::HTTP.encode_url k}=#{GRHttp::HTTP.encode_url v}"; add = '&'}
 			end
 			url
 
