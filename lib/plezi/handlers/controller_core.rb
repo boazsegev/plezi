@@ -19,7 +19,6 @@ module Plezi
 					@host_params = request.io[:params]
 					@response = response
 					@cookies = request.cookies
-					@session = response.session
 					# # \@response["content-type"] ||= ::Plezi.default_content_type
 					super()
 				end
@@ -38,6 +37,8 @@ module Plezi
 					return false if (defined?(super) && !super)
 					# finish if the response was sent
 					return false if response.headers_sent?
+					# make sure that the session object is available for websocket connections
+					response.session
 					# complete handshake
 					return self
 				end

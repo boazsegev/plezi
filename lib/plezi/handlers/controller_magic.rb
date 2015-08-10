@@ -34,8 +34,14 @@ module Plezi
 			# Cookies and some other data must be set BEFORE the response's headers are sent.
 			attr_reader :cookies
 
-			# Session data can be stored here (for now, session data doesn't scale - coming soon).
-			attr_reader :session
+			# Session data can be stored here (session data will be stored on the Redis server, if Redis is available).
+			#
+			# The first time this method is called, the session object will be created. The session object must be created BEFORE the headers are set , if it is to be used.
+			#
+			# Sessions are not automatically created, because they are memory hogs. The one exception is the Websocket connection that will force a session object into existence.
+			def session
+				response.session
+			end
 
 			# the HTTPResponse **OR** the WSResponse object that formats the response and sends it. use `response << data`. This object can be used to send partial data (such as headers, or partial html content) in blocking mode as well as sending data in the default non-blocking mode.
 			attr_reader :response

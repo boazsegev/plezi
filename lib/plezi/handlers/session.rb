@@ -4,6 +4,7 @@ module Plezi
 			module_function
 			# returns a session object
 			def fetch id
+				return Plezi::Session.new(id) if Plezi.redis # avoid a local cache if Redis is used.
 				@session_cache[id] || (@session_cache[id] = Plezi::Session.new(id))
 			end
 			@session_cache = {}

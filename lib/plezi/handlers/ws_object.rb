@@ -193,6 +193,8 @@ module Plezi
 
 				def __inner_redis_broadcast data
 					return unless conn = Plezi.redis
+					data = data.dup
+					data[:type] = data[:type].name if data[:type]
 					data[:server] = Plezi::Settings.uuid
 					return conn.publish( ( data[:to_server] ? data[:to_server] : Plezi::Settings.redis_channel_name ), data.to_yaml ) if conn
 					false

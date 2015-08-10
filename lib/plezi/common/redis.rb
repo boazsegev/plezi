@@ -22,6 +22,7 @@ module Plezi
 									begin
 										data = YAML.safe_load(msg, safe_types)
 										next if data[:server] == Plezi::Settings.uuid
+										data[:type] = Object.const_get(data[:type]) unless data[:type].nil? || data[:type] == :all
 										if data[:target]
 											GRHttp::Base::WSHandler.unicast data[:target], data
 										else
