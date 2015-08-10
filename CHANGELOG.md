@@ -2,9 +2,13 @@
 
 ***
 
-Change log v.0.10.16
+Change log v.0.10.17
 
-**Fix**: Requires a newer version of the GRHttp server, building on it's WSClient and HTTP decoding improvements.
+**Update**: Requires a newer version of the GRHttp server and GReactor, building on it's WSClient and HTTP decoding improvements.
+
+**Security**: Redis connection broadcasting now enforces `safe_load`, so that even id the Redis server and it's data are compromized, it should not lead to foreign code execution. Please note that this will enforce limits on session data as well as on websocket broadcasting.
+
+**Sessions**: Sessions are now avoided unless explicitly created or unless a websocket connection is established. The reason being that unless Redis is defined, sessions are stored in-memory and end up requiring a lot of space. File storage might be considered for future releases.
 
 ***
 
