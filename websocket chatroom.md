@@ -109,7 +109,7 @@ Last, but not least, we tell Plezi to connect the root of our web application to
 route '/', ChatController
 ```
 
-Plezi controller classes are like virtual folders with special support for RESTful methods (`index`, `new`, `save`, `update`, `delete`), HTTP filters and helpers (`before`, `after`, `redirect_to`, `send_data`), WebSockets methods (`on_connect`, `on_message(data)`, `on_disconnect`), and WebSockets filters and helpers (`pre-connect`, `broadcast`, `collect`).
+Plezi controller classes are like virtual folders with special support for RESTful methods (`index`, `new`, `save`, `update`, `delete`), HTTP filters and helpers (`before`, `after`, `redirect_to`, `send_data`), WebSockets methods (`on_open`, `on_message(data)`, `on_close`), and WebSockets filters and helpers (`pre-connect`, `broadcast`, `unicast` etc').
 
 Plezi uses a common special parameter called 'id' to help with all this magic... if we don't define this parameter ourselves, Plezi will try to append this parameter to the end our route's path. So, actually, our route looks like this:
 
@@ -213,11 +213,11 @@ end
 To design a chatroom we will need a few things:
 
 1. We will need to force people identify themselves by choosing nicknames - to do this we will define the `on_connect` method to refuse any connections that don't have a nickname.
-2. We will want to make sure these nicknames are unique and don't give a wrong sense of authority (nicknames such as 'admin' should be forbidden) - for now, we will simply collect the nicknames from all the other active connections using the `collect` method and use that in our `on_connect` method.
+2. We will want to make sure these nicknames are unique and don't give a wrong sense of authority (nicknames such as 'admin' should be forbidden) - for now, we will simply refuse the 'wrong' type of nicknames and leave uniqieness for another time.
 3. We will want to push messages we recieve to all the other chatroom members - to do this we will use the `broadcast` method in our `on_message(data)` method.
 4. We will also want to tell people when someone left the chatroom - to do this we can define an `on_disconnect` method and use the `broadcast` method in there.
 
-We can use the :id parameter to collect the nickname.
+We can use the :id parameter to set the nickname.
 
 the :id is an automatic parameter that Plezi appended to our path like already explained and it's perfect for our simple needs.
 
@@ -225,9 +225,9 @@ We could probably rewrite our route to something like this: `route '/(:id)/(:nic
 
 ####Broadcasting chat (websocket) messages
 
-When we get a chat message, with `on_message(data)`, we will want to broadcast this message to all  the _other_ ChatController connections.
+When we get a chat message, with `on_message(data)`, we will want to broadcast this message to all the _other_ ChatController connections.
 
-Using JSON, our new  `on_message(data)` method can look something like this:
+Using JSON, our new `on_message(data)` method can look something like this:
 
 ```ruby
 def on_message data
@@ -239,7 +239,7 @@ def on_message data
 		return false
 	end
 	message = {}
-	message[:message] = data["message"]
+	message[:message] = GRHttp.HTTP.escape data['message'] # we should sanitize the data
 	message[:event] = :chat
 	message[:from] = params[:id]
 	message[:at] = Time.now
@@ -258,11 +258,11 @@ def on_message data
 		response.close
 		return false
 	end
-	broadcast :_send_message, {event: :chat, from: params[:id], message: data["message"], at: Time.now}.to_json
+	broadcast :_send_message, {event: :chat, from: params[:id], message: GRHttp.HTTP.escape(data['message']), at: Time.now}.to_json
 end
 ```
 
-Now that the code is shorter, let's look at that last line - the one that calls `broadcast`
+Now that the boring stuff is condenced, let's look at that last line - the one that calls `broadcast`
 
 `broadcast` is an interesing Plezi feature that allows us to tell all the _other_ connection to run a method. It is totally asynchroneos, so we don't wait for it to complete.
 
@@ -274,9 +274,9 @@ Let's start with the name - why the underscore at the beginning?
 
 Plezi knows that sometimes we will want to create public methods that aren't available as a path - remember the `people` method, it was automatically recognized as an HTTP path...
 
-Plezi allows us to 'exclude' some methods from this auto-recogntion. protected methods and methods starting with an underscore (\_) aren't recognized by the Plezi router.
+Plezi allows us to 'exclude' some methods from this auto-recogntion. protected methods and methods starting with an underscore (\_) are ignored by the Plezi router.
 
-Since we want the `_send_message` to be called by the `broadcast` method - it must be a public method (otherwise, we will not be able to call it for _other_ connections, only for our own connection).
+Since I was too lzy to write the `protected` keyword, I just added an underscore at the begining of the name.
 
 This will be our `_send_message` method:
 
@@ -288,7 +288,7 @@ end
 
 Did you notice the difference between WebSocket responses and HTTP?
 
-In WebSockets, we don't automatically send string data (this is an important safeguard) and we must use the `<<` method to add data to the response stream.
+Many times, Websockets are used to do internal work. This is why information is safeguarded and isn't automatically sent back (unlike HTTP, where a response is expected). In WebSockets, we must use the `<<` method to add data to the response stream.
 
 
 ####Telling people that we left the chatroom
@@ -322,7 +322,7 @@ If we ever write a real chatroom, our login process will look somewhat different
 First, we will ensure the new connection has a nickname (the connection was made to '/nickname' rather then the root of our application '/'):
 
 ```ruby
-def on_connect
+def on_open
 	if params[:id].nil?
 		response << {event: :error, from: :system, at: Time.now, message: "Error: cannot connect without a nickname!"}.to_json
 		response.close
@@ -331,18 +331,26 @@ def on_connect
 end
 ```
 
-Easy.
+Easy?
 
-Next, we will ask everybody else who is connected to tell us their nicknames - we will test the new nickname against this list and make sure the nickname is unique.
+There's an even easier and safer way to do this, which doesn't send an error message back, it looks like this:
 
-We will also add some reserved names to this list, to make sure nobody impersonates a system administrator... let's add this code to our `on_connect` method:
+```ruby
+def pre_connect
+	return false if params[:id].nil?
+	true
+end
+```
+
+Since Websocket connections start as an HTTP GET request, the pre-connect is called while still in 'HTTP mode', allowing us to use HTTP logic and refuse connections even before any websocket data can be sent by the 'client'. This is definitly the safer approach.
+
+Next, we will check if the nickname is on the reserved names list, to make sure nobody impersonates a system administrator... let's add this code to our `on_open` method:
 
 ```ruby
 	message = {from: '', at: Time.now}
-	list = collect(:_ask_nickname)
-	if (list + ['admin', 'system', 'sys', 'administrator']).include? params[:id]
+	if params[:id].match /admin|admn|system/i
 		message[:event] = :error
-		message[:message] = "The nickname '#{params[:id]}' is already taken."
+		message[:message] = "The nickname '#{params[:id]}' is refused."
 		response << message.to_json
 		params[:id] = false
 		response.close
@@ -350,20 +358,11 @@ We will also add some reserved names to this list, to make sure nobody impersona
 	end
 ```
 
-Hmm.. **collect**? what is the `collect` method? - well, this is a little bit of more Plezi magic that allows us to ask and collect information from all the _other_ active connections. This method returns an array of all the responses.
-
-We will use `collect` to get an array of all the connected nicknames - we will write the `_ask_nickname` method in just a bit.
-
 Then, if all is good, we will welcome the new connection to our chatroom. We will also tell the new guest who is already connected and broadcast their arrivale to everybody else...:
 
 ```ruby
 		message = {from: '', at: Time.now}
 		message[:event] = :chat
-		if list.empty?
-			message[:message] = "Welcome! You're the first one here."
-		else
-			message[:message] = "Welcome! #{list[0..-2].join(', ')} #{list[1] ? 'and' : ''} #{list.last} #{list[1] ? 'are' : 'is'} already here."
-		end
 		response << message.to_json
 		message[:message] = "#{params[:id]} joined the chatroom."
 		broadcast :_send_message, message.to_json
