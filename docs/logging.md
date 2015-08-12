@@ -11,4 +11,4 @@ You can read more about [GReactor](https://github.com/boazsegev/GReactor) and it
 ## Setting up a Logger
 
 
-## Logging Helpers
+## Logging Helpers Methods

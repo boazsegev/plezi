@@ -5,9 +5,8 @@ module Plezi
 			# returns a session object
 			def fetch id
 				return Plezi::Session.new(id) if Plezi.redis # avoid a local cache if Redis is used.
-				@session_cache[id] || (@session_cache[id] = Plezi::Session.new(id))
+				GRHttp::Base::FileSessionStorage.fetch id # use the tmp-file-session logic if Redis isn't present
 			end
-			@session_cache = {}
 		end
 	end
 	# A hash like interface for storing request session data.
@@ -22,9 +21,9 @@ module Plezi
 		def initialize id
 			@id = id
 			if id && (conn=Plezi.redis)
-				@data=conn.hgetall(id)
+				return conn.hgetall(id)
 			end
-			@data ||= {}
+			failed
 		end
 		# Get a key from the session data store. If a Redis server is supplied, it will be used to synchronize session data.
 		#
@@ -34,9 +33,9 @@ module Plezi
 			key = key.to_s
 			if conn=Plezi.redis
 				conn.expire @id, SESSION_LIFETIME
-				@data[key] = conn.hget @id, key
+				return conn.hget @id, key
 			end
-			@data[key]
+			failed
 		end
 		alias :fetch :[]
 
@@ -49,8 +48,9 @@ module Plezi
 			if (conn=Plezi.redis)
 				conn.hset @id, key, value
 				conn.expire @id, SESSION_LIFETIME
+				return value
 			end
-			@data[key] = value
+			failed
 		end
 		alias :store :[]=
 
@@ -58,9 +58,9 @@ module Plezi
 		def to_h
 			if (conn=Plezi.redis) 
 				conn.expire @id, SESSION_LIFETIME
-				return (@data=conn.hgetall(@id)).dup
+				return conn.hgetall(@id)
 			end
-			@data.dup
+			failed
 		end
 
 		# Removes a key from the session's data store.
@@ -68,17 +68,26 @@ module Plezi
 			key = key.to_s
 			if (conn=Plezi.redis)
 				conn.expire @id, SESSION_LIFETIME
+				ret = conn.hget @id, key
 				conn.hdel @id, key
+				return ret
 			end				
-			@data.delete key	
+			failed
 		end
 
 		# Clears the session's data.
 		def clear
 			if (conn=Plezi.redis)
-				conn.del @id
+				return conn.del @id
 			end
-			@data.clear
+			failed
+		end
+
+		protected
+
+		def failed
+			raise 'Redis connection failed while using Redis Session Storage.'
+			
 		end
 	end
 	GRHttp::SessionManager.storage = Plezi::Base::SessionStorage

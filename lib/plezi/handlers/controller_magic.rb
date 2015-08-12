@@ -38,7 +38,7 @@ module Plezi
 			#
 			# The first time this method is called, the session object will be created. The session object must be created BEFORE the headers are set , if it is to be used.
 			#
-			# Sessions are not automatically created, because they are memory hogs. The one exception is the Websocket connection that will force a session object into existence.
+			# Sessions are not automatically created, because they require more resources. The one exception is the Websocket connection that will force a session object into existence, as it's very common to use session data in Websocket connections and the extra connection time is less relevant for a long term connection.
 			def session
 				response.session
 			end
@@ -73,7 +73,8 @@ module Plezi
 			#
 			def redirect_to url, options = {}
 				return super *[] if defined? super
-				raise 'Cannot redirect after headers were sent' if response.headers_sent?
+				raise 'Cannot redirect once a Websocket connection was established.' if response.is_a?(::GRHttp::WSEvent)
+				raise 'Cannot redirect after headers were sent.' if response.headers_sent?
 				url = "#{request.base_url}/#{url.to_s.gsub('_', '/')}" if url.is_a?(Symbol) || ( url.is_a?(String) && url.empty? ) || url.nil?
 				# redirect
 				response.status = options.delete(:status) || 302
@@ -123,6 +124,8 @@ module Plezi
 			# filename:: sets a filename for the browser to "save as". defaults to empty.
 			#
 			def send_data data, options = {}
+				raise 'Cannot use "send_data" once a Websocket connection was established.' if response.is_a?(::GRHttp::WSEvent)
+				# return response.write(data) if response.is_a?(::GRHttp::WSEvent)
 				raise 'Cannot use "send_data" after headers were sent' if response.headers_sent?
 				Plezi.warn 'HTTP response buffer is cleared by `#send_data`' if response.body && response.body.any? && response.body.clear
 				response << data
