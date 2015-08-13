@@ -115,7 +115,9 @@ Remember to connect to the service from at least two browser windows - to truly 
     route '/', BroadcastCtrl
 ```
 
-method names starting with an underscore ('_') will NOT be made public by the router: so while both '/hello' and '/humans.txt' are public ( [try it](http://localhost:3000/humans.txt) ), '/_send_message' will return a 404 not found error ( [try it](http://localhost:3000/_send_message) ).
+method names starting with an underscore ('_') will NOT be made public by the router.
+
+This is why even though both '/hello' and '/humans.txt' are public ( [try it](http://localhost:3000/humans.txt) ), '/_send_message' will return a 404 not found error ( [try it](http://localhost:3000/_send_message) ).
 
 ## Adding Websockets to your existing Rails/Sinatra/Rack application
 
