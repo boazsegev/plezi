@@ -109,7 +109,7 @@ module Plezi
 	def start_async
 		Object.const_set("NO_PLEZI_AUTO_START", true) unless defined?(NO_PLEZI_AUTO_START)
 		return GReactor.start if GReactor.running?
-		puts "Starting Plezi #{Plezi::VERSION} Services using the GRHttp #{GRHttp::VERSION} server."
+		puts "Starting Plezi #{Plezi::VERSION} Services using GRHttp #{GRHttp::VERSION} and GReactor #{GReactor::VERSION}."
 		GReactor.on_shutdown { puts "Plezi shutdown. It was fun to serve you."  }
 		GReactor.start Plezi::Settings.max_threads
 	end
