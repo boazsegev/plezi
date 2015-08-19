@@ -68,7 +68,7 @@ module Plezi
 					self.read
 					GR.warn "Placebo IO recieved IO signal - this is unexpected..."
 				end
-				def on_disconnect
+				def on_close
 					@params[:out].close rescue nil
 					@cache[:websocket_handler].on_close if @cache[:websocket_handler]
 				end

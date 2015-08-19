@@ -9,8 +9,8 @@
 	GRHttp.session_token = 'appname_uui'
 	## make sure all file access and file loading is relative to the application's root folder
 	# Dir.chdir Root.to_s
-	## load code from a subfolder called 'code'
-	# Dir[File.join "{code}", "**" , "*.rb"].each {|file| load File.expand_path(file)}
+	## load code from a subfolder called 'app'
+	# Dir[File.join "{app}", "**" , "*.rb"].each {|file| load File.expand_path(file)}
 	## OR load code from all the ruby files in the main forlder (subfolder inclussion will fail on PaaS)
 	# Dir[File.join File.dirname(__FILE__), "*.rb"].each {|file| load File.expand_path(file) unless file == __FILE__}
 
