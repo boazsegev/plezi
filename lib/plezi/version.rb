@@ -1,3 +1,3 @@
 module Plezi
-    VERSION = "0.10.17"
+    VERSION = "0.11.0"
 end
