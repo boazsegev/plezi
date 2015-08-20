@@ -22,7 +22,7 @@
 # 2. you have better control over Middleware then you could have with Plezi.
 # ("wait", you might say, "there is no Middleware in Plezi!"... "Ahhh", I will answer, "so much to discover...")
 
-NO_PLEZI_AUTO_START = true
+Object.const_set("NO_PLEZI_AUTO_START", true) unless defined?(NO_PLEZI_AUTO_START)
 
 # load all framework and gems
 load ::File.expand_path(File.join("..", "environment.rb"),  __FILE__)
@@ -31,11 +31,15 @@ load ::File.expand_path(File.join("..", "environment.rb"),  __FILE__)
 load ::File.expand_path(File.join("..", "routes.rb"),  __FILE__)
 
 # start the plezi EM, to make sure that the plezi async code doesn't break.
-GReactor.clear_listeners
-GReactor.start Plezi::Settings.max_threads
+if Rack::Handler.default == GRHttp::Base::Rack
+	run(Proc.new { [404, {}, []] })
+else
+	GReactor.clear_listeners
+	GReactor.start Plezi::Settings.max_threads
 
-# run the Rack app - not yet supported
-# run Plezi::Base::Rack
+	# run the Rack app - not yet supported
+	# run Plezi::Base::Rack
 
-# # exit rack to start the plezi server
-# Process.kill 'TERM'
+	# # exit rack to start the plezi server
+	# Process.kill 'TERM'
+end

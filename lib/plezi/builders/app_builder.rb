@@ -11,28 +11,28 @@ module Plezi
 		def app_tree
 			@app_tree ||= {}
 		end
-		def build_mini
+		def build_mini app_name = ARGV[1]
 			require 'plezi/version'
-			@app_tree["#{ARGV[1]}"] ||= IO.read( File.join(@root, "resources" ,"mini_exec.rb")).gsub('appname', ARGV[1])
-			@app_tree["#{ARGV[1]}.rb"] ||= IO.read( File.join(@root, "resources" ,"mini_app.rb")).gsub('appname', ARGV[1]).gsub('appsecret', "#{ARGV[1]}_#{SecureRandom.hex}")
+			app_tree["#{app_name}"] ||= IO.read( File.join(@root, "resources" ,"mini_exec.rb")).gsub('appname', app_name)
+			app_tree["#{app_name}.rb"] ||= IO.read( File.join(@root, "resources" ,"mini_app.rb")).gsub('appname', app_name).gsub('appsecret', "#{app_name}_#{SecureRandom.hex}")
 			app_tree["Procfile"] ||= ""
-			app_tree["Procfile"] << "\nweb: bundle exec ruby ./#{ARGV[1]} -p $PORT\n"		
+			app_tree["Procfile"] << "\nweb: bundle exec ruby ./#{app_name} -p $PORT\n"		
 			app_tree["Gemfile"] ||= ''
 			app_tree["Gemfile"] << "source 'https://rubygems.org'\n\n####################\n# core gems\n\n# include the basic plezi framework and server\ngem 'plezi', '~> #{Plezi::VERSION}'\n"
 			app_tree["Gemfile"] << "\n\n\nruby '#{RUBY_VERSION}'\n"
 			app_tree["templates"] ||= {}
 			app_tree["templates"]["404.html.erb"] ||= IO.read(File.join(@root, "resources" ,"404.erb"))
 			app_tree["templates"]["500.html.erb"] ||= IO.read(File.join(@root, "resources" ,"500.erb"))
-			app_tree["templates"]["welcome.html.erb"] ||= IO.read(File.join(@root, "resources" ,"mini_welcome_page.html")).gsub('appname', ARGV[1])
+			app_tree["templates"]["welcome.html.erb"] ||= IO.read(File.join(@root, "resources" ,"mini_welcome_page.html")).gsub('appname', app_name)
 			app_tree["assets"] ||= {}
-			app_tree["assets"]["websocket.js"] ||= IO.read(File.join(@root, "resources" ,"websockets.js")).gsub('appname', ARGV[1])
-			finalize
+			app_tree["assets"]["websocket.js"] ||= IO.read(File.join(@root, "resources" ,"websockets.js")).gsub('appname', app_name)
+			finalize app_name
 		end
 
-		def build
+		def build app_name = ARGV[1]
 			require 'plezi/version'
 			# plezi run script
-			@app_tree["#{ARGV[1]}"] ||= IO.read File.join(@root,"resources" ,"code.rb")
+			app_tree["#{app_name}"] ||= IO.read File.join(@root,"resources" ,"code.rb")
 
 			# set up application files
 			app_tree["app"] ||= {}
@@ -55,15 +55,15 @@ module Plezi
 			app_tree["assets"] ||= {}
 			app_tree["assets"]["stylesheets"] ||= {}
 			app_tree["assets"]["javascripts"] ||= {}
-			app_tree["assets"]["javascripts"]["websocket.js"] ||= IO.read(File.join(@root,"resources" ,"websockets.js")).gsub('appname', ARGV[1])
-			app_tree["assets"]["welcome.html"] ||= IO.read(File.join(@root,"resources" ,"welcome_page.html")).gsub('appname', ARGV[1])
+			app_tree["assets"]["javascripts"]["websocket.js"] ||= IO.read(File.join(@root,"resources" ,"websockets.js")).gsub('appname', app_name)
+			app_tree["assets"]["welcome.html"] ||= IO.read(File.join(@root,"resources" ,"welcome_page.html")).gsub('appname', app_name)
 
 			# app core files.
 			app_tree["environment.rb"] ||= IO.read File.join(@root,"resources" ,"environment.rb")
 			app_tree["routes.rb"] ||= IO.read File.join(@root,"resources" ,"routes.rb")
 			app_tree["rakefile"] ||= IO.read File.join(@root,"resources" ,"rakefile")
 			app_tree["Procfile"] ||= ""
-			app_tree["Procfile"] << "\nweb: bundle exec ruby ./#{ARGV[1]} -p $PORT\n"
+			app_tree["Procfile"] << "\nweb: bundle exec ruby ./#{app_name} -p $PORT\n"
 			app_tree["Gemfile"] ||= ''
 			app_tree["Gemfile"] << "source 'https://rubygems.org'\n\n####################\n# core gems\n\n# include the basic plezi framework and server\ngem 'plezi', '~> #{Plezi::VERSION}'\n"
 			app_tree["Gemfile"] << IO.read( File.join(@root,"resources" ,"Gemfile"))
@@ -78,7 +78,7 @@ module Plezi
 			app_tree["config"]["haml.rb"] ||= IO.read(File.join(@root,"resources" ,"haml_config.rb"))
 			app_tree["config"]["slim.rb"] ||= IO.read(File.join(@root,"resources" ,"slim_config.rb"))
 			app_tree["config"]["i18n.rb"] ||= IO.read(File.join(@root,"resources" ,"i18n_config.rb"))
-			app_tree["config"]["redis.rb"] ||= (IO.read(File.join(@root,"resources" ,"redis_config.rb"))).gsub('appsecret', "#{ARGV[1]}_#{SecureRandom.hex}")
+			app_tree["config"]["redis.rb"] ||= (IO.read(File.join(@root,"resources" ,"redis_config.rb"))).gsub('appsecret', "#{app_name}_#{SecureRandom.hex}")
 
 			#set up database stub folders
 			app_tree["db"] ||= {}
@@ -106,29 +106,29 @@ module Plezi
 			app_tree["public"]["assets"]["stylesheets"] ||= {}		
 			app_tree["public"]["assets"]["javascripts"] ||= {}		
 			app_tree["public"]["images"] ||= {}
-			finalize
+			finalize app_name
 		end
-		def finalize
+		def finalize app_name = ARGV[1]
 			begin
-				Dir.mkdir ARGV[1]
-				puts "created the #{ARGV[1]} application directory.".green
+				Dir.mkdir app_name
+				puts "created the #{app_name} application directory.".green
 			rescue Exception => e
-				puts "the #{ARGV[1]} application directory exists - trying to rebuild (no overwrite).".pink
+				puts "the #{app_name} application directory exists - trying to rebuild (no overwrite).".pink
 			end
-			Dir.chdir ARGV[1]
+			Dir.chdir app_name
 			puts "starting to write template data...".red
 			puts ""
 			Builder.write_files app_tree
-			File.chmod 0775, "#{ARGV[1]}"
+			File.chmod 0775, "#{app_name}"
 			puts "tried to update execution permissions. this is system dependent and might have failed.".pink
-			puts "use: chmod +x ./#{ARGV[1]} to set execution permissions on Unix machines."
+			puts "use: chmod +x ./#{app_name} to set execution permissions on Unix machines."
 			puts ""
 			puts "done."
 			puts "\n#{@end_comments.join("\n")}" unless @end_comments.empty?
 			puts ""
-			puts "please change directory into the app directory: cd #{ARGV[1]}"
+			puts "please change directory into the app directory: cd #{app_name}"
 			puts ""
-			puts "run the #{ARGV[1]} app using: ./#{ARGV[1]} or using: plezi s"
+			puts "run the #{app_name} app using: ./#{app_name} or using: plezi s"
 			puts ""
 		end
 	end

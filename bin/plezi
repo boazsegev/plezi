@@ -65,7 +65,7 @@ if ARGV[0] == 'new' || ARGV[0] == 'n' || ARGV[0] == "force" || ARGV[0] == 'mini'
 
 	# building
 	template = Plezi::AppBuilder.new
-	(ARGV[0] == 'mini' || ARGV[0] == 'm' ) ? template.build_mini : template.build
+	(ARGV[0] == 'mini' || ARGV[0] == 'm' ) ? template.build_mini(ARGV[1]) : template.build(ARGV[1])
 elsif ARGV[0] == 'server' || ARGV[0] == 'start' || ARGV[0] == 's'
 	ARGV.shift
 	load File.expand_path(Dir["."][0], (File.expand_path(Dir["."][0]).split(/[\\\/]/).last) ) rescue load( File.expand_path(Dir["."][0], (File.expand_path(Dir["."][0]).split(/[\\\/]/).last ) ) )

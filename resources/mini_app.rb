@@ -25,8 +25,8 @@
 	# GReactor.create_logger File.expand_path(Root.join('server.log').to_s)
 
 ## Options for Scaling the app (across processes or machines):
-	## uncomment to set up forking.
-	# GReactor::Settings.set_forking 4
+	## uncomment to set up forking for 3 more processes (total of 4).
+	# GReactor.forking 3
 	## Redis scaling
 	# Plezi::Settings.redis_channel_name = 'appsecret'
 	# ENV['PL_REDIS_URL'] ||= ENV['REDIS_URL'] || ENV['REDISCLOUD_URL'] || ENV['REDISTOGO_URL'] || "redis://username:password@my.host:6389"
