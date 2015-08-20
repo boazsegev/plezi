@@ -4,7 +4,7 @@
 
 Inside Plezi's core code is a pure Ruby IO reactor called [GReactor](https://github.com/boazsegev/GReactor) (Generic Reactor), a very powerful Asynchronous Workflow Engine that allows us to enjoy both Multi-Threading and Multi-Processing.
 
-Although multi-threading is highly regarded, it should be pointed out that using the GReactor with just one thread is both faster and more efficient. But, since some tasks that take more time (blocking tasks) can't be broken down into smaller tasks, using a number of threads (and/or processes) is better practice.
+Although multi-threading is highly regarded, it should be pointed out that using the GReactor with just one thread is both faster and more efficient. But, since some tasks that take more time (blocking tasks) can't be broken down into smaller tasks, using a number of threads (and/or processes) is a better practice.
 
 You can read more about the [GReactor](https://github.com/boazsegev/GReactor) and it's amazing features in it's [documentation](http://www.rubydoc.info/github/boazsegev/GReactor/master).
 

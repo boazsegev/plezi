@@ -21,7 +21,7 @@ module Plezi
 		def initialize id
 			@id = id
 			if id && (conn=Plezi.redis)
-				return conn.hgetall(id)
+				return self
 			end
 			failed
 		end
