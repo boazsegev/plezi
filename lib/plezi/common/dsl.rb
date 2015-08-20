@@ -105,5 +105,4 @@ unless defined? PLEZI_NON_DSL
 
 	# sets to start the services once dsl script is finished loading.
 	at_exit { start_services }
-	GReactor::Settings.force_graceful = false
 end

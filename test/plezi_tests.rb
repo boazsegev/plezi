@@ -475,7 +475,7 @@ Plezi.start_async
 PleziTestTasks.run_tests
 
 # ENV['PL_REDIS_URL'] ||= ENV['REDIS_URL'] || ENV['REDISCLOUD_URL'] || ENV['REDISTOGO_URL'] || "redis://test:1234@pub-redis-11008.us-east-1-4.5.ec2.garantiadata.com:11008"
-# GReactor::Settings.set_forking 4
+# GReactor.forking 4
 # GR.run_async { PleziTestTasks.run_tests }
 # start_services
 

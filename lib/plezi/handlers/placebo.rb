@@ -86,8 +86,7 @@ module Plezi
 				Object.const_set(new_class_name, new_class)
 			end
 			i, o = IO.pipe
-			io = Placebo::Base::PlaceboIO.new i, out: o
-			io = GReactor.add_raw_io i, io
+			io = Placebo::Base::PlaceboIO.new i, out: o, reactor: ::GReactor
 			new_class.new(io)
 		end
 	end
