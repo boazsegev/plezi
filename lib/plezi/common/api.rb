@@ -111,7 +111,7 @@ module Plezi
 		return GReactor.start if GReactor.running?
 		puts "Starting Plezi #{Plezi::VERSION} Services using GRHttp #{GRHttp::VERSION} and GReactor #{GReactor::VERSION}."
 		GReactor.on_shutdown { puts "Plezi shutdown. It was fun to serve you."  }
-		GReactor.start Plezi::Settings.max_threads
+		GReactor.start ::Plezi::Settings.max_threads
 	end
 	# This allows you to run the Plezi framework along side another framework - WITHOUT running the actual server.
 	#
