@@ -2,6 +2,16 @@
 
 ***
 
+Change log v.0.11.0
+
+**Update**: Requires GRHttp server and GReactor version 0.1.0 or above, adjusted to the updated API.
+
+**Update**: Better pinging and timout support courtesy of the updated GRHttp server. 
+
+**Fix**: fixed an issue that caused static file service to fail when using the preferred `:public` vs. the older `:root` option used to set the public folder's path. 
+
+***
+
 Change log v.0.10.17
 
 **Update**: Requires a newer version of the GRHttp server and GReactor, building on it's WSClient and HTTP decoding improvements.
