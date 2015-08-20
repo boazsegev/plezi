@@ -8,7 +8,7 @@ module Plezi
 
 		# The maximum number of threads that are used for concurrency.
 		def max_threads
-			@max_threads ||= 8
+			@max_threads ||= 30
 		end
 		# Sets the maximum number of threads that are used for concurrency.
 		def max_threads=val
