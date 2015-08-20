@@ -136,4 +136,4 @@ end
 Encoding.default_internal = 'utf-8'
 Encoding.default_external = 'utf-8'
 
-NO_PLEZI_AUTO_START = true if defined?(::Rack::Builder)
+Object.const_set("NO_PLEZI_AUTO_START", true) if defined?(::Rack::Builder) && !defined?(NO_PLEZI_AUTO_START)

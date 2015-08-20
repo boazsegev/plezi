@@ -111,7 +111,7 @@ module Plezi
 
 				# set where to store the rendered asset
 				target_file = false
-				target_file = File.join( params[:root], params[:assets_public], *request.path.match(/^#{params[:assets_public]}\/(.*)/)[1].split('/') ) if params[:root]
+				target_file = File.join( params[:public], params[:assets_public], *request.path.match(/^#{params[:assets_public]}\/(.*)/)[1].split('/') ) if params[:public]
 
 				# send the file if it exists (no render needed)
 				if File.exists?(source_file)
