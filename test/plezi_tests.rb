@@ -88,7 +88,7 @@ class TestCtrl
 		true
 	end
 	def _stream_out
-		response.send "streamed"
+		response << "streamed"
 		true
 	end
 	def file_test
