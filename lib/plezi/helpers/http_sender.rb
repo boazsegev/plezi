@@ -24,7 +24,7 @@ module Plezi
 					elsif Plezi.file_exists?(fn = File.join(base_code_path, "#{code}.html"))
 						return send_file(request, response, fn, code, headers)
 					end
-					return true if send_raw_data(request, response, GRHttp::HTTPResponse::STATUS_CODES[code], 'text/plain', code, headers)
+					return true if send_raw_data(request, response, response.class::STATUS_CODES[code], 'text/plain', code, headers)
 				rescue Exception => e
 					Plezi.error e
 				end
