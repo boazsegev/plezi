@@ -190,7 +190,7 @@ module Plezi
 		def _auth_url_for service_name
 			service = SERVICES[service_name]
 			return nil unless service
-			redirect_uri = HTTP::encode "#{request.base_url}/auth/#{service_name.to_s}", :url #response_type
+			redirect_uri = Plezi::Base::Helpers.encode_url "#{request.base_url}/auth/#{service_name.to_s}", :url #response_type
 			return "#{service[:auth_url]}?client_id=#{service[:app_id]}&redirect_uri=#{redirect_uri}&scope=#{service[:scope]}&response_type=code"
 		end
 

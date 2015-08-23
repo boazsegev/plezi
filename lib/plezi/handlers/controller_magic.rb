@@ -81,7 +81,6 @@ module Plezi
 				response['Location'] = url
 				response['content-length'] ||= 0
 				flash.update options
-				response.finish
 				true
 			end
 
@@ -137,7 +136,6 @@ module Plezi
 				response['content-type'] = options[:type] ||= MimeTypeHelper::MIME_DICTIONARY[::File.extname(options[:filename])] if options[:filename]
 				response['content-length'] = data.bytesize rescue true
 				response['content-disposition'] = content_disposition
-				response.finish
 				true
 			end
 

@@ -17,7 +17,7 @@ module Plezi
 			fill_parameters = match request.path
 			return false unless fill_parameters
 			old_params = request.params.dup
-			fill_parameters.each {|k,v| GRHttp::HTTP.add_param_to_hash k, v, request.params }
+			fill_parameters.each {|k,v| Plezi::Base::Helpers.add_param_to_hash k, v, request.params }
 			ret = false
 			if controller
 				ret = controller.new(request, response)._route_path_to_methods_and_set_the_response_
@@ -112,7 +112,7 @@ module Plezi
 				param_name = param_name[1].to_sym if param_name
 
 				if param_name && dest[param_name]
-					url << GRHttp::HTTP.encode_url(dest.delete(param_name))
+					url << Plezi::Base::Helpers.encode_url(dest.delete(param_name))
 					url << '/' 
 				elsif !param_name
 					url << sec
@@ -125,7 +125,7 @@ module Plezi
 			end
 			unless dest.empty?
 				add = '?'
-				dest.each {|k, v| url << "#{add}#{GRHttp::HTTP.encode_url k}=#{GRHttp::HTTP.encode_url v}"; add = '&'}
+				dest.each {|k, v| url << "#{add}#{Plezi::Base::Helpers.encode_url k}=#{Plezi::Base::Helpers.encode_url v}"; add = '&'}
 			end
 			url
 
@@ -229,7 +229,7 @@ module Plezi
 			# m = nil
 			# unless @fill_parameters.values.include?("format")
 			# 	if (m = path.match /([^\.]*)\.([^\.\/]+)$/)
-			# 		GRHttp::HTTP.add_param_to_hash 'format', m[2], hash
+			# 		Plezi::Base::Helpers.add_param_to_hash 'format', m[2], hash
 			# 		path = m[1]
 			# 	end
 			# end
