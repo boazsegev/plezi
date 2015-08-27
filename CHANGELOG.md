@@ -12,7 +12,7 @@ Change log v.0.11.0
 
 **Minor**: minor adjustments and improvements, such as: auto-setting the `content-type` header when using `render`.
 
-**Fix**: fixed an issue that caused static file service to fail when using the preferred `:public` vs. the older `:root` option used to set the public folder's path. 
+**Fix**: fixed an issue that caused the static file service to fail when using the preferred `:public` vs. the older `:root` option used to set the public folder's path. 
 
 ***
 
