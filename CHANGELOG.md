@@ -10,6 +10,8 @@ Change log v.0.11.0
 
 **Update**: The default number of threads is now 30. It seems that once we move beyond 1 thread (which is also supported), the added threads are adding more security against blocking code without effecting performance as much. It is expected that advanced users will consider moving away from multi-threading to muli-processing while avoiding blocking code. All these options are supported by Plezi, GRHttp and GReactor.
 
+**Minor**: minor adjustments and improvements, such as: auto-setting the `content-type` header when using `render`.
+
 **Fix**: fixed an issue that caused static file service to fail when using the preferred `:public` vs. the older `:root` option used to set the public folder's path. 
 
 ***

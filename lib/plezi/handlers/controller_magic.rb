@@ -133,14 +133,15 @@ module Plezi
 				content_disposition = options[:inline] ? 'inline' : 'attachment'
 				content_disposition << "; filename=#{options[:filename]}" if options[:filename]
 
-				response['content-type'] = options[:type] ||= MimeTypeHelper::MIME_DICTIONARY[::File.extname(options[:filename])] if options[:filename]
+				response['content-type'] = (options[:type] ||= MimeTypeHelper::MIME_DICTIONARY[::File.extname(options[:filename])])
 				response['content-length'] = data.bytesize rescue true
 				response['content-disposition'] = content_disposition
 				true
 			end
 
-			# renders a template file (.slim/.erb/.haml) or an html file (.html) to text
-			# for example, to render the file `body.html.slim` with the layout `main_layout.html.haml`:
+			# Renders a template file (.slim/.erb/.haml) or an html file (.html) to text and attempts to set the response's 'content-type' header (if it's still empty).
+			#
+			# For example, to render the file `body.html.slim` with the layout `main_layout.html.haml`:
 			#   render :body, layout: :main_layout
 			#
 			# or, for example, to render the file `json.js.slim`
@@ -172,6 +173,8 @@ module Plezi
 				# set up defaults
 				options[:type] ||= 'html'
 				options[:locale] ||= params[:locale].to_sym if params[:locale]
+				#update content-type header
+				response['content-type'] ||= (MimeTypeHelper::MIME_DICTIONARY[options[:type]] + "; charset=utf-8".freeze)
 				# options[:locals] ||= {}
 				I18n.locale = options[:locale] || I18n.default_locale if defined?(I18n) # sets the locale to nil for default behavior even if the locale was set by a previous action - removed: # && options[:locale]
 				# find template and create template object
