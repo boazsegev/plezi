@@ -13,6 +13,12 @@ module Plezi
 	# response:: the HTTPResponse **OR** the WSResponse object that formats the response and sends it. use `response << data`. This object can be used to send partial data (such as headers, or partial html content) in blocking mode as well as sending data in the default non-blocking mode.
 	# host_params:: a copy of the parameters used to create the host and service which accepted the request and created this instance of the controller class.
 	#
+	# For Controller Class menthods, please read the documentation about {Plezi::ControllerMagic::ClassMethods}.
+	#
+	# For Controller Instance methods, please read the documentation about {Plezi::ControllerMagic::InstanceMethods}.
+	#
+	# {include: Plezi::ControllerMagic::InstanceMethods}
+	# 
 	module ControllerMagic
 		def self.included base
 			base.send :include, InstanceMethods
