@@ -122,8 +122,8 @@ module Plezi
 				# render supported assets
 				case source_file
 				when /\.css$/
-					sass = source_file.gsub /css$/, 'sass'
-					sass.gsub! /sass$/, 'scss' unless Plezi.file_exists?(sass)
+					sass = source_file.sub /css$/, 'sass'
+					sass.sub! /sass$/, 'scss' unless Plezi.file_exists?(sass)
 					return false unless Plezi.file_exists?(sass)
 					# review mtime and render sass if necessary
 					if defined?(::Sass) && refresh_sass?(sass)
@@ -136,7 +136,7 @@ module Plezi
 					# try to send the cached css file which started the request.
 					return Base::HTTPSender.send_file request, response, target_file
 				when /\.js$/
-					coffee = source_file.gsub /js$/i, 'coffee'
+					coffee = source_file.sub /js$/i, 'coffee'
 					return false unless Plezi.file_exists?(coffee)
 					# review mtime and render coffee if necessary
 					if defined?(::CoffeeScript) && Plezi.cache_needs_update?(coffee)
