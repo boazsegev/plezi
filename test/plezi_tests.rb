@@ -303,7 +303,11 @@ module PleziTestTasks
 			puts e.message
 		end
 		remote = GRHttp::WSClient.connect_to("wss://echo.websocket.org/") {|ws| puts "    * Extra Websocket Remote test (SSL: echo.websocket.org): #{RESULTS[ws.data == 'Hello websockets!']}"; response.close}
-		remote << "Hello websockets!"
+		if remote.closed?
+			puts "    * Extra Websocket Remote test (SSL: echo.websocket.org): #{RESULTS[false]}"
+		else
+			remote << "Hello websockets!"
+		end
 		sleep 0.5
 		[ws1, ws2, ws3, ws4, remote].each {|ws| ws.close}
 		PL.on_shutdown {puts "    * Websocket connection message test: #{RESULTS[connection_test]}" unless connection_test}
@@ -426,7 +430,7 @@ class PlaceboStressTestCtrl
 	LISTENERS = 600
 end
 
-PL.create_logger nil
+# PL.create_logger nil
 # PL::Settings.max_threads = 4
 
 listen port: 3000
