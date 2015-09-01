@@ -6,6 +6,12 @@
 	## Set up root object, it might be used by the environment and\or the plezi extension gems.
 	Root ||= Pathname.new(File.dirname(__FILE__)).expand_path
 	## Set a persistent session token id name
+	## If this app is independant, use bundler to load gems (including the plezi gem).
+	## Else, use the original app's Gemfile and start Plezi's Rack mode.
+		require 'bundler'
+		Bundler.require(:default, ENV['ENV'].to_s.to_sym)
+		## OR:
+		# Plesi.start_rack # remember 
 	GRHttp.session_token = 'appname_uui'
 	## make sure all file access and file loading is relative to the application's root folder
 	# Dir.chdir Root.to_s
@@ -13,13 +19,6 @@
 	# Dir[File.join "{app}", "**" , "*.rb"].each {|file| load File.expand_path(file)}
 	## OR load code from all the ruby files in the main forlder (subfolder inclussion will fail on PaaS)
 	# Dir[File.join File.dirname(__FILE__), "*.rb"].each {|file| load File.expand_path(file) unless file == __FILE__}
-
-	## If this app is independant, use bundler to load gems (including the plezi gem).
-	## Else, use the original app's Gemfile and start Plezi's Rack mode.
-		require 'bundler'
-		Bundler.require(:default, ENV['ENV'].to_s.to_sym)
-		## OR:
-		# Plesi.start_rack # remember 
 
 	## Uncomment to create a log file
 	# GReactor.create_logger File.expand_path(Root.join('server.log').to_s)
