@@ -110,12 +110,11 @@ module Plezi
 				return false if source_file.match(/(scss|sass|coffee|\.\.\/)$/)
 
 				# set where to store the rendered asset
-				target_file = false
-				target_file = File.join( params[:public], params[:assets_public], *request.path.match(/^#{params[:assets_public]}\/(.*)/)[1].split('/') ) if params[:public]
+				target_file = File.join( params[:public].to_s, params[:assets_public].to_s, *request.path.match(/^#{params[:assets_public]}\/(.*)/)[1].split('/') )
 
 				# send the file if it exists (no render needed)
 				if File.exists?(source_file)
-					data = Plezi.cache_needs_update?(source_file) ? Plezi.save_file(target_file, Plezi.reload_file(source_file), params[:save_assets]) : Plezi.load_file(source_file)
+					data = Plezi.cache_needs_update?(source_file) ? Plezi.save_file(target_file, Plezi.reload_file(source_file), (params[:public] && params[:save_assets])) : Plezi.load_file(source_file)
 					return (data ? Base::HTTPSender.send_raw_data(request, response, data, MimeTypeHelper::MIME_DICTIONARY[::File.extname(source_file)]) : false)
 				end
 
@@ -130,8 +129,8 @@ module Plezi
 						eng = Sass::Engine.for_file(sass, cache_store: @sass_cache)
 						Plezi.cache_data sass, eng.dependencies
 						css, map = eng.render_with_sourcemap(params[:assets_public])
-						Plezi.save_file target_file, css, params[:save_assets]
-						Plezi.save_file (target_file + ".map"), map, params[:save_assets]
+						Plezi.save_file target_file, css, (params[:public] && params[:save_assets])
+						Plezi.save_file (target_file + ".map"), map, (params[:public] && params[:save_assets])
 					end
 					# try to send the cached css file which started the request.
 					return Base::HTTPSender.send_file request, response, target_file
@@ -142,7 +141,7 @@ module Plezi
 					if defined?(::CoffeeScript) && Plezi.cache_needs_update?(coffee)
 						# render coffee to cache
 						Plezi.cache_data coffee, nil
-						Plezi.save_file target_file, CoffeeScript.compile(IO.binread coffee), params[:save_assets]
+						Plezi.save_file target_file, CoffeeScript.compile(IO.binread coffee), (params[:public] && params[:save_assets])
 					end
 					# try to send the cached js file which started the request.
 					return Base::HTTPSender.send_file request, response, target_file
