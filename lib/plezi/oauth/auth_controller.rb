@@ -139,7 +139,7 @@ module Plezi
 		#             @user ||= app_login || OAuth2Ctrl.auth(:facebook, fb_token, self) || OAuth2Ctrl.auth(:google, google_token, self) || ....
 		def self.auth service_name, service_token, controller
 			service = SERVICES[service_name]
-			retrun false unless service
+			return false unless service
 			# auth_res = controller.cookies[c_name] ? (JSON.parse URI.parse("#{service[:profile_url]}?access_token=#{controller.cookies[c_name]}").read rescue ({}) ) : {}
 			# controller.cookies[c_name] = nil unless auth_res['id']
 			# auth_res['id'] ? controller.instance_exec( service_name, auth_res['id'], auth_res['email'], auth_res, &auth_callback) : ( controller.instance_exec( service_name, nil, nil, auth_res, &auth_callback) && false)
@@ -156,7 +156,7 @@ module Plezi
 		def update
 			service_name = params[:id].to_s.to_sym
 			service = SERVICES[service_name]
-			retrun false unless service
+			return false unless service
 			if params[:error]
 				instance_exec( service_name, nil, nil, nil, {}, &self.class.auth_callback)
 				return redirect_to(flash[:redirect_after])
