@@ -160,9 +160,38 @@ route '/', MyController
 exit
 ```
 
+#### `GR.queue(proc, arguments_array)`
+
+GReactor's asynchronous engine is, in it's core, based off this simple method which accepts two elements:
+
+1. An object that answers to `call`
+2. An array of arguments to be passed to that object (or `nil`).
+
+This method allows us to easily reuse Proc objects without constantly creating new Proc objects and releasing them from memory.
+
+For example:
+
+```ruby
+require `plezi`
+
+class MyController
+
+    POKE_TASK = -> {|time| puts "Someone poked me at: #{time}"}
+
+    def index
+        GR.queue POKE_TASK, [Time.now]
+        "Hello World"
+    end
+end
+
+listen
+route '/', MyController
+
+exit
+```
 
 
-## Timed events
+### Timed events
 
 ## The Graceful Shutdown
 
