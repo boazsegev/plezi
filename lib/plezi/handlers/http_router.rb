@@ -107,7 +107,7 @@ module Plezi
 				source_file = File.join(params[:assets], *(request.path.match(/^#{params[:assets_public]}\/(.+)/)[1].split('/')))
 
 				# stop if file name is reserved / has security issues
-				return false if source_file.match(/(scss|sass|coffee|\.\.\/)$/)
+				return false if File.directory?(source_file) || source_file.match(/(scss|sass|coffee|\.\.\/)$/)
 
 				# set where to store the rendered asset
 				target_file = File.join( params[:public].to_s, params[:assets_public].to_s, *request.path.match(/^#{params[:assets_public]}\/(.*)/)[1].split('/') )
