@@ -430,7 +430,7 @@ class PlaceboStressTestCtrl
 	LISTENERS = 600
 end
 
-# PL.create_logger nil
+PL.create_logger nil
 # PL::Settings.max_threads = 4
 
 listen port: 3000
