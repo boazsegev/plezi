@@ -103,8 +103,6 @@ route '/', MyController
 exit
 ```
 
-
-
 ## Asynchronous code execution
 
 [GReactor](https://github.com/boazsegev/GReactor) (Generic Reactor), a very powerful Asynchronous Workflow Engine which offers a very intuitve and easy to use API both for queuing code snippets (blocks / methods) and for schedualing non-persistent timed events (future timed events are discarded during shutdown and need to be re-initiated).

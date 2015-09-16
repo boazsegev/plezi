@@ -1,6 +1,4 @@
 # [Plezi](https://github.com/boazsegev/plezi), The Ruby framework for realtime web-apps
-[![Gem Version](https://badge.fury.io/rb/plezi.svg)](http://badge.fury.io/rb/plezi)
-[![Inline docs](http://inch-ci.org/github/boazsegev/plezi.svg?branch=master)](http://www.rubydoc.info/github/boazsegev/plezi/master)
 
 Plezi is an easy to use Ruby Websocket Framework, with full RESTful routing support and HTTP streaming support. It's name comes from the word "fun", or "pleasure", since Plezi is a pleasure to work with.
 
@@ -13,6 +11,12 @@ With Plezi, you can easily:
 3. Create a full fledged Ruby web application, taking full advantage of RESTful routing, HTTP streaming and scalable Websocket features.
 
 Plezi leverages [GRHttp server's](https://github.com/boazsegev/GRHttp) new architecture. GRHttp is a pure Ruby HTTP and Websocket Generic Server built using [GReactor](https://github.com/boazsegev/GReactor) - a multi-threaded pure ruby alternative to EventMachine with basic process forking support (enjoy forking, if your code is scaling ready).
+
+### Plezi version data
+[![Gem Version](https://badge.fury.io/rb/plezi.svg)](http://badge.fury.io/rb/plezi)
+[![Inline docs](http://inch-ci.org/github/boazsegev/plezi.svg?branch=master)](http://www.rubydoc.info/github/boazsegev/plezi/master)
+
+The `master` branch always refers to the latest edge version, which might also be a broken version. Please refer to the relevent version by using the version's `tag` in the branch selector.
 
 ## Installation
 
