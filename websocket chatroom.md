@@ -239,7 +239,7 @@ def on_message data
 		return false
 	end
 	message = {}
-	message[:message] = GRHttp.HTTP.escape data['message'] # we should sanitize the data
+	message[:message] = data['message'] # should consider sanitizing this
 	message[:event] = :chat
 	message[:from] = params[:id]
 	message[:at] = Time.now
@@ -348,9 +348,10 @@ Next, we will check if the nickname is on the reserved names list, to make sure 
 
 ```ruby
 	message = {from: '', at: Time.now}
-	if params[:id].match /admin|admn|system/i
+	name = params[:id].downcase
+	if (name.match(/admin|admn|system|sys|administrator/i))
 		message[:event] = :error
-		message[:message] = "The nickname '#{params[:id]}' is refused."
+		message[:message] = "The nickname '#{name}' is refused."
 		response << message.to_json
 		params[:id] = false
 		response.close
@@ -386,33 +387,25 @@ def on_connect
 		return false
 	end
 	message = {from: '', at: Time.now}
-	list = collect(:_ask_nickname)
-	if ((list.map {|n| n.downcase}) + ['admin', 'system', 'sys', 'administrator']).include? params[:id].downcase
+	name = params[:id].downcase
+	if (name.match(/admin|admn|system|sys|administrator/i))
 		message[:event] = :error
-		message[:message] = "The nickname '#{params[:id]}' is already taken."
+		message[:message] = "The nickname '#{name}' is already taken."
 		response << message.to_json
 		params[:id] = false
 		response.close
 		return
 	end
 	message[:event] = :chat
-	message[:message] = list.empty? ? "You're the first one here." : "#{list[0..-2].join(', ')} #{list[1] ? 'and' : ''} #{list.last} #{list[1] ? 'are' : 'is'} already in the chatroom"
+	# Should you end up storing your connected user names inside a manged list
+	# in redis or a database and then read that into a variable called 'list'
+	# here is some code you can use to write a message to the user based on the
+	# people currently in that list.
+	# message[:message] = list.empty? ? "You're the first one here." : "#{list[0..-2].join(', ')} #{list[1] ? 'and' : ''} #{list.last} #{list[1] ? 'are' : 'is'} already in the chatroom"
 	response << message.to_json
-	message[:message] = "#{params[:id]} joined the chatroom."
+	message[:message] = "#{name} joined the chatroom."
 	broadcast :_send_message, message.to_json
 end
-```
-
-####The \_ask_nickname method
-
-Just like the `_send_message` method, this method's name starts with an underscore to make sure it is ignored by the Plezi router.
-
-Since this message is used by the `collect` method to collect information (which will block our code), it's very important that this method will be short and fast - it might run hundreds of times (or more), depending how many people are connected to our chatroom...
-
-```ruby
-	def _ask_nickname
-		return params[:id]
-	end
 ```
 
 ###The Complete Ruby Code < (less then) 75 lines
@@ -453,27 +446,28 @@ class ChatController
 			return false
 		end
 		message = {from: '', at: Time.now}
-		list = collect(:_ask_nickname)
-		if ((list.map {|n| n.downcase}) + ['admin', 'system', 'sys', 'administrator']).include? params[:id].downcase
+		name = params[:id].downcase
+		if (name.match(/admin|admn|system|sys|administrator/i))
 			message[:event] = :error
-			message[:message] = "The nickname '#{params[:id]}' is already taken."
+			message[:message] = "The nickname '#{name}' is already taken."
 			response << message.to_json
 			params[:id] = false
 			response.close
 			return
 		end
 		message[:event] = :chat
-		message[:message] = list.empty? ? "You're the first one here." : "#{list[0..-2].join(', ')} #{list[1] ? 'and' : ''} #{list.last} #{list[1] ? 'are' : 'is'} already in the chatroom"
+		# Should you end up storing your connected user names inside a manged list
+		# in redis or a database and then read that into a variable called 'list'
+		# here is some code you can use to write a message to the user based on the
+		# people currently in that list.
+		# message[:message] = list.empty? ? "You're the first one here." : "#{list[0..-2].join(', ')} #{list[1] ? 'and' : ''} #{list.last} #{list[1] ? 'are' : 'is'} already in the chatroom"
 		response << message.to_json
-		message[:message] = "#{params[:id]} joined the chatroom."
+		message[:message] = "#{name} joined the chatroom."
 		broadcast :_send_message, message.to_json
 	end
 
 	def on_disconnect
 		broadcast :_send_message, {event: :chat, from: '', at: Time.now, message: "#{params[:id]} left the chatroom."}.to_json if params[:id]
-	end
-	def _ask_nickname
-		return params[:id]
 	end
 end
 
@@ -494,7 +488,7 @@ service_options = {
 listen service_options
 
 # this routes the root of the application ('/') to our ChatController
-route '/', ChatController
+route '/:id', ChatController
 ```
 
 ##The HTML - a web page with websockets
