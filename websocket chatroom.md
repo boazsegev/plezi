@@ -32,7 +32,7 @@ That's it.
 
 ##The Ruby Code (chatroom server)
 
-We can create an Plezi application using the `$ plezi new myapp` command, but that's too easy - we want it hardcore.
+We can create an Plezi application using the `$ plezi new myapp` or `plezi mini myapp` commands, but that's too easy - we want it hardcore.
 
 Let's create an application folder called `mychat` and save our code in a file called `mychat.rb` in our application folder.
 
@@ -73,7 +73,7 @@ A service, in this case, is realy just a nice word for the Plezi server (which m
 
 As you can see, some options are there for later, but are disabled for now.
 
-- **root**: this option defines the folder from which Plezi should serve static files (html files, images etc'). We will not be serving any static files at the moment, so this option is disabled.
+- **public**: this option defines the folder from which Plezi should serve public static files (html files, images etc'). We will not be serving any static files at the moment, so this option is disabled.
 
 - **assets**: this option tells plezi where to look for asset files that might need rendering - such as Sass and Coffee-Script files... We will not be using these features either, so that's out as well.
 
@@ -83,11 +83,13 @@ As you can see, some options are there for later, but are disabled for now.
 
 - **ssl**: this option, if set to true, will make our service into an SSL/TSL encrypted service (as well as our websocket service)... we can leave this off for now - it's actually hardly ever used since it's usually better to leave that to our production server.
 
+- **port**: Hardcoding a port would override the default port (which is either 3000 or the default port specified using the `-p <port>`). For this demo, as in most cases, it's best to a avoid setting up a port and preffer the default preferance.
+
 ```ruby
 service_options = {
-	# root: Root.join('public').to_s,
+	# public: Root.join('public').to_s,
 	# assets: Root.join('assets').to_s,
-	# assets_public: '/',
+	# assets_public: '/assets',
 	templates: Root.join('views').to_s,
 	ssl: false
 }
@@ -95,13 +97,13 @@ service_options = {
 
 Next we call the `listen` command - this command actually creates the service.
 
-The port plezi uses by default is 3000 [http://localhost:3000/](http://localhost:3000/). By not defining a port, we allowed ourselves to either use the default port (3000) or decide the port when we run our application (i.e. `./mychat.rb -p 8080`).
+The port plezi uses by default is either 3000 [http://localhost:3000/](http://localhost:3000/) or the port defined when calling the script (i.e. `./mychat.rb -p 8080`).
 
 ```ruby
 listen service_options
 ```
 
-(if you want to force a specific port, i.e. 80, write `listen 80, service_options` - but make sure you are allowed to use this port)
+(if you want to force a specific port, i.e. 80, write `listen service_options.merge(port: 80)` - but make sure you are allowed to use this port)
 
 Last, but not least, we tell Plezi to connect the root of our web application to our ChatController - in other words, make sure the root _path_ ('/') is connected to the ChatController class.
 
@@ -109,9 +111,9 @@ Last, but not least, we tell Plezi to connect the root of our web application to
 route '/', ChatController
 ```
 
-Plezi controller classes are like virtual folders with special support for RESTful methods (`index`, `new`, `save`, `update`, `delete`), HTTP filters and helpers (`before`, `after`, `redirect_to`, `send_data`), WebSockets methods (`on_open`, `on_message(data)`, `on_close`), and WebSockets filters and helpers (`pre-connect`, `broadcast`, `unicast` etc').
+Plezi controller classes are like virtual folders with special support for RESTful methods (`index`, `new`, `save`, `update`, `delete`), HTTP filters and helpers (`before`, `after`, `redirect_to`, `send_data`), WebSockets methods (`on_open`, `on_message(data)`, `on_close`), and WebSockets filters and helpers (`pre_connect`, `broadcast`, `unicast` etc').
 
-Plezi uses a common special parameter called 'id' to help with all this magic... if we don't define this parameter ourselves, Plezi will try to append this parameter to the end our route's path. So, actually, our route looks like this:
+Plezi uses a common special parameter called 'id' to help with all this magic... if we don't define this parameter ourselves, Plezi will try to append this parameter as an optional parameter to the end our route's path. So, actually, our route looks like this:
 
 ```ruby
 route '/(:id)', ChatController
@@ -133,7 +135,7 @@ def index
 end
 ```
 
-Plezi has a really easy method called `render` that creates (and caches) a rendering object with our template file's content and returns a String of our rendered template.
+Plezi has a really easy method called `render` that creates (and caches) a rendering object with our template file's content and returns a String with our rendered template.
 
 Lets fill in our `index` method:
 
@@ -155,36 +157,38 @@ Let's rewrite our `index` method to make it cleaner:
 class ChatController
 	def index
 		response['content-type'] = 'text/html'
-		render(:chat)
+		render(:chat) # since this String is the returned value, it works.
 	end
 end
 ```
 
 When someone will visit the root of our application (which is also the '_root_' of our controller), they will get the our ChatController#index method. 
 
-We just need to remember to create a 'chat' template file (`chat.html.erb` or `chat.html.haml`)... but that's for later.
+We just need to remember to create a 'chat' template file (`chat.html.erb`, `chat.html.slim` or `chat.html.haml`)... but that's for later.
 
 ####Telling people that we made this cool app!
 
-there is a secret web convention that allows developers to _sign_ their work by answering the `/people` path with plain text and the names of the people who built the site...
+there is a secret web convention that allows developers to _sign_ their work by answering the `/people.txt` path with plain text and the names of the people who built the site...
 
 With Plezi, that's super easy.
 
-Since out ChatController is at the root of ou application, let's add a `people` method to our ChatController:
+Since out ChatController is at the root of our application, let's add a `people.txt` method to our ChatController:
+
+method names cant normally have the dot in their name, do we will use a helper method for this special name.
 
 ```ruby
-def people
+def_special_method "people.txt" do
 	"I wrote this app :)"
 end
 ```
 
-Plezi uses the 'id' parameter to recognize special paths as well as for it's RESTful support. Now, anyone visiting '/people' will reach our ChatController#people method.
+Plezi uses the 'id' parameter to recognize special paths as well as for it's RESTful support. Now, anyone visiting '/people.txt' will reach our ChatController#people method.
 
-Just like we already discovered, returning a String object (the last line of the `people` method is a String) automatically appends this string to our HTTP response - cool :)
+Just like we already discovered, returning a String object (the last line of the `people.txt` method is a String) automatically appends this string to our HTTP response - cool :)
 
 ###The Controller - live input and pushing data (WebSockets)
 
-We are building an advanced application here - this is _not_ another 'hello world' - lets start exploring the advanced stuff.
+We are building a somewhat advanced application here - this is _not_ another 'hello world' - lets start exploring the advanced stuff.
 
 ####Supporting WebSockets
 
@@ -212,14 +216,14 @@ end
 
 To design a chatroom we will need a few things:
 
-1. We will need to force people identify themselves by choosing nicknames - to do this we will define the `on_connect` method to refuse any connections that don't have a nickname.
+1. We will need to force people identify themselves by choosing nicknames - to do this we will define the `on_open` method to refuse any connections that don't have a nickname.
 2. We will want to make sure these nicknames are unique and don't give a wrong sense of authority (nicknames such as 'admin' should be forbidden) - for now, we will simply refuse the 'wrong' type of nicknames and leave uniqieness for another time.
 3. We will want to push messages we recieve to all the other chatroom members - to do this we will use the `broadcast` method in our `on_message(data)` method.
-4. We will also want to tell people when someone left the chatroom - to do this we can define an `on_disconnect` method and use the `broadcast` method in there.
+4. We will also want to tell people when someone left the chatroom - to do this we can define an `on_close` method and use the `broadcast` method in there.
 
 We can use the :id parameter to set the nickname.
 
-the :id is an automatic parameter that Plezi appended to our path like already explained and it's perfect for our simple needs.
+the :id is an automatic parameter that Plezi appended to our path like already explained and it's perfect for our current needs.
 
 We could probably rewrite our route to something like this: `route '/(:id)/(:nickname)', ChatController` (or move the `/people` path out of the controller and use `'/(:nickname)'`)... but why work hard when we don't need to?
 
@@ -247,7 +251,7 @@ def on_message data
 end
 ```
 
-let's write it a bit shorter... if our code has nothing important to say, it might as well be quick about it.
+let's write it a bit shorter... if our code has nothing important to say, it might as well be quick about it and avoid unnecessary intermediate object assignments.
 
 ```ruby
 def on_message data
@@ -258,7 +262,7 @@ def on_message data
 		response.close
 		return false
 	end
-	broadcast :_send_message, {event: :chat, from: params[:id], message: GRHttp.HTTP.escape(data['message']), at: Time.now}.to_json
+	broadcast :_send_message, {event: :chat, from: params[:id], message: ERB::Util.html_escape(data['message']), at: Time.now}.to_json
 end
 ```
 
@@ -298,7 +302,7 @@ Another feature we want to put in, is letting people know when someone enters or
 Using the `broadcast` method with the special `on_disconnect` websocket method, makes telling people we left an easy task... 
 
 ```ruby
-def on_disconnect
+def on_close
 	message = {event: :chat, from: '', at: Time.now}
 	message[:message] = "#{params[:id]} left the chatroom."
 	broadcast :_send_message, message.to_json if params[:id]
@@ -310,14 +314,14 @@ We will only tell people that we left the chatroom if our login was successful -
 Let's make it a bit shorter?
 
 ```ruby
-def on_disconnect
+def on_close
 	broadcast :_send_message, {event: :chat, from: '', at: Time.now, message: "#{params[:id]} left the chatroom."}.to_json if params[:id]
 end
 ```
 
 ####The login process and telling people we're here
 
-If we ever write a real chatroom, our login process will look somewhat different - but the following process is good enough for now and it has a lot to teach us...
+If we ever write a real chatroom, our login process will look somewhat different, probably using the `pre_connect` callback (which is safer) - but the following process is good enough for now and it has a lot to teach us...
 
 First, we will ensure the new connection has a nickname (the connection was made to '/nickname' rather then the root of our application '/'):
 
@@ -342,13 +346,13 @@ def pre_connect
 end
 ```
 
-Since Websocket connections start as an HTTP GET request, the pre-connect is called while still in 'HTTP mode', allowing us to use HTTP logic and refuse connections even before any websocket data can be sent by the 'client'. This is definitly the safer approach.
+Since Websocket connections start as an HTTP GET request, the pre-connect is called while still in 'HTTP mode', allowing us to use HTTP logic and refuse connections even before any websocket data can be sent by the 'client'. This is definitly the safer approach... but it doesn't allow us to send websocket data (such as our pre-close message).
 
 Next, we will check if the nickname is on the reserved names list, to make sure nobody impersonates a system administrator... let's add this code to our `on_open` method:
 
 ```ruby
 	message = {from: '', at: Time.now}
-	name = params[:id].downcase
+	name = params[:id]
 	if (name.match(/admin|admn|system|sys|administrator/i))
 		message[:event] = :error
 		message[:message] = "The nickname '#{name}' is refused."
@@ -359,35 +363,29 @@ Next, we will check if the nickname is on the reserved names list, to make sure 
 	end
 ```
 
-Then, if all is good, we will welcome the new connection to our chatroom. We will also tell the new guest who is already connected and broadcast their arrivale to everybody else...:
+Then, if all is good, we will welcome the new connection to our chatroom. We will also broadcast the new guest's arrivale to everybody else...:
 
 ```ruby
 		message = {from: '', at: Time.now}
 		message[:event] = :chat
+		message[:message] = "Welcome #{params[:id]}."
 		response << message.to_json
 		message[:message] = "#{params[:id]} joined the chatroom."
 		broadcast :_send_message, message.to_json
 ```
 
-Let's make it just a bit shorter, most of the code ins't important enough to worry about readability... we can compact our `if` statement to an inline statement like this:
+
+This will be our final `on_open` method:
 
 ```ruby
-		message[:message] = list.empty? ? "You're the first one here." : "#{list[0..-2].join(', ')} #{list[1] ? 'and' : ''} #{list.last} #{list[1] ? 'are' : 'is'} already in the chatroom"
-```
-
-We will also want to tweek the code a bit, so the nicknames are case insensative...
-
-This will be our final `on_connect` method:
-
-```ruby
-def on_connect
+def on_open
 	if params[:id].nil?
 		response << {event: :error, from: :system, at: Time.now, message: "Error: cannot connect without a nickname!"}.to_json
 		response.close
 		return false
 	end
 	message = {from: '', at: Time.now}
-	name = params[:id].downcase
+	name = params[:id]
 	if (name.match(/admin|admn|system|sys|administrator/i))
 		message[:event] = :error
 		message[:message] = "The nickname '#{name}' is already taken."
@@ -397,6 +395,7 @@ def on_connect
 		return
 	end
 	message[:event] = :chat
+	message[:message] = "Welcome #{params[:id]}."
 	# Should you end up storing your connected user names inside a manged list
 	# in redis or a database and then read that into a variable called 'list'
 	# here is some code you can use to write a message to the user based on the
@@ -423,7 +422,7 @@ class ChatController
 		response['content-type'] = 'text/html'
 		render(:chat)
 	end
-	def people
+	def_special_method "people.txt" do
 		"I wrote this app :)"
 	end
 	def on_message data
@@ -434,19 +433,19 @@ class ChatController
 			response.close
 			return false
 		end
-		broadcast :_send_message, {event: :chat, from: params[:id], message: data["message"], at: Time.now}.to_json
+		broadcast :_send_message, {event: :chat, from: params[:id], message: ERB::Util.html_escape(data['message']), at: Time.now}.to_json
 	end
 	def _send_message data
 		response << data
 	end
-	def on_connect
+	def on_open
 		if params[:id].nil?
-			response << {event: :error, from: :system, at: Time.now, message: 	"Error: cannot connect without a nickname!"}.to_json
+			response << {event: :error, from: :system, at: Time.now, message: "Error: cannot connect without a nickname!"}.to_json
 			response.close
 			return false
 		end
 		message = {from: '', at: Time.now}
-		name = params[:id].downcase
+		name = params[:id]
 		if (name.match(/admin|admn|system|sys|administrator/i))
 			message[:event] = :error
 			message[:message] = "The nickname '#{name}' is already taken."
@@ -456,6 +455,7 @@ class ChatController
 			return
 		end
 		message[:event] = :chat
+		message[:message] = "Welcome #{params[:id]}."
 		# Should you end up storing your connected user names inside a manged list
 		# in redis or a database and then read that into a variable called 'list'
 		# here is some code you can use to write a message to the user based on the
@@ -466,7 +466,8 @@ class ChatController
 		broadcast :_send_message, message.to_json
 	end
 
-	def on_disconnect
+
+	def on_close
 		broadcast :_send_message, {event: :chat, from: '', at: Time.now, message: "#{params[:id]} left the chatroom."}.to_json if params[:id]
 	end
 end
