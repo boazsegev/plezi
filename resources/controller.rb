@@ -119,7 +119,8 @@ class SampleController
 	# the demo content simply broadcasts the message.
 	def on_message data
 		# broadcast sends an asynchronous message to all sibling instances, but not to self.
-		data = Plezi::HTTP.escape data
+		return unless params[:id]
+		data = ERB::Util.html_escape data
 		broadcast :_print_out, data
 		response << "You said: #{data}"
 		response << (request.ssl? ? "FYI: Yes, This is an SSL connection..." : "FYI: Nope, this isn't an SSL connection (clear text).") if data.match /ssl\?/i

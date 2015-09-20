@@ -40,7 +40,8 @@ class MyController
 	end
 	# Websockets
 	def on_message data
-		data = "#{params[:id]}: #{data}" if params[:id]
+		return unless params[:id]
+		data = "#{params[:id]}: #{ERB::Util.html_escape data}"
 		_print data
 		broadcast :_print, data		
 	end
