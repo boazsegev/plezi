@@ -3,6 +3,12 @@ module Plezi
 
 		# Sends common basic HTTP responses.
 		module HTTPSender
+			class CodeContext
+				attr_accessor :request
+				def initialize request
+					@request = request
+				end
+			end
 			module_function
 
 			######
@@ -13,17 +19,10 @@ module Plezi
 			def send_by_code request, response, code, headers = {}
 				begin
 					base_code_path = request.io.params[:templates] || File.expand_path('.')
-					if defined?(::Slim) && Plezi.file_exists?(fn = File.join(base_code_path, "#{code}.html.slim"))
-						Plezi.cache_data fn, Slim::Template.new( fn ) unless Plezi.cached? fn
-						return send_raw_data request, response, Plezi.get_cached( fn ).render( self, request: request ), 'text/html', code, headers
-					elsif defined?(::Haml) && Plezi.file_exists?(fn = File.join(base_code_path, "#{code}.html.haml"))
-						Plezi.cache_data fn, Haml::Engine.new( IO.binread( fn ) ) unless Plezi.cached? fn
-						return send_raw_data request, response, Plezi.get_cached( File.join(base_code_path, "#{code}.html.haml") ).render( self ), 'text/html', code, headers
-					elsif defined?(::ERB) && Plezi.file_exists?(fn = File.join(base_code_path, "#{code}.html.erb"))
-						return send_raw_data request, response, ERB.new( Plezi.load_file( fn ) ).result(binding), 'text/html', code, headers
-					elsif Plezi.file_exists?(fn = File.join(base_code_path, "#{code}.html"))
-						return send_file(request, response, fn, code, headers)
-					end
+					fn = File.join(base_code_path, "#{code}.html")
+					rendered = ::Plezi::Base::Renderer.render fn, CodeContext.new(request)
+					return send_raw_data request, response, rendered, 'text/html', code, headers if rendered
+					return send_file(request, response, fn, code, headers) if Plezi.file_exists?(fn)
 					return true if send_raw_data(request, response, response.class::STATUS_CODES[code], 'text/plain', code, headers)
 				rescue Exception => e
 					Plezi.error e
