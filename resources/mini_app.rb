@@ -40,19 +40,21 @@ class MyController
 	end
 	# Websockets
 	def on_message data
-		return unless params[:id]
-		data = "#{params[:id]}: #{ERB::Util.html_escape data}"
-		_print data
-		broadcast :_print, data		
+		data = ERB::Util.html_escape data
+		print data
+		broadcast :print, data		
 	end
 	def on_open
-		_print 'Welcome!'
-		broadcast :_print, "Somebody joind us :-)"
+		print 'Welcome!'
+		broadcast :print, "Somebody joind us :-)"
 	end
 	def on_close
-		broadcast :_print, "Somebody left us :-("
+		broadcast :print, "Somebody left us :-("
 	end
-	def _print data
+
+	protected
+
+	def print data
 		response << data
 	end
 end

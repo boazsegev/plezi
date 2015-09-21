@@ -119,7 +119,6 @@ class SampleController
 	# the demo content simply broadcasts the message.
 	def on_message data
 		# broadcast sends an asynchronous message to all sibling instances, but not to self.
-		return unless params[:id]
 		data = ERB::Util.html_escape data
 		broadcast :_print_out, data
 		response << "You said: #{data}"
