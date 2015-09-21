@@ -172,6 +172,26 @@ module Plezi
 			#
 			# returns false if the template or layout files cannot be found.
 			def render template, options = {}, &block
+				# # make sure templates are enabled
+				# return false if host_params[:templates].nil?
+				# # render layout by recursion, if exists
+				# (return render(options.delete(:layout), options) { render template, options, &block }) if options[:layout]
+				# # set up defaults
+				# options[:type] ||= 'html'
+				# options[:locale] ||= params[:locale].to_sym if params[:locale]
+				# #update content-type header
+				# response['content-type'] ||= (MimeTypeHelper::MIME_DICTIONARY[options[:type]] + "; charset=utf-8".freeze)
+				# # options[:locals] ||= {}
+				# I18n.locale = options[:locale] || I18n.default_locale if defined?(I18n) # sets the locale to nil for default behavior even if the locale was set by a previous action - removed: # && options[:locale]
+				# # find template and create template object
+				# filename = template.is_a?(String) ? File.join( host_params[:templates].to_s, template) : (File.join( host_params[:templates].to_s, *template.to_s.split('_')) + (options[:type].empty? ? '': ".#{options[:type]}") + '.slim')
+				# return ( Plezi.cache_needs_update?(filename) ? Plezi.cache_data( filename, ( Slim::Template.new() { IO.binread filename } ) )  : (Plezi.get_cached filename) ).render(self, &block) if defined?(::Slim) && Plezi.file_exists?(filename)
+				# filename.sub! /\.slim$/, '.haml'
+				# return ( Plezi.cache_needs_update?(filename) ? Plezi.cache_data( filename, ( Haml::Engine.new( IO.binread(filename) ) ) )  : (Plezi.get_cached filename) ).render(self, &block) if defined?(::Haml) && Plezi.file_exists?(filename)
+				# filename.sub! /\.haml$/, '.erb'
+				# return ( Plezi.cache_needs_update?(filename) ? Plezi.cache_data( filename, ( ERB.new( IO.binread(filename) ) ) )  : (Plezi.get_cached filename) ).result(binding, &block) if defined?(::ERB) && Plezi.file_exists?(filename)
+				# return false
+
 				# make sure templates are enabled
 				return false if host_params[:templates].nil?
 				# render layout by recursion, if exists
@@ -181,16 +201,11 @@ module Plezi
 				options[:locale] ||= params[:locale].to_sym if params[:locale]
 				#update content-type header
 				response['content-type'] ||= (MimeTypeHelper::MIME_DICTIONARY[options[:type]] + "; charset=utf-8".freeze)
-				# options[:locals] ||= {}
+				# Circumvents I18n persistance issues (live updating and thread data storage).
 				I18n.locale = options[:locale] || I18n.default_locale if defined?(I18n) # sets the locale to nil for default behavior even if the locale was set by a previous action - removed: # && options[:locale]
 				# find template and create template object
-				filename = template.is_a?(String) ? File.join( host_params[:templates].to_s, template) : (File.join( host_params[:templates].to_s, *template.to_s.split('_')) + (options[:type].empty? ? '': ".#{options[:type]}") + '.slim')
-				return ( Plezi.cache_needs_update?(filename) ? Plezi.cache_data( filename, ( Slim::Template.new() { IO.binread filename } ) )  : (Plezi.get_cached filename) ).render(self, &block) if defined?(::Slim) && Plezi.file_exists?(filename)
-				filename.sub! /\.slim$/, '.haml'
-				return ( Plezi.cache_needs_update?(filename) ? Plezi.cache_data( filename, ( Haml::Engine.new( IO.binread(filename) ) ) )  : (Plezi.get_cached filename) ).render(self, &block) if defined?(::Haml) && Plezi.file_exists?(filename)
-				filename.sub! /\.haml$/, '.erb'
-				return ( Plezi.cache_needs_update?(filename) ? Plezi.cache_data( filename, ( ERB.new( IO.binread(filename) ) ) )  : (Plezi.get_cached filename) ).result(binding, &block) if defined?(::ERB) && Plezi.file_exists?(filename)
-				return false
+				filename = template.is_a?(String) ? File.join( host_params[:templates].to_s, template) : (File.join( host_params[:templates].to_s, *template.to_s.split('_')) + (options[:type].empty? ? '': ".#{options[:type]}"))
+				::Plezi::Base::Renderer.render filename, &block
 			end
 
 			# returns the initial method called (or about to be called) by the router for the HTTP request.

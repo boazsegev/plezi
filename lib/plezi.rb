@@ -34,13 +34,13 @@ require 'plezi/common/api.rb'
 require 'plezi/common/dsl.rb'
 require 'plezi/common/redis.rb'
 require 'plezi/common/settings.rb'
+require 'plezi/common/renderer.rb'
 
 ### helpers
 
 require 'plezi/helpers/http_sender.rb'
 require 'plezi/helpers/magic_helpers.rb'
 require 'plezi/helpers/mime_types.rb'
-
 
 ### HTTP and WebSocket Handlers
 require 'plezi/handlers/http_router.rb'
@@ -51,6 +51,7 @@ require 'plezi/handlers/controller_core.rb'
 require 'plezi/handlers/placebo.rb'
 require 'plezi/handlers/stubs.rb'
 require 'plezi/handlers/session.rb'
+
 
 
 ##############################################################################
