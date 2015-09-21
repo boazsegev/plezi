@@ -34,11 +34,11 @@ module Plezi
 				next unless defined? ERB
 				( Plezi.cache_needs_update?(filename) ? Plezi.cache_data( filename, ( ERB.new( IO.binread(filename) ) ) )  : (Plezi.get_cached filename) ).result((context.instance_exec { binding }) , &block)
 			end
-			register_hook :slim do |filename, binding, &block|
+			register_hook :slim do |filename, context, &block|
 				next unless defined? Slim
 				( Plezi.cache_needs_update?(filename) ? Plezi.cache_data( filename, ( Slim::Template.new() { IO.binread filename } ) )  : (Plezi.get_cached filename) ).render(context, &block)
 			end
-			register_hook :haml do |filename, binding, &block|
+			register_hook :haml do |filename, context, &block|
 				next unless defined? Haml
 				( Plezi.cache_needs_update?(filename) ? Plezi.cache_data( filename, ( Haml::Engine.new( IO.binread(filename) ) ) )  : (Plezi.get_cached filename) ).render(context, &block)
 			end
