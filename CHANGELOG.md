@@ -2,6 +2,12 @@
 
 ***
 
+Change log v.0.11.1
+
+**Feature**: (undocumented) Rendering and Asset extentions! Now, Rendering and Asset pipeline can be extended to allow for more rendering and asset engines. This is yet undocumented and somewhat experimental, but the API in this regard will be stable for all `~>= 0.11.1` versions.
+
+***
+
 Change log v.0.11.0
 
 **Update**: Requires GRHttp server and GReactor version 0.1.0 or above, adjusted to the updated API.
