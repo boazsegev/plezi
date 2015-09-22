@@ -121,7 +121,7 @@ module Plezi
 				end
 
 				# render the file if it's a registered asset
-				data = ::Plezi::AssetManager.render source_file, self
+				data = ::Plezi::AssetManager.render source_file, binding
 				if data
 					return ::Plezi::Base::HTTPSender.send_raw_data request, response, Plezi.save_file(target_file, data, (params[:public] && params[:save_assets])), MimeTypeHelper::MIME_DICTIONARY[::File.extname(source_file)]
 				end

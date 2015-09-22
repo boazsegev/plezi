@@ -20,7 +20,7 @@ module Plezi
 				begin
 					base_code_path = request.io.params[:templates] || File.expand_path('.')
 					fn = File.join(base_code_path, "#{code}.html")
-					rendered = ::Plezi::Renderer.render fn, CodeContext.new(request)
+					rendered = ::Plezi::Renderer.render fn, binding #CodeContext.new(request)
 					return send_raw_data request, response, rendered, 'text/html', code, headers if rendered
 					return send_file(request, response, fn, code, headers) if Plezi.file_exists?(fn)
 					return true if send_raw_data(request, response, response.class::STATUS_CODES[code], 'text/plain', code, headers)

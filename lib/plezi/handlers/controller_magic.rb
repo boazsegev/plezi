@@ -185,7 +185,7 @@ module Plezi
 				I18n.locale = options[:locale] || I18n.default_locale if defined?(I18n) # sets the locale to nil for default behavior even if the locale was set by a previous action - removed: # && options[:locale]
 				# find template and create template object
 				filename = template.is_a?(String) ? File.join( host_params[:templates].to_s, template) : (File.join( host_params[:templates].to_s, *template.to_s.split('_')) + (options[:type].empty? ? '': ".#{options[:type]}"))
-				::Plezi::Renderer.render filename, self, &block
+				::Plezi::Renderer.render filename, binding, &block
 			end
 
 			# returns the initial method called (or about to be called) by the router for the HTTP request.
