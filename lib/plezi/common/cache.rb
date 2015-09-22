@@ -78,12 +78,12 @@ module Plezi
 
 		# returns true if the filename is cached.
 		def cached? filename
-			!CACHE_STORE[filename].nil?
+			CACHE_STORE[filename] && true
 		end
 
 		# returns true if the file exists on disk or in the cache.
 		def file_exists? filename
-			(CACHE_STORE[filename] || File.exists?(filename)) ? true : false
+			( CACHE_STORE[filename] || File.exists?(filename) ) && true
 		end
 
 		# returns true if the file has been update since data was last cached.
