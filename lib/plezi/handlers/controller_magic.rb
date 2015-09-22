@@ -177,10 +177,10 @@ module Plezi
 				# render layout by recursion, if exists
 				(return render(options.delete(:layout), options) { render template, options, &block }) if options[:layout]
 				# set up defaults
-				options[:type] ||= 'html'
+				options[:type] ||= 'html'.freeze
 				options[:locale] ||= params[:locale].to_sym if params[:locale]
 				#update content-type header
-				response['content-type'] ||= (MimeTypeHelper::MIME_DICTIONARY[options[:type]] + "; charset=utf-8".freeze)
+				response['content-type'] ||= "#{MimeTypeHelper::MIME_DICTIONARY[".#{options[:type]}".freeze]}; charset=utf-8".freeze
 				# Circumvents I18n persistance issues (live updating and thread data storage).
 				I18n.locale = options[:locale] || I18n.default_locale if defined?(I18n) # sets the locale to nil for default behavior even if the locale was set by a previous action - removed: # && options[:locale]
 				# find template and create template object

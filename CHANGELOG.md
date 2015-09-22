@@ -6,6 +6,10 @@ Change log v.0.11.1
 
 **Feature**: (undocumented) Rendering and Asset extentions! Now, Rendering and Asset pipeline can be extended to allow for more rendering and asset engines. This is yet undocumented and somewhat experimental, but the API in this regard will be stable for all `~>= 0.11.1` versions.
 
+**Update**: Simpler asset rendering workflow, rewritten while adding extention support.
+
+**Fix**: Fixed an issue where the MimeTypeHelper wouldn't recognize a file's extention (due to the '.' in the file's extention string).
+
 ***
 
 Change log v.0.11.0
