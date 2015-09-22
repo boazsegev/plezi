@@ -12,6 +12,8 @@ module Plezi
 				def initialize params
 					@params = params
 					@routes = []
+					params[:assets_public_regex] = /^#{params[:assets_public].to_s.chomp('/')}\/(.+)/.freeze
+					params[:assets_refuse_templates] = /(#{AssetManager.all_extentions.join('|')}|\.\.\/)$/.freeze
 				end
 			end
 
@@ -35,7 +37,6 @@ module Plezi
 			def initialize
 				@hosts = {}
 				@active_host = nil
-				@sass_cache = Sass::CacheStores::Memory.new if defined?(::Sass)
 			end
 
 			# adds a host to the router (or activates an existing host to add new routes). accepts a host name and any parameters not related to the actual connection (ssl etc') (see {Plezi.listen})
@@ -99,18 +100,19 @@ module Plezi
 			# renders assets, if necessary, and places the rendered result in the cache and in the public folder.
 			def render_assets request, response, params
 				# contine only if assets are defined and called for
-				return false unless params[:assets] && request.path.match(/^#{params[:assets_public]}\/.+/)
+				return false unless params[:assets] && (request.path =~ params[:assets_public_regex])
 				# review callback, if defined
 				return true if params[:assets_callback] && params[:assets_callback].call(request, response)
 
 				# get file requested
-				source_file = File.join(params[:assets], *(request.path.match(/^#{params[:assets_public]}\/(.+)/)[1].split('/')))
+				source_file = File.join(params[:assets], *(request.path.match(params[:assets_public_regex])[1].split('/')))
+
 
 				# stop if file name is reserved / has security issues
-				return false if File.directory?(source_file) || source_file.match(/(scss|sass|coffee|\.\.\/)$/)
+				return false if File.directory?(source_file) || source_file =~ params[:assets_refuse_templates]
 
 				# set where to store the rendered asset
-				target_file = File.join( params[:public].to_s, params[:assets_public].to_s, *request.path.match(/^#{params[:assets_public]}\/(.*)/)[1].split('/') )
+				target_file = File.join( params[:public].to_s, params[:assets_public].to_s, *request.path.match(params[:assets_public_regex])[1].split('/') )
 
 				# send the file if it exists (no render needed)
 				if File.exists?(source_file)
@@ -118,42 +120,19 @@ module Plezi
 					return (data ? Base::HTTPSender.send_raw_data(request, response, data, MimeTypeHelper::MIME_DICTIONARY[::File.extname(source_file)]) : false)
 				end
 
-				# render supported assets
-				case source_file
-				when /\.css$/
-					sass = source_file.sub /css$/, 'sass'
-					sass.sub! /sass$/, 'scss' unless Plezi.file_exists?(sass)
-					return false unless Plezi.file_exists?(sass)
-					# review mtime and render sass if necessary
-					if defined?(::Sass) && refresh_sass?(sass)
-						eng = Sass::Engine.for_file(sass, cache_store: @sass_cache)
-						Plezi.cache_data sass, eng.dependencies
-						css, map = eng.render_with_sourcemap(params[:assets_public])
-						Plezi.save_file target_file, css, (params[:public] && params[:save_assets])
-						Plezi.save_file (target_file + ".map"), map, (params[:public] && params[:save_assets])
-					end
-					# try to send the cached css file which started the request.
-					return Base::HTTPSender.send_file request, response, target_file
-				when /\.js$/
-					coffee = source_file.sub /js$/i, 'coffee'
-					return false unless Plezi.file_exists?(coffee)
-					# review mtime and render coffee if necessary
-					if defined?(::CoffeeScript) && Plezi.cache_needs_update?(coffee)
-						# render coffee to cache
-						Plezi.cache_data coffee, nil
-						Plezi.save_file target_file, CoffeeScript.compile(IO.binread coffee), (params[:public] && params[:save_assets])
-					end
-					# try to send the cached js file which started the request.
-					return Base::HTTPSender.send_file request, response, target_file
+				# render the file if it's a registered asset
+				data = ::Plezi::AssetManager.render source_file, self
+				if data
+					return ::Plezi::Base::HTTPSender.send_raw_data request, response, Plezi.save_file(target_file, data, (params[:public] && params[:save_assets])), MimeTypeHelper::MIME_DICTIONARY[::File.extname(source_file)]
 				end
-				false
-			end
-			def refresh_sass? sass
-				return false unless File.exists?(sass)
-				return true if Plezi.cache_needs_update?(sass)
-				mt = Plezi.file_mtime(sass)
-				Plezi.get_cached(sass).each {|e| return true if File.exists?(e.options[:filename]) && (File.mtime(e.options[:filename]) > mt)} # fn = File.join( e.options[:load_paths][0].root, e.options[:filename]) 
-				false
+
+				# send the data if it's a cached asset (map files and similar assets that were cached while rendering)
+				if Plezi.cached?(source_file)
+					return Base::HTTPSender.send_raw_data(request, response, Plezi.get_cached(source_file), MimeTypeHelper::MIME_DICTIONARY[::File.extname(source_file)])
+				end
+
+				# return false if an asset couldn't be rendered and wasn't found.
+				return false
 			end
 
 		end
