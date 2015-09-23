@@ -2,6 +2,12 @@
 
 ***
 
+Change log v.0.11.2
+
+**Fix**: Fixed an issue where the Session object wouldn't be available for websocket connections after the handshake was complete.
+
+***
+
 Change log v.0.11.1
 
 **Feature**: (undocumented) Rendering and Asset extentions! Now, Rendering and Asset pipeline can be extended to allow for more rendering and asset engines. This is yet undocumented and somewhat experimental, but the API in this regard will be stable for all `~>= 0.11.1` versions.

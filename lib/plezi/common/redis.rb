@@ -29,6 +29,7 @@ module Plezi
 											GRHttp::Base::WSHandler.broadcast data
 										end
 									rescue => e
+										GReactor.error "The following could be a security breach attempt:"
 										GReactor.error e
 									end
 								end

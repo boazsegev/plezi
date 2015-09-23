@@ -46,7 +46,7 @@ module Plezi
 			#
 			# Sessions are not automatically created, because they require more resources. The one exception is the Websocket connection that will force a session object into existence, as it's very common to use session data in Websocket connections and the extra connection time is less relevant for a long term connection.
 			def session
-				response.session
+				@session ||= response.session
 			end
 
 			# the HTTPResponse **OR** the WSResponse object that formats the response and sends it. use `response << data`. This object can be used to send partial data (such as headers, or partial html content) in blocking mode as well as sending data in the default non-blocking mode.
