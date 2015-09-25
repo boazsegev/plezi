@@ -12,9 +12,9 @@ module Plezi
 				def initialize params
 					@params = params
 					@routes = []
-					params[:assets_public_regex] = /^#{params[:assets_public].to_s.chomp('/')}\/(.+)/.freeze
+					params[:assets_public_regex] = /^#{params[:assets_public].to_s.chomp('/')}\//i.freeze
 					params[:assets_public_length] = params[:assets_public].to_s.chomp('/').length + 1
-					params[:assets_refuse_templates] = /(#{AssetManager.all_extentions.join('|')}|\.\.\/)$/.freeze
+					params[:assets_refuse_templates] = /(#{AssetManager.all_extentions.join('|')}|\.\.\/)$/i.freeze
 				end
 			end
 
