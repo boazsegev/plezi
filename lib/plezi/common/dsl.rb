@@ -49,7 +49,7 @@ unless defined? PLEZI_NON_DSL
 	#
 	# magic routes make for difficult debugging - the smarter the routes, the more difficult the debugging.
 	# use with care and avoid complex routes when possible. RESTful routes are recommended when possible.
-	# json serving apps are advised to use required parameters, empty sections indicating missing required parameters (i.e. /path///foo/bar///).
+	# JSON serving apps are advised to use required parameters and empty sections indicating missing required parameters (i.e. /path///foo/bar///).
 	#
 	def route(path, controller = nil, &block)
 		Plezi.route(path, controller, &block)
