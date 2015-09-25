@@ -42,7 +42,7 @@ module Plezi
 		# `"/static/:required/(:optional)/(:optional_with_format){[\d]*}/:optional_2"`
 		def initialize path, controller, params={}, &block
 			@original_path, @url_array, @params = path, false, params
-			initialize_path path
+			initialize_path( (controller == false) ? "#{path.chomp('/')}/*" : path )
 			initialize_controller controller, block
 		end
 
