@@ -201,19 +201,19 @@ module Plezi
 				# respond to websocket special case
 				return :pre_connect if request.upgrade?
 				# respond to save 'new' special case
-				return (self.class.has_method?(:save) ? :save : false) if request.request_method.match(/POST|PUT|PATCH/) && (params[:id].nil? || params[:id] == 'new')
+				return (self.class.has_method?(:save) ? :save : false) if (request.request_method =~ /POST|PUT|PATCH/i.freeze) && (params[:id].nil? || params[:id] == 'new')
 				# set DELETE method if simulated
 				request.request_method = 'DELETE' if params[:_method].to_s.downcase == 'delete'
 				# respond to special :id routing
 				return params[:id].to_s.to_sym if params[:id] && self.class.has_exposed_method?(params[:id].to_s.to_sym)
 				#review general cases
 				case request.request_method
-				when 'GET', 'HEAD'
+				when 'GET'.freeze, 'HEAD'.freeze
 					return (self.class.has_method?(:index) ? :index : false) unless params[:id]
 					return (self.class.has_method?(:show) ? :show : false)
-				when 'POST', 'PUT', 'PATCH'
+				when 'POST'.freeze, 'PUT'.freeze, 'PATCH'.freeze
 					return (self.class.has_method?(:update) ? :update : false)
-				when 'DELETE'
+				when 'DELETE'.freeze
 					return (self.class.has_method?(:delete) ? :delete : false)
 				end
 				false
