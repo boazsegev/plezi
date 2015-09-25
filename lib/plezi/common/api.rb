@@ -63,14 +63,20 @@ module Plezi
 	end
 	# adds a route to the last server created
 	def route(path, controller = nil, &block)
-		raise "Must define a listener before adding a route - use `Plezi.listen`." unless @active_router
+		unless @active_router
+			GReactor.warn "You should define a listener before adding a route - use `Plezi.listen`.\nCreating a default (empty) listener."
+			Plezi.listen
+		end
 		@routers_locker.synchronize { @active_router.add_route path, controller, &block }
 	end
 
 
 	# adds a shared route to all existing services and hosts.
 	def shared_route(path, controller = nil, &block)
-		raise "Must have created at least one Pleze service before calling `shared_route` - use `Plezi.listen`." unless @routers
+		unless @active_router
+			GReactor.warn "You should define a listener before adding a shared route - use `Plezi.listen`.\nCreating a default (empty) listener."
+			Plezi.listen
+		end
 		@routers_locker.synchronize { @routers.each {|r| r.add_shared_route path, controller, &block } }
 	end
 
@@ -78,7 +84,10 @@ module Plezi
 	#
 	# accepts a host name and a parameter(s) Hash which are the same parameter(s) as {Plezi.listen} accepts:
 	def host(host_name, params)
-		raise "Must define a listener before adding a route - use `Plezi.listen`." unless @active_router
+		unless @active_router
+			GReactor.warn "You should define a listener before adding a named host - use `Plezi.listen`.\nCreating a default (empty) listener."
+			Plezi.listen
+		end
 		@routers_locker.synchronize { @active_router.add_host host_name, params }
 	end
 
