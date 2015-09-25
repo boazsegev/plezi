@@ -4,7 +4,9 @@
 
 Change log v.0.11.3
 
-**Minor**: updated asset pipeline performance.
+**Minor**: updated asset pipeline performance; API for the `Plezi.route` methods now auto-creates an empty listening service (no assets, no templates, no public folder...) if one is missing.
+
+**Fix**: The '/*' is automatically appended to the Re-Write routes, so now writing re-write routes is easier and more intuitive.
 
 ***
 
