@@ -2,6 +2,12 @@
 
 ***
 
+Change log v.0.11.3
+
+**Minor**: updated asset pipeline performance.
+
+***
+
 Change log v.0.11.2
 
 **Fix**: Fixed an issue where the Session object wouldn't be available for websocket connections after the handshake was complete.

@@ -13,6 +13,7 @@ module Plezi
 					@params = params
 					@routes = []
 					params[:assets_public_regex] = /^#{params[:assets_public].to_s.chomp('/')}\/(.+)/.freeze
+					params[:assets_public_length] = params[:assets_public].to_s.chomp('/').length + 1
 					params[:assets_refuse_templates] = /(#{AssetManager.all_extentions.join('|')}|\.\.\/)$/.freeze
 				end
 			end
@@ -105,14 +106,14 @@ module Plezi
 				return true if params[:assets_callback] && params[:assets_callback].call(request, response)
 
 				# get file requested
-				source_file = File.join(params[:assets], *(request.path.match(params[:assets_public_regex])[1].split('/')))
+				source_file = File.join(params[:assets], *(request.path[params[:assets_public_length]..-1].split('/')))
 
 
 				# stop if file name is reserved / has security issues
 				return false if File.directory?(source_file) || source_file =~ params[:assets_refuse_templates]
 
 				# set where to store the rendered asset
-				target_file = File.join( params[:public].to_s, params[:assets_public].to_s, *request.path.match(params[:assets_public_regex])[1].split('/') )
+				target_file = File.join( params[:public].to_s, *request.path.split('/') )
 
 				# send the file if it exists (no render needed)
 				if File.exists?(source_file)
