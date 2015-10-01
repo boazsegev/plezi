@@ -8,6 +8,8 @@ Change log v.0.11.3
 
 **Fix**: The '/*' is automatically appended to the Re-Write routes, so now writing re-write routes is easier and more intuitive.
 
+**Update**: updated GRHttp and GReactor versions.
+
 ***
 
 Change log v.0.11.2

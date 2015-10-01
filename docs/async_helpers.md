@@ -2,7 +2,7 @@
 
 (todo: write documentation)
 
-Inside Plezi's core code is a pure Ruby IO reactor called [GReactor](https://github.com/boazsegev/GReactor) (Generic Reactor), a very powerful Asynchronous Workflow Engine that allows us to enjoy both Multi-Threading and Multi-Processing.
+Inside Plezi's core code is a pure Ruby IO reactor called [GReactor](https://github.com/boazsegev/GReactor) (Generic Reactor), a wonderful Asynchronous Workflow Engine that allows us to enjoy both Multi-Threading and Multi-Processing.
 
 Although multi-threading is highly regarded, it should be pointed out that using the GReactor with just one thread is both faster and more efficient. But, since some tasks that take more time (blocking tasks) can't be broken down into smaller tasks, using a number of threads (and/or processes) is a better practice.
 
@@ -123,7 +123,7 @@ require `plezi`
 
 class MyController
     def index
-        GR.run_async(Time.now) {|t| puts "Someone poked me at: #{t}"} # maybe send an email?
+        GR.run_async(Time.now) {|t| puts "Someone poked me at: #{t}" } # maybe send an email?
         "Hello World"
     end
 end
@@ -136,7 +136,7 @@ exit
 
 #### `GR.callback(object, method, arg1, arg2...) {|returned_value| callback block}`
 
-Another common method imployed is the `GR.callback`, which allows us to layer asynchronous code:
+Another common method employed is the `GR.callback`, which allows us to layer asynchronous code:
 
 ```ruby
 require `plezi`
@@ -160,7 +160,7 @@ exit
 
 #### `GR.queue(proc, arguments_array)`
 
-GReactor's asynchronous engine is, in it's core, based off this simple method which accepts two elements:
+GReactor's asynchronous engine is, in it's core, based on this simple method which accepts two elements:
 
 1. An object that answers to `call`
 2. An array of arguments to be passed to that object (or `nil`).

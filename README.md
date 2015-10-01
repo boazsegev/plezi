@@ -349,6 +349,7 @@ Now visit:
 * [http://localhost:3000/]( http://localhost:3000/ )
 * [http://127.0.0.1:3000/humans.txt]( http://127.0.0.1:3000/humans.txt )
 * [http://localhost:3000/humans.txt]( http://localhost:3000/humans.txt )
+* notice: `localhost2` will only work if it was defined in your OS's `hosts` file.
 
 ## Plezi Logging
 
