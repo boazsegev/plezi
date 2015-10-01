@@ -41,17 +41,21 @@ module Plezi
 		parameters[:public] ||= parameters[:root] # backwards compatability
 		puts "Warning: 'root' option is being depracated. use 'public' instead." if parameters[:root]
 
+		unless parameters[:upgrade_handler]
+			parameters[:http_handler] = ::Plezi::Base::HTTPRouter.new
+			parameters[:upgrade_handler] = parameters[:http_handler].upgrade_proc
+			#??? else @active_router.delete :alias
+		end
 		# check if the port is used twice.
 		@routers_locker.synchronize do
 			@active_router = GRHttp.listen(parameters)
-			unless @active_router[:upgrade_handler]
-				@routers << (@active_router[:http_handler] = ::Plezi::Base::HTTPRouter.new)
-				@active_router[:upgrade_handler] = @active_router[:http_handler].upgrade_proc
-			else
-				@active_router.delete :alias
+			@routers << @active_router[:http_handler]
+			if parameters != @active_router
+				parameters[:http_handler] = @active_router[:http_handler]
+				parameters[:upgrade_handler] = @active_router[:upgrade_handler]
 			end
-			@active_router[:http_handler].add_host(parameters[:host], @active_router.merge(parameters) )
 			@active_router = @active_router[:http_handler]
+			@active_router.add_host( parameters[:host], parameters )
 		end
 		# return the current handler or the protocol..
 		@active_router

@@ -10,11 +10,11 @@ module Plezi
 				attr_reader :params
 				attr_reader :routes
 				def initialize params
-					@params = params
+					@params = params.dup
 					@routes = []
-					params[:assets_public_regex] = /^#{params[:assets_public].to_s.chomp('/')}\//i.freeze
-					params[:assets_public_length] = params[:assets_public].to_s.chomp('/').length + 1
-					params[:assets_refuse_templates] = /(#{AssetManager.all_extentions.join('|')}|\.\.\/)$/i.freeze
+					@params[:assets_public_regex] = /^#{params[:assets_public].to_s.chomp('/')}\//i.freeze
+					@params[:assets_public_length] = @params[:assets_public].to_s.chomp('/').length + 1
+					@params[:assets_refuse_templates] = /(#{AssetManager.all_extentions.join('|')}|\.\.\/)$/i.freeze
 				end
 			end
 
