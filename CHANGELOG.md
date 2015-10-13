@@ -2,7 +2,11 @@
 
 ***
 
-Change log v.0.11.3
+Change log v.0.12.0
+
+**Feature** The `Controller.failed_unicast(target, method, arguments_array)` callback is here, allowing you to write a class level callback that will be called if `unicast` fails to find it's target (i.e. if the Websocket connection was already closed).
+
+\* the lack of this callback being called does NOT imply that the unicast was processed without errors, it's only called if the target itself wasn't found (the connection already recognized as closed). Errors can occure within the method originally called by `unicast` when the target was found but the connection was dropped while processing was underway. The `failed_unicast` callback, together with error handling in the original method (i.e. `response << "message"` returning `nil`) should cover any reasonable scenario. 
 
 **Minor**: updated asset pipeline performance; API for the `Plezi.route` methods now auto-creates an empty listening service (no assets, no templates, no public folder...) if one is missing.
 

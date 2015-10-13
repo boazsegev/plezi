@@ -95,7 +95,7 @@ unless defined? PLEZI_NON_DSL
 	$PL_ARGV = $*.dup
 
 	# sets up a generic session-token name based on the script name
-	GRHttp.session_token = "#{($0).split(/[\\\/]/).last.split(/[\s\.]+/).first}_uuid"
+	GRHttp.session_token = "#{File.basename($0, '.*')}_uuid"
 	# restarts the Plezi app with the same arguments as when it was started.
 	#
 	# EXPERIMENTAL

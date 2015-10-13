@@ -38,17 +38,16 @@ module Plezi
 					# finish if the response was sent
 					return false if response.headers_sent?
 					# make sure that the session object is available for websocket connections
-					response.session
+					session
 					# complete handshake
 					return self
 				end
 				# handles websocket opening.
 				def on_open ws
-					# set broadcasts and return true
-					@response = ws
-					ws.autoping Plezi::Settings.autoping if Plezi::Settings.autoping
-					# create the redis connection (in case this in the first instance of this class)
-					Plezi.redis
+					# # set broadcasts and return true
+					# @response = ws
+					# # create the redis connection (in case this in the first instance of this class)
+					# Plezi.redis
 					super() if defined?(super)
 				end
 				# handles websocket messages.

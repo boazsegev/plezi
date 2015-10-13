@@ -103,6 +103,11 @@ class TestCtrl
 	############
 	## WebSockets
 
+	def fail_unicast
+		unicast SecureRandom.uuid + Plezi::Settings.uuid, :psedo, "agrument1"
+		"Sent a psedo unicast... It should fail."
+	end
+
 	# called once the websocket was connected
 	def on_open
 		response << "connected"
@@ -116,7 +121,7 @@ class TestCtrl
 		when 'get uuid'
 			response << "uuid: #{uuid}"
 		when /to: ([^\s]*)/
-			# puts "cating target: #{data.match(/to: ([^\s]*)/)[1]}"
+			# puts "unicasting to target: #{data.match(/to: ([^\s]*)/)[1]}"
 			unicast data.match(/to: ([^\s]*)/)[1], :_push, "unicast"
 			# broadcast :_push, "unicast"
 		else
@@ -129,6 +134,10 @@ class TestCtrl
 	# called when a disconnect packet has been recieved or the connection has been cut
 	# (ISN'T called after a disconnect message has been sent).
 	def on_close
+	end
+
+	def self.failed_unicast target, method, args
+		puts "#{Process.pid}: Failed Unicast, on purpose, for target: #{target}, method: #{method} with: #{args}"
 	end
 
 	# a demo event method that recieves a broadcast from instance siblings.
@@ -342,6 +351,7 @@ module PleziTestTasks
 	def test_broadcast_stress
 		PlaceboStressTestCtrl.create_listeners
 		PlaceboStressTestCtrl.run_test
+		PlaceboStressTestCtrl.unicast ($failed_uuid = SecureRandom.uuid + Plezi::Settings.uuid), :review
 	end
 	def test_404
 		puts "    * 404 not found and router continuity tests: #{RESULTS[ Net::HTTP.get_response(URI.parse "http://localhost:3000/get404" ).code == '404' ]}"
@@ -408,6 +418,9 @@ class PlaceboStressTestCtrl
 			PlaceboStressTestCtrl.run_unicast_test unless uni
 		end
 	end
+	def self.failed_unicast target, method, data
+		puts "    * Unicasting failure callback testing: #{PleziTestTasks::RESULTS[$failed_uuid == target]}"
+	end
 	def self.run_test
 		puts "\n    * Placebo Broadcast stress test starting - (#{LISTENERS} listening objects with #{REPEATS} messages."
 		start_time = Time.now
@@ -424,14 +437,13 @@ class PlaceboStressTestCtrl
 	end
 	def self.create_listeners
 		@uuid = nil
-		LISTENERS.times {@uuid = Plezi::Placebo.new(PlaceboStressTestCtrl).uuid}
+		LISTENERS.times { @uuid = Plezi::Placebo.new(PlaceboStressTestCtrl).uuid }
+		sleep 0.5 # GReactor only registers new IO objects during it's next "tick".
+		puts "    * Placebo creation test: #{PleziTestTasks::RESULTS[ GReactor.each.count >= LISTENERS ] }"
 	end
 	REPEATS = 1000
 	LISTENERS = 600
 end
-
-PL.create_logger nil
-# PL::Settings.max_threads = 4
 
 listen port: 3000
 
@@ -467,6 +479,7 @@ end
 puts "    --- Plezi will ran async, performing some tests that than hang"
 
 puts "    --- Starting tests"
+puts "    --- Plezi #{Plezi::VERSION} using GRHttp #{GRHttp::VERSION} and GReactor #{GReactor::VERSION}."
 puts "    --- Failed tests should read: #{PleziTestTasks::RESULTS[false]}"
 
 r = Plezi::Placebo.new PlaceboCtrl
@@ -474,6 +487,8 @@ puts "    * Create Placebo test: #{PleziTestTasks::RESULTS[r && true]}"
 puts "    * Placebo admists to being placebo: #{PleziTestTasks::RESULTS[PlaceboCtrl.placebo?]}"
 puts "    * Regular controller answers placebo: #{PleziTestTasks::RESULTS[!PlaceboTestCtrl.placebo?]}"
 
+PL.create_logger nil
+# PL::Settings.max_threads = 4
 
 Plezi.start_async
 PleziTestTasks.run_tests

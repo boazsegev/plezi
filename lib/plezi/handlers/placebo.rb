@@ -60,7 +60,7 @@ module Plezi
 					end
 				end
 			end
-			class PlaceboIO < GReactor::BasicIO
+			class PlaceboIO < ::GReactor::BasicIO
 				def clear?
 					io.closed?
 				end
@@ -72,6 +72,14 @@ module Plezi
 					@params[:out].close rescue nil
 					@cache[:websocket_handler].on_close if @cache[:websocket_handler]
 				end
+				# Get's the websocket's unique identifier for unicast transmissions.
+				#
+				# This UUID is also used to make sure Radis broadcasts don't triger the
+				# boadcasting object's event.
+				def uuid
+					@pl_uuid ||= "#{super}#{Plezi::Settings.uuid}"
+				end
+				alias :unicast_id :uuid
 			end
 		end
 		module_function
@@ -86,8 +94,8 @@ module Plezi
 				Object.const_set(new_class_name, new_class)
 			end
 			i, o = IO.pipe
-			io = Placebo::Base::PlaceboIO.new i, out: o, reactor: ::GReactor
-			new_class.new(io)
+			io = Placebo::Base::PlaceboIO.new i, out: o, timeout: false, handler: new_class, reactor: ::GReactor
+			# new_class.new(io)
 		end
 	end
 end

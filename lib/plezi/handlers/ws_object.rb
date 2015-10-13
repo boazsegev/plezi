@@ -73,12 +73,12 @@ module Plezi
 				#
 				# This UUID is also used to make sure Radis broadcasts don't triger the
 				# boadcasting object's event.
-				def uuid					
+				def uuid
 					return @uuid if @uuid
 					if @response && @response.is_a?(GRHttp::WSEvent)
 						return (@uuid ||= @response.uuid + Plezi::Settings.uuid)
-					elsif @io
-						return (@uuid ||=  (@io[:uuid] ||= SecureRandom.uuid) + Plezi::Settings.uuid)
+					elsif __get_io
+						return (@uuid ||=  @io.uuid + Plezi::Settings.uuid)
 					end
 					nil
 				end
@@ -111,6 +111,7 @@ module Plezi
 					@exposed_methods_list ||= ( (self.public_instance_methods - Class.new.instance_methods - Plezi::ControllerMagic::InstanceMethods.instance_methods - [:before, :after, :save, :show, :update, :delete, :initialize, :on_message, :on_broadcast, :pre_connect, :on_open, :on_close]).delete_if {|m| m.to_s[0] == '_'} ).to_set
 					@exposed_methods_list.include? method_name
 				end
+
 				protected
 
 				# a callback that resets the class router whenever a method (a potential route) is added
@@ -163,7 +164,7 @@ module Plezi
 				def unicast target_uuid, method_name, *args
 					raise 'No target specified for unicasting!' unless target_uuid
 					@@uuid_cutoff ||= Plezi::Settings.uuid.length
-					_inner_broadcast method: method_name, data: args, target: target_uuid[0...@@uuid_cutoff], to_server: target_uuid[@@uuid_cutoff..-1]
+					_inner_broadcast method: method_name, data: args, target: target_uuid[0...@@uuid_cutoff], to_server: target_uuid[@@uuid_cutoff..-1], type: self
 				end
 
 				# Use this to multicast an event to ALL websocket connections on EVERY controller, including Placebo controllers.
@@ -183,9 +184,12 @@ module Plezi
 				# sends the broadcast
 				def _inner_broadcast data, ignore_io = nil
 					if data[:target]
-						return ( (data[:to_server].nil? || data[:to_server] == Plezi::Settings.uuid) ? GRHttp::Base::WSHandler.unicast(data[:target], data) : false ) || __inner_redis_broadcast(data)
+						if data[:target] && data[:to_server] == Plezi::Settings.uuid
+							return ( ::GRHttp::Base::Websockets.unicast( data[:target], data ) || ( has_class_method?(:failed_unicast) && failed_unicast( data[:target]+data[:to_server].to_s, data[:method], data[:data] ) ) )
+						end
+						return ( data[:to_server].nil? && ::GRHttp::Base::Websockets.unicast(data[:target], data) ) || __inner_redis_broadcast(data)
 					else
-						GRHttp::Base::WSHandler.broadcast data, ignore_io
+						::GRHttp::Base::Websockets.broadcast data, ignore_io
 						__inner_redis_broadcast data				
 					end
 					true
@@ -196,13 +200,17 @@ module Plezi
 					data = data.dup
 					data[:type] = data[:type].name if data[:type]
 					data[:server] = Plezi::Settings.uuid
-					return conn.publish( ( data[:to_server] ? data[:to_server] : Plezi::Settings.redis_channel_name ), data.to_yaml ) if conn
+					return conn.publish( ( data[:to_server] || Plezi::Settings.redis_channel_name ), data.to_yaml ) if conn
 					false
 				end
 
 				def has_method? method_name
 					@methods_list ||= self.instance_methods.to_set
 					@methods_list.include? method_name
+				end
+				def has_class_method? method_name
+					@class_methods_list ||= self.methods.to_set - Object.methods
+					@class_methods_list.include? method_name
 				end
 			end
 		end

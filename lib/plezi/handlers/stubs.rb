@@ -120,6 +120,13 @@ module Plezi
 			response << data.to_s
 		end
 
+		# a CLASS level callback that will be called when a unicast doesn't find it's target.
+		#
+		# the lack of this callback being called does NOT imply that the unicast was processed without errors,
+		# it's only called if the target itself wasn't found.
+		def self.failed_unicast target, method, arguments_array
+		end
+
 		#####
 		## It is possible to use RESTful methods to help emulate long XHR pulling.
 		## a RESTful controller can also be a WebSockets controller (these are not exclusive qualities).
