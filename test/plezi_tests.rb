@@ -104,7 +104,7 @@ class TestCtrl
 	## WebSockets
 
 	def fail_unicast
-		unicast SecureRandom.uuid + Plezi::Settings.uuid, :psedo, "agrument1"
+		unicast (params[:uuid] || (SecureRandom.uuid + Plezi::Settings.uuid)), :psedo, "agrument1"
 		"Sent a psedo unicast... It should fail."
 	end
 
@@ -360,19 +360,19 @@ module PleziTestTasks
 		puts "    **** 404 not found test FAILED TO RUN!!!"
 		puts e
 	end
-	def test_500
-		workers = GReactor.instance_exec {@threads.select {|t| t.alive?} .count}
-		print "    * 500 internal error test: #{RESULTS[ Net::HTTP.get_response(URI.parse "http://localhost:3000/fail" ).code == '500' ]}"
-		# cause 10 more exceptions to be raised... testing thread survival.
-		10.times { putc "."; Net::HTTP.get_response(URI.parse "http://localhost:3000/fail" ).code }
-		putc "\n"
-		workers_after_test = GReactor.instance_exec {@threads.select {|t| t.alive?} .count}
-		puts "    * Worker survival test: #{RESULTS[workers_after_test == workers]} (#{workers_after_test} out of #{workers})"
+	# def test_500
+	# 	workers = GReactor.instance_exec {@threads.select {|t| t.alive?} .count}
+	# 	print "    * 500 internal error test: #{RESULTS[ Net::HTTP.get_response(URI.parse "http://localhost:3000/fail" ).code == '500' ]}"
+	# 	# cause 10 more exceptions to be raised... testing thread survival.
+	# 	10.times { putc "."; Net::HTTP.get_response(URI.parse "http://localhost:3000/fail" ).code }
+	# 	putc "\n"
+	# 	workers_after_test = GReactor.instance_exec {@threads.select {|t| t.alive?} .count}
+	# 	puts "    * Worker survival test: #{RESULTS[workers_after_test == workers]} (#{workers_after_test} out of #{workers})"
 
-		rescue => e
-		puts "    **** 500 internal error test FAILED TO RUN!!!"
-		puts e
-	end
+	# 	rescue => e
+	# 	puts "    **** 500 internal error test FAILED TO RUN!!!"
+	# 	puts e
+	# end
 end
 
 class PlaceboTestCtrl
@@ -442,7 +442,7 @@ class PlaceboStressTestCtrl
 		puts "    * Placebo creation test: #{PleziTestTasks::RESULTS[ GReactor.each.count >= LISTENERS ] }"
 	end
 	REPEATS = 1000
-	LISTENERS = 600
+	LISTENERS = 100
 end
 
 listen port: 3000
@@ -493,8 +493,9 @@ PL.create_logger nil
 Plezi.start_async
 PleziTestTasks.run_tests
 
+# require 'redis'
 # ENV['PL_REDIS_URL'] ||= ENV['REDIS_URL'] || ENV['REDISCLOUD_URL'] || ENV['REDISTOGO_URL'] || "redis://test:1234@pub-redis-11008.us-east-1-4.5.ec2.garantiadata.com:11008"
-# GReactor.forking 4
+# GReactor.forking 3
 # GR.run_async { PleziTestTasks.run_tests }
 # start_services
 

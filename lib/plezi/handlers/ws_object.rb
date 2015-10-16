@@ -184,10 +184,10 @@ module Plezi
 				# sends the broadcast
 				def _inner_broadcast data, ignore_io = nil
 					if data[:target]
-						if data[:target] && data[:to_server] == Plezi::Settings.uuid
-							return ( ::GRHttp::Base::Websockets.unicast( data[:target], data ) || ( has_class_method?(:failed_unicast) && failed_unicast( data[:target]+data[:to_server].to_s, data[:method], data[:data] ) ) )
+						if data[:target] && (data[:to_server] == Plezi::Settings.uuid )
+							return ( ::GRHttp::Base::Websockets.unicast( data[:target], data ) || ___faild_unicast( data ) )
 						end
-						return ( data[:to_server].nil? && ::GRHttp::Base::Websockets.unicast(data[:target], data) ) || __inner_redis_broadcast(data)
+						return ( data[:to_server].nil? && ::GRHttp::Base::Websockets.unicast(data[:target], data) ) || ( Plezi::Base::AutoRedis.away?(data[:to_server]) && ___faild_unicast( data ) ) || __inner_redis_broadcast(data)
 					else
 						::GRHttp::Base::Websockets.broadcast data, ignore_io
 						__inner_redis_broadcast data				
@@ -198,10 +198,15 @@ module Plezi
 				def __inner_redis_broadcast data
 					return unless conn = Plezi.redis
 					data = data.dup
-					data[:type] = data[:type].name if data[:type]
+					data[:type] = data[:type].name if data[:type].is_a?(Class)
 					data[:server] = Plezi::Settings.uuid
 					return conn.publish( ( data[:to_server] || Plezi::Settings.redis_channel_name ), data.to_yaml ) if conn
 					false
+				end
+
+				def ___faild_unicast data
+					has_class_method?(:failed_unicast) && failed_unicast( data[:target]+data[:to_server].to_s, data[:method], data[:data] )
+					true
 				end
 
 				def has_method? method_name

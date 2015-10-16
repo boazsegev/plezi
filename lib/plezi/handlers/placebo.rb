@@ -64,11 +64,11 @@ module Plezi
 				def clear?
 					io.closed?
 				end
-				def call
+				def call io
 					self.read
 					GR.warn "Placebo IO recieved IO signal - this is unexpected..."
 				end
-				def on_close
+				def on_close c_io
 					@params[:out].close rescue nil
 					@cache[:websocket_handler].on_close if @cache[:websocket_handler]
 				end

@@ -12,6 +12,8 @@ With Plezi, you can easily:
 
 Plezi leverages [GRHttp server's](https://github.com/boazsegev/GRHttp) new architecture. GRHttp is a pure Ruby HTTP and Websocket Generic Server built using [GReactor](https://github.com/boazsegev/GReactor) - a multi-threaded pure ruby alternative to EventMachine with basic process forking support (enjoy forking, if your code is scaling ready).
 
+Plezi and GRHttp are written for Ruby versions 2.1.0 or greater (or API compatible variants). Version 2.2.3 is the currently recommended version.
+
 ### Plezi version data
 [![Gem Version](https://badge.fury.io/rb/plezi.svg)](http://badge.fury.io/rb/plezi)
 [![Inline docs](http://inch-ci.org/github/boazsegev/plezi.svg?branch=master)](http://www.rubydoc.info/github/boazsegev/plezi/master)

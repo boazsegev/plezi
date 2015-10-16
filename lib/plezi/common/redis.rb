@@ -25,7 +25,7 @@ module Plezi
 										data[:type] = Object.const_get(data[:type]) unless data[:type].nil? || data[:type] == :all
 										if data[:target]
 											# GRHttp::Base::Websockets.unicast data[:target], data
-											( data[:type].respond_to?( :failed_unicast ) && data[:type].failed_unicast( data[:target]+data[:to_server].to_s, data[:method], data[:data] ) ) unless GRHttp::Base::Websockets.unicast data[:target], data
+											data[:type].___faild_unicast( data ) unless GRHttp::Base::Websockets.unicast data[:target], data
 										else
 											GRHttp::Base::Websockets.broadcast data
 										end
@@ -46,6 +46,10 @@ module Plezi
 			def get_redis
 				return @redis if (@redis_sub_thread && @redis_sub_thread.alive?) && @redis
 				inner_init_redis
+			end
+			def away? server
+				return true unless get_redis
+				@redis.pubsub('CHANNELS', server).empty?				
 			end
 		end
 	end
