@@ -3,22 +3,24 @@ PL = Plezi
 
 unless defined? PLEZI_NON_DSL
 
-	# shortcut for Plezi.listen.
+	# shortcut for Plezi.listen. Deprecated.
 	#
 	def listen(params = {})
 		Plezi.listen params
 	end
 
-	# adds a virtul host to the current service (the last `listen` call) or switches to an existing host within the active service.
+	# adds a virtul host or switches to an existing host, for routes setup or parameters update.
 	#
 	# accepts:
 	# host_name: a String with the full host name (i.e. "www.google.com" / "mail.google.com")
-	# params:: any of the parameters accepted by the `listen` command, except `protocol`, `handler`, and `ssl` parameters.
+	# params:: any of the parameters accepted by the {Plezi.host} command.
+	#
+	# If no host is specified or host name is `false`, the default host would be set as the active host and returned.
 	def host(host_name = false, params = {})
 		Plezi.host host_name, params
 	end
 
-	# adds a route to the last server object
+	# adds a route to the last (or default) host
 	#
 	# path:: the path for the route
 	# controller:: The controller class which will accept the route.
@@ -74,28 +76,10 @@ unless defined? PLEZI_NON_DSL
 	end
 
 
-
-	# finishes setup of the servers and starts them up. This will hange the proceess.
-	#
-	# this method is called automatically by the Plezi framework.
-	#
-	# it is recommended that you DO NOT CALL this method.
-	# if any post shut-down actions need to be performed, use Plezi.on_shutdown instead.
-	def start_services
-		return 0 if defined?(NO_PLEZI_AUTO_START)
-		undef listen
-		undef host
-		undef route
-		undef shared_route
-		Plezi.start
-	end
-
 	# sets information to be used when restarting
 	$PL_SCRIPT = $0
 	$PL_ARGV = $*.dup
 
-	# sets up a generic session-token name based on the script name
-	GRHttp.session_token = "#{File.basename($0, '.*')}_uuid"
 	# restarts the Plezi app with the same arguments as when it was started.
 	#
 	# EXPERIMENTAL
@@ -104,5 +88,10 @@ unless defined? PLEZI_NON_DSL
 	end
 
 	# sets to start the services once dsl script is finished loading.
-	at_exit { start_services }
+	at_exit do
+		undef listen
+		undef host
+		undef route
+		undef shared_route
+	end
 end

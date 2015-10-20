@@ -12,7 +12,7 @@
 		Bundler.require(:default, ENV['ENV'].to_s.to_sym)
 		## OR:
 		# Plesi.start_rack # remember 
-	GRHttp.session_token = 'appname_uui'
+	Iodine::Http.session_token = 'appname_uui'
 	## make sure all file access and file loading is relative to the application's root folder
 	# Dir.chdir Root.to_s
 	## load code from a subfolder called 'app'
@@ -21,11 +21,11 @@
 	# Dir[File.join File.dirname(__FILE__), "*.rb"].each {|file| load File.expand_path(file) unless file == __FILE__}
 
 	## Uncomment to create a log file
-	# GReactor.create_logger File.expand_path(Root.join('server.log').to_s)
+	# Iodine.logger = Logger.new File.expand_path(Root.join('server.log').to_s)
 
 ## Options for Scaling the app (across processes or machines):
 	## uncomment to set up forking for 3 more processes (total of 4).
-	# GReactor.forking 3
+	# Iodine.processes = 4
 	## Redis scaling
 	# Plezi::Settings.redis_channel_name = 'appsecret'
 	# ENV['PL_REDIS_URL'] ||= ENV['REDIS_URL'] || ENV['REDISCLOUD_URL'] || ENV['REDISTOGO_URL'] || "redis://username:password@my.host:6389"
@@ -62,11 +62,10 @@ end
 
 # start a web service to listen on the first default port (3000 or the port set by the command-line).
 # you can change some of the default settings here.
-listen 	host: :default,
+host :default,
 		assets: Root.join('assets').to_s,
 		templates: Root.join('templates').to_s,
 		# public: Root.join('public').to_s,
-		ssl: false
 
 ## Optional stuff:
 	## I18n re-write, i.e.: `/en/home` will be rewriten as `/home`, while setting params[:locale] to "en"

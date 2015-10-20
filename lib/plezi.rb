@@ -11,8 +11,8 @@ require 'yaml'
 require 'uri'
 require 'set'
 
-# GRHttp servet
-require 'grhttp'
+# Iodine server
+require 'iodine/http'
 
 
 ## erb templating

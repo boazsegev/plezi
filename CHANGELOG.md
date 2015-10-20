@@ -2,7 +2,7 @@
 
 ***
 
-Change log v.0.12.0
+Change log v.0.12.0 - API changes (throwing out dead code)
 
 **Feature** The `Controller.failed_unicast(target, method, arguments_array)` callback is here, allowing you to write a class level callback that will be called if `unicast` fails to find it's target (i.e. if the Websocket connection was already closed or the hosting server shutdown).
 
@@ -14,7 +14,9 @@ Change log v.0.12.0
 
 **Fix**: fixed issue with the Placebo API that could cause CPU cycles (IO.select would return immediately) and an issue where the on_close callback wouldn't be called.
 
-**Update**: updated GRHttp and GReactor versions.
+**Big Change**: Discarded GReactor and GRHttp in favor of [Iodine](https://github.com/boazsegev/iodine) - an Object Oriented IO Reactor for writing network services, which includes an optional Http, Websocket and even an experimental Http/2 server (all to show off it's the ability to change protocols mid-stream).
+
+**API changes**: Along with moving to a single server Iodine module, `listen` had been deprecated in favor of a simpler API, as well as many other helpers that were acting as dead-code.
 
 ***
 

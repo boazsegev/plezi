@@ -24,13 +24,13 @@ Bundler.require(:default, ENV['ENV'].to_s.to_sym)
 require 'tilt/sass' if defined?(::Slim) && defined?(::Sass)
 
 # set up Plezi's logs - Heroku logs to STDOUT, this machine logs to log file
-GReactor.create_logger File.expand_path(File.join 'logs','server.log'), ENV["RACK_ENV"]=="development" unless ENV['DYNO']
+Iodine.logger = Logger.new(File.expand_path(File.join 'logs','server.log'))
 
 # set the session token name
-GRHttp.session_token = 'appname_uui'
+Iodine::Http.session_token = 'appname_uui'
 
 ## Allow forking? ONLY if your code is fully scalable across processes.
-# GReactor::Settings.set_forking 4
+# Iodine.processes = 4
 
 # load all config files
 Dir[File.join "{config}", "**" , "*.rb"].each {|file| load File.expand_path(file)}
@@ -43,8 +43,8 @@ Dir[File.join "{app}", "**" , "*.rb"].each {|file| load File.expand_path(file)}
 
 # start a web service to listen on the first default port (3000 or the port set by the command-line).
 # you can change some of the default settings here.
-listen 	public: Root.join('public').to_s,
+host :default,
+		public: Root.join('public').to_s,
 		assets: Root.join('assets').to_s,
 		assets_public: '/assets',
 		templates: Root.join('app','views').to_s,
-		ssl: false

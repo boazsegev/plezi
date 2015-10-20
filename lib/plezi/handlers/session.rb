@@ -5,7 +5,7 @@ module Plezi
 			# returns a session object
 			def fetch id
 				return Plezi::Session.new(id) if Plezi.redis # avoid a local cache if Redis is used.
-				GRHttp::Base::FileSessionStorage.fetch id # use the tmp-file-session logic if Redis isn't present
+				Iodine::Http::SessionManager::FileSessionStorage.fetch id # use the tmp-file-session logic if Redis isn't present
 			end
 		end
 	end
@@ -90,5 +90,5 @@ module Plezi
 			
 		end
 	end
-	GRHttp::SessionManager.storage = Plezi::Base::SessionStorage
+	Iodine::Http::SessionManager.storage = Plezi::Base::SessionStorage
 end

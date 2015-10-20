@@ -4,13 +4,13 @@ module Plezi
 
 		#####
 		# handles the HTTP Routing
-		class HTTPRouter
+		module HTTPRouter
 
 			class Host
 				attr_reader :params
 				attr_reader :routes
 				def initialize params
-					@params = params.dup
+					@params = params
 					@routes = []
 					@params[:assets_public_regex] = /^#{params[:assets_public].to_s.chomp('/')}\//i.freeze
 					@params[:assets_public_length] = @params[:assets_public].to_s.chomp('/').length + 1
@@ -26,23 +26,25 @@ module Plezi
 			def on_upgrade request, response
 				host = get_host(request[:host_name].to_s.downcase) || @hosts[:default]
 				return false unless host
-				request.io[:params] = host.params
+				request[:host_settings] = host.params
 				# return if a route answered the request
 				host.routes.each {|r| a = r.on_request(request, response); return a if a}
 				# websockets should cut out here
 				false
 			end
-			# initializes an HTTP router (the normal Handler for HTTP requests)
+			# initializes the HTTP router (the normal Handler for HTTP requests)
 			#
 			# the router holds the different hosts and sends them messages/requests.
-			def initialize
-				@hosts = {}
-				@active_host = nil
-			end
+			@hosts = {}
+			@active_host = nil
 
 			# adds a host to the router (or activates an existing host to add new routes). accepts a host name and any parameters not related to the actual connection (ssl etc') (see {Plezi.listen})
 			def add_host host_name, params = {}
-				host_name = (host_name ? (host_name.is_a?(String) ? host_name.to_s.downcase : host_name) : :default)
+				params[:index_file] ||= 'index.html'
+				params[:assets_public] ||= '/assets'
+				params[:assets_public].chomp! '/'
+				params[:public] ||= params[:root] # backwards compatability
+				host_name = (host_name.is_a?(String) ? host_name.to_s.downcase : (host_name.is_a?(Regexp) ? host_name : :default))
 				@active_host = get_host(host_name) || ( @hosts[host_name] = Host.new(params) )
 				add_alias host_name, *params[:alias] if params[:alias]
 				@active_host
@@ -50,21 +52,21 @@ module Plezi
 			# adds an alias to an existing host name (normally through the :alias parameter in the `add_host` method).
 			def add_alias host_name, *aliases
 				host = get_host host_name
-				return false unless host
+				host ||= add_host :default
 				aliases.each {|a| @hosts[a.to_s.downcase] = host}
 				true
 			end
 
 			# adds a route to the active host. The active host is the last host referenced by the `add_host`.
 			def add_route path, controller, &block
-				raise 'No Host defined.' unless @active_host
-				@active_host.routes << Route.new(path, controller, &block)
+				@active_host ||= add_host :default
+				@active_host.routes << ::Plezi::Base::Route.new(path, controller, &block)
 			end
 
 			# adds a route to all existing hosts.
 			def add_shared_route path, controller, &block
-				raise 'No Host defined.' if @hosts.empty?
-				@hosts.each {|n, h| h.routes << Route.new(path, controller, &block) }
+				add_host :default if @hosts.empty?
+				@hosts.each {|n, h| h.routes << ::Plezi::Base::Route.new(path, controller, &block) }
 			end
 
 			# handles requests send by the HTTP Protocol (HTTPRequest objects)
@@ -72,7 +74,7 @@ module Plezi
 				begin
 					host = get_host(request[:host_name].to_s.downcase) || @hosts[:default]
 					return false unless host
-					request.io[:params] = host.params
+					request[:host_settings] = host.params
 					# render any assets?
 					return true if render_assets request, response, host.params
 					# send static file, if exists and root is set.
@@ -80,10 +82,10 @@ module Plezi
 					# return if a route answered the request
 					host.routes.each {|r| a = r.on_request(request, response); return a if a}
 					#return error code or 404 not found
-					return Base::HTTPSender.send_by_code request, response, 404 unless request[:io].params[:http_handler] == ::GRHttp::Base::Rack
+					return Base::HTTPSender.send_by_code request, response, 404 unless ( @avoid_404 ||= ( Iodine::Http.on_http == ::Iodine::Http::Rack ? 1 : 0 ) ) == 1
 				rescue => e				
 					# return 500 internal server error.
-					GReactor.error e
+					Iodine.error e
 					Base::HTTPSender.send_by_code request, response, 500
 				end
 			end
@@ -135,7 +137,9 @@ module Plezi
 				# return false if an asset couldn't be rendered and wasn't found.
 				return false
 			end
-
+			extend self
 		end
+		Iodine::Http.on_http ::Plezi::Base::HTTPRouter
+		Iodine::Http.on_websocket ::Plezi::Base::HTTPRouter.upgrade_proc
 	end
 end
