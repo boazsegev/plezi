@@ -177,7 +177,12 @@ module Plezi
 				options[:type] ||= 'html'.freeze
 				options[:locale] ||= params[:locale].to_sym if params[:locale]
 				#update content-type header
-				response['content-type'] ||= "#{MimeTypeHelper::MIME_DICTIONARY[".#{options[:type]}".freeze]}; charset=utf-8".freeze
+				case options[:type]
+				when 'html', 'js', 'txt'
+					response['content-type'] ||= "#{MimeTypeHelper::MIME_DICTIONARY[".#{options[:type]}".freeze]}; charset=utf-8".freeze
+				else
+					response['content-type'] ||= "#{MimeTypeHelper::MIME_DICTIONARY[".#{options[:type]}".freeze]}".freeze
+				end
 				# Circumvents I18n persistance issues (live updating and thread data storage).
 				I18n.locale = options[:locale] || I18n.default_locale if defined?(I18n) # sets the locale to nil for default behavior even if the locale was set by a previous action - removed: # && options[:locale]
 				# find template and create template object

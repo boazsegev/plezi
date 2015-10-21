@@ -60,16 +60,20 @@ module Plezi
 	#
 	# The server will not be initiatet and instead you will be able to use Plezi controllers and the Redis auto-config
 	# to broadcast Plezi messages to other Plezi processes - allowing for scalable intigration of Plezi into other frameworks.
-	def start_placebo
+	def start_placebo receiver = nil
 		# force start Iodine only if Iodine isn't used as the server
 		if ::Iodine.protocol == ::Iodine::Http && (defined?(::Rack) ? (::Rack::Handler.default == ::Iodine::Http::Rack) : true)
 			# Iodine.info("`start_placebo` is called while using the Iodine server. `start_placebo` directive being ignored.")
 			return false
 		end
-		redis # make sure the redis connection is activated
-		puts "* Plezi #{Plezi::VERSION} Services will start with no Server...\n"
-		::Iodine.protocol = :no_server
-		Iodine.force_start!
+		unless @placebo_initialized
+			raise "Placebo fatal error: Redis connection failed to load - make sure gem is required and `ENV['PL_REDIS_URL']` is set." unless redis # make sure the redis connection is activated
+			puts "* Plezi #{Plezi::VERSION} Services will start with no Server...\n"
+			::Iodine.protocol = :no_server
+			Iodine.force_start!
+			@placebo_initialized = true
+		end
+		Plezi::Placebo.new receiver if receiver
 	end
 end
 
