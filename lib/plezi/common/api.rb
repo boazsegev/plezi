@@ -56,10 +56,10 @@ module Plezi
 		::Plezi::Base::HTTPRouter.add_host host_name, params
 	end
 
-	# This allows you to use the Plezi framework's code inside another framework - WITHOUT running the actual server.
+	# This allows you to use the Plezi framework's code inside your existing Rack application - WITHOUT running the actual server.
 	#
 	# The server will not be initiatet and instead you will be able to use Plezi controllers and the Redis auto-config
-	# to broadcast Plezi messages to other Plezi processes - allowing for scalable intigration of Plezi into other frameworks.
+	# to broadcast Plezi messages to other Plezi processes - allowing for scalable intigration of Plezi into existing Rack applications.
 	def start_placebo receiver = nil
 		# force start Iodine only if Iodine isn't used as the server
 		if ::Iodine.protocol == ::Iodine::Http && (defined?(::Rack) ? (::Rack::Handler.default == ::Iodine::Http::Rack) : true)
