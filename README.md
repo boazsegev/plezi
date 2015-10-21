@@ -175,6 +175,7 @@ require './my_plezi_app/routes.rb'
 
 # # Make sure the following is already in your 'my_plezi_app/environment.rb' file:
 # ENV['PL_REDIS_URL'] = "redis://username:password@my.host:6379"
+# Plezi::Settings.redis_channel_name = 'unique_channel_name_for_app_b24270e2'
 
 Plezi.start_placebo
 ```
@@ -221,7 +222,7 @@ class MyReciever
         # your app's logic
     end
 end
-Plezi::Placebo.new MyReciever
+Plezi.start_placebo MyReciever
 ```
 
 Plezi will now take your class and add mimick an IO connection (the Placebo connection) on it's Iodine serever. This Placebo connection will answer the Redis broadcasts just as if your class was a websocket controller...
@@ -252,7 +253,7 @@ class MyReciever
     end
 end
 
-pl = Plezi::Placebo.new MyReciever
+pl = Plezi.start_placebo MyReciever
 
 Plezi.redis_connection.set 'MainUUIDs', pl.uuid
 
@@ -272,7 +273,7 @@ end
 
 ## Native HTTP streaming with Asynchronous events
 
-Plezi comes with native HTTP streaming support, alowing you to use Plezi Events and Timers to send an Asynchronous response.
+Plezi comes with native HTTP streaming support (Http will use chuncked encoding unless experimental Http/2 is in use), alowing you to use Plezi Events and Timers to send an Asynchronous response.
 
 Let's make the classic 'Hello World' use HTTP Streaming:
 

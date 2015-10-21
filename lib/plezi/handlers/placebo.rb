@@ -3,15 +3,27 @@ module Plezi
 	# This API wil allows you to listen to Websocket Broadcasts sent to any object and to accept unicasts
 	# even when NOT connected to a websocket.
 	#
-	# Simpley create a class to handle any events and call `Plezi::Placebo.new ClassName` :
+	# Simpley create a class to handle any events and call `Plezi::Placebo.new ClassName` or use the {Plezi.start_placebo} shortcut:
 	#
-	#       class MyListener
-	#          def _my_method_name *args
-	#             #logic
-	#          end
-	#       end
+	#        # Important: set up a unique - but shared - main redis channel for BOTH Apps (The Plezi and the Placebo).
+	#        Plezi::Settings.redis_channel_name = 'unique_channel_name_for_app_b24270e2'
+	#        # Important: set Plezi's auo-Redis pub/sub server.
+	#        ENV['PL_REDIS_URL'] ||=  "redis://redis:password@redis.server.com:9999"
 	#
-	#       Plezi::Placebo.new MyListener
+	#        # create the Placebo bridge handler
+	#        class PleziBridge
+	#        	def on_open
+	#        		multicast :print, "Hello from Placebo!"
+	#        	end
+	#        	def print data
+	#        		Iodine.info "Placebo message: #{data}"
+	#        		puts "Placebo message: #{data}"
+	#        	end
+	#        end
+	#
+	#        # initiate Placebo mode using the bridge class. it's possible to create multiple
+	#        # it's possible to create multiple bridge classes this way.
+	#        Plezi.start_placebo(PleziBridge)
 	#
 	# A new instance will be created and that instance will answer any broadcasts, for ALL possible
 	# Plezi controllers, as long as it had a method defined that is capable to handle the broadcast.
