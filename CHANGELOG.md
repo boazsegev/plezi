@@ -18,6 +18,8 @@ Change log v.0.12.0 - API changes (throwing out dead code)
 
 **API changes**: Along with moving to a single server Iodine module, `listen` had been deprecated in favor of a simpler API, as well as many other helpers that were acting as dead-code.
 
+**Fix**: Along with switching to Iodine, certain server related issues were fixed (such as String and Symbol cookies with unexpected behavior).
+
 ***
 
 Change log v.0.11.2
