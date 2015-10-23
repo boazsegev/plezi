@@ -38,7 +38,7 @@ module Plezi
 			@hosts = {}
 			@active_host = nil
 
-			# adds a host to the router (or activates an existing host to add new routes). accepts a host name and any parameters not related to the actual connection (ssl etc') (see {Plezi.listen})
+			# adds a host to the router (or activates an existing host to add new routes). accepts a host name and any parameters not related to the actual connection (ssl etc') (see {Plezi.host})
 			def add_host host_name, params = {}
 				params[:index_file] ||= 'index.html'
 				params[:assets_public] ||= '/assets'

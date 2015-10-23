@@ -14,6 +14,8 @@ Logging is based on the standard Ruby `Logger`, and replaceing the default logge
 
 ```ruby
 Iodine.logger = Logger.new filename
+# # the same can be done using Plezi.logger, which automatically defers to Iodine.logger
+# Plezi.logger = Logger.new filename
 ```
 
 

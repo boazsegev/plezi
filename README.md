@@ -47,7 +47,7 @@ If you're on MacOS or linux you can simply double click the `appname` script fil
 
 now go, in your browser, to: [http://localhost:3000/](http://localhost:3000/)
 
-the default first port for the app is 3000. you can set the first port to listen to by using the `-p ` option (make sure you have permissions for the requested port):
+the default port for the app is 3000. you can set the port to listen to by using the `-p ` option (make sure you have permissions for the requested port):
 
     $ ./appname -p 80
 
@@ -67,7 +67,12 @@ Here is a Hello World using a Controller class (run in `irb`):
             end
         end
 
-        listen
+        # use the host method to set up any specific host options:
+        host :default,
+              public: File.join('my', 'public', 'folder'),
+              templates: File.join('my', 'template', 'folder')
+
+
         route '*' , Controller
 
         exit # Plezi will autostart once you exit irb.
@@ -115,8 +120,6 @@ Remember to connect to the service from at least two browser windows - to truly 
             'I made this :)'
         end
     end
-
-    listen 
 
     route '/', BroadcastCtrl
 ```
@@ -291,7 +294,6 @@ Let's make the classic 'Hello World' use HTTP Streaming:
             end
         end
 
-        listen
         route '*' , Controller
 ```
 
@@ -308,7 +310,6 @@ Plezi supports magic routes, in similar formats found in other systems, such as:
 Plezi assummes all simple routes to be RESTful routes with the parameter `:id` ( `"/user" == "/user/(:id)"` ).
 
     require 'plezi'
-    listen
 
     # this route demos a route for listing/showing posts,
     # with or without revision numbers or page-control....
@@ -327,8 +328,8 @@ now visit:
 Plezi can be used to create virtual hosts for the same service, allowing you to handle different domains and subdomains with one app:
 
     require 'plezi'
-    listen
-    host 'localhost', alias: 'localhost2'
+
+    host 'localhost', alias: 'localhost2', public: File.join('my', 'public', 'folder')
 
     shared_route '/humans.txt' do |req, res|
         res << "we are people - shared by all routes."
@@ -436,8 +437,6 @@ By using a route with the a 'false' controller, the parameters extracted are aut
         end
     end
 
-    listen
-
     # this is our re-write route.
     # it will extract the locale and re-write the request.
     route '/:locale{fr|en}/*', false
@@ -500,8 +499,6 @@ and and other OAuth2 authentication service. For example:
                     profile_url: "https://graph.facebook.com/v2.3/me",
                     scope: "public_profile,email") if ENV['FB_APP_ID'] && ENV['FB_APP_SECRET']
 
-
-    listen
 
     create_auth_shared_route do |service_name, token, remote_user_id, remote_user_email, remote_response|
         # we will create a temporary cookie storing a login message. replace this code with your app's logic

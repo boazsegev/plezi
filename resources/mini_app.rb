@@ -60,8 +60,7 @@ class MyController
 end
 
 
-# start a web service to listen on the first default port (3000 or the port set by the command-line).
-# you can change some of the default settings here.
+# change some of the default settings here.
 host :default,
 		assets: Root.join('assets').to_s,
 		templates: Root.join('templates').to_s,

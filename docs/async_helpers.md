@@ -49,7 +49,6 @@ class MyController
     end
 end
 
-listen
 route '/', MyController
 
 exit
@@ -75,7 +74,6 @@ class MyController
     end
 end
 
-listen
 route '/', MyController
 
 exit
@@ -108,7 +106,7 @@ exit
 
 ### The Asynchronous "Queue"
 
-`Iodine` is built with miplicity in mind, making the programmer happy. With this in mind, Iodine offers a single and simple method that allow us to easily queue code execution.
+`Iodine`'s core is built with simplicity in mind, making the programmer happy. With this in mind, Iodine offers a single and simple method that allow us to easily queue code execution.
 
 
 #### `Iodine.run(arg1, arg2, arg3...) {block}`
@@ -122,7 +120,8 @@ require 'plezi'
 
 class MyController
     def index
-        Iodine.run(Time.now) {|t| puts "Someone poked me at: #{t}" } # maybe send an email?
+        # Plezi.run automatically defers to Iodine.run
+        Plezi.run(Time.now) {|t| puts "Someone poked me at: #{t}" } # maybe send an email?
         "Hello World"
     end
 end
@@ -172,7 +171,8 @@ require 'plezi'
 class MyController
     def index
         counter = 0
-        Iodine.run_every(1, "Counting: %i") do |str, timer|
+        # Plezi.run_every automatically defers to Iodine.run_every
+        Plezi.run_every(1, "Counting: %i") do |str, timer|
             counter +=1
             puts(str % counter)
             timer.stop! if counter >= 3
@@ -220,6 +220,7 @@ require 'plezi'
 class MyController
     def index
         counter = 0
+        # Plezi.run_after automatically defers to Iodine.run_after
         Iodine.run_after(1, "Counting: %i") do |str, timer|
             counter +=1
             puts(str % counter)

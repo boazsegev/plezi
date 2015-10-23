@@ -56,7 +56,7 @@ module Plezi
 			# these cookies will live for one successful request to a Controller and will then be removed.
 			attr_reader :flash
 
-			# the parameters used to create the host (the parameters passed to the `listen` / `add_service` call).
+			# the parameters used to create the host (the parameters passed to the `Plezi.host`).
 			attr_reader :host_params
 
 			# this method does two things.

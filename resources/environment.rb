@@ -41,8 +41,7 @@ Dir[File.join "{lib}", "**" , "*.rb"].each {|file| load File.expand_path(file)}
 # load all application files
 Dir[File.join "{app}", "**" , "*.rb"].each {|file| load File.expand_path(file)}
 
-# start a web service to listen on the first default port (3000 or the port set by the command-line).
-# you can change some of the default settings here.
+# change some of the default settings here.
 host :default,
 		public: Root.join('public').to_s,
 		assets: Root.join('assets').to_s,
