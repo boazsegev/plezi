@@ -169,7 +169,7 @@ module PleziTestTasks
 		true
 	end
 	def test_sleep
-		Plezi.run_async do
+		Plezi.run do
 			begin
 				puts "    * Sleeper test: #{RESULTS[URI.parse("http://localhost:3000/sleeper").read == 'slept']}"
 				puts "    * ASync tasks test: #{RESULTS[true]}"
@@ -467,7 +467,7 @@ end
 Plezi.threads = 9
 PL.logger = nil
 
-Plezi.run_async do
+Plezi.run do
 
 	puts "    --- Plezi #{Plezi::VERSION} will start a server, performing some tests."
 	puts "    --- Starting tests"

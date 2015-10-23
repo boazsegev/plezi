@@ -158,12 +158,13 @@ Next, add the `plezi` gem to your `Gemfile` and add the following line somewhere
 
 ```ruby
 require './appname/appname.rb'
-Plezi.start_rack
 ```
 
 That's it! Now you can use the Plezi API and your existing application's API at the same time and they are both running on the same server.
 
 Plezi's routes will be attempted first, so that your app can keep handling the 404 (not found) error page.
+
+\* just remember to remove any existing servers, such as `thin` of `puma` from your gemfile, otherwise they might take precedence over Plezi's choice of server (Iodine).
 
 ### The Plezi Placebo API - talking from afar
 

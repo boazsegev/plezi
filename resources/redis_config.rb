@@ -35,7 +35,7 @@ if defined? Redis
 	# 		on.message do |channel, msg|
 	# 			msg = JSON.parse(msg)
 	# 			# do stuff, i.e.:
-	# 			# Plezi.run_async(msg) { |m| Plezi.info m.to_s }
+	# 			# Plezi.run(msg) { |m| Plezi.info m.to_s }
 	# 		end
 	# 	end
 	# end
