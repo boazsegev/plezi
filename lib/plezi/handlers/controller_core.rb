@@ -16,7 +16,7 @@ module Plezi
 					@request = request
 					@params = request.params
 					@flash = response.flash
-					@host_params = request.io[:params]
+					@host_params = request[:host_settings]
 					@response = response
 					@cookies = request.cookies
 					# # \@response["content-type"] ||= ::Plezi.default_content_type
@@ -43,25 +43,19 @@ module Plezi
 					return self
 				end
 				# handles websocket opening.
-				def on_open ws
-					# # set broadcasts and return true
-					# @response = ws
-					# # create the redis connection (in case this in the first instance of this class)
-					# Plezi.redis
+				def on_open
 					super() if defined?(super)
 				end
 				# handles websocket messages.
-				def on_message ws
-					super(ws.data) if defined?(super)
+				def on_message data
+					super if defined?(super)
 				end
 				# handles websocket being closed.
-				def on_close ws
-					super() if defined? super
+				def on_close
+					super if defined? super
 				end
 
 				# Inner Routing
-				#
-				#
 				def _route_path_to_methods_and_set_the_response_
 					#run :before filter
 					return false if self.class.has_method?(:before) && self.before == false 

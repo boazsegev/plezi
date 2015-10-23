@@ -18,7 +18,7 @@ module Plezi
 			# sends a response for an error code, rendering the relevent file (if exists).
 			def send_by_code request, response, code, headers = {}
 				begin
-					base_code_path = request.io.params[:templates] || File.expand_path('.')
+					base_code_path = request[:host_settings][:templates] || File.expand_path('.')
 					fn = File.join(base_code_path, "#{code}.html")
 					rendered = ::Plezi::Renderer.render fn, binding #CodeContext.new(request)
 					return send_raw_data request, response, rendered, 'text/html', code, headers if rendered
@@ -34,14 +34,14 @@ module Plezi
 			#
 			# returns true if data was sent.
 			def send_static_file request, response
-				root = request.io[:params][:public]
+				root = request[:host_settings][:public]
 				return false unless root
 				file_requested = request[:path].to_s.split('/')
 				unless file_requested.include? '..'
 					file_requested.shift
 					file_requested = File.join(root, *file_requested)
 					return true if send_file request, response, file_requested
-					return send_file request, response, File.join(file_requested, request.io[:params][:index_file])
+					return send_file request, response, File.join(file_requested, request[:host_settings][:index_file])
 				end
 				false
 			end

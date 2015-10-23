@@ -24,19 +24,18 @@ module Plezi
 										next if data[:server] == Plezi::Settings.uuid
 										data[:type] = Object.const_get(data[:type]) unless data[:type].nil? || data[:type] == :all
 										if data[:target]
-											# GRHttp::Base::Websockets.unicast data[:target], data
-											data[:type].___faild_unicast( data ) unless GRHttp::Base::Websockets.unicast data[:target], data
+											data[:type].___faild_unicast( data ) unless Iodine::Http::Websockets.unicast data[:target], data
 										else
-											GRHttp::Base::Websockets.broadcast data
+											Iodine::Http::Websockets.broadcast data
 										end
 									rescue => e
-										GReactor.error "The following could be a security breach attempt:"
-										GReactor.error e
+										Iodine.error "The following could be a security breach attempt:"
+										Iodine.error e
 									end
 								end
 							end
 						rescue => e
-							GReactor.error e
+							Iodine.error e
 							retry
 						end
 					end

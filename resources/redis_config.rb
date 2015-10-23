@@ -10,8 +10,10 @@ if defined? Redis
 	# ## Sets up Plezi to use Radis broadcast.
 	# ##
 	# ## If Plezi Redis Automation is enabled:
-	# ## Plezi creates is own listening thread for each Controller class that broadcasts using Redis.
+	# ## Plezi creates is own listening thread that listens for each Controller class that broadcasts using Redis.
 	# ## (using the Controller.redis_connection and Controller.redis_channel_name class methods)
+	# ##
+	# ## Only one thread will be created and initiated during startup (dynamically created controller routes might be ignored).
 	# ##
 	# ## this overrides the default Controller#broadcast method which is very powerful but
 	# ## is limited to one process.
@@ -33,7 +35,7 @@ if defined? Redis
 	# 		on.message do |channel, msg|
 	# 			msg = JSON.parse(msg)
 	# 			# do stuff, i.e.:
-	# 			# Plezi.run_async(msg) { |m| Plezi.info m.to_s }
+	# 			# Plezi.run(msg) { |m| Plezi.info m.to_s }
 	# 		end
 	# 	end
 	# end

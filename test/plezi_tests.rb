@@ -104,7 +104,7 @@ class TestCtrl
 	## WebSockets
 
 	def fail_unicast
-		unicast (params[:uuid] || (SecureRandom.uuid + Plezi::Settings.uuid)), :psedo, "agrument1"
+		unicast (params[:uuid] || (Plezi::Settings.uuid + SecureRandom.hex(12))), :psedo, "agrument1"
 		"Sent a psedo unicast... It should fail."
 	end
 
@@ -169,7 +169,7 @@ module PleziTestTasks
 		true
 	end
 	def test_sleep
-		Plezi.run_async do
+		Plezi.run do
 			begin
 				puts "    * Sleeper test: #{RESULTS[URI.parse("http://localhost:3000/sleeper").read == 'slept']}"
 				puts "    * ASync tasks test: #{RESULTS[true]}"
@@ -188,16 +188,18 @@ module PleziTestTasks
 			puts e
 		end
 	end
-	def test_ssl
-		puts "    * Connection to non-ssl and unique route test: #{RESULTS[URI.parse("http://localhost:3000/ssl").read == 'false']}"
-		uri = URI.parse("https://localhost:3030/ssl")
-		Net::HTTP.start(uri.host, uri.port, use_ssl: (uri.scheme == "https"), verify_mode: OpenSSL::SSL::VERIFY_NONE) do |http|
-			puts "    * Connection to ssl and unique ssl route test: #{RESULTS[ http.request(Net::HTTP::Get.new(uri)).body == 'true' ]}"
-		end
-		rescue => e
-		puts "    **** SSL Tests FAILED to complete!!!"
-		puts e
-	end
+	# # Starting with Iodine, Plezi can listen only to one port at a time, either SSL or NOT.
+	# def test_ssl
+	# 	puts "    * Connection to non-ssl and unique route test: #{RESULTS[URI.parse("http://localhost:3000/ssl").read == 'false']}"
+	# 	uri = URI.parse("https://localhost:3030/ssl")
+	# 	Net::HTTP.start(uri.host, uri.port, use_ssl: (uri.scheme == "https"), verify_mode: OpenSSL::SSL::VERIFY_NONE) do |http|
+	# 		puts "    * Connection to ssl and unique ssl route test: #{RESULTS[ http.request(Net::HTTP::Get.new(uri)).body == 'true' ]}"
+	# 	end
+	# 	rescue => e
+	# 	puts "    **** SSL Tests FAILED to complete!!!"
+	# 	puts e
+	# end
+
 	def test_new
 		puts "    * New RESTful path test: #{RESULTS[URI.parse("http://localhost:3000/new").read == 'new']}"
 
@@ -253,7 +255,7 @@ module PleziTestTasks
 	end
 	def test_placebo
 		puts "    * Starting placebo tests..."
-		ws = GRHttp::WSClient.connect_to("ws://localhost:3000/ws/placebo") {|ws| 'ME?'}
+		ws = Iodine::Http::WebsocketClient.connect("ws://localhost:3000/ws/placebo") {|ws| 'ME?'}
 		ws << "    * Placebo WS connected."
 		sleep 2
 		ws.close
@@ -264,54 +266,53 @@ module PleziTestTasks
 	def test_websocket
 		connection_test = broadcast_test = echo_test = unicast_test = false
 		begin
-			ws4 = GRHttp::WSClient.connect_to("wss://localhost:3030") do |ws|
-				if ws.data == "unicast"
+			ws4 = Iodine::Http::WebsocketClient.connect("ws://localhost:3000") do |data|
+				if data == "unicast"
 					puts "    * Websocket unicast testing: #{RESULTS[false]}"
 					unicast_test = :failed
 				end
 			end
-			ws2 = GRHttp::WSClient.connect_to("wss://localhost:3030") do |ws|
-				next unless @is_connected || !(@is_connected = true)
-				if ws.data == "unicast"
+			ws2 = Iodine::Http::WebsocketClient.connect("ws://localhost:3000") do |data|
+				next unless @is_connected || !( (@is_connected = true) )
+				if data == "unicast"
 					puts "    * Websocket unicast message test: #{RESULTS[false]}"
 					unicast_test = :failed
 					next
 				else
-					puts "    * Websocket broadcast message test: #{RESULTS[broadcast_test = (ws.data == 'echo test')]}"
+					puts "    * Websocket broadcast message test: #{RESULTS[broadcast_test = (data == 'echo test')]}"
 					go_test = false
 				end
 			end
-			ws3 = GRHttp::WSClient.connect_to("ws://localhost:3000") do |ws|
-				if ws.data.match /uuid: ([^s]*)/
-					ws2 << "to: #{ws.data.match(/^uuid: ([^s]*)/)[1]}"
-					puts "    * Websocket UUID for unicast testing: #{ws.data.match(/^uuid: ([^s]*)/)[1]}"
-				elsif ws.data == "unicast"
+			ws3 = Iodine::Http::WebsocketClient.connect("ws://localhost:3000", on_open: -> { write 'get uuid' } ) do |data|
+				if data.match /uuid: ([^s]*)/
+					ws2 << "to: #{data.match(/^uuid: ([^s]*)/)[1]}"
+					puts "    * Websocket UUID for unicast testing: #{data.match(/^uuid: ([^s]*)/)[1]}"
+				elsif data == "unicast"
 					puts "    * Websocket unicast testing: #{RESULTS[:waiting]}"
 					unicast_test ||= true
 				end
 			end
-			ws3 << 'get uuid'
-			puts "    * Websocket SSL client test: #{RESULTS[ws2 && true]}"
-			ws1 = GRHttp::WSClient.connect_to("ws://localhost:3000") do |ws|
+			puts "    * Websocket client test: #{RESULTS[ws2 && true]}"
+			ws1 = Iodine::Http::WebsocketClient.connect("ws://localhost:3000") do |data|
 				unless @connected
-					puts "    * Websocket connection message test: #{RESULTS[connection_test = (ws.data == 'connected')]}"
+					puts "    * Websocket connection message test: #{RESULTS[connection_test = (data == 'connected')]}"
 					@connected = true
-					response << "echo test"
+					write "echo test"
 					next
 				end
-				if ws.data == "unicast"
+				if data == "unicast"
 					puts "    * Websocket unicast testing: #{RESULTS[false]}"
 					unicast_test = :failed
 					next
 				end
-				puts "    * Websocket echo message test: #{RESULTS[echo_test = (ws.data == 'echo test')]}"
+				puts "    * Websocket echo message test: #{RESULTS[echo_test = (data == 'echo test')]}"
 			end
 			
 		rescue => e
 			puts "    **** Websocket tests FAILED TO RUN!!!"
 			puts e.message
 		end
-		remote = GRHttp::WSClient.connect_to("wss://echo.websocket.org/") {|ws| puts "    * Extra Websocket Remote test (SSL: echo.websocket.org): #{RESULTS[ws.data == 'Hello websockets!']}"; response.close}
+		remote = Iodine::Http::WebsocketClient.connect("wss://echo.websocket.org/") {|data| puts "    * Extra Websocket Remote test (SSL: echo.websocket.org): #{RESULTS[data == 'Hello websockets!']}"; close}
 		if remote.closed?
 			puts "    * Extra Websocket Remote test (SSL: echo.websocket.org): #{RESULTS[false]}"
 		else
@@ -326,13 +327,12 @@ module PleziTestTasks
 	end
 	def test_websocket_sizes
 			should_disconnect = false
-			ws = GRHttp::WSClient.connect_to("ws://localhost:3000/ws/size") do |ws|
+			ws = Iodine::Http::WebsocketClient.connect("ws://localhost:3000/ws/size") do |data|
 				if should_disconnect
 					puts "    * Websocket size disconnection test: #{RESULTS[false]}"
 				else
-					puts "    * Websocket message size test: got #{ws.data.bytesize} bytes"
+					puts "    * Websocket message size test: got #{data.bytesize} bytes"
 				end
-
 			end
 			ws.on_close do
 				puts "    * Websocket size disconnection test: #{RESULTS[should_disconnect]}"
@@ -344,14 +344,16 @@ module PleziTestTasks
 			to_sleep = (Time.now - time_now)*2 + 1
 			puts "will now sleep for #{to_sleep} seconds, waiting allowing the server to respond"
 			sleep to_sleep rescue true
-			should_disconnect = true
 			Plezi::Settings.ws_message_size_limit = 1024
+			should_disconnect = true
 			ws << ('0123'*258)
+			sleep 0.3
+			should_disconnect = false
 	end
 	def test_broadcast_stress
 		PlaceboStressTestCtrl.create_listeners
 		PlaceboStressTestCtrl.run_test
-		PlaceboStressTestCtrl.unicast ($failed_uuid = SecureRandom.uuid + Plezi::Settings.uuid), :review
+		PlaceboStressTestCtrl.unicast ($failed_uuid = Plezi::Settings.uuid + PlaceboStressTestCtrl.object_id.to_s(16) ), :review
 	end
 	def test_404
 		puts "    * 404 not found and router continuity tests: #{RESULTS[ Net::HTTP.get_response(URI.parse "http://localhost:3000/get404" ).code == '404' ]}"
@@ -360,19 +362,12 @@ module PleziTestTasks
 		puts "    **** 404 not found test FAILED TO RUN!!!"
 		puts e
 	end
-	# def test_500
-	# 	workers = GReactor.instance_exec {@threads.select {|t| t.alive?} .count}
-	# 	print "    * 500 internal error test: #{RESULTS[ Net::HTTP.get_response(URI.parse "http://localhost:3000/fail" ).code == '500' ]}"
-	# 	# cause 10 more exceptions to be raised... testing thread survival.
-	# 	10.times { putc "."; Net::HTTP.get_response(URI.parse "http://localhost:3000/fail" ).code }
-	# 	putc "\n"
-	# 	workers_after_test = GReactor.instance_exec {@threads.select {|t| t.alive?} .count}
-	# 	puts "    * Worker survival test: #{RESULTS[workers_after_test == workers]} (#{workers_after_test} out of #{workers})"
-
-	# 	rescue => e
-	# 	puts "    **** 500 internal error test FAILED TO RUN!!!"
-	# 	puts e
-	# end
+	def test_500
+		puts "    * 500 internal error test: #{RESULTS[ Net::HTTP.get_response(URI.parse "http://localhost:3000/fail" ).code == '500' ]}"
+		rescue => e
+		puts "    **** 500 internal error test FAILED TO RUN!!!"
+		puts e
+	end
 end
 
 class PlaceboTestCtrl
@@ -438,26 +433,18 @@ class PlaceboStressTestCtrl
 	def self.create_listeners
 		@uuid = nil
 		LISTENERS.times { @uuid = Plezi::Placebo.new(PlaceboStressTestCtrl).uuid }
-		sleep 0.5 # GReactor only registers new IO objects during it's next "tick".
-		puts "    * Placebo creation test: #{PleziTestTasks::RESULTS[ GReactor.each.count >= LISTENERS ] }"
+		sleep 0.5
+		puts "    * Placebo creation test: #{PleziTestTasks::RESULTS[ Iodine.to_a.length >= LISTENERS ] }"
 	end
 	REPEATS = 1000
 	LISTENERS = 100
 end
 
-listen port: 3000
-
-route("/ssl") {|req, res| res << "false" }
-listen port: 3030, ssl: true
-route("/ssl") {|req, res| res << "true" }
+host
 
 shared_route 'ws/no', Nothing
 shared_route 'ws/placebo', PlaceboTestCtrl
 shared_route 'ws/size', WSsizeTestCtrl
-
-
-# puts Nothing.ancestors.join "\n"
-
 shared_route '/some/:multi{path|another_path}/(:option){route|test}/(:id)/(:optional)', TestCtrl
 shared_route '/', TestCtrl
 
@@ -471,44 +458,30 @@ mem_print_proc = Proc.new do
 end
 # puts ("\n\n*** GC.stat:\n" + ((GC.stat.merge ObjectSpace.count_objects_size).to_a.map {|i| i.join ': '} .join "\n"))
 # mem_print_proc.call
-# GR.run_every 30, &mem_print_proc
-
-
-
-
-puts "    --- Plezi will ran async, performing some tests that than hang"
-
-puts "    --- Starting tests"
-puts "    --- Plezi #{Plezi::VERSION} using GRHttp #{GRHttp::VERSION} and GReactor #{GReactor::VERSION}."
-puts "    --- Failed tests should read: #{PleziTestTasks::RESULTS[false]}"
-
-r = Plezi::Placebo.new PlaceboCtrl
-puts "    * Create Placebo test: #{PleziTestTasks::RESULTS[r && true]}"
-puts "    * Placebo admists to being placebo: #{PleziTestTasks::RESULTS[PlaceboCtrl.placebo?]}"
-puts "    * Regular controller answers placebo: #{PleziTestTasks::RESULTS[!PlaceboTestCtrl.placebo?]}"
-
-PL.create_logger nil
-# PL::Settings.max_threads = 4
-
-Plezi.start_async
-PleziTestTasks.run_tests
+# Plezi.run_every 30, &mem_print_proc
 
 # require 'redis'
 # ENV['PL_REDIS_URL'] ||= ENV['REDIS_URL'] || ENV['REDISCLOUD_URL'] || ENV['REDISTOGO_URL'] || "redis://test:1234@pub-redis-11008.us-east-1-4.5.ec2.garantiadata.com:11008"
-# GReactor.forking 3
-# GR.run_async { PleziTestTasks.run_tests }
-# start_services
+# Plezi.processes = 3
 
-shoutdown_test = false
-Plezi.on_shutdown { shoutdown_test = true }
+Plezi.threads = 9
+PL.logger = nil
 
-puts "\n    --- Press ^C to complete tests."
-Plezi.start
-# Plezi::EventMachine.clear_timers
+Plezi.run do
 
-# sleep PLEZI_TEST_TIME if defined? PLEZI_TEST_TIME
+	puts "    --- Plezi #{Plezi::VERSION} will start a server, performing some tests."
+	puts "    --- Starting tests"
+	puts "    --- Failed tests should read: #{PleziTestTasks::RESULTS[false]}"
 
+	r = Plezi::Placebo.new PlaceboCtrl
+	puts "    * Create Placebo test: #{PleziTestTasks::RESULTS[r && true]}"
+	puts "    * Placebo admists to being placebo: #{PleziTestTasks::RESULTS[PlaceboCtrl.placebo?]}"
+	puts "    * Regular controller answers placebo: #{PleziTestTasks::RESULTS[!PlaceboTestCtrl.placebo?]}"
 
-puts "    * Shutdown test: #{ PleziTestTasks::RESULTS[shoutdown_test] }"
+	PleziTestTasks.run_tests
 
-
+	shoutdown_test = false
+	Plezi.on_shutdown { puts "    * Shutdown test: #{ PleziTestTasks::RESULTS[shoutdown_test] }" }
+	Plezi.on_shutdown { shoutdown_test = true }
+	
+end

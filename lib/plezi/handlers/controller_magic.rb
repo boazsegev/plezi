@@ -56,7 +56,7 @@ module Plezi
 			# these cookies will live for one successful request to a Controller and will then be removed.
 			attr_reader :flash
 
-			# the parameters used to create the host (the parameters passed to the `listen` / `add_service` call).
+			# the parameters used to create the host (the parameters passed to the `Plezi.host`).
 			attr_reader :host_params
 
 			# this method does two things.
@@ -79,7 +79,7 @@ module Plezi
 			#
 			def redirect_to url, options = {}
 				return super *[] if defined? super
-				raise 'Cannot redirect after headers were sent.' if response.is_a?(::GRHttp::WSEvent) || response.headers_sent?
+				raise 'Cannot redirect after headers were sent.' if response.headers_sent?
 				url = "#{request.base_url}/#{url.to_s.gsub('_', '/')}" if url.is_a?(Symbol) || ( url.is_a?(String) && url.empty? ) || url.nil?
 				# redirect
 				response.status = options.delete(:status) || 302
@@ -128,7 +128,7 @@ module Plezi
 			# filename:: sets a filename for the browser to "save as". defaults to empty.
 			#
 			def send_data data, options = {}
-				raise 'Cannot use "send_data" after headers were sent' if response.is_a?(::GRHttp::WSEvent) || response.headers_sent?
+				raise 'Cannot use "send_data" after headers were sent' if response.headers_sent?
 				Plezi.warn 'HTTP response buffer is cleared by `#send_data`' if response.body && response.body.any? && response.body.clear
 				response << data
 
@@ -177,7 +177,12 @@ module Plezi
 				options[:type] ||= 'html'.freeze
 				options[:locale] ||= params[:locale].to_sym if params[:locale]
 				#update content-type header
-				response['content-type'] ||= "#{MimeTypeHelper::MIME_DICTIONARY[".#{options[:type]}".freeze]}; charset=utf-8".freeze
+				case options[:type]
+				when 'html', 'js', 'txt'
+					response['content-type'] ||= "#{MimeTypeHelper::MIME_DICTIONARY[".#{options[:type]}".freeze]}; charset=utf-8".freeze
+				else
+					response['content-type'] ||= "#{MimeTypeHelper::MIME_DICTIONARY[".#{options[:type]}".freeze]}".freeze
+				end
 				# Circumvents I18n persistance issues (live updating and thread data storage).
 				I18n.locale = options[:locale] || I18n.default_locale if defined?(I18n) # sets the locale to nil for default behavior even if the locale was set by a previous action - removed: # && options[:locale]
 				# find template and create template object

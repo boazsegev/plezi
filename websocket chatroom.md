@@ -95,15 +95,13 @@ service_options = {
 }
 ```
 
-Next we call the `listen` command - this command actually creates the service.
+Next we call the `host` command - this command sets up some of the host options we will need, such as the templates folder. We will use only the main host for now (the catch-all main host is the `:default` host)
 
 The port plezi uses by default is either 3000 [http://localhost:3000/](http://localhost:3000/) or the port defined when calling the script (i.e. `./mychat.rb -p 8080`).
 
 ```ruby
-listen service_options
+host :default, service_options
 ```
-
-(if you want to force a specific port, i.e. 80, write `listen service_options.merge(port: 80)` - but make sure you are allowed to use this port)
 
 Last, but not least, we tell Plezi to connect the root of our web application to our ChatController - in other words, make sure the root _path_ ('/') is connected to the ChatController class.
 
@@ -486,7 +484,7 @@ service_options = {
 	ssl: false
 }
 
-listen service_options
+host :default, service_options
 
 # this routes the root of the application ('/') to our ChatController
 route '/:id', ChatController

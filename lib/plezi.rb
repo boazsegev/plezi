@@ -11,8 +11,8 @@ require 'yaml'
 require 'uri'
 require 'set'
 
-# GRHttp servet
-require 'grhttp'
+# Iodine server
+require 'iodine/http'
 
 
 ## erb templating
@@ -67,7 +67,6 @@ require 'plezi/handlers/session.rb'
 # For example, open your Ruby terminal (the `irb` command) and type:
 #
 #    require 'plezi'
-#    listen
 #    route "*", Plezi::StubRESTCtrl
 #    exit # will start the service.
 #
@@ -81,7 +80,6 @@ require 'plezi/handlers/session.rb'
 #          "Hello World!"
 #       end
 #    end
-#    listen
 #    route "*", MyController
 #
 #    exit # I'll stop writing this line every time.
@@ -92,7 +90,6 @@ require 'plezi/handlers/session.rb'
 # Plezi also accepts an optional block instead of the conrtoller Class object for example:
 #
 #    require 'plezi'
-#    listen
 #    route(/[.]*/) {|request, response| response << "Your request, master: #{request.path}."}
 #
 # As you may have noticed before, the catch-all route (/[.]*/) has a shortcut: '*'.
@@ -101,7 +98,6 @@ require 'plezi/handlers/session.rb'
 # accept an implied `params[:id]` variable. the following path ('/'):
 #
 #    require 'plezi'
-#    listen
 #    route "/", Plezi::StubWSCtrl
 #    # go to: http://localhost:3000/1
 #    # =>  Plezi::StubRESTCtrl.new.show() # where params[:id] == 1
@@ -111,7 +107,6 @@ require 'plezi/handlers/session.rb'
 # Routes are handled in the order they are created. If overlapping routes exist, the first will execute first:
 #
 #    require 'plezi'
-#    listen
 #    route('*') do |request, response|
 #       response << "Your request, master: #{request.path}." unless request.path.match /cats/
 #    end
@@ -133,9 +128,6 @@ require 'plezi/handlers/session.rb'
 #
 #    # a timer
 #    PL.run_after 2, -> {puts "this will wait 2 seconds to run... too late. for this example"}
-#
-#    # an asynchronous method call with an optional callback block
-#    PL.callback(Kernel, :puts, "Plezi will start eating our code once we exit terminal.") {puts 'first output finished'}
 #
 #    # remember to exit to make it all start
 #    exit

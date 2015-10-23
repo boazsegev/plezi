@@ -27,10 +27,9 @@ module Plezi
 			module InstanceMethods
 				public
 				# handles broadcasts / unicasts
-				def on_broadcast ws
-					data = ws.data
-					unless (data[:type] || data[:target]) && data[:method] && data[:data]
-						GReactor.warn "Broadcast message unknown... falling back on base broadcasting"
+				def on_broadcast data
+					unless data.is_a?(Hash) && (data[:type] || data[:target]) && data[:method] && data[:data]
+						Iodine.warn "Broadcast message unknown... falling back on base broadcasting"
 						return super(data) if defined? super
 						return false
 					end
@@ -75,10 +74,8 @@ module Plezi
 				# boadcasting object's event.
 				def uuid
 					return @uuid if @uuid
-					if @response && @response.is_a?(GRHttp::WSEvent)
-						return (@uuid ||= @response.uuid + Plezi::Settings.uuid)
-					elsif __get_io
-						return (@uuid ||=  @io.uuid + Plezi::Settings.uuid)
+					if __get_io
+						return (@uuid ||=  Plezi::Settings.uuid + @io.id)
 					end
 					nil
 				end
@@ -86,7 +83,7 @@ module Plezi
 
 				protected
 				def __get_io
-					@io ||= (@request ? @request.io : nil)
+					@io ||= (@request ? @request[:io] : nil)
 				end
 			end
 			module ClassMethods
@@ -164,7 +161,7 @@ module Plezi
 				def unicast target_uuid, method_name, *args
 					raise 'No target specified for unicasting!' unless target_uuid
 					@@uuid_cutoff ||= Plezi::Settings.uuid.length
-					_inner_broadcast method: method_name, data: args, target: target_uuid[0...@@uuid_cutoff], to_server: target_uuid[@@uuid_cutoff..-1], type: self
+					_inner_broadcast method: method_name, data: args, target: target_uuid[@@uuid_cutoff..-1], to_server: target_uuid[0...@@uuid_cutoff], type: self
 				end
 
 				# Use this to multicast an event to ALL websocket connections on EVERY controller, including Placebo controllers.
@@ -185,11 +182,11 @@ module Plezi
 				def _inner_broadcast data, ignore_io = nil
 					if data[:target]
 						if data[:target] && (data[:to_server] == Plezi::Settings.uuid )
-							return ( ::GRHttp::Base::Websockets.unicast( data[:target], data ) || ___faild_unicast( data ) )
+							return ( ::Iodine::Http::Websockets.unicast( data[:target], data ) || ___faild_unicast( data ) )
 						end
-						return ( data[:to_server].nil? && ::GRHttp::Base::Websockets.unicast(data[:target], data) ) || ( Plezi::Base::AutoRedis.away?(data[:to_server]) && ___faild_unicast( data ) ) || __inner_redis_broadcast(data)
+						return ( data[:to_server].nil? && ::Iodine::Http::Websockets.unicast(data[:target], data) ) || ( Plezi::Base::AutoRedis.away?(data[:to_server]) && ___faild_unicast( data ) ) || __inner_redis_broadcast(data)
 					else
-						::GRHttp::Base::Websockets.broadcast data, ignore_io
+						::Iodine::Http::Websockets.broadcast data, ignore_io
 						__inner_redis_broadcast data				
 					end
 					true
@@ -205,7 +202,7 @@ module Plezi
 				end
 
 				def ___faild_unicast data
-					has_class_method?(:failed_unicast) && failed_unicast( data[:target]+data[:to_server].to_s, data[:method], data[:data] )
+					has_class_method?(:failed_unicast) && failed_unicast( data[:to_server].to_s + data[:target], data[:method], data[:data] )
 					true
 				end
 

@@ -3,15 +3,27 @@ module Plezi
 	# This API wil allows you to listen to Websocket Broadcasts sent to any object and to accept unicasts
 	# even when NOT connected to a websocket.
 	#
-	# Simpley create a class to handle any events and call `Plezi::Placebo.new ClassName` :
+	# Simpley create a class to handle any events and call `Plezi::Placebo.new ClassName` or use the {Plezi.start_placebo} shortcut:
 	#
-	#       class MyListener
-	#          def _my_method_name *args
-	#             #logic
-	#          end
-	#       end
+	#        # Important: set up a unique - but shared - main redis channel for BOTH Apps (The Plezi and the Placebo).
+	#        Plezi::Settings.redis_channel_name = 'unique_channel_name_for_app_b24270e2'
+	#        # Important: set Plezi's auo-Redis pub/sub server.
+	#        ENV['PL_REDIS_URL'] ||=  "redis://redis:password@redis.server.com:9999"
 	#
-	#       Plezi::Placebo.new MyListener
+	#        # create the Placebo bridge handler
+	#        class PleziBridge
+	#        	def on_open
+	#        		multicast :print, "Hello from Placebo!"
+	#        	end
+	#        	def print data
+	#        		Iodine.info "Placebo message: #{data}"
+	#        		puts "Placebo message: #{data}"
+	#        	end
+	#        end
+	#
+	#        # initiate Placebo mode using the bridge class. it's possible to create multiple
+	#        # it's possible to create multiple bridge classes this way.
+	#        Plezi.start_placebo(PleziBridge)
 	#
 	# A new instance will be created and that instance will answer any broadcasts, for ALL possible
 	# Plezi controllers, as long as it had a method defined that is capable to handle the broadcast.
@@ -37,15 +49,17 @@ module Plezi
 				module InstanceMethods
 					public
 					attr_accessor :io
-					def initialize io
-						@io = io
-						@io[:websocket_handler] = self
+					def initialize io_in, io_out, request
+						@io_in = io_in
+						@io_out = io_out
+						@request = request
 						super()
 					end
-					# notice of disconnect
+					# Cleanup on disconnection
 					def on_close
+						io_out.close unless io_out.closed?
 						return super() if defined? super
-						GR.warn "Placebo #{self.class.superclass.name} disconnected. Ignore if this message appears during shutdown."
+						Iodine.warn "Placebo #{self.class.superclass.name} disconnected. Ignore if this message appears during shutdown."
 					end
 					def placebo?
 						true
@@ -60,26 +74,20 @@ module Plezi
 					end
 				end
 			end
-			class PlaceboIO < ::GReactor::BasicIO
-				def clear?
-					io.closed?
+			class PlaceboIO < ::Iodine::Http::Websockets
+				# emulate Iodine::Protocol#timeout?
+				def timeout? time
+					false
 				end
-				def call io
-					self.read
-					GR.warn "Placebo IO recieved IO signal - this is unexpected..."
+				# emulate Iodine::Protocol#call
+				def call
+					read
+					Iodine.warn "Placebo IO recieved IO signal - this is unexpected..."
 				end
-				def on_close c_io
-					@params[:out].close rescue nil
-					@cache[:websocket_handler].on_close if @cache[:websocket_handler]
+				# override "go_away"
+				def go_away
+					close
 				end
-				# Get's the websocket's unique identifier for unicast transmissions.
-				#
-				# This UUID is also used to make sure Radis broadcasts don't triger the
-				# boadcasting object's event.
-				def uuid
-					@pl_uuid ||= "#{super}#{Plezi::Settings.uuid}"
-				end
-				alias :unicast_id :uuid
 			end
 		end
 		module_function
@@ -94,19 +102,10 @@ module Plezi
 				Object.const_set(new_class_name, new_class)
 			end
 			i, o = IO.pipe
-			io = Placebo::Base::PlaceboIO.new i, out: o, timeout: false, handler: new_class, reactor: ::GReactor
-			# new_class.new(io)
+			req = {}
+			handler = new_class.new(i, o, req)
+			io = Placebo::Base::PlaceboIO.new i, handler, req
+			handler
 		end
 	end
 end
-
-
-# class A
-# def _hi
-# 'hi'
-# end
-# end
-# Plezi::Placebo.new A
-# a = nil
-# GReactor.each {|h| a= h}
-# a[:websocket_handler].on_broadcast GRHttp::WSEvent.new(nil, type: true, data: [], method: :_hi)

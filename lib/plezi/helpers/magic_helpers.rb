@@ -32,7 +32,7 @@ module Plezi
 				(str.to_s.gsub(/[^a-z0-9\*\.\_\-]/i) {|m| '%%%02x'.freeze % m.ord }).force_encoding(::Encoding::ASCII_8BIT)
 			end
 
-			# Adds paramaters to a Hash object, according to the GRHttp's server conventions.
+			# Adds paramaters to a Hash object, according to the Iodine's server conventions.
 			def self.add_param_to_hash name, value, target
 				begin
 					c = target
@@ -64,8 +64,8 @@ module Plezi
 					end
 					val
 				rescue => e
-					GReactor.error e
-					GReactor.error "(Silent): parameters parse error for #{name} ... maybe conflicts with a different set?"
+					Iodine.error e
+					Iodine.error "(Silent): parameters parse error for #{name} ... maybe conflicts with a different set?"
 					target[name] = val
 				end
 			end

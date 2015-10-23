@@ -10,9 +10,9 @@ With Plezi, you can easily:
 
 3. Create a full fledged Ruby web application, taking full advantage of RESTful routing, HTTP streaming and scalable Websocket features.
 
-Plezi leverages [GRHttp server's](https://github.com/boazsegev/GRHttp) new architecture. GRHttp is a pure Ruby HTTP and Websocket Generic Server built using [GReactor](https://github.com/boazsegev/GReactor) - a multi-threaded pure ruby alternative to EventMachine with basic process forking support (enjoy forking, if your code is scaling ready).
+Plezi leverages [Iodine's server](https://github.com/boazsegev/iodine) new architecture. Iodine is a pure Ruby HTTP and Websocket Server built using [Iodine's](https://github.com/boazsegev/iodine) core library - a multi-threaded pure ruby alternative to EventMachine with process forking support (enjoy forking, if your code is scaling ready).
 
-Plezi and GRHttp are written for Ruby versions 2.1.0 or greater (or API compatible variants). Version 2.2.3 is the currently recommended version.
+Plezi and Iodine are written for Ruby versions 2.1.0 or greater (or API compatible variants). Version 2.2.3 is the currently recommended version.
 
 ### Plezi version data
 [![Gem Version](https://badge.fury.io/rb/plezi.svg)](http://badge.fury.io/rb/plezi)
@@ -47,7 +47,7 @@ If you're on MacOS or linux you can simply double click the `appname` script fil
 
 now go, in your browser, to: [http://localhost:3000/](http://localhost:3000/)
 
-the default first port for the app is 3000. you can set the first port to listen to by using the `-p ` option (make sure you have permissions for the requested port):
+the default port for the app is 3000. you can set the port to listen to by using the `-p ` option (make sure you have permissions for the requested port):
 
     $ ./appname -p 80
 
@@ -67,7 +67,12 @@ Here is a Hello World using a Controller class (run in `irb`):
             end
         end
 
-        listen
+        # use the host method to set up any specific host options:
+        host :default,
+              public: File.join('my', 'public', 'folder'),
+              templates: File.join('my', 'template', 'folder')
+
+
         route '*' , Controller
 
         exit # Plezi will autostart once you exit irb.
@@ -76,7 +81,7 @@ Except while using WebSockets, returning a String will automatically add the str
 
 It's also possible to define a number of controllers for a similar route. The controllers will answer in the order in which the routes are defined (this allows to group code by logic instead of url).
 
-\* please read the demo code for Plezi::StubRESTCtrl and Plezi::StubWSCtrl to learn more. Also, read more about the [GRHttp Websocket and HTTP server](https://github.com/boazsegev/GRHttp) at the core of Plezi to get more information about the amazing [HTTPRequest](http://www.rubydoc.info/github/boazsegev/GRHttp/master/GRHttp/HTTPRequest) and [HTTPResponse](http://www.rubydoc.info/github/boazsegev/GRHttp/master/GRHttp/HTTPResponse) objects.
+\* please read the demo code for Plezi::StubRESTCtrl and Plezi::StubWSCtrl to learn more. Also, read more about the [Iodine's Websocket and HTTP server](https://github.com/boazsegev/iodine) at the core of Plezi to get more information about the amazing [Request](http://www.rubydoc.info/github/boazsegev/iodine/master/Iodine/Http/Request) and [Response](http://www.rubydoc.info/github/boazsegev/iodine/master/Iodine/Http/Response) objects.
 
 ## Native Websocket and Redis support
 
@@ -116,8 +121,6 @@ Remember to connect to the service from at least two browser windows - to truly 
         end
     end
 
-    listen 
-
     route '/', BroadcastCtrl
 ```
 
@@ -145,7 +148,7 @@ There are two easy ways to add Plezi websockets to your existing WebApp, dependi
 
 ### The super easy way - a Hybrid app
 
-The easiest way to add Plezi websockets to your existing application is to use [GRHttp's](https://github.com/boazsegev/GRHttp) Rack adapter to run your Rack app, while Plezi will use GRHttp's native features (such as Websockets and HTTP streaming).
+The easiest way to add Plezi websockets to your existing application is to use [Iodine's](https://github.com/boazsegev/iodine) Rack adapter to run your Rack app, while Plezi will use Iodine's native features (such as Websockets and HTTP streaming).
 
 You can eaither use your existing Plezi application or create a new mini plezi application inside your existing app folder using:
 
@@ -155,12 +158,13 @@ Next, add the `plezi` gem to your `Gemfile` and add the following line somewhere
 
 ```ruby
 require './appname/appname.rb'
-Plezi.start_rack
 ```
 
 That's it! Now you can use the Plezi API and your existing application's API at the same time and they are both running on the same server.
 
 Plezi's routes will be attempted first, so that your app can keep handling the 404 (not found) error page.
+
+\* just remember to remove any existing servers, such as `thin` of `puma` from your gemfile, otherwise they might take precedence over Plezi's choice of server (Iodine).
 
 ### The Plezi Placebo API - talking from afar
 
@@ -175,6 +179,7 @@ require './my_plezi_app/routes.rb'
 
 # # Make sure the following is already in your 'my_plezi_app/environment.rb' file:
 # ENV['PL_REDIS_URL'] = "redis://username:password@my.host:6379"
+# Plezi::Settings.redis_channel_name = 'unique_channel_name_for_app_b24270e2'
 
 Plezi.start_placebo
 ```
@@ -221,10 +226,10 @@ class MyReciever
         # your app's logic
     end
 end
-Plezi::Placebo.new MyReciever
+Plezi.start_placebo MyReciever
 ```
 
-Plezi will now take your class and add mimick an IO connection (the Placebo connection) on it's GRHttp serever. This Placebo connection will answer the Redis broadcasts just as if your class was a websocket controller...
+Plezi will now take your class and add mimick an IO connection (the Placebo connection) on it's Iodine serever. This Placebo connection will answer the Redis broadcasts just as if your class was a websocket controller...
 
 On the Plezi side, use multicasting or unicasting (but not broadcasting), from ANY controller:
 
@@ -252,7 +257,7 @@ class MyReciever
     end
 end
 
-pl = Plezi::Placebo.new MyReciever
+pl = Plezi.start_placebo MyReciever
 
 Plezi.redis_connection.set 'MainUUIDs', pl.uuid
 
@@ -272,7 +277,7 @@ end
 
 ## Native HTTP streaming with Asynchronous events
 
-Plezi comes with native HTTP streaming support, alowing you to use Plezi Events and Timers to send an Asynchronous response.
+Plezi comes with native HTTP streaming support (Http will use chuncked encoding unless experimental Http/2 is in use), alowing you to use Plezi Events and Timers to send an Asynchronous response.
 
 Let's make the classic 'Hello World' use HTTP Streaming:
 
@@ -290,13 +295,12 @@ Let's make the classic 'Hello World' use HTTP Streaming:
             end
         end
 
-        listen
         route '*' , Controller
 ```
 
 Notice you can nest calls to the `response.stream_async` method, allowing you to breakdown big blocking tasks into smaller chunks. `response.stream_async` will return immediately, scheduling the task for background processing.
 
-You can also handle other tasks asynchronously using the [GReactor API](http://www.rubydoc.info/gems/greactor)'s.
+You can also handle other tasks asynchronously using the [Iodine's API](http://www.rubydoc.info/gems/iodine).
 
 More on asynchronous events and timers later.
 
@@ -307,7 +311,6 @@ Plezi supports magic routes, in similar formats found in other systems, such as:
 Plezi assummes all simple routes to be RESTful routes with the parameter `:id` ( `"/user" == "/user/(:id)"` ).
 
     require 'plezi'
-    listen
 
     # this route demos a route for listing/showing posts,
     # with or without revision numbers or page-control....
@@ -326,8 +329,8 @@ now visit:
 Plezi can be used to create virtual hosts for the same service, allowing you to handle different domains and subdomains with one app:
 
     require 'plezi'
-    listen
-    host 'localhost', alias: 'localhost2'
+
+    host 'localhost', alias: 'localhost2', public: File.join('my', 'public', 'folder')
 
     shared_route '/humans.txt' do |req, res|
         res << "we are people - shared by all routes."
@@ -355,7 +358,7 @@ Now visit:
 
 ## Plezi Logging
 
-The Plezi module (also `PL`) delegates to the GReactor methods, helping with logging as well as the support you already noticed for dynamic routes, dynamic services and more.
+The Plezi module (also `PL`) delegates to the Iodine methods, helping with logging as well as the support you already noticed for dynamic routes, dynamic services and more.
 
 Logging:
 
@@ -363,7 +366,7 @@ Logging:
 
     # simple logging of strings
     PL.info 'log info'
-    GReactor.info 'This is the same, but more direct.'
+    Iodine.info 'This is the same, but more direct.'
     PL.warn 'log warning'
     PL.error 'log error'
     PL.fatal "log a fatal error (shuoldn't be needed)."
@@ -376,11 +379,11 @@ Logging:
         PL.error e
     end
 
-Please notice it is faster to use the GReactor API directly when using API that is delegated to GReactor.
+Please notice it is faster to use the Iodine's API directly when using API that is delegated to Iodine.
 
 ## Plezi Events and Timers
 
-The Plezi module (also `PL`) also delegates to the [GReactor's API](http://www.rubydoc.info/gems/greactor/GReactor) to help with asynchronous tasking, callbacks, timers and customized shutdown cleanup.
+The Plezi module (also `PL`) also delegates to the [Iodine's API](http://www.rubydoc.info/gems/greactor/iodine) to help with asynchronous tasking, callbacks, timers and customized shutdown cleanup.
 
 Asynchronous callbacks (works only while services are active and running):
 
@@ -391,17 +394,14 @@ Asynchronous callbacks (works only while services are active and running):
     end
 
     # shutdown callbacks
-    GReactor.on_shutdown(Kernel, :my_shutdown_proc, Time.now) { puts "this will run after shutdown." }
-    GReactor.on_shutdown() { puts "this will run too." }
+    Iodine.on_shutdown(Kernel, :my_shutdown_proc, Time.now) { puts "this will run after shutdown." }
+    Iodine.on_shutdown() { puts "this will run too." }
 
     # a timer
-    GReactor.run_after 2, -> {puts "this will wait 2 seconds to run... too late. for this example"}
+    Iodine.run_after(2) {puts "this will wait 2 seconds to run... too late. for this example"}
 
-    # an asynchronous method call with an optional callback block
-    GReactor.callback(Kernel, :puts, "Plezi will start eating our code once we exit terminal.") {puts 'first output finished'}
-
-    GReactor.run_async {puts "notice that the background tasks will only start once the Plezi's engine is running."}
-    GReactor.run_async {puts "exit Plezi to observe the shutdown callbacks."}
+    Iodine.run {puts "notice that the background tasks will only start once the Plezi's engine is running."}
+    Iodine.run {puts "exit Plezi to observe the shutdown callbacks."}
 
 ## Re-write Routes
 
@@ -437,8 +437,6 @@ By using a route with the a 'false' controller, the parameters extracted are aut
             "did you try #{request.base_url + request.original_path}?_method=delete or does your server support a native DELETE method?"
         end
     end
-
-    listen
 
     # this is our re-write route.
     # it will extract the locale and re-write the request.
@@ -502,8 +500,6 @@ and and other OAuth2 authentication service. For example:
                     profile_url: "https://graph.facebook.com/v2.3/me",
                     scope: "public_profile,email") if ENV['FB_APP_ID'] && ENV['FB_APP_SECRET']
 
-
-    listen
 
     create_auth_shared_route do |service_name, token, remote_user_id, remote_user_email, remote_response|
         # we will create a temporary cookie storing a login message. replace this code with your app's logic
