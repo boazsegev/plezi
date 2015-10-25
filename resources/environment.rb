@@ -42,8 +42,8 @@ Dir[File.join "{lib}", "**" , "*.rb"].each {|file| load File.expand_path(file)}
 Dir[File.join "{app}", "**" , "*.rb"].each {|file| load File.expand_path(file)}
 
 # change some of the default settings here.
-host :default,
-		public: Root.join('public').to_s,
-		assets: Root.join('assets').to_s,
-		assets_public: '/assets',
-		templates: Root.join('app','views').to_s,
+host host: :default,
+	public: Root.join('public').to_s,
+	assets: Root.join('assets').to_s,
+	assets_public: '/assets',
+	templates: Root.join('app','views').to_s

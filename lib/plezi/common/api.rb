@@ -27,10 +27,12 @@ module Plezi
 	# A default host can be created or accessed by using `:default` of false for the host name.
 	#
 	# Accepts:
-	# host_name:: the name (domain name) of the host as a String object. Use the Symbol `:default` for the catch-all domain name.
+	# host_name:: (optional, can be omitted) the name (domain name) of the host as a String object. Use the Symbol `:default` for the catch-all domain name.
+	# options_hash:: see further detail.
 	# 
 	#
 	# The options is a Hash object with any of the following options (Hash keys):
+	# host:: the ost name to be used if one isn't supplied as a direct argument. Defaults to the `:default` host.
 	# alias:: a String or an Array of Strings which represent alternative host names (i.e. `alias: ["admin.google.com", "admin.gmail.com"]`).
 	# public:: the public root folder. if this is defined, static files will be served from this folder and all it's sub-folders. Plezi does NOT support file indexing.
 	# assets:: the assets root folder. defaults to nil (no assets support). if the path is defined, assets will be served from `/assets/...` (or the public_asset path defined) before any static files. assets will not be served if the file in the /public/assets folder if up to date (a rendering attempt will be made for systems that allow file writing).
@@ -52,7 +54,7 @@ module Plezi
 	#
 	# @return [::Plezi::Base::HTTPRouter]
 	#
-	def host(host_name, params)
+	def host(host_name, params = {})
 		::Plezi::Base::HTTPRouter.add_host host_name, params
 	end
 
@@ -81,6 +83,3 @@ module Plezi
 		Iodine.warn "`start_rack` is deprecated. There is no need to call this method."
 	end
 end
-
-Encoding.default_internal = 'utf-8'
-Encoding.default_external = 'utf-8'

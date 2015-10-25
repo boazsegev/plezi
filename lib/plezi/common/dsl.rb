@@ -1,6 +1,3 @@
-# PL is a shortcut for the Plezi module, so that `PL == Plezi`.
-PL = Plezi
-
 unless defined? PLEZI_NON_DSL
 
 	# shortcut for Plezi.listen. Deprecated.

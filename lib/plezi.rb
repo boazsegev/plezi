@@ -141,3 +141,13 @@ require 'plezi/handlers/session.rb'
 ##############################################################################
 module Plezi
 end
+
+Encoding.default_internal = 'utf-8'
+Encoding.default_external = 'utf-8'
+Iodine.threads = 30
+Iodine.run { puts "Plezi is feeling optimistic running version #{::Plezi::VERSION}.\n\n"}
+# PL is a shortcut for the Plezi module, so that `PL == Plezi`.
+PL = Plezi
+
+
+

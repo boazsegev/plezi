@@ -2,7 +2,17 @@
 
 ***
 
-Change log v.0.12.0 - API changes (throwing out dead code)
+Change log v.0.12.1
+
+**Fix**: fixed an issue with the app template, where a typo (an extra comma sign ',') caused the `host` command to fail.
+
+**API**: The `host` method can now be used without a host name (only passing a Hash), automatically falling back to the default host.
+
+**Update**: Plezi version number now displays as the server starts running.
+
+***
+
+Change log v.0.12.0 - API changes (throwing out dead code and many more changes)
 
 **Feature** The `Controller.failed_unicast(target, method, arguments_array)` callback is here, allowing you to write a class level callback that will be called if `unicast` fails to find it's target (i.e. if the Websocket connection was already closed or the hosting server shutdown).
 

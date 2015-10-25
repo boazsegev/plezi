@@ -40,6 +40,7 @@ module Plezi
 
 			# adds a host to the router (or activates an existing host to add new routes). accepts a host name and any parameters not related to the actual connection (ssl etc') (see {Plezi.host})
 			def add_host host_name, params = {}
+				(params = host_name) && (host_name = params.delete(:host)) if host_name.is_a?(Hash)
 				params[:index_file] ||= 'index.html'
 				params[:assets_public] ||= '/assets'
 				params[:assets_public].chomp! '/'
@@ -52,7 +53,7 @@ module Plezi
 			# adds an alias to an existing host name (normally through the :alias parameter in the `add_host` method).
 			def add_alias host_name, *aliases
 				host = get_host host_name
-				host ||= add_host :default
+				raise "Couldn't find requested host to add alias." unless host.
 				aliases.each {|a| @hosts[a.to_s.downcase] = host}
 				true
 			end

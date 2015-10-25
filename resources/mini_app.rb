@@ -63,7 +63,7 @@ end
 
 
 # change some of the default settings here.
-host :default,
+host host: :default,
 	# public: Root.join('public').to_s,
 	assets: Root.join('assets').to_s,
 	templates: Root.join('templates').to_s

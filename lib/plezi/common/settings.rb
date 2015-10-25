@@ -38,4 +38,3 @@ module Plezi
 		end
 	end
 end
-Iodine.threads = 30

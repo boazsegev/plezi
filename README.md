@@ -330,18 +330,26 @@ Plezi can be used to create virtual hosts for the same service, allowing you to 
 
     require 'plezi'
 
+    # define a named host.
     host 'localhost', alias: 'localhost2', public: File.join('my', 'public', 'folder')
 
-    shared_route '/humans.txt' do |req, res|
-        res << "we are people - shared by all routes."
+    shared_route '/shared' do |req, res|
+        res << "shared by all existing hosts.... but the default host doesn't exist yet, so we're only on localhost and localhost2."
     end
 
+    # define a default (catch-all) host.
     host
+
+    shared_route '/humans.txt' do |req, res|
+        res << "we are people - we're in every existing hosts."
+    end
+
 
     route('*') do |req, res|
         res << "this is a 'catch-all' host. you got here by putting in the IP adderess."
     end
 
+    # get's the existing named host
     host 'localhost'
 
     route('*') do |req, res|
@@ -352,6 +360,8 @@ Now visit:
 
 * [http://127.0.0.1:3000/]( http://127.0.0.1:3000/ )
 * [http://localhost:3000/]( http://localhost:3000/ )
+* [http://127.0.0.1:3000/shared]( http://127.0.0.1:3000/shared ) - won't show, becuse this host was created AFTER the route was declered.
+* [http://localhost:3000/shared]( http://localhost:3000/shared )
 * [http://127.0.0.1:3000/humans.txt]( http://127.0.0.1:3000/humans.txt )
 * [http://localhost:3000/humans.txt]( http://localhost:3000/humans.txt )
 * notice: `localhost2` will only work if it was defined in your OS's `hosts` file.
@@ -460,7 +470,7 @@ try:
 * [http://localhost:3000/](http://localhost:3000/)
 * [http://localhost:3000/fr](http://localhost:3000/fr)
 * [http://localhost:3000/users/hello](http://localhost:3000/users/hello)
-* [http://localhost:3000/users/(5+5*20-15)/9.0](http://localhost:3000/users/(5+5*20-15)/9.0)
+* [http://localhost:3000/users/(5+5*20-15)/9.0](http://localhost:3000/users/(5+5*20-15)/9.0) - should return a 404 not found message.
 * [http://localhost:3000/(5+5*20-15)/9.0](http://localhost:3000/(5+5*20-15)/9)
 * [http://localhost:3000/fr/(5+5*20-15)/9.0](http://localhost:3000/fr/(5+5*20-15)/9)
 * [http://localhost:3000/users/hello?_method=delete](http://localhost:3000/users/hello?_method=delete)
