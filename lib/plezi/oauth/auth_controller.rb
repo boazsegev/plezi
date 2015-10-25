@@ -88,8 +88,8 @@ module Plezi
 		# options:: a Hash of options, some of which are required.
 		#
 		# The options are:
-		# app_id:: Required. The aplication's unique ID registered with the service. i.e. ENV [FB_APP_ID] (storing these in environment variables is safer then hardcoding them)
-		# app_secret:: Required. The aplication's unique secret registered with the service.
+		# app_id:: Required. The aplication's unique ID (sometimes called `client_id`) registered with the service. i.e. ENV [FB_APP_ID] (storing these in environment variables is safer then hardcoding them)
+		# app_secret:: Required. The aplication's unique secret registered with the service (sometimes called `client_secret`).
 		# auth_url:: Required. The authentication URL. This is the url to which the user is redirected. i.e.: "https://www.facebook.com/dialog/oauth"
 		# token_url:: Required. The token request URL. This is the url used to switch the single-use code into a persistant authentication token. i.e.: "https://www.googleapis.com/oauth2/v3/token"
 		# profile_url:: Required. The URL used to ask the service for the user's profile (the service's API url). i.e.: "https://graph.facebook.com/v2.3/me"
@@ -110,7 +110,7 @@ module Plezi
 		# * google token_url: "https://www.googleapis.com/oauth2/v3/token"
 		# * google profile_url: "https://www.googleapis.com/plus/v1/people/me"
 		#
-		# to change the default url's for Facebook or Google, simpley re-register the service using this method.
+		# to change the default scope or url's for Facebook or Google, simpley re-register the service using this method.
 		#
 		def self.register_service service_name, options
 			raise "Cannot register service, missing required information." unless service_name && options[:auth_url] && options[:token_url] && options[:profile_url] && options[:app_id] && options[:app_secret]
@@ -190,7 +190,7 @@ module Plezi
 		def _auth_url_for service_name
 			service = SERVICES[service_name]
 			return nil unless service
-			redirect_uri = Plezi::Base::Helpers.encode_url "#{request.base_url}/auth/#{service_name.to_s}", :url #response_type
+			redirect_uri = Plezi::Base::Helpers.encode_url "#{request.base_url}/auth/#{service_name.to_s}" #response_type
 			return "#{service[:auth_url]}?client_id=#{service[:app_id]}&redirect_uri=#{redirect_uri}&scope=#{service[:scope]}&response_type=code"
 		end
 

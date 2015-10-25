@@ -73,8 +73,8 @@ host host: :default,
 	# route "/:locale{#{I18n.available_locales.join "|"}}/*" , false if defined? I18n
 	#
 	# # OAuth2 - Facebook / Google authentication
-	# require 'plezi/oauth'
 	# ENV["FB_APP_ID"] ||= "app id"; ENV["FB_APP_SECRET"] ||= "secret"; ENV['GOOGLE_APP_ID'] = "app id"; ENV['GOOGLE_APP_SECRET'] = "secret"
+	# require 'plezi/oauth' # do this AFTER setting ENV variables.
 	# create_auth_shared_route do |service_name, auth_token, remote_user_id, remote_user_email, remote_response|
 	#         # ...callback for authentication.
 	#         # This callback should return the app user object or false

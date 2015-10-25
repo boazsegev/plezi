@@ -2,6 +2,12 @@
 
 ***
 
+Change log v.0.12.2
+
+**Fix**: fixed an issue with the plezi OAuth2 extention, which caused OAuth to fail when encoding URL data before initiating the OAuth process. OAuth2 should now work as expected. Plezi's OAuth2 has built-in support for both Google and Facebook authentication, as well as an API that allows implemnting more OAuth2 complient services (i.e. GitHub).
+
+***
+
 Change log v.0.12.1
 
 **Fix**: fixed an issue with the app template, where a typo (an extra comma sign ',') caused the `host` command to fail.

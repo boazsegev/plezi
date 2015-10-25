@@ -10,7 +10,8 @@ var websocket = NaN
 var websocket_fail_count = 0
 // to limit failed reconnection attempts, set this to a number.
 var websocket_fail_limit = NaN
-
+// to offer some space between reconnection attempts, set this interval in miliseconds.
+var websocket_reconnect_interval = 250
 
 function init_websocket()
 {
@@ -33,12 +34,12 @@ function init_websocket()
 			// update the count
 			websocket_fail_count += 1;
 			// try to reconect
-			init_websocket();
+			setTimeout( init_websocket, websocket_reconnect_interval);
 		};
 	};
 	websocket.onerror = function(e) {
 		// update the count.
-		websocket_fail_limit += 1
+		websocket_fail_count += 1
 		// what do you want to do now?
 	};
 	websocket.onmessage = function(e) {
