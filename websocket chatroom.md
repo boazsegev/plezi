@@ -67,11 +67,13 @@ require 'pathname'
 Root = Pathname.new(File.dirname(__FILE__)).expand_path
 ```
 
-Then, we set up the Plezi service's parameters - parameters which Plezi will use to create our main service and host.
+Then, we set up Plezi's Http Host parameters.
 
-A service, in this case, is realy just a nice word for the Plezi server (which might have a number of services or hosts). We will have only one service and one host, so it's very easy to set up.
+A host, in this case, refers to the domain name that the request belongs to. The default domain name is a catch-all (answers requests with any domain name). Setting up hosts is a great way to manage sub-domains (i.e. serving two different home pages for `www.example.com` and `admin.example.com`).
 
-As you can see, some options are there for later, but are disabled for now.
+We will have only one one host for this application, so it's very easy to set up.
+
+As you can see, some options are there for later, but are disabled for now. here are some of the common options:
 
 - **public**: this option defines the folder from which Plezi should serve public static files (html files, images etc'). We will not be serving any static files at the moment, so this option is disabled.
 
@@ -81,17 +83,14 @@ As you can see, some options are there for later, but are disabled for now.
 
 - **_templates_**: this option tells Plezi where to look for template files (.haml / .erb files). Since we will use a template file for our HTML, let's go ahead and create a subfolder called `views` and set that as our templates source folder.
 
-- **ssl**: this option, if set to true, will make our service into an SSL/TSL encrypted service (as well as our websocket service)... we can leave this off for now - it's actually hardly ever used since it's usually better to leave that to our production server.
-
-- **port**: Hardcoding a port would override the default port (which is either 3000 or the default port specified using the `-p <port>`). For this demo, as in most cases, it's best to a avoid setting up a port and preffer the default preferance.
+- **host**: a host name, if we need one (can also be a Regexp object).
 
 ```ruby
-service_options = {
+host_options = {
 	# public: Root.join('public').to_s,
 	# assets: Root.join('assets').to_s,
 	# assets_public: '/assets',
-	templates: Root.join('views').to_s,
-	ssl: false
+	templates: Root.join('views').to_s
 }
 ```
 
@@ -100,7 +99,7 @@ Next we call the `host` command - this command sets up some of the host options 
 The port plezi uses by default is either 3000 [http://localhost:3000/](http://localhost:3000/) or the port defined when calling the script (i.e. `./mychat.rb -p 8080`).
 
 ```ruby
-host :default, service_options
+host host_options
 ```
 
 Last, but not least, we tell Plezi to connect the root of our web application to our ChatController - in other words, make sure the root _path_ ('/') is connected to the ChatController class.
@@ -476,15 +475,14 @@ require 'pathname'
 Root = Pathname.new(File.dirname(__FILE__)).expand_path
 
 # set up the Plezi service options
-service_options = {
+host_options = {
 	# root: Root.join('public').to_s,
 	# assets: Root.join('assets').to_s,
 	# assets_public: '/',
-	templates: Root.join('views').to_s,
-	ssl: false
+	templates: Root.join('views').to_s
 }
 
-host :default, service_options
+host host_options
 
 # this routes the root of the application ('/') to our ChatController
 route '/:id', ChatController
