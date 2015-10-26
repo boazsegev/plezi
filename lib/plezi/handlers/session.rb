@@ -44,6 +44,7 @@ module Plezi
 		# Due to scaling considirations, all keys will be converted to strings, so that `"name" == :name` and `1234 == "1234"`.
 		# If you store two keys that evaluate as the same string, they WILL override each other.
 		def []= key, value
+			return delete key if value.nil?
 			key = key.to_s
 			if (conn=Plezi.redis)
 				conn.hset @id, key, value
@@ -59,6 +60,15 @@ module Plezi
 			if (conn=Plezi.redis) 
 				conn.expire @id, SESSION_LIFETIME
 				return conn.hgetall(@id)
+			end
+			failed
+		end
+
+		# @return [String] returns the Session data in YAML format.
+		def to_s
+			if (conn=Plezi.redis) 
+				conn.expire @id, SESSION_LIFETIME
+				return conn.hgetall(@id).to_yaml
 			end
 			failed
 		end
