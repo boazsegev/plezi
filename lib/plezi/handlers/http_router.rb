@@ -47,13 +47,13 @@ module Plezi
 				params[:public] ||= params[:root] # backwards compatability
 				host_name = (host_name.is_a?(String) ? host_name.to_s.downcase : (host_name.is_a?(Regexp) ? host_name : :default))
 				@active_host = get_host(host_name) || ( @hosts[host_name] = Host.new(params) )
-				add_alias host_name, *params[:alias] if params[:alias]
+				add_alias host_name, *params[:alias] if params[:alias] # && host_name != :default
 				@active_host
 			end
 			# adds an alias to an existing host name (normally through the :alias parameter in the `add_host` method).
 			def add_alias host_name, *aliases
 				host = get_host host_name
-				raise "Couldn't find requested host to add alias." unless host.
+				raise "Couldn't find requested host to add alias." unless host
 				aliases.each {|a| @hosts[a.to_s.downcase] = host}
 				true
 			end
