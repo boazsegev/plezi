@@ -83,7 +83,7 @@ module Plezi
 				url = "#{request.base_url}/#{url.to_s.gsub('_', '/')}" if url.is_a?(Symbol) || ( url.is_a?(String) && url.empty? ) || url.nil?
 				# redirect
 				response.status = options.delete(:status) || 302
-				response['Location'] = url
+				response['location'] = url
 				response['content-length'] ||= 0
 				flash.update options
 				true
@@ -119,7 +119,7 @@ module Plezi
 			# this is also usful for offering a file name for the browser to "save as".
 			#
 			# it accepts:
-			# data:: the data to be sent
+			# data:: the data to be sent - this could be a String or an open File handle.
 			# options:: a hash of any of the options listed furtheron.
 			#
 			# the :symbol=>value options are:
@@ -129,15 +129,17 @@ module Plezi
 			#
 			def send_data data, options = {}
 				raise 'Cannot use "send_data" after headers were sent' if response.headers_sent?
-				Plezi.warn 'HTTP response buffer is cleared by `#send_data`' if response.body && response.body.any? && response.body.clear
-				response << data
+				if response.body && response.body.any?
+					Plezi.warn 'existing response body was cleared by `#send_data`!'
+					response.body.close if response.body.respond_to? :close
+				end
+				response = data
 
 				# set headers
 				content_disposition = options[:inline] ? 'inline' : 'attachment'
-				content_disposition << "; filename=#{options[:filename]}" if options[:filename]
+				content_disposition << "; filename=#{::File.basename(options[:filename])}" if options[:filename]
 
 				response['content-type'] = (options[:type] ||= MimeTypeHelper::MIME_DICTIONARY[::File.extname(options[:filename])])
-				response['content-length'] = data.bytesize rescue true
 				response['content-disposition'] = content_disposition
 				true
 			end

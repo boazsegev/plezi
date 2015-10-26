@@ -49,7 +49,12 @@ module Plezi
 			# sends a file/cacheed data if it exists. otherwise returns false.
 			def send_file request, response, filename, status_code = 200, headers = {}
 				if Plezi.file_exists?(filename) && !::File.directory?(filename)
-					return send_raw_data request, response, Plezi.load_file(filename), MimeTypeHelper::MIME_DICTIONARY[::File.extname(filename)], status_code, headers
+					data = if Plezi::Cache::CACHABLE.include?(::File.extname(filename)[1..-1])
+						Plezi.load_file(filename)
+					else
+						::File.new filename, 'rb'
+					end
+					return send_raw_data request, response, data , MimeTypeHelper::MIME_DICTIONARY[::File.extname(filename)], status_code, headers
 				end
 				return false
 			end
@@ -59,8 +64,8 @@ module Plezi
 				response.status = status_code
 				response['content-type'] = mime
 				response['cache-control'] ||= 'public, max-age=86400'					
-				response << data
-				response['content-length'] = data.bytesize
+				response.body = data
+				# response['content-length'] = data.bytesize #this one is automated by the server and should be avoided to support Range requests.
 				true
 			end##########
 

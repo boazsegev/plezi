@@ -120,7 +120,11 @@ module Plezi
 
 				# send the file if it exists (no render needed)
 				if File.exists?(source_file)
-					data = Plezi.cache_needs_update?(source_file) ? Plezi.save_file(target_file, Plezi.reload_file(source_file), (params[:public] && params[:save_assets])) : Plezi.load_file(source_file)
+					data = if ::Plezi::Cache::CACHABLE.include?(::File.extname(source_file)[1..-1])
+						Plezi.cache_needs_update?(source_file) ? Plezi.save_file(target_file, Plezi.reload_file(source_file), (params[:public] && params[:save_assets])) : Plezi.load_file(source_file)
+					else
+						::File.new source_file, 'rb'
+					end
 					return (data ? Base::HTTPSender.send_raw_data(request, response, data, MimeTypeHelper::MIME_DICTIONARY[::File.extname(source_file)]) : false)
 				end
 

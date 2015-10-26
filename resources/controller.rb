@@ -29,7 +29,7 @@
 # flash:: a hash used for one-time cookies (get and set). any added values will be available for the same client for this and the next connection, after which they are removed.
 #
 # redirect_to:: easily set up redirection.
-# send_data:: easily send data, setting the content-type and content-length headers.
+# send_data:: easily send data, setting the content-type header.
 # render:: easily render Slim, Haml and IRB files into String text.
 #
 class SampleController

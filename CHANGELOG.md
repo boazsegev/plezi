@@ -4,6 +4,10 @@
 
 Change log v.0.12.2
 
+**Update**: Plezi now leverages Iodine's support for a File response body, allowing for a smaller memory footpring when sending large files.
+
+**Fix**: fixed an issue where host aliases wouldn't initiate, causing host initiation to fail, due to a typo in the HTTPRouter.
+
 **Fix**: fixed an issue with the plezi OAuth2 extention, which caused OAuth to fail when encoding URL data before initiating the OAuth process. OAuth2 should now work as expected. Plezi's OAuth2 has built-in support for both Google and Facebook authentication, as well as an API that allows implemnting more OAuth2 complient services (i.e. GitHub).
 
 ***
