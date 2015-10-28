@@ -30,7 +30,7 @@ Plezi supports three models of communication:
 
         For instance, when using:
 
-           unicast target_id, :event_name, "string", and: :hash
+               unicast target_id, :event_name, "string", and: :hash
    
         The receiving websocket controller is expected to have a protected method named `event_name` like so:
 
@@ -50,7 +50,7 @@ Plezi supports three models of communication:
 
     For instance, when using:
 
-       MyController.broadcast :event_name, "string", and: :hash
+           MyController.broadcast :event_name, "string", and: :hash
 
     The receiving websocket controller is expected to have a protected method named `event_name` like so:
 
@@ -68,7 +68,7 @@ Plezi supports three models of communication:
 
 	Identity oriented communication will only work if Plezi's Redis features are enabled. To enable Plezi's automatic Redis features (such as websocket scaling automation, Redis Session Store, etc'), use:
 
-        ENV['PL_REDIS_URL'] ||=  "redis://user:password@redis.example.com:9999"
+            ENV['PL_REDIS_URL'] ||=  "redis://user:password@redis.example.com:9999"
 
     Use `#register_as` or `#notify(identity, event_name, data)` to send make sure a certain Identity object (i.e. an app's User) receives notifications either in real-time (if connected) or the next time the identity connects to a websocket and identifies itself using `#register_as`.
 
@@ -95,7 +95,7 @@ Plezi supports three models of communication:
 
     Sending messages to the identity is similar to the other communication API methods. For example:
 
-        notify user_id, :event_name, "string data", hash: :data, more_hash: :data
+            notify user_id, :event_name, "string data", hash: :data, more_hash: :data
 
     As expected, it could be that an Identity will never revisit the application, and for this reason limits must be set as to how long the "mailbox" should remain alive in the database when it isn't acessed by the Identity.
 
