@@ -6,6 +6,8 @@ Plezi augmentes Iodine by adding auto-Redis support for scaling and automaticall
 
 Reading through this document, you should remember that Plezi's websocket connections are object oriented - they are instances of Controller classes that answer a specific url/path in the Plezi application. More than one type of connection (Controller instance) could exist in the same application.
 
+# Communicating between different Websocket clients
+
 Plezi supports three models of communication:
 
 * General websocket communication.
@@ -96,7 +98,17 @@ Plezi supports three models of communication:
 
     As expected, it could be that an Identity will never revisit the application, and for this reason limits must be set as to how long the "mailbox" should remain alive in the database when it isn't acessed by the Identity.
 
-    At the moment, the API for managing this timeframe is yet undecided, but it seems that Plezi will set a default of 21 days and that this default will be managable by introducing a Controller specific _class_ method that will return the number of seconds after which a mailbox should be expunged unless accessed.
+    At the moment, the API for managing this timeframe is yet undecided, but it seems that Plezi will set a default of 21 days and that this default could be customized by introducing a Controller specific _class_ method that will return the number of seconds after which a mailbox should be expunged unless accessed. i.e.:
+
+           ```ruby
+           class MyController
+               #...
+               def self.message_store_lifespan
+                   1_814_400 # 21 days
+               end
+           end
+           ```
+
 
 (todo: write documentation)
 
