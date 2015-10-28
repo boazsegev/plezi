@@ -6,11 +6,16 @@ Plezi augmentes Iodine by adding auto-Redis support for scaling and automaticall
 
 Reading through this document, you should remember that Plezi's websocket connections are object oriented - they are instances of Controller classes that answer a specific url/path in the Plezi application. More than one type of connection (Controller instance) could exist in the same application.
 
-# Communicating between different Websocket clients
+## Communicating between the application and clients
+
+(todo: write documentation)
+
+
+## Communicating between different Websocket clients
 
 Plezi supports three models of communication:
 
-* General websocket communication.
+### General websocket communication.
 
     When using this type of communication, it is expected that each connection's controller provide a protected instance method with a name matching the event name and that this method will accept, as arguments, the data sent with the event.
 
@@ -44,7 +49,7 @@ Plezi supports three models of communication:
         end
         ```
 
-* Object Oriented communication:
+### Object Oriented communication:
 
     Use `broadcast` or `Controller.broadcast` to send an event to a all the websocket connections that are managed by a specific Controller class.
 
@@ -68,7 +73,7 @@ Plezi supports three models of communication:
     end
     ```
 
-* Identity oriented communication (future design - API incomplete):
+### Identity oriented communication (future design - API incomplete):
 
 	Identity oriented communication will only work if Plezi's Redis features are enabled. To enable Plezi's automatic Redis features (such as websocket scaling automation, Redis Session Store, etc'), use:
 
