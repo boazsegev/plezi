@@ -30,13 +30,17 @@ Plezi supports three models of communication:
 
         For instance, when using:
 
-               unicast target_id, :event_name, "string", and: :hash
+              unicast target_id, :event_name, "string", and: :hash
    
         The receiving websocket controller is expected to have a protected method named `event_name` like so:
 
         ```ruby
-        protected
-        def event_name str, options_hash
+        class MyController
+            #...
+            protected
+            def event_name str, options_hash
+                #...
+            end
         end
         ```
 
@@ -50,7 +54,7 @@ Plezi supports three models of communication:
 
     For instance, when using:
 
-           MyController.broadcast :event_name, "string", and: :hash
+          MyController.broadcast :event_name, "string", and: :hash
 
     The receiving websocket controller is expected to have a protected method named `event_name` like so:
 
@@ -68,13 +72,13 @@ Plezi supports three models of communication:
 
 	Identity oriented communication will only work if Plezi's Redis features are enabled. To enable Plezi's automatic Redis features (such as websocket scaling automation, Redis Session Store, etc'), use:
 
-            ENV['PL_REDIS_URL'] ||=  "redis://user:password@redis.example.com:9999"
+          ENV['PL_REDIS_URL'] ||=  "redis://user:password@redis.example.com:9999"
 
     Use `#register_as` or `#notify(identity, event_name, data)` to send make sure a certain Identity object (i.e. an app's User) receives notifications either in real-time (if connected) or the next time the identity connects to a websocket and identifies itself using `#register_as`.
 
     Much like General Websocket Communication, the identity can call `#register_as` from different Controller classes and it is expected that each of these Controller classes implement the necessary methods.
 
-    It is suggested that an Identity based websocket connection will utilize the `#on_open` callback to authenticate and register an identity. For example:
+    It is a good enough practice that an Identity based websocket connection will utilize the `#on_open` callback to authenticate and register an identity. For example:
 
     ```ruby
     class MyController
@@ -93,9 +97,11 @@ Plezi supports three models of communication:
     end
     ```
 
+    It is recommended that the authentication and registration are split into two different events - the `pre_connect` for authentication and the `on_open` for registration - since, as a matter of security, it is better to prevent someone from entering (not establishing a websocket connection) than throwing them out (closing the connection within the `on_open` event).
+
     Sending messages to the identity is similar to the other communication API methods. For example:
 
-            notify user_id, :event_name, "string data", hash: :data, more_hash: :data
+          notify user_id, :event_name, "string data", hash: :data, more_hash: :data
 
     As expected, it could be that an Identity will never revisit the application, and for this reason limits must be set as to how long the "mailbox" should remain alive in the database when it isn't acessed by the Identity.
 
