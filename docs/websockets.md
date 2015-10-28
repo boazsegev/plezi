@@ -34,7 +34,7 @@ The `Javascript` should, in most applications, handle the following three Websoc
 
 Here is a common enough example of a script designed to open a websocket:
 
-```javascript
+```js
 
 websocket = NaN
 

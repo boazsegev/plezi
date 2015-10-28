@@ -1,4 +1,6 @@
 # [Plezi](https://github.com/boazsegev/plezi), The Ruby framework for realtime web-apps
+[![Gem Version](https://badge.fury.io/rb/plezi.svg)](http://badge.fury.io/rb/plezi)
+[![Inline docs](http://inch-ci.org/github/boazsegev/plezi.svg?branch=master)](http://www.rubydoc.info/github/boazsegev/plezi/master)
 
 Plezi is an easy to use Ruby Websocket Framework, with full RESTful routing support and HTTP streaming support. It's name comes from the word "fun", or "pleasure", since Plezi is a pleasure to work with.
 
@@ -14,9 +16,7 @@ Plezi leverages [Iodine's server](https://github.com/boazsegev/iodine) new archi
 
 Plezi and Iodine are written for Ruby versions 2.1.0 or greater (or API compatible variants). Version 2.2.3 is the currently recommended version.
 
-### Plezi version data
-[![Gem Version](https://badge.fury.io/rb/plezi.svg)](http://badge.fury.io/rb/plezi)
-[![Inline docs](http://inch-ci.org/github/boazsegev/plezi.svg?branch=master)](http://www.rubydoc.info/github/boazsegev/plezi/master)
+**Plezi version notice**
 
 The `master` branch always refers to the latest edge version, which might also be a broken version. Please refer to the relevent version by using the version's `tag` in the branch selector.
 
@@ -322,7 +322,7 @@ now visit:
 * [http://localhost:3000/post/12/1.3/1](http://localhost:3000/post/12/1.3/1)
 * [http://localhost:3000/post/12/1](http://localhost:3000/post/12/1)
 
-**please see the `route` documentation for more information on routes**.
+**[please see the `route` documentation for more information on routes](./docs/routes.md)**.
 
 ## Plezi Virtual Hosts
 
