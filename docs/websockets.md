@@ -30,15 +30,15 @@ Plezi supports three models of communication:
 
         For instance, when using:
 
-               `unicast target_id, :event_name, "string", and: :hash`
+           unicast target_id, :event_name, "string", and: :hash
    
         The receiving websocket controller is expected to have a protected method named `event_name` like so:
 
-               ```ruby
-               protected
-               def event_name str, options_hash
-               end
-               ```
+        ```ruby
+        protected
+        def event_name str, options_hash
+        end
+        ```
 
 * Object Oriented communication:
 
@@ -50,24 +50,25 @@ Plezi supports three models of communication:
 
     For instance, when using:
 
-           `MyController.broadcast :event_name, "string", and: :hash`
+       MyController.broadcast :event_name, "string", and: :hash
 
     The receiving websocket controller is expected to have a protected method named `event_name` like so:
 
-           ```ruby
-           class MyController
-               #...
-               protected
-               def event_name str, options_hash
-               end
-           end
-           ```
+    ```ruby
+    class MyController
+        #...
+        protected
+        def event_name str, options_hash
+            #...
+        end
+    end
+    ```
 
 * Identity oriented communication (future design - API incomplete):
 
 	Identity oriented communication will only work if Plezi's Redis features are enabled. To enable Plezi's automatic Redis features (such as websocket scaling automation, Redis Session Store, etc'), use:
 
-	     `ENV['PL_REDIS_URL'] ||=  "redis://user:password@redis.example.com:9999"`
+        ENV['PL_REDIS_URL'] ||=  "redis://user:password@redis.example.com:9999"
 
     Use `#register_as` or `#notify(identity, event_name, data)` to send make sure a certain Identity object (i.e. an app's User) receives notifications either in real-time (if connected) or the next time the identity connects to a websocket and identifies itself using `#register_as`.
 
@@ -75,39 +76,39 @@ Plezi supports three models of communication:
 
     It is suggested that an Identity based websocket connection will utilize the `#on_open` callback to authenticate and register an identity. For example:
 
-           ```ruby
-           class MyController
-               #...
-               def on_open
-                   user = suthenticate_user
-                   close unless user
-                   register_as user.id
-               end
+    ```ruby
+    class MyController
+       #...
+       def on_open
+           user = suthenticate_user
+           close unless user
+           register_as user.id
+       end
 
-               protected
+       protected
 
-               def event_name str, options_hash
-                   #...
-               end
-           end
-           ```
+       def event_name str, options_hash
+           #...
+       end
+    end
+    ```
 
     Sending messages to the identity is similar to the other communication API methods. For example:
 
-        `notify user_id, :event_name, "string data", hash: :data, more_hash: :data`
+        notify user_id, :event_name, "string data", hash: :data, more_hash: :data
 
     As expected, it could be that an Identity will never revisit the application, and for this reason limits must be set as to how long the "mailbox" should remain alive in the database when it isn't acessed by the Identity.
 
     At the moment, the API for managing this timeframe is yet undecided, but it seems that Plezi will set a default of 21 days and that this default could be customized by introducing a Controller specific _class_ method that will return the number of seconds after which a mailbox should be expunged unless accessed. i.e.:
 
-           ```ruby
-           class MyController
-               #...
-               def self.message_store_lifespan
-                   1_814_400 # 21 days
-               end
-           end
-           ```
+    ```ruby
+    class MyController
+       #...
+       def self.message_store_lifespan
+           1_814_400 # 21 days
+       end
+    end
+    ```
 
 
 (todo: write documentation)
