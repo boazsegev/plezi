@@ -4,15 +4,19 @@ In the core of Plezi's framework is a smart Object Oriented Router which acts li
 
 RESTful routing and Websocket callback support both allow us to use conventionally named methods in our Controller to achive common tasks. Such names methods, as will be explored further on, include the `update`, `save` and `show` RESTful method names, as well as the `on_open`, `on_message(data)` and `on_close` Websocket callbacks.
 
+The first layer of this powerful routing system is the Plezi's Http Router and the core method `Plezi.route`.
+
 ## What is a Route?
 
 Routes are what connects different URLs to different parts of our code.
 
-We when we visit `www.example.com/users/index` we expect a different page than when we go to `www.example.com/users/1`. This is because we expect the first URL to provide a page with the list of users while we expect the second URL to show us just one user's page or data.
+We when we visit `www.example.com/users/index` we expect a different page than when we go to `www.example.com/users/1`. This is because we expect the first URL to provide a page with the list of users while we expect the second URL to show us a specific user's page or data.
 
-in the example above, all the requests to `www.example.com` end up at the same server and it is the server's inner workings - the server's inner router - that directs the `/users/index` to one part of our code and `/users/1` to another.
+in the example above, all the requests are made to the server at `www.example.com` and it is the server's inner workings - the server's inner router - that directs the `/users/index` to one part of our code and `/users/1` to another.
 
-Plezi has an inner router which routes each request to the corresponding method or code.
+Like all web applications, Plezi also has an inner router which routes each request to the corresponding method or code.
+
+Plezi's routing system was designed to build upon conventions used in other routing systems together with an intuitive approach that allows for agail application development.
 
 \* It should be noted that except for file handling and the asset pipeline - which are file-system dependent - routes are case-sensitive.
 
@@ -24,7 +28,7 @@ This method accept a String, or Regexp, that should point to a "group" of routes
 
 The method also requires either a class that "controls" that group of routes or a block of code that responds to that route.
 
-Here are a two examples for valid routes. You can run the following script in the `irb` terminal:
+Here are a few examples for valid routes. You can run the following script in the `irb` terminal:
 
 ```ruby
 require 'plezi'
@@ -39,18 +43,20 @@ end
 # this is because that's all that UsersController defines.
 Plezi.route "/users", UsersController
 
-# this route isn't grouped under a controller. it will only answer "/people"
+# this route isn't grouped under a controller.
+# it will answer to "/people" and "/people/something" with the same response.
 Plezi.route("/people") { "People" }
 
-# this route includes a catch-all at the end and will catch anything that starts with "/stuff/" 
+# this route includes a catch-all at the end and will
+# catch anything that starts with "/stuff/" 
 Plezi.route("/stuff/*") { "More and more stuff" }
 
-# this is catch-all which will answer any requests not yet answered.
+# this is catch-all that answers any requests not yet answered.
 Plezi.route("*") { "Lost?" }
 
 # this route will never be seen,
 # because the catch-all route answers any request before it gets here.
-Plezi.route("/never-seen") { "You cant see me..." }
+Plezi.route("/never-seen") { "You can't see me..." }
 
 
 exit
@@ -99,13 +105,14 @@ class UsersController
     end
 end
 
-# try visiting "/users/1/John"
 route "/users/(:id)/(:name)", UsersController
 
 exit
 ```
 
-As you noticed, providing an `:id` parameter invoked the RESTful method `show`. This is only one possible outcome. We will discuss this more when we look at the Controller being used as a virtual folder and as we discuss about RESTful method.
+* now visit [/users/1/John](http://localhost:3000/users/1/John)
+
+As you noticed, providing an `:id` parameter invoked the RESTful method `show`. This is only one possible outcome. We will discuss this more [when we look at the Controller](./controllers.md) being used as a virtual folder and as we discuss about RESTful method.
 
 ### More inline parameters
 
@@ -118,7 +125,7 @@ Inline parameters come in more flavors:
 
 Using inline parameters, it's possible to achive great flexability with the same route, allowing our code to be better organized. This is especially helpful when expecting data to be received using AJAX or when creating an accessible API for native apps to utilize.
 
-It should be noted, that since a parameter matches against the whole of the pattern, parenthesis shouldn't be used and could cause parsing errors.
+It should be noted, when using parameters matching a specific pattern, that since a parameter matches against the whole of the pattern, parenthesis within the shouldn't be used and could lead to parsing errors.
 
 ### Re-Write Routes
 
@@ -165,15 +172,22 @@ Plezi.route "/users", UsersController
 exit
 ```
 
-notice the re-write route contained a catch all. After Plezi version 0.11.3 this catch-all is automatically added if missing. The catch-all is the part of the path that will remain for the following routes to check against.
+Try the code above and visit:
+
+* [localhost:3000/fr/users](http://localhost:3000/fr/users)
+* [localhost:3000/ru/users](http://localhost:3000/ru/users)
+* [localhost:3000/en/users](http://localhost:3000/en/users)
+* [localhost:3000/it/users](http://localhost:3000/it/users)
+
+Notice the re-write route contained a catch all. This catch-all is automatically added if missing. The catch-all is the part of the path that will remain for the following routes to check against.
 
 ### Routes with Blocks instead of Controllers
 
-Routes that respond with a block of code can receive the `request` and `response` objects, allowing for greater usability.
+Routes that respond with a block of code can receive the `request` and `response` objects, to be used within the block of code (the controller also has access to these objects).
 
 These Routes favor a global response over the different features offered by Controllers (i.e. RESTful routing and virtual folder method routing). Also, the block of code does NOT inherit all the magical abilities bestowed on Controllers which could allow for a slight increase in response time.
 
-Here's a more powerful example of a route with a block of code, thistime using the `request` and `response` passed on to it:
+Here's a more powerful example of a route with a block of code, this time using the `request` and `response` passed on to it:
 
 ```ruby
 require 'plezi'
@@ -190,20 +204,6 @@ end
 exit
 ```
 
-## The Controller
+## The next step
 
-(todo: write documentation)
-
-### A Virtual Folder
-
-(todo: write documentation)
-
-### RESTful methods
-
-(todo: write documentation)
-
-### Websocket Callbacks
-
-(todo: write documentation)
-
-
+Now that we have learned more about the power of Plezi's routing system, it's time to [learn more about what Controller classes can do for us](./controllers.md).
