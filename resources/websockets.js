@@ -24,7 +24,7 @@ function init_websocket()
 	};
 
 	websocket.onclose = function(e) {
-        // If the websocket repeatedly you probably want to reopen the websocket if it closes
+        // If the websocket repeatedly you probably want to report an error
         if(!isNaN(websocket_fail_limit) && websocket_fail_count >= websocket_fail_limit) {
         	// What to do if we can't reconnect so many times?
         	return
