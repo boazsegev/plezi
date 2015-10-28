@@ -6,9 +6,88 @@ Plezi augmentes Iodine by adding auto-Redis support for scaling and automaticall
 
 Reading through this document, you should remember that Plezi's websocket connections are object oriented - they are instances of Controller classes that answer a specific url/path in the Plezi application. More than one type of connection (Controller instance) could exist in the same application.
 
-## A short intro to Websockets
+## A short intro to Websockets (skip this if you can)
 
-(todo: write documentation)
+In a very broad sense, Websockets allow the browser communicate with the server in a bi-directional manner. This overcomes some of the limitations imposed by Http alone, allowing (for instance) to push real-time data, such as chat messages or stock quotes, directly to the browser.
+
+In essense, while Http's worflow is a call and response (the browser "calls", the server "responds"), Websockets is a conversation, sometimes with long pauses, where both sides can speak whenever they feel the need to.
+
+This, in nature, requires that both sides of the conversation establish a common language... this part is pretty much up to each application.
+
+It's easy to think about it this way:
+
+the browsers starts a call-response sequence. All websocket connections start as Http call-response. The browser shouts over the internet "I want to start a conversation".
+
+The server responds: "Sure thing, let's talk".
+
+Than they start their websocket conversation, keeping the connection between them open. The server can also answer "no thanks", but than there's no websocket connection and the Http connection will probably die out (unless it's Http/2).
+
+### initiating a websocket connection
+
+The websocket connection is initiated by the browser using `Javascript`.
+
+The `Javascript` should, in most applications, handle the following three Websocket `Javascript` events:
+
+- `onopen`: a connection was established.
+- `onmessage`: a message was received through the connection.
+- `onclose`: an open connection had closed, or a connection initiated couldn't be established.
+
+Here is a common enough example of a script designed to open a websocket:
+
+```javascript
+
+websocket = NaN
+
+function init_websocket()
+{
+  //  no need to renew socket connection if it's open
+  if(websocket && websocket.readyState == 1) return true;
+
+  // initiate the url for the websocket... this is a bit of an overkill,
+  // but it will allow you to copy & paste decent code
+  var ws_uri = (window.location.protocol.match(/https/) ? 'wss' : 'ws') + '://' + window.document.location.host
+
+  // initiate a new websocket connection
+  websocket = new WebSocket(ws_uri);
+
+  // define the onopen event callback
+  websocket.onopen = function(e) {
+      // what do you want to do now?
+      // maybe send a message?
+      websocket.send("Hello there!");
+      // a common practice is to use JSON
+      var msg = JSON.stringify({msg: 'chat', data: 'Hello there!'})
+      websocket.send(msg);
+  };
+
+  // define the onclose event callback
+  websocket.onclose = function(e) {
+    // you probably want to reopen the websocket if it closes
+    setTimeout( init_websocket, 100 );
+  };
+
+  // define the onmessage event callback
+  websocket.onmessage = function(e) {
+    // what do you want to do now?
+    console.log(e.data);
+    // to use JSON, use:
+    // msg = JSON.parse(e.data);
+  };
+}
+
+init_websocket();
+
+```
+
+As you can tell from reading through the code, this means that the browser will open a new connection to the server, using the websocket protocol.
+
+In our example the script sent a message: `"Hello there!"`. It's up to your code to decide what to do with the data it receives, be it using JSON or raw data.
+
+When data comes in from the browser, the `onmessage` event is raised. It's up to your script to decypher the meaning of that message within the `onmessage` callback.
+
+###
+
+No we know a bit about what Websockets are and how to initiate a websocket connection to send and receive data... next up, how to get Plezi to answer (or refuse) websocket requests?
 
 ## Communicating between the application and clients
 
@@ -127,7 +206,4 @@ end
 
 
 (todo: write documentation)
-
-# An object oriented websocket 
-
 
