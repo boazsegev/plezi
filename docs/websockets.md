@@ -6,6 +6,10 @@ Plezi augmentes Iodine by adding auto-Redis support for scaling and automaticall
 
 Reading through this document, you should remember that Plezi's websocket connections are object oriented - they are instances of Controller classes that answer a specific url/path in the Plezi application. More than one type of connection (Controller instance) could exist in the same application.
 
+## A short intro to Websockets
+
+(todo: write documentation)
+
 ## Communicating between the application and clients
 
 (todo: write documentation)
@@ -17,109 +21,109 @@ Plezi supports three models of communication:
 
 ### General websocket communication.
 
-    When using this type of communication, it is expected that each connection's controller provide a protected instance method with a name matching the event name and that this method will accept, as arguments, the data sent with the event.
+  When using this type of communication, it is expected that each connection's controller provide a protected instance method with a name matching the event name and that this method will accept, as arguments, the data sent with the event.
 
-    This type of communication includes:
+  This type of communication includes:
 
-    - **Multicasting**:
+  - **Multicasting**:
 
-        Use `multicast` to send an event to all the websocket connections currently connected to the application (including connections on other servers running the application, if Redis is used).
+      Use `multicast` to send an event to all the websocket connections currently connected to the application (including connections on other servers running the application, if Redis is used).
 
-    - **Unicasting**:
+  - **Unicasting**:
 
-        Use `unicast` to send an event to a specific websocket connection.
+      Use `unicast` to send an event to a specific websocket connection.
 
-        This uses a unique UUID that contains both the target server's information and the unique connection identifier. This allows a message to be sent to any connected websocket across multiple application instances when using Redis, minimizing network activity and server load as much as effectively possible.
+      This uses a unique UUID that contains both the target server's information and the unique connection identifier. This allows a message to be sent to any connected websocket across multiple application instances when using Redis, minimizing network activity and server load as much as effectively possible.
 
-        Again, exacly like when using multicasting, any connection targeted by the message is expected to implemnt a method matching the name of the event, which will accept (as arguments) the data sent.
+      Again, exacly like when using multicasting, any connection targeted by the message is expected to implemnt a method matching the name of the event, which will accept (as arguments) the data sent.
 
-        For instance, when using:
+For instance, when using:
 
-              unicast target_id, :event_name, "string", and: :hash
-   
-        The receiving websocket controller is expected to have a protected method named `event_name` like so:
+      unicast target_id, :event_name, "string", and: :hash
 
-        ```ruby
-        class MyController
-            #...
-            protected
-            def event_name str, options_hash
-                #...
-            end
-        end
-        ```
+The receiving websocket controller is expected to have a protected method named `event_name` like so:
+
+```ruby
+class MyController
+    #...
+    protected
+    def event_name str, options_hash
+        #...
+    end
+end
+```
 
 ### Object Oriented communication:
 
-    Use `broadcast` or `Controller.broadcast` to send an event to a all the websocket connections that are managed by a specific Controller class.
+Use `broadcast` or `Controller.broadcast` to send an event to a all the websocket connections that are managed by a specific Controller class.
 
-    The controller is expected to provide a protected instance method with a name matching the event name and that this method will accept, as arguments, the data sent with the event.
+The controller is expected to provide a protected instance method with a name matching the event name and that this method will accept, as arguments, the data sent with the event.
 
-    The benifit of using this approach is knowing exacly what type of objects handle the message - all the websocket connections receiving the message will be members (instances) of the same class.
+The benifit of using this approach is knowing exacly what type of objects handle the message - all the websocket connections receiving the message will be members (instances) of the same class.
 
-    For instance, when using:
+For instance, when using:
 
-          MyController.broadcast :event_name, "string", and: :hash
+      MyController.broadcast :event_name, "string", and: :hash
 
-    The receiving websocket controller is expected to have a protected method named `event_name` like so:
+The receiving websocket controller is expected to have a protected method named `event_name` like so:
 
-    ```ruby
-    class MyController
+```ruby
+class MyController
+    #...
+    protected
+    def event_name str, options_hash
         #...
-        protected
-        def event_name str, options_hash
-            #...
-        end
     end
-    ```
+end
+```
 
 ### Identity oriented communication (future design - API incomplete):
 
-	Identity oriented communication will only work if Plezi's Redis features are enabled. To enable Plezi's automatic Redis features (such as websocket scaling automation, Redis Session Store, etc'), use:
+Identity oriented communication will only work if Plezi's Redis features are enabled. To enable Plezi's automatic Redis features (such as websocket scaling automation, Redis Session Store, etc'), use:
 
-          ENV['PL_REDIS_URL'] ||=  "redis://user:password@redis.example.com:9999"
+      ENV['PL_REDIS_URL'] ||=  "redis://user:password@redis.example.com:9999"
 
-    Use `#register_as` or `#notify(identity, event_name, data)` to send make sure a certain Identity object (i.e. an app's User) receives notifications either in real-time (if connected) or the next time the identity connects to a websocket and identifies itself using `#register_as`.
+Use `#register_as` or `#notify(identity, event_name, data)` to send make sure a certain Identity object (i.e. an app's User) receives notifications either in real-time (if connected) or the next time the identity connects to a websocket and identifies itself using `#register_as`.
 
-    Much like General Websocket Communication, the identity can call `#register_as` from different Controller classes and it is expected that each of these Controller classes implement the necessary methods.
+Much like General Websocket Communication, the identity can call `#register_as` from different Controller classes and it is expected that each of these Controller classes implement the necessary methods.
 
-    It is a good enough practice that an Identity based websocket connection will utilize the `#on_open` callback to authenticate and register an identity. For example:
+It is a good enough practice that an Identity based websocket connection will utilize the `#on_open` callback to authenticate and register an identity. For example:
 
-    ```ruby
-    class MyController
+```ruby
+class MyController
+   #...
+   def on_open
+       user = suthenticate_user
+       close unless user
+       register_as user.id
+   end
+
+   protected
+
+   def event_name str, options_hash
        #...
-       def on_open
-           user = suthenticate_user
-           close unless user
-           register_as user.id
-       end
+   end
+end
+```
 
-       protected
+It is recommended that the authentication and registration are split into two different events - the `pre_connect` for authentication and the `on_open` for registration - since, as a matter of security, it is better to prevent someone from entering (not establishing a websocket connection) than throwing them out (closing the connection within the `on_open` event).
 
-       def event_name str, options_hash
-           #...
-       end
-    end
-    ```
+Sending messages to the identity is similar to the other communication API methods. For example:
 
-    It is recommended that the authentication and registration are split into two different events - the `pre_connect` for authentication and the `on_open` for registration - since, as a matter of security, it is better to prevent someone from entering (not establishing a websocket connection) than throwing them out (closing the connection within the `on_open` event).
+      notify user_id, :event_name, "string data", hash: :data, more_hash: :data
 
-    Sending messages to the identity is similar to the other communication API methods. For example:
+As expected, it could be that an Identity will never revisit the application, and for this reason limits must be set as to how long the "mailbox" should remain alive in the database when it isn't acessed by the Identity.
 
-          notify user_id, :event_name, "string data", hash: :data, more_hash: :data
+At the moment, the API for managing this timeframe is yet undecided, but it seems that Plezi will set a default of 21 days and that this default could be customized by introducing a Controller specific _class_ method that will return the number of seconds after which a mailbox should be expunged unless accessed. i.e.:
 
-    As expected, it could be that an Identity will never revisit the application, and for this reason limits must be set as to how long the "mailbox" should remain alive in the database when it isn't acessed by the Identity.
-
-    At the moment, the API for managing this timeframe is yet undecided, but it seems that Plezi will set a default of 21 days and that this default could be customized by introducing a Controller specific _class_ method that will return the number of seconds after which a mailbox should be expunged unless accessed. i.e.:
-
-    ```ruby
-    class MyController
-       #...
-       def self.message_store_lifespan
-           1_814_400 # 21 days
-       end
-    end
-    ```
+```ruby
+class MyController
+   #...
+   def self.message_store_lifespan
+       1_814_400 # 21 days
+   end
+end
+```
 
 
 (todo: write documentation)
