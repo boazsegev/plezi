@@ -40,7 +40,63 @@ Plezi supports three models of communication:
 
 * Object Oriented communication:
 
-* Identity oriented communication:
+    Use `broadcast` or `Controller.broadcast` to send an event to a all the websocket connections that are managed by a specific Controller class.
+
+    The controller is expected to provide a protected instance method with a name matching the event name and that this method will accept, as arguments, the data sent with the event.
+
+    The benifit of using this approach is knowing exacly what type of objects handle the message - all the websocket connections receiving the message will be members (instances) of the same class.
+
+    For instance, when using:
+
+           `MyController.broadcast :event_name, "string", and: :hash`
+
+    The receiving websocket controller is expected to have a protected method named `event_name` like so:
+
+           ```ruby
+           class MyController
+               #...
+               protected
+               def event_name str, options_hash
+               end
+           end
+           ```
+
+* Identity oriented communication (future design - API incomplete):
+
+	Identity oriented communication will only work if Plezi's Redis features are enabled. To enable Plezi's automatic Redis features (such as websocket scaling automation, Redis Session Store, etc'), use:
+
+	     `ENV['PL_REDIS_URL'] ||=  "redis://user:password@redis.example.com:9999"`
+
+    Use `#register_as` or `#notify(identity, event_name, data)` to send make sure a certain Identity object (i.e. an app's User) receives notifications either in real-time (if connected) or the next time the identity connects to a websocket and identifies itself using `#register_as`.
+
+    Much like General Websocket Communication, the identity can call `#register_as` from different Controller classes and it is expected that each of these Controller classes implement the necessary methods.
+
+    It is suggested that an Identity based websocket connection will utilize the `#on_open` callback to authenticate and register an identity. For example:
+
+           ```ruby
+           class MyController
+               #...
+               def on_open
+                   user = suthenticate_user
+                   close unless user
+                   register_as user.id
+               end
+
+               protected
+
+               def event_name str, options_hash
+                   #...
+               end
+           end
+           ```
+
+    Sending messages to the identity is similar to the other communication API methods. For example:
+
+        `notify user_id, :event_name, "string data", hash: :data, more_hash: :data`
+
+    As expected, it could be that an Identity will never revisit the application, and for this reason limits must be set as to how long the "mailbox" should remain alive in the database when it isn't acessed by the Identity.
+
+    At the moment, the API for managing this timeframe is yet undecided, but it seems that Plezi will set a default of 21 days and that this default will be managable by introducing a Controller specific _class_ method that will return the number of seconds after which a mailbox should be expunged unless accessed.
 
 (todo: write documentation)
 
