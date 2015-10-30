@@ -57,7 +57,7 @@ module Plezi
 					end
 					# Cleanup on disconnection
 					def on_close
-						io_out.close unless io_out.closed?
+						@io_out.close unless @io_out.closed?
 						return super() if defined? super
 						Iodine.warn "Placebo #{self.class.superclass.name} disconnected. Ignore if this message appears during shutdown."
 					end
@@ -104,7 +104,7 @@ module Plezi
 			i, o = IO.pipe
 			req = {}
 			handler = new_class.new(i, o, req)
-			io = Placebo::Base::PlaceboIO.new i, handler, req
+			io = Placebo::Base::PlaceboIO.new i, handler: handler, request: req
 			handler
 		end
 	end

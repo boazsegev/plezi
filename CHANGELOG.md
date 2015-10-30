@@ -2,6 +2,32 @@
 
 ***
 
+Change log v.0.12.3
+
+**Feature**: (requires Redis) Identity API is here (read more on the [Websockets guide](./websockets.md))
+
+* Websocket Identity API allows you to link a websocket connection with a unique "identity" (i.e., `user.id` or even `session.id`).
+
+     This is called "registering", as the identity "registers" and is henceforth recognized. 
+
+* Notifications sent to the identidy will persist until the identity's "lifetime" expires.
+
+     The default "lifetime" is 7 days, meaning an "Identity" message queue will survive for 7 days since the last time the Identity was "registered". This lifetime can be set for each identity during registration.
+
+* This allows you to send notifications that will "wait" until a user or visitor reconnects and registers the new connection under their Identity.
+
+* This is an alternative to persistant storage, where either visitors messages that aren't read within a certain timespan 
+
+**Fix**: the Placebo API was fixed to correspond with the changes in Iodine's API.
+
+**Fix**: fixed an issue where Placebo's on_close would through an exception.
+
+**Fix**: Some websocket API methods were exposed to the Http router as paths (causing internal 500 errors, as they couldn't be invoked by the router). These methods are now `protected` and by doing so the Http router ignores them. Also, `has_exposed_method?` was reviewed in a way that should help avoid future occurrences of these issues.
+
+**Fix**: fixed an issue where AJAX parameters weren't form-decoded (`'%20'` wasn't replaced with `' '` etc'). Now the parameters are decoded as expected.
+
+***
+
 Change log v.0.12.2
 
 **Update**: Plezi now leverages Iodine's support for a File response body, allowing for a smaller memory footpring when sending large files.

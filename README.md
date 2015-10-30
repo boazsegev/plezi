@@ -532,6 +532,57 @@ Plezi is meant to be very flexible. please take a look at the Plezi Module for s
 
 Feel free to fork or contribute. right now I am one person, but together we can make something exciting that will help us enjoy Ruby in this brave new world and (hopefully) set an example that will induce progress in the popular mainstream frameworks such as Rails and Sinatra.
 
+## Who's afraid of multi-threading?
+
+Plezi builds on Iodine's concept of "connection locking", meaning that your controllers shouldn't be acessed by more than one thread at the same time.
+
+This allows you to run Plezi as a multi-threaded (and even multi-process) application as long as your controllers don't change or set any global data... Readeing global data after it was set during initialization is totally fine, just not changing or setting it...
+
+But wait, global data is super important, right?
+
+Well, sometimes it is. And although it's a better practice to avoide storing any global data in global variables, sometimes storing stuff in the global space is exactly what we need.
+
+The solution is simple - if you can't use persistent databases with thread-safe libraries (i.e. Sequel / ActiveRecord / Redis, etc'), use Plezi's global cache storage (see Plezi::Cache).
+
+Plezi's global cache storage is a memory based storage protected by a mutex for any reading or writing from the cache.
+
+So... these are protected:
+
+    # set data
+    Plezi.cache_data :my_global_variable, 32
+    # get data
+    Plezi.get_cached :my_global_variable # => 32
+
+However, although Ruby seems innocent, it's super powerful when it comes to using pointers and references behind the scenes. This could allow you to change a protected object in an unprotected way... consider this:
+
+    a = []
+    b = a
+    b << '1'
+    # we changed `a` without noticing
+    a # => [1]
+
+For this reason, it's important that Strings, Arrays and Hashes will be protected if they are to be manipulated in any way.
+
+The following is safe:
+
+    # set data
+    Plezi.cache_data :global_hash, Hash.new
+    # manipulate data
+    Plezi.get_cached :global_hash do |global_hash|
+        global_hash[:change] = "safe"
+    end
+ 
+However, th following is unsafe:
+
+    # set data
+    Plezi.cache_data :global_hash, Hash.new
+    # manipulate data
+    global_hash = Plezi.get_cached :global_hash do |global_hash|
+    global_hash[:change] = "NOT safe"
+ 
+
+\* be aware, if using Plezi in as a multi-process application, that each process has it's own cache and that processes can't share the cache. The different threads in each of the processes will be able to acess their process's cache, but each process runs in a different memory space, so they can't share.
+
 ## Contributing
 
 1. Fork it ( https://github.com/boazsegev/plezi/fork )

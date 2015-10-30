@@ -98,7 +98,7 @@ No we know a bit about what Websockets are and how to initiate a websocket conne
 
 Plezi supports three models of communication:
 
-### General websocket communication.
+### General websocket communication
 
   When using this type of communication, it is expected that each connection's controller provide a protected instance method with a name matching the event name and that this method will accept, as arguments, the data sent with the event.
 
@@ -132,7 +132,7 @@ class MyController
 end
 ```
 
-### Object Oriented communication:
+### Object Oriented communication
 
 Use `broadcast` or `Controller.broadcast` to send an event to a all the websocket connections that are managed by a specific Controller class.
 
@@ -156,7 +156,7 @@ class MyController
 end
 ```
 
-### Identity oriented communication (future design - API incomplete):
+### Identity oriented communication
 
 Identity oriented communication will only work if Plezi's Redis features are enabled. To enable Plezi's automatic Redis features (such as websocket scaling automation, Redis Session Store, etc'), use:
 
@@ -191,19 +191,23 @@ Sending messages to the identity is similar to the other communication API metho
 
       notify user_id, :event_name, "string data", hash: :data, more_hash: :data
 
-As expected, it could be that an Identity will never revisit the application, and for this reason limits must be set as to how long the "mailbox" should remain alive in the database when it isn't acessed by the Identity.
+As expected, it could be that an Identity will never revisit the application or messages become outdated after a while. For this reason limits must be set as to how long any specific "mailbox" should remain alive in the database when it isn't acessed by the Identity. This is done within the `register_as` method i.e.:
 
-At the moment, the API for managing this timeframe is yet undecided, but it seems that Plezi will set a default of 21 days and that this default could be customized by introducing a Controller specific _class_ method that will return the number of seconds after which a mailbox should be expunged unless accessed. i.e.:
+      register_as user.id, lifetime: 1_814_400 # 21 days
 
-```ruby
-class MyController
-   #...
-   def self.message_store_lifespan
-       1_814_400 # 21 days
-   end
-end
-```
+Another consideration is that more than one "lifetime" setting might be required for defferent types of messages. The solution for this will be to allow a single connection to register as a number of different identities, each with it's own lifetime:
 
+      # to register:
+      register_as "#{user.id}-long", lifetime: 1_814_400 # 21 days
+      register_as "#{user.id}-short", lifetime: 3_600 # 1 hour
+
+      # to notify:
+      notify "#{user.id}-long", :event_name #... 
+      notify "#{user.id}-short", :event_name #... 
+
+It should be noted that the lifetime is for the identity's lifetime and NOT the notification's lifetime. A notification sent a second before the identity "dies" will live for only a second and notify will return `true` all the same.
+
+`notify` should return `true` or `false`, depending on whether the identity still exists.
 
 (todo: write documentation)
 

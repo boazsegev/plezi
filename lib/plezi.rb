@@ -14,14 +14,6 @@ require 'set'
 # Iodine server
 require 'iodine/http'
 
-
-## erb templating
-begin
-	require 'erb'
-rescue => e
-
-end
-
 ### version
 
 require "plezi/version"
@@ -46,13 +38,19 @@ require 'plezi/helpers/mime_types.rb'
 require 'plezi/handlers/http_router.rb'
 require 'plezi/handlers/route.rb'
 require 'plezi/handlers/ws_object.rb'
+require 'plezi/handlers/ws_identity.rb'
 require 'plezi/handlers/controller_magic.rb'
 require 'plezi/handlers/controller_core.rb'
 require 'plezi/handlers/placebo.rb'
 require 'plezi/handlers/stubs.rb'
 require 'plezi/handlers/session.rb'
 
+## erb templating
+begin
+	require 'erb'
+rescue => e
 
+end
 
 ##############################################################################
 #
@@ -148,6 +146,3 @@ Iodine.threads = 30
 Iodine.run { puts "Plezi is feeling optimistic running version #{::Plezi::VERSION}.\n\n"}
 # PL is a shortcut for the Plezi module, so that `PL == Plezi`.
 PL = Plezi
-
-
-

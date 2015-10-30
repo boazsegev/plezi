@@ -32,6 +32,13 @@ module Plezi
 				(str.to_s.gsub(/[^a-z0-9\*\.\_\-]/i) {|m| '%%%02x'.freeze % m.ord }).force_encoding(::Encoding::ASCII_8BIT)
 			end
 
+			# decode percent-encoded data (excluding the '+' sign for encoding).
+			def self.form_decode s
+				s = s.to_s.gsub(/\%[0-9a-f]{2}/i) {|m| m[1..2].to_i(16).chr}
+				s.gsub!(/&#[0-9]{4};/i) {|m| [m[2..5].to_i].pack 'U'.freeze }
+				s
+			end
+
 			# Adds paramaters to a Hash object, according to the Iodine's server conventions.
 			def self.add_param_to_hash name, value, target
 				begin

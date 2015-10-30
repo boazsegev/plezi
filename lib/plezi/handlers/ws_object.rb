@@ -1,31 +1,74 @@
 module Plezi
 
-	# the methods defined in this module will be injected into the Controller class passed to
-	# Plezi (using the `route` or `shared_route` commands), and will be available
-	# for the controller to use within it's methods.
-	#
-	# for some reason, the documentation ignores the following additional attributes, which are listed here:
-	#
-	# request:: the HTTPRequest object containing all the data from the HTTP request. If a WebSocket connection was established, the `request` object will continue to contain the HTTP request establishing the connection (cookies, parameters sent and other information).
-	# params:: any parameters sent with the request (short-cut for `request.params`), will contain any GET or POST form data sent (including file upload and JSON format support).
-	# cookies:: a cookie-jar to get and set cookies (set: `cookie\[:name] = data` or get: `cookie\[:name]`). Cookies and some other data must be set BEFORE the response's headers are sent.
-	# flash:: a temporary cookie-jar, good for one request. this is a short-cut for the `response.flash` which handles this magical cookie style.
-	# response:: the HTTPResponse **OR** the WSResponse object that formats the response and sends it. use `response << data`. This object can be used to send partial data (such as headers, or partial html content) in blocking mode as well as sending data in the default non-blocking mode.
-	# host_params:: a copy of the parameters used to create the host and service which accepted the request and created this instance of the controller class.
-	#
 	module Base
 
 		# This module includes all the methods that will be injected into Websocket objects,
 		# specifically into Plezi Controllers and Placebo objects.
+		#
+		# the methods defined in this module will be injected into the Controller class passed to
+		# Plezi (using the `route` or `shared_route` commands), and will be available
+		# for the controller to use within it's methods.
+		#
+		# for some reason, the documentation ignores the following additional attributes, which are listed here:
+		#
+		# request:: the HTTPRequest object containing all the data from the HTTP request. If a WebSocket connection was established, the `request` object will continue to contain the HTTP request establishing the connection (cookies, parameters sent and other information).
+		# params:: any parameters sent with the request (short-cut for `request.params`), will contain any GET or POST form data sent (including file upload and JSON format support).
+		# cookies:: a cookie-jar to get and set cookies (set: `cookie\[:name] = data` or get: `cookie\[:name]`). Cookies and some other data must be set BEFORE the response's headers are sent.
+		# flash:: a temporary cookie-jar, good for one request. this is a short-cut for the `response.flash` which handles this magical cookie style.
+		# response:: the HTTPResponse **OR** the WSResponse object that formats the response and sends it. use `response << data`. This object can be used to send partial data (such as headers, or partial html content) in blocking mode as well as sending data in the default non-blocking mode.
+		# host_params:: a copy of the parameters used to create the host and service which accepted the request and created this instance of the controller class.
+		#
 		module WSObject
 			def self.included base
 				base.send :include, InstanceMethods
 				base.extend ClassMethods
 				base.superclass.instance_eval {extend SuperClassMethods}
+				base.superclass.instance_eval {include SuperInstanceMethods}
+			end
+
+			def self.translate_message msg
+				begin
+					@safe_types ||= [Symbol, Date, Time, Encoding, Struct, Regexp, Range, Set]
+					data = YAML.safe_load(msg, @safe_types)
+				rescue => e
+					Iodine.error "The following could be a security breach attempt:"
+					Iodine.error e
+					nil
+				end
+			end
+			def self.forward_message data
+				begin
+					return false if data[:server] == Plezi::Settings.uuid
+					data[:type] = Object.const_get(data[:type]) unless data[:type].nil? || data[:type] == :all
+					if data[:target]
+						data[:type].___faild_unicast( data ) unless Iodine::Http::Websockets.unicast data[:target], data
+					else
+						Iodine::Http::Websockets.broadcast data
+					end
+				rescue => e
+					Iodine.error "The following could be a security breach attempt:"
+					Iodine.error e
+					nil
+				end
 			end
 
 			module InstanceMethods
 				public
+
+				# handles websocket opening.
+				def on_open
+					@ws_io = @request[:io]
+					super() if defined?(super)
+				end
+				# handles websocket messages.
+				def on_message data
+					super if defined?(super)
+				end
+				# handles websocket being closed.
+				def on_close
+					super if defined? super
+				end
+
 				# handles broadcasts / unicasts
 				def on_broadcast data
 					unless data.is_a?(Hash) && (data[:type] || data[:target]) && data[:method] && data[:data]
@@ -37,6 +80,26 @@ module Plezi
 					# return ( self.class.placebo? ? true : we.write(ws.data)) if :method == :to_client
 					return ((data[:type] == :all) ? false : (raise "Broadcasting recieved but no method can handle it - dump:\r\n #{data.to_s}") ) unless self.class.has_super_method?(data[:method])
 					self.method(data[:method]).call *data[:data]
+				end
+
+				# Get's the websocket's unique identifier for unicast transmissions.
+				#
+				# This UUID is also used to make sure Radis broadcasts don't triger the
+				# boadcasting object's event.
+				def uuid
+					return @uuid if @uuid
+					if __get_io
+						return (@uuid ||=  Plezi::Settings.uuid + @io.id)
+					end
+					nil
+				end
+				alias :unicast_id :uuid
+
+				protected
+
+				# allows writing of data to the websocket (if opened). Otherwise appends the message to the Http response.
+				def write data
+					(@ws_io || @response) << data
 				end
 
 				# Performs a websocket unicast to the specified target.
@@ -68,20 +131,6 @@ module Plezi
 					self.class._inner_broadcast({ method: method_name, data: args, type: :all}, __get_io )
 				end
 
-				# Get's the websocket's unique identifier for unicast transmissions.
-				#
-				# This UUID is also used to make sure Radis broadcasts don't triger the
-				# boadcasting object's event.
-				def uuid
-					return @uuid if @uuid
-					if __get_io
-						return (@uuid ||=  Plezi::Settings.uuid + @io.id)
-					end
-					nil
-				end
-				alias :unicast_id :uuid
-
-				protected
 				def __get_io
 					@io ||= (@request ? @request[:io] : nil)
 				end
@@ -105,7 +154,13 @@ module Plezi
 					@super_methods_list.include? method_name
 				end
 				def has_exposed_method? method_name
-					@exposed_methods_list ||= ( (self.public_instance_methods - Class.new.instance_methods - Plezi::ControllerMagic::InstanceMethods.instance_methods - [:before, :after, :save, :show, :update, :delete, :initialize, :on_message, :on_broadcast, :pre_connect, :on_open, :on_close]).delete_if {|m| m.to_s[0] == '_'} ).to_set
+					@reserved_methods_list ||= Class.new.public_instance_methods +
+						Plezi::Base::WSObject::InstanceMethods.public_instance_methods +
+						Plezi::Base::WSObject::SuperInstanceMethods.public_instance_methods +
+						Plezi::ControllerMagic::InstanceMethods.public_instance_methods +
+						Plezi::Base::ControllerCore::InstanceMethods.public_instance_methods +
+						[:before, :after, :save, :show, :update, :delete, :initialize]
+					@exposed_methods_list ||= ( (self.public_instance_methods - @reserved_methods_list ).delete_if {|m| m.to_s[0] == '_'} ).to_set
 					@exposed_methods_list.include? method_name
 				end
 
@@ -124,6 +179,8 @@ module Plezi
 					reset_routing_cache
 				end
 
+			end
+			module SuperInstanceMethods
 			end
 
 			module SuperClassMethods

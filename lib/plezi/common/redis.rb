@@ -16,22 +16,9 @@ module Plezi
 					raise "Redis connction failed for: #{ENV['PL_REDIS_URL']}" unless @redis
 					@redis_sub_thread = Thread.new do
 						begin
-							safe_types = [Symbol, Date, Time, Encoding, Struct, Regexp, Range, Set]
 							::Redis.new(host: @redis_uri.host, port: @redis_uri.port, password: @redis_uri.password).subscribe(Plezi::Settings.redis_channel_name, Plezi::Settings.uuid) do |on|
 								on.message do |channel, msg|
-									begin
-										data = YAML.safe_load(msg, safe_types)
-										next if data[:server] == Plezi::Settings.uuid
-										data[:type] = Object.const_get(data[:type]) unless data[:type].nil? || data[:type] == :all
-										if data[:target]
-											data[:type].___faild_unicast( data ) unless Iodine::Http::Websockets.unicast data[:target], data
-										else
-											Iodine::Http::Websockets.broadcast data
-										end
-									rescue => e
-										Iodine.error "The following could be a security breach attempt:"
-										Iodine.error e
-									end
+									::Plezi::Base::WSObject.forward_message ::Plezi::Base::WSObject.translate_message(msg)
 								end
 							end
 						rescue => e

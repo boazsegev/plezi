@@ -15,7 +15,7 @@ module Plezi
 				fill_parameters = match request.path
 				return false unless fill_parameters
 				old_params = request.params.dup
-				fill_parameters.each {|k,v| Plezi::Base::Helpers.add_param_to_hash k, v, request.params }
+				fill_parameters.each {|k,v| Plezi::Base::Helpers.add_param_to_hash k, ::Plezi::Base::Helpers.form_decode(v), request.params }
 				ret = false
 				if controller
 					ret = controller.new(request, response)._route_path_to_methods_and_set_the_response_
@@ -86,6 +86,8 @@ module Plezi
 			def url_for dest = :index
 				raise NotImplementedError, "#url_for isn't implemented for this router - could this be a Regexp based router?" unless @url_array
 				case dest
+				when :index, nil, false
+					dest = {}					
 				when String
 					dest = {id: dest.dup}
 				when Numeric, Symbol
@@ -93,8 +95,6 @@ module Plezi
 				when Hash
 					dest = dest.dup
 					dest.each {|k,v| dest[k] = v.dup if v.is_a? String }
-				when nil, false
-					dest = {}
 				else
 					# convert dest.id and dest[:id] to their actual :id value.
 					dest = {id: (dest.id rescue false) || (raise TypeError, "Expecting a Symbol, Hash, String, Numeric or an object that answers to obj[:id] or obj.id") }

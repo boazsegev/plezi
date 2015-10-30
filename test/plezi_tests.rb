@@ -155,6 +155,36 @@ class WSsizeTestCtrl
 	end
 end
 
+class WSIdentity
+	def index
+		"identity api testing path\n#{params}"		
+	end
+	def show
+		if notify params[:id], :notification, (params[:message] || 'no message')
+			"Send notification for #{params[:id]}: #{(params[:message] || 'no message')}"
+		else
+			"The identity requested (#{params[:id]}) doesn't exist."
+		end
+	end
+	def pre_connect
+		params[:id] && true
+	end
+	def on_open
+		register_as params[:id]
+	end
+	def on_message data
+		puts "Got websocket message: #{data}"
+	end
+
+	protected
+
+	def notification message
+		write message
+		puts "Identity Got: #{message}"
+	end
+
+end
+
 module PleziTestTasks
 	module_function
 
@@ -239,7 +269,7 @@ module PleziTestTasks
 		begin
 			puts "    * Streaming test: #{RESULTS[URI.parse("http://localhost:3000/streamer").read == 'streamed']}"
 		rescue => e
-			puts "    **** Streaming test FAILED TO RUN!!!"
+			puts "    **** Streaming test FAILED TO RUN #{e.message}!!!"
 			puts e
 		end
 	end
@@ -442,6 +472,8 @@ end
 
 host
 
+shared_route 'id/(:id)/(:message)', WSIdentity
+
 shared_route 'ws/no', Nothing
 shared_route 'ws/placebo', PlaceboTestCtrl
 shared_route 'ws/size', WSsizeTestCtrl
@@ -460,8 +492,8 @@ end
 # mem_print_proc.call
 # Plezi.run_every 30, &mem_print_proc
 
-# require 'redis'
-# ENV['PL_REDIS_URL'] ||= ENV['REDIS_URL'] || ENV['REDISCLOUD_URL'] || ENV['REDISTOGO_URL'] || "redis://test:1234@pub-redis-11008.us-east-1-4.5.ec2.garantiadata.com:11008"
+require 'redis'
+ENV['PL_REDIS_URL'] ||= ENV['REDIS_URL'] || ENV['REDISCLOUD_URL'] || ENV['REDISTOGO_URL'] || "redis://test:1234@pub-redis-11008.us-east-1-4.5.ec2.garantiadata.com:11008"
 # Plezi.processes = 3
 
 Plezi.threads = 9

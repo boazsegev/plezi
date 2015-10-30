@@ -229,7 +229,7 @@ module Plezi
 
 			# This class method behaves the same way as the instance method #url_for. See the instance method's documentation for more details.
 			def url_for dest
-				get_pl_route.url_for dest				
+				get_pl_route.url_for dest
 			end
 
 			# resets the routing cache

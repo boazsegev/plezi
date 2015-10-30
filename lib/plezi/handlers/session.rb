@@ -25,6 +25,10 @@ module Plezi
 			end
 			failed
 		end
+		# returns the session id (the session cookie value).
+		def id
+			@id
+		end
 		# Get a key from the session data store. If a Redis server is supplied, it will be used to synchronize session data.
 		#
 		# Due to scaling considirations, all keys will be converted to strings, so that `"name" == :name` and `1234 == "1234"`.

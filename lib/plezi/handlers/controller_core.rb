@@ -42,18 +42,6 @@ module Plezi
 					# complete handshake
 					return self
 				end
-				# handles websocket opening.
-				def on_open
-					super() if defined?(super)
-				end
-				# handles websocket messages.
-				def on_message data
-					super if defined?(super)
-				end
-				# handles websocket being closed.
-				def on_close
-					super if defined? super
-				end
 
 				# Inner Routing
 				def _route_path_to_methods_and_set_the_response_
