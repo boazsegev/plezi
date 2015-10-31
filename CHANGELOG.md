@@ -1,5 +1,10 @@
 #Change Log
 
+***
+
+Change log v.0.12.5
+
+**Fix**: Placebo Rack recognition required that Rack be required within the gemfile of the application. This is no longer the case. Now `start_placebo` can also be used in a non-Rack environment (i.e. when disabling the server mode using: `Plezi.protocol = :placebo`). This allows writing Plezi based "worker" scripts that aren't web servers but can send and receive messages from the main application.
 
 ***
 

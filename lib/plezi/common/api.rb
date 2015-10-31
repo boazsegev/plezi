@@ -64,7 +64,7 @@ module Plezi
 	# to broadcast Plezi messages to other Plezi processes - allowing for scalable intigration of Plezi into existing Rack applications.
 	def start_placebo receiver = nil
 		# force start Iodine only if Iodine isn't used as the server
-		if ::Iodine.protocol == ::Iodine::Http::Http1 && (defined?(::Rack) ? (::Rack::Handler.default == ::Iodine::Http::Rack) : true)
+		if ::Iodine.protocol == ::Iodine::Http::Http1 && (defined?(::Rack::VERSION) ? (::Rack::Handler.default == ::Iodine::Http::Rack rescue true) : true)
 			Iodine.log("* `start_placebo` Placebo directive ignored, as this seems to be the main application.\n")
 			# just initialize the receiver class (no instance) and return
 			Plezi::Placebo.new(receiver, false) if receiver
