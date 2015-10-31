@@ -218,7 +218,7 @@ module Plezi
 				def unicast target_uuid, method_name, *args
 					raise 'No target specified for unicasting!' unless target_uuid
 					@@uuid_cutoff ||= Plezi::Settings.uuid.length
-					_inner_broadcast method: method_name, data: args, target: target_uuid[@@uuid_cutoff..-1], to_server: target_uuid[0...@@uuid_cutoff], type: self
+					_inner_broadcast method: method_name, data: args, target: target_uuid[@@uuid_cutoff..-1], to_server: target_uuid[0...@@uuid_cutoff], type: :all
 				end
 
 				# Use this to multicast an event to ALL websocket connections on EVERY controller, including Placebo controllers.

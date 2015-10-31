@@ -1,5 +1,14 @@
 #Change Log
 
+
+***
+
+Change log v.0.12.4
+
+**Fix**: unicasting should be type agnostic.
+
+**Update**: When using `Plezi.start_placebo`. The Placebo class will now allways have the websocket broadcasting capabilities, even if Placebo isn't initializes (if Plezi is runing) - allowing you to call `Plezi.start_placebo MyPlacebo` and `MyPlacebo.broadcast` from within the server application and having only the Placebo application react.
+
 ***
 
 Change log v.0.12.3

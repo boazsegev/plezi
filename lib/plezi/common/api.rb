@@ -65,12 +65,14 @@ module Plezi
 	def start_placebo receiver = nil
 		# force start Iodine only if Iodine isn't used as the server
 		if ::Iodine.protocol == ::Iodine::Http::Http1 && (defined?(::Rack) ? (::Rack::Handler.default == ::Iodine::Http::Rack) : true)
-			# Iodine.info("`start_placebo` is called while using the Iodine server. `start_placebo` directive being ignored.")
+			Iodine.log("* `start_placebo` Placebo directive ignored, as this seems to be the main application.\n")
+			# just initialize the receiver class (no instance) and return
+			Plezi::Placebo.new(receiver, false) if receiver
 			return false
 		end
 		unless @placebo_initialized
 			raise "Placebo fatal error: Redis connection failed to load - make sure gem is required and `ENV['PL_REDIS_URL']` is set." unless redis # make sure the redis connection is activated
-			puts "* Plezi #{Plezi::VERSION} Services will start with no Server...\n"
+			Iodine.log "* Plezi #{Plezi::VERSION} Services will start with no Server - This is the Placebo application\n"
 			::Iodine.protocol = :no_server
 			Iodine.force_start!
 			@placebo_initialized = true
