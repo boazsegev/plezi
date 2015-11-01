@@ -492,8 +492,8 @@ end
 # mem_print_proc.call
 # Plezi.run_every 30, &mem_print_proc
 
-require 'redis'
-ENV['PL_REDIS_URL'] ||= ENV['REDIS_URL'] || ENV['REDISCLOUD_URL'] || ENV['REDISTOGO_URL'] || "redis://test:1234@pub-redis-11008.us-east-1-4.5.ec2.garantiadata.com:11008"
+# require 'redis'
+# ENV['PL_REDIS_URL'] ||= ENV['REDIS_URL'] || ENV['REDISCLOUD_URL'] || ENV['REDISTOGO_URL'] || "redis://test:1234@pub-redis-11008.us-east-1-4.5.ec2.garantiadata.com:11008"
 # Plezi.processes = 3
 
 Plezi.threads = 9
