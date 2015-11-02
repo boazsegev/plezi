@@ -59,7 +59,7 @@ module Plezi
 			app_tree["assets"]["welcome.html"] ||= IO.read(File.join(@root,"resources" ,"welcome_page.html")).gsub('appname', app_name)
 
 			# app core files.
-			app_tree["environment.rb"] ||= IO.read File.join(@root,"resources" ,"environment.rb")
+			app_tree["initialize.rb"] ||= IO.read File.join(@root,"resources" ,"initialize.rb").gsub('appname', app_name)
 			app_tree["routes.rb"] ||= IO.read File.join(@root,"resources" ,"routes.rb")
 			app_tree["rakefile"] ||= IO.read File.join(@root,"resources" ,"rakefile")
 			app_tree["Procfile"] ||= ""
@@ -70,15 +70,15 @@ module Plezi
 			app_tree["Gemfile"] << "\n\n\nruby '#{RUBY_VERSION}'\n"
 
 			# set up config files
-			app_tree["config"] ||= {}
-			app_tree["config"]["oauth.rb"] ||= IO.read(File.join(@root,"resources" ,"oauth_config.rb"))
-			app_tree["config"]["active_record.rb"] ||= IO.read(File.join(@root,"resources" ,"db_ac_config.rb"))
-			app_tree["config"]["sequel.rb"] ||= IO.read(File.join(@root,"resources" ,"db_sequel_config.rb"))
-			app_tree["config"]["datamapper.rb"] ||= IO.read(File.join(@root,"resources" ,"db_dm_config.rb"))
-			app_tree["config"]["haml.rb"] ||= IO.read(File.join(@root,"resources" ,"haml_config.rb"))
-			app_tree["config"]["slim.rb"] ||= IO.read(File.join(@root,"resources" ,"slim_config.rb"))
-			app_tree["config"]["i18n.rb"] ||= IO.read(File.join(@root,"resources" ,"i18n_config.rb"))
-			app_tree["config"]["redis.rb"] ||= (IO.read(File.join(@root,"resources" ,"redis_config.rb"))).gsub('appsecret', "#{app_name}_#{SecureRandom.hex}")
+			app_tree["initialize"] ||= {}
+			app_tree["initialize"]["oauth.rb"] ||= IO.read(File.join(@root,"resources" ,"oauth_config.rb"))
+			app_tree["initialize"]["active_record.rb"] ||= IO.read(File.join(@root,"resources" ,"db_ac_config.rb"))
+			app_tree["initialize"]["sequel.rb"] ||= IO.read(File.join(@root,"resources" ,"db_sequel_config.rb"))
+			app_tree["initialize"]["datamapper.rb"] ||= IO.read(File.join(@root,"resources" ,"db_dm_config.rb"))
+			app_tree["initialize"]["haml.rb"] ||= IO.read(File.join(@root,"resources" ,"haml_config.rb"))
+			app_tree["initialize"]["slim.rb"] ||= IO.read(File.join(@root,"resources" ,"slim_config.rb"))
+			app_tree["initialize"]["i18n.rb"] ||= IO.read(File.join(@root,"resources" ,"i18n_config.rb"))
+			app_tree["initialize"]["redis.rb"] ||= (IO.read(File.join(@root,"resources" ,"redis_config.rb"))).gsub('appsecret', "#{app_name}_#{SecureRandom.hex}")
 
 			#set up database stub folders
 			app_tree["db"] ||= {}

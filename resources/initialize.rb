@@ -23,17 +23,17 @@ Bundler.require(:default, ENV['ENV'].to_s.to_sym)
 # require tilt/sass in a thread safe way (before multi-threading cycle begins)
 require 'tilt/sass' if defined?(::Slim) && defined?(::Sass)
 
-# set up Plezi's logs - Heroku logs to STDOUT, this machine logs to log file
-Iodine.logger = Logger.new(File.expand_path(File.join 'logs','server.log'))
+# # set up Plezi's logs to a log file?
+# Iodine.logger = Logger.new(File.expand_path(File.join 'logs','server.log')) unless ENV["DYNO"]
 
-# set the session token name
+# set the session token name?
 Iodine::Http.session_token = 'appname_uui'
 
 ## Allow forking? ONLY if your code is fully scalable across processes.
 # Iodine.processes = 4
 
 # load all config files
-Dir[File.join "{config}", "**" , "*.rb"].each {|file| load File.expand_path(file)}
+Dir[File.join "{initialize}", "**" , "*.rb"].each {|file| load File.expand_path(file)}
 
 # load all library files
 Dir[File.join "{lib}", "**" , "*.rb"].each {|file| load File.expand_path(file)}

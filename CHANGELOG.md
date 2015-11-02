@@ -2,6 +2,12 @@
 
 ***
 
+Change log v.0.12.6
+
+**Template Fix**: Heroku would load the `environment.rb` file while deploying the application. This would cause Plezi's server to kick in and hang deployment. This issue was circumvented by renaming the `environment.rb` file to `initialize.rb`. Thanks to Adrian Gomez for exposing the issue (issue#9)
+
+***
+
 Change log v.0.12.5
 
 **Fix**: Placebo's older Rack recognition required that Rack be required within the gemfile of the application. This is no longer the case. Now `start_placebo` can also be used in a non-Rack environment (i.e. when disabling the server using: `Plezi.protocol = :placebo`). This allows writing Plezi based "worker" scripts that aren't web servers but can send and receive messages from the main application.
