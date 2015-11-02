@@ -1,8 +1,8 @@
 # load all framework and gems
-load ::File.expand_path(File.join("..", "environment.rb"),  __FILE__)
+load ::File.expand_path(File.join("..", "initialize.rb"),  __FILE__)
 
 # Make sure the server doesn't start
-NO_PLEZI_AUTO_START = true
+Iodine.protocol = false
 
 # create a default task
 desc "The default task will simply remind you to call 'rake -T'."
