@@ -7,11 +7,11 @@ Plezi is an easy to use Ruby Websocket Framework, with full RESTful routing supp
 
 With Plezi, you can easily:
 
-1. Add Websocket services and RESTful HTTP Streaming to your existing Web-App, (Rails/Sinatra or any other Rack based Ruby app).
+1. Create a full fledged Ruby web application, taking full advantage of RESTful routing, HTTP streaming and scalable Websocket features;
 
-2. Create an easily scalable backend for your SPA.
+2. Add Websocket services and RESTful HTTP Streaming to your existing Web-App, (Rails/Sinatra or any other Rack based Ruby app);
 
-3. Create a full fledged Ruby web application, taking full advantage of RESTful routing, HTTP streaming and scalable Websocket features.
+3. Create an easily scalable backend for your SPA.
 
 Plezi leverages [Iodine's server](https://github.com/boazsegev/iodine) new architecture. Iodine is a pure Ruby HTTP and Websocket Server built using [Iodine's](https://github.com/boazsegev/iodine) core library - a multi-threaded pure ruby alternative to EventMachine with process forking support (enjoy forking, if your code is scaling ready).
 
@@ -19,7 +19,7 @@ Plezi and Iodine are written for Ruby versions 2.1.0 or greater (or API compatib
 
 **Plezi version notice**
 
-The `master` branch always refers to the latest edge version, which might also be a broken version. Please refer to the relevent version by using the version's `tag` in the branch selector.
+The `master` branch always refers to the latest edge version. Please refer to your installed version's code by using the version's `tag` in the branch selector.
 
 ## Installation
 
@@ -35,7 +35,11 @@ Or install it yourself as:
 
 ## Creating a Plezi Application
 
-to create a new barebones app using the Plezi framework, run from terminal:
+I love starting small and growing, so when I create a Plezi app, I run the following in my terminal:
+
+    $ plezi mini appname
+
+But, some people prefer to have the application template already full blown and ready for heavy lifting, complete with some cummon settings for common gem and code snippets they can activate. These people open their terminal and execute:
 
     $ plezi new appname
 
@@ -69,8 +73,7 @@ Here is a Hello World using a Controller class (run in `irb`):
         end
 
         # use the host method to set up any specific host options:
-        host :default,
-              public: File.join('my', 'public', 'folder'),
+        host public: File.join('my', 'public', 'folder'),
               templates: File.join('my', 'template', 'folder')
 
 
@@ -78,7 +81,7 @@ Here is a Hello World using a Controller class (run in `irb`):
 
         exit # Plezi will autostart once you exit irb.
 
-Except while using WebSockets, returning a String will automatically add the string to the response before sending the response - which makes for cleaner code. It's also possible to use the `response` object to set the response or stream HTTP (return true instead of a stream when you're done).
+Except when using WebSockets, returning a String will automatically add the string to the response before sending the response - which makes for cleaner code. It's also possible to use the `response` object to set the response or stream HTTP (return true instead of a stream when you're done).
 
 It's also possible to define a number of controllers for a similar route. The controllers will answer in the order in which the routes are defined (this allows to group code by logic instead of url).
 
