@@ -1,4 +1,4 @@
-# load all framework and gems
+# load all application code and gems
 load ::File.expand_path(File.join("..", "initialize.rb"),  __FILE__)
 
 # Make sure the server doesn't start

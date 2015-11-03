@@ -35,11 +35,11 @@ Or install it yourself as:
 
 ## Creating a Plezi Application
 
-I love starting small and growing, so when I create a Plezi app, I run the following in my terminal:
+I love starting small and growing. So, when I create a Plezi app, I just want the basics that allow me to easily deploy my application. with these goals, I run the following in my terminal:
 
     $ plezi mini appname
 
-But, some people prefer to have the application template already full blown and ready for heavy lifting, complete with some cummon settings for common gem and code snippets they can activate. These people open their terminal and execute:
+But, some people prefer to have the application template already full blown and ready for heavy lifting, complete with some common settings for common gems and code snippets they can activate. These people open their terminal and execute:
 
     $ plezi new appname
 
