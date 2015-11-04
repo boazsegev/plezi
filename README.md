@@ -50,7 +50,7 @@ the default port for the app is 3000. you can set the port to listen to by using
 
 you now have a smart framework app that will happily assimilate any gem you feed it. it responds extra well to Haml, Sass and Coffee-Script, which you can enable in it's Gemfile.
 
-## Plezi is so easy, you can write a whole web-app in the terminal!
+## So easy, we can write a whole web-app in the terminal!
 
 The Plezi framework was designed with intuitive ease of use in mind.
 
@@ -69,11 +69,11 @@ Two lines! You can even start a Plezi application from `irb`, by adding the `exi
 
 Now visit [localhost:3000](http://localhost:3000/)
 
-### We want our Object Oriented design back!
+### Object Oriented design is fun!
 
-While Plezi allows you to use methods like we just did, Plezi really shines when we use Controller objects.
+While Plezi allows you to use methods like we just did, Plezi really shines when we use Controller classes.
 
-Plezi will automatically map methods to routes with complete RESTful routing support.
+Plezi will automatically map instance methods in any class to routes with complete RESTful routing support.
 
 Try this in your terminal (`irb`):
 
