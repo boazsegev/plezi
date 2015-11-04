@@ -20,6 +20,8 @@ module Plezi
 				if controller
 					ret = controller.new(request, response)._route_path_to_methods_and_set_the_response_
 				elsif proc
+					# proc.init(request, response)
+					# ret = proc.instance_exec(request, response, &proc)
 					ret = proc.call(request, response)
 				elsif controller == false
 					request.path = path.match(request.path).to_a.last.to_s
@@ -53,6 +55,23 @@ module Plezi
 				if controller.is_a?(Class)
 					# add controller magic
 					@controller = self.class.make_controller_magic controller, self
+				end
+				if @proc.is_a?(Proc)
+					# # proc's methods aren't executed since it's binding isn't `self`
+					# @proc.instance_exec do
+					# 	extend ::Plezi::ControllerMagic::InstanceMethods
+					# 	undef :url_for
+					# 	undef :full_url_for
+					# 	undef :requested_method
+					# 	def run request, response
+					# 		@request = request
+					# 		@params = request.params
+					# 		@flash = response.flash
+					# 		@host_params = request[:host_settings]
+					# 		@response = response
+					# 		@cookies = request.cookies
+					# 	end
+					# end
 				end
 			end
 
