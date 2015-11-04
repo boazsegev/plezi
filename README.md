@@ -37,18 +37,12 @@ But, some people prefer to have the application template already full blown and 
 
 That's it, now you have a ready to use basic web server (with some demo code, such as a websocket chatroom).
 
-If you're on MacOS or linux you can simply double click the `appname` script file in the `appname` folder. Or, from the terminal, you can type:
+On MacOS or linux, simply double click the `appname` script file to run. Or, from the terminal:
 
     $ cd appname
     $ ./appname # ( or: plezi s )
 
-now go, in your browser, to: [http://localhost:3000/](http://localhost:3000/)
-
-the default port for the app is 3000. you can set the port to listen to by using the `-p ` option (make sure you have permissions for the requested port):
-
-    $ ./appname -p 80
-
-you now have a smart framework app that will happily assimilate any gem you feed it. it responds extra well to Haml, Sass and Coffee-Script, which you can enable in it's Gemfile.
+See it work: [http://localhost:3000/](http://localhost:3000/)
 
 ## So easy, we can write a whole web-app in the terminal!
 
