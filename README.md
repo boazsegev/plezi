@@ -35,7 +35,7 @@ But, some people prefer to have the application template already full blown and 
 
     $ plezi new appname
 
-That's it, now you have a ready to use basic web server (with some demo code, such as a websocket chatroom).
+That's it, now we have a ready to use basic web server (with some demo code, such as a websocket chatroom).
 
 On MacOS or linux, simply double click the `appname` script file to run. Or, from the terminal:
 
@@ -48,7 +48,7 @@ See it work: [http://localhost:3000/](http://localhost:3000/)
 
 The Plezi framework was designed with intuitive ease of use in mind.
 
-Question - what's the shortest "Hello World" application when writing for Sinatra or Rails? ... can you write one in your terminal window?
+Question - what's the shortest "Hello World" web-application when writing for Sinatra or Rails? ... can you write one in your terminal window?
 
 In Plezi, it looks like this:
 
@@ -69,7 +69,7 @@ While Plezi allows you to use methods like we just did, Plezi really shines when
 
 Plezi will automatically map instance methods in any class to routes with complete RESTful routing support.
 
-Try this in your terminal (`irb`):
+Let's try this terminal (`irb`):
 
     require 'plezi'
     class MyDemo
@@ -90,11 +90,11 @@ Try this in your terminal (`irb`):
     route '/', MyDemo
     exit
 
-Now visit your [index](http://localhost:3000/) and [foo](http://localhost:3000/foo) or request an id, i.e. [http://localhost:3000/1](http://localhost:3000/1).
+Now visit [index](http://localhost:3000/) and [foo](http://localhost:3000/foo) or request an id, i.e. [http://localhost:3000/1](http://localhost:3000/1).
 
 Did you notice how the controller has natural access to the request's `params`?
 
-This is because Plezi inherits your controller and adds it's own magic to it, allowing to read and set cookies using the `cookies` Hash based cookie-jar, set or read session data using `session`, look into the `request`, set special headers for the `response`, store self destructing cookies using `flash` and so much more!
+This is because Plezi inherits our controller and adds some magic to it, allowing us to read and set cookies using the `cookies` Hash based cookie-jar, set or read session data using `session`, look into the `request`, set special headers for the `response`, store self destructing cookies using `flash` and so much more!
 
 ### Can websockets do that?!
 
@@ -145,13 +145,13 @@ Here's a websocket chat-room server using Plezi, comeplete with minor authentica
     # try two browsers with the client provided by http://www.websocket.org/echo.html
     exit
 
-Broadcasting in not the only help Plezi has to offer, you can also send a message to a specific connection using `unicast`, or send a message to everyone (no matter what controller is handling their connection) using `multicast`...
+Broadcasting in not the only help Plezi has to offer, we can also send a message to a specific connection using `unicast`, or send a message to everyone (no matter what controller is handling their connection) using `multicast`...
 
 ...It's even possible to register a unique identity, such as a specific user or even a `session.id`, so their messages are waiting for them even when they're off-line (you decide how long they wait)!
 
 ### Websocket scaling is as easy as one line of code!
 
-A common issue with Websocket scaling is trying to send websocket messages from server X to a user connected to server Y... On Heroku, it's enough add one Dyno (a total of two Dynos) to break websocket applications.
+A common issue with Websocket scaling is trying to send websocket messages from server X to a user connected to server Y... On Heroku, it's enough add one Dyno (a total of two Dynos) to break some websocket applications.
 
 Plezi leverages the power or Redis to automatically push both websocket messages and Http session data across servers, so that you can easily scale your applications (on Heroku, add Dynos) with only one line of code!
 
