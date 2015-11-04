@@ -89,7 +89,7 @@ It's also possible to define a number of controllers for a similar route. The co
 
 ## Native Websocket and Redis support
 
-Plezi Controllers have access to native websocket support through the `pre_connect`, `on_open`, `on_message(data)`, `on_close`, `broadcast` and `unicast` methods.
+Plezi Controllers have access to native websocket support through the `pre_connect`, `on_open`, `on_message(data)`, `on_close`, `multicast`, `broadcast`, `unicast` and the Identity API (`register_as` and `notify` methods).
 
 Here is some demo code for a simple Websocket broadcasting server, where messages sent to the server will be broadcasted back to all the **other** active connections (the connection sending the message will not recieve the broadcast).
 
@@ -128,7 +128,7 @@ Remember to connect to the service from at least two browser windows - to truly 
     route '/', BroadcastCtrl
 ```
 
-method names starting with an underscore ('_') will NOT be made public by the router.
+method names starting with an underscore ('_') are protected from the Http router, even when they are public.
 
 This is why even though both '/hello' and '/humans.txt' are public ( [try it](http://localhost:3000/humans.txt) ), '/_send_message' will return a 404 not found error ( [try it](http://localhost:3000/_send_message) ).
 
