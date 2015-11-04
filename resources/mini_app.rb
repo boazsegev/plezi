@@ -10,7 +10,6 @@
 	require 'bundler'
 	Bundler.require(:default, ENV['ENV'].to_s.to_sym)
 
-
 # # Optional code auto-loading and logging:
 
 	# # Load code from a subfolder called 'app'?
@@ -20,15 +19,15 @@
 	# Iodine.logger = Logger.new Root.join('server.log').to_s
 
 # # Optional Scaling (across processes or machines):
-	# # Redis scaling
-	Plezi::Settings.redis_channel_name = 'appsecret'
-	ENV['PL_REDIS_URL'] ||= ENV['REDIS_URL'] || ENV['REDISCLOUD_URL'] || ENV['REDISTOGO_URL'] # || "redis://username:password@my.host:6389"
-	#
+	ENV['PL_REDIS_URL'] ||= ENV['REDIS_URL'] ||
+							ENV['REDISCLOUD_URL'] ||
+							ENV['REDISTOGO_URL'] ||
+							nil # "redis://username:password@my.host:6389"
+	# # redis channel name should be changed is using Placebo API
+	# Plezi::Settings.redis_channel_name = 'appsecret'
+
 	# # uncomment to set up forking for 3 more processes (total of 4).
 	# Iodine.processes = 4
-	#
-	# # Consider setting a common session token for Redis supported sessions.
-	# Iodine::Http.session_token = 'appname_uui'
 
 
 # The basic appname controller, to get you started

@@ -2,26 +2,26 @@
 
 if defined? Redis
 
-	Plezi::Settings.redis_channel_name = 'appsecret'
-
 	# ## Plezi Redis Automation
 	# ## ====
 	# ##
 	# ## Sets up Plezi to use Radis broadcast.
 	# ##
 	# ## If Plezi Redis Automation is enabled:
-	# ## Plezi creates is own listening thread that listens for each Controller class that broadcasts using Redis.
-	# ## (using the Controller.redis_connection and Controller.redis_channel_name class methods)
+	# ## Plezi creates is own listening thread that listens for messages and broadcasts using Redis.
 	# ##
 	# ## Only one thread will be created and initiated during startup (dynamically created controller routes might be ignored).
 	# ##
-	# ## this overrides the default Controller#broadcast method which is very powerful but
-	# ## is limited to one process.
-	# ##
-	# ENV['PL_REDIS_URL'] ||= ENV['REDIS_URL'] || ENV['REDISCLOUD_URL'] || ENV['REDISTOGO_URL'] || "redis://username:password@my.host:6389"
+	# `redis_channel_name` should be set when using the Placebo API.
+	# (otherwise, it's only optional, as the automatic settings are good enough)
+	Plezi::Settings.redis_channel_name = 'appsecret'
+	ENV['PL_REDIS_URL'] ||= ENV['REDIS_URL'] ||
+							ENV['REDISCLOUD_URL'] ||
+							ENV['REDISTOGO_URL'] || 
+							nil # use: "redis://username:password@my.host:6389"
 
 
-	# ## OR, write your own custom Redis Automation here
+	# ## OR, write your own custom Redis implementation here
 	# ## ====
 	# ##
 	# ## create a listening thread - rewrite the following code for your own Redis tailored solution.

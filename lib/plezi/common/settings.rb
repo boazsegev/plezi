@@ -15,7 +15,7 @@ module Plezi
 		# Returns the Redis Channel Name used by this app.
 		# @return [String]
 		def redis_channel_name
-			@redis_channel_name ||= "#{File.basename($0, '.*')}_Redis_Channel"
+			@redis_channel_name ||= "#{File.basename($0, '.*')}_redis_channel"
 		end
 
 		# Sets the message byte size limit for a Websocket message. Defaults to 0 (no limit)
