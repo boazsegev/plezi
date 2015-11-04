@@ -44,7 +44,7 @@ On MacOS or linux, simply double click the `appname` script file to run. Or, fro
 
 See it work: [http://localhost:3000/](http://localhost:3000/)
 
-## So easy, we can write a whole web-app in the terminal!
+## So easy, we can an app in the terminal!
 
 The Plezi framework was designed with intuitive ease of use in mind.
 
