@@ -50,11 +50,11 @@ the default port for the app is 3000. you can set the port to listen to by using
 
 you now have a smart framework app that will happily assimilate any gem you feed it. it responds extra well to Haml, Sass and Coffee-Script, which you can enable in it's Gemfile.
 
-## Plezi is so easy, you don't reaaly need templates!
+## Plezi is so easy, you can write a whole web-app in the terminal!
 
 The Plezi framework was designed with intuitive ease of use in mind.
 
-Question? what's the shortest "Hello World" application when writing for Sinatra or Rails?
+Question - what's the shortest "Hello World" application when writing for Sinatra or Rails? ... can you write one in your terminal window?
 
 In Plezi, it looks like this:
 
