@@ -160,27 +160,88 @@ class WSIdentity
 		"identity api testing path\n#{params}"		
 	end
 	def show
-		if notify params[:id], :notification, (params[:message] || 'no message')
-			"Send notification for #{params[:id]}: #{(params[:message] || 'no message')}"
+		if params[:message]
+			if notify params[:id], :notification, params[:message]
+				"Sent notification for #{params[:id]}: #{params[:message]}"
+			else
+				"The identity requested (#{params[:id]}) doesn't exist."
+			end
 		else
-			"The identity requested (#{params[:id]}) doesn't exist."
+			%{<html><head><script>
+// Your websocket URI should be an absolute path. The following sets the base URI.
+// remember to update to the specific controller's path to your websocket URI.
+var ws_controller_path = window.location.pathname;
+var ws_uri = (window.location.protocol.match(/https/) ? 'wss' : 'ws') + '://' + window.document.location.host + ws_controller_path
+var websocket = 100
+var websocket_fail_count = 0
+
+function init_websocket()
+{
+    if(websocket && websocket.readyState == 1) return true; // console.log('no need to renew socket connection');
+    websocket = new WebSocket(ws_uri);
+    websocket.onopen = function(e) {
+        //restart fail count
+        websocket_fail = 0
+        // what do you want to do now?
+        var msg = document.createElement("li");
+        msg.className = 'system_message'
+        msg.innerHTML = "Connected.";
+        document.getElementById("output").appendChild(msg);
+    };
+
+    websocket.onclose = function(e) {
+        // what do you want to do now?
+        if(websocket_fail == 0) {
+            var msg = document.createElement("li");
+            msg.className = 'system_message'
+            msg.innerHTML = "Disconnected.";
+            document.getElementById("output").appendChild(msg);
+        };
+        // you probably want to reopen the websocket if it closes (unless the issue repeats).
+        if(websocket_fail <= 5) {websocket_fail += 1; init_websocket(); };
+    };
+    websocket.onerror = function(e) {
+        // what do you want to do now?
+    };
+    websocket.onmessage = function(e) {
+        // what do you want to do now?
+        console.log(e.data);
+        var msg = document.createElement("li");
+        msg.innerHTML = e.data;
+        document.getElementById("output").appendChild(msg);
+        // to use JSON, use:
+        // msg = JSON.parse(e.data); // remember to use JSON also in your Plezi controller.
+    };
+}
+window.addEventListener("load", init_websocket, false); 
+</script></head>
+<body>
+<h3>You are now #{params[:id]}</h3>
+<ul id='output'>
+</ul>
+</body></html>}
 		end
 	end
 	def pre_connect
 		params[:id] && true
 	end
 	def on_open
-		register_as params[:id]
+		@id_count = self.class.counter
+		register_as params[:id], max_connections: 3, lifetime: 120
 	end
 	def on_message data
-		puts "Got websocket message: #{data}"
+		puts "websocket message (for identity #{@id_count}) : #{data}"
 	end
 
 	protected
 
 	def notification message
 		write message
-		puts "Identity Got: #{message}"
+		puts "Identity #{@id_count} Got: #{message}"
+	end
+	def self.counter
+		@count ||= 0
+		@count += 1		
 	end
 
 end
@@ -492,12 +553,12 @@ end
 # mem_print_proc.call
 # Plezi.run_every 30, &mem_print_proc
 
-# require 'redis'
-# ENV['PL_REDIS_URL'] ||= ENV['REDIS_URL'] || ENV['REDISCLOUD_URL'] || ENV['REDISTOGO_URL'] || "redis://test:1234@pub-redis-11008.us-east-1-4.5.ec2.garantiadata.com:11008"
+require 'redis'
+ENV['PL_REDIS_URL'] ||= ENV['REDIS_URL'] || ENV['REDISCLOUD_URL'] || ENV['REDISTOGO_URL'] || "redis://test:1234@pub-redis-11008.us-east-1-4.5.ec2.garantiadata.com:11008"
 # Plezi.processes = 3
 
 Plezi.threads = 9
-PL.logger = nil
+# PL.logger = nil
 
 Plezi.run do
 

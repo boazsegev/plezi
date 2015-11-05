@@ -23,8 +23,9 @@ module Plezi
 				# identity:: a global application wide unique identifier that will persist throughout all of the identity's connections.
 				# options:: an option's hash that sets the properties of the identity.
 				#
-				# The option's Hash, at the moment, accepts only the following (optional) option:
+				# The option's Hash, at the moment, accepts only the following (optional) options:
 				# lifetime:: sets how long the identity can survive. defaults to `604_800` seconds (7 days).
+				# max_connections:: sets the amount of concurrent connections an identity can have (akin to open browser tabs receiving notifications). defaults to 1 (a single connection).
 				#
 				# Calling this method will also initiate any events waiting in the identity's queue.
 				# make sure that the method is only called once all other initialization is complete.
@@ -34,18 +35,21 @@ module Plezi
 				def register_as identity, options = {}
 					redis = Plezi.redis
 					raise "The identity API requires a Redis connection" unless redis
+					options[:max_connections] ||= 1
+					options[:max_connections] = 1 if options[:max_connections].to_i < 1
+					options[:lifetime] ||= 604_800
 					identity = identity.to_s.freeze
 					@___identity ||= [].to_set
 					@___identity << identity
 					redis.pipelined do
 						redis.lpush "#{identity}_uuid".freeze, uuid
-						redis.ltrim "#{identity}_uuid".freeze, 0, 0
+						redis.ltrim "#{identity}_uuid".freeze, 0, (options[:max_connections]-1)
 					end
 					___review_identity identity
 					redis.lpush(identity, ''.freeze) unless redis.llen(identity) > 0
 					redis.pipelined do
-						redis.expire identity, (options[:lifetime] || 604_800)
-						redis.expire "#{identity}_uuid".freeze, (options[:lifetime] || 604_800)
+						redis.expire identity, options[:lifetime]
+						redis.expire "#{identity}_uuid".freeze, options[:lifetime]
 					end
 				end
 
@@ -67,17 +71,17 @@ module Plezi
 					raise "unknown Redis initiation error" unless redis
 					identity = identity.to_s.freeze
 					return Iodine.warn("Identity message reached wrong target (ignored).").clear unless @___identity.include?(identity)
-					redis.multi do
-						redis.lpush identity, ''.freeze
-						redis.lpush identity, ''.freeze
-					end
-					msg = redis.rpop(identity)
-					Iodine.error "Unknown Identity Queue error - both messages and identity might be lost!\nExpected no data, but got: #{msg}" unless msg == ''.freeze
-					while (msg = redis.rpop(identity)) && msg != ''.freeze
+					messages = redis.multi do
+						redis.lrange identity, 1, -1
+						redis.ltrim identity, 0, 0
+					end[0]
+					targets = redis.lrange "#{identity}_uuid", 0, -1
+					while msg = messages.shift
 						msg = ::Plezi::Base::WSObject.translate_message(msg)
 						next unless msg
 						Iodine.error("Notification recieved but no method can handle it - dump:\r\n #{msg.to_s}") && next unless self.class.has_super_method?(msg[:method])
-						self.method(msg[:method]).call *msg[:data]
+						targets.each {|target| target == uuid ? self.method(msg[:method]).call(*msg[:data]) : unicast(target, msg[:method], *msg[:data])}
+						
 					end
 				end
 			end
@@ -91,7 +95,7 @@ module Plezi
 					raise "The identity API requires a Redis connection" unless redis
 					identity = identity.to_s.freeze
 					return false unless redis.llen(identity).to_i > 0
-					redis.lpush identity, ({method: event_name, data: args}).to_yaml
+					redis.rpush identity, ({method: event_name, data: args}).to_yaml
 					target_uuid = redis.lindex "#{identity}_uuid".freeze, 0
 					unicast target_uuid, :___review_identity, identity if target_uuid
 					true
