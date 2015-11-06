@@ -207,7 +207,10 @@ function init_websocket()
             document.getElementById("output").appendChild(msg);
         };
         // you probably want to reopen the websocket if it closes (unless the issue repeats).
-        if(websocket_fail <= 5) {websocket_fail += 1; init_websocket(); };
+        if(websocket_fail <= 5) {
+            websocket_fail += 1;
+            setTimeout( init_websocket, 250);
+        };
     };
     websocket.onerror = function(e) {
         // what do you want to do now?
