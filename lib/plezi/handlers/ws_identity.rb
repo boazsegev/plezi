@@ -4,6 +4,87 @@ module Plezi
 
 		module WSObject
 
+			module RedisEmultaion
+				public
+				def lrange key, first, last = -1
+					sync do
+						return [] unless @cache[key]
+						@cache[key][first..last] || []
+					end
+				end
+				def llen key
+					sync do
+						return 0 unless @cache[key]
+						@cache[key].count
+					end
+				end
+				def ltrim key, first, last = -1
+					sync do
+						return "OK".freeze unless @cache[key]
+						@cache[key] = @cache[key][first..last]
+						"OK".freeze
+					end
+				end
+				def del *keys
+					sync do
+						ret = 0
+						keys.each {|k| ret += 1 if @cache.delete k }
+						ret
+					end
+				end
+				def lpush key, value
+					sync do
+						@cache[key] ||= []
+						@cache[key].unshift value
+						@cache[key].count
+					end
+				end
+				def rpush key, value
+					sync do
+						@cache[key] ||= []
+						@cache[key].push value
+						@cache[key].count
+					end
+				end
+				def expire key, seconds
+					Iodine.warn "Identity API requires Redis - no persistent storage!"
+					sync do
+						return 0 unless @cache[key]
+						if @timers[key]
+							@timers[key].stop!
+						end
+						@timers[key] = (Iodine.run_after(seconds) { self.del key })
+					end
+				end
+				def multi
+					sync do
+						@results = []
+						yield(self)
+						ret = @results
+						@results = nil
+						ret
+					end
+				end
+				alias :pipelined :multi
+				protected
+				@locker = Mutex.new
+				@cache = Hash.new
+				@timers = Hash.new
+
+				def sync &block
+					if @locker.locked? && @locker.owned?
+						ret = yield
+						@results << ret if @results
+						ret
+					else
+						@locker.synchronize { sync &block }
+					end
+				end
+
+				public
+				extend self
+			end
+
 			# the following are additions to the WebSocket Object module,
 			# to establish identity to websocket realtionships, allowing for a
 			# websocket message bank.
@@ -16,8 +97,9 @@ module Plezi
 				# Like {Plezi::Base::WSObject::SuperClassMethods#notify}, using this method requires an active Redis connection
 				# to be set up. See {Plezi#redis} for more information.
 				#
-				# Only one connection at a time can respond to identity events. If the same identity
+				# By default, only one connection at a time can respond to identity events. If the same identity
 				# connects more than once, only the last connection will receive the notifications.
+				# This default may be controlled by setting the `:max_connections` option to a number greater than 1.
 				#
 				# The method accepts:
 				# identity:: a global application wide unique identifier that will persist throughout all of the identity's connections.
@@ -33,8 +115,7 @@ module Plezi
 				# Do NOT call this method asynchronously unless Plezi is set to run as in a single threaded mode - doing so
 				# will execute any pending events outside the scope of the IO's mutex lock, thus introducing race conditions.
 				def register_as identity, options = {}
-					redis = Plezi.redis
-					raise "The identity API requires a Redis connection" unless redis
+					redis = Plezi.redis || ::Plezi::Base::WSObject::RedisEmultaion
 					options[:max_connections] ||= 1
 					options[:max_connections] = 1 if options[:max_connections].to_i < 1
 					options[:lifetime] ||= 604_800
@@ -45,8 +126,8 @@ module Plezi
 						redis.lpush "#{identity}_uuid".freeze, uuid
 						redis.ltrim "#{identity}_uuid".freeze, 0, (options[:max_connections]-1)
 					end
-					___review_identity identity
 					redis.lpush(identity, ''.freeze) unless redis.llen(identity) > 0
+					___review_identity identity
 					redis.pipelined do
 						redis.expire identity, options[:lifetime]
 						redis.expire "#{identity}_uuid".freeze, options[:lifetime]
@@ -67,8 +148,7 @@ module Plezi
 			module SuperInstanceMethods
 				protected
 				def ___review_identity identity
-					redis = Plezi.redis
-					raise "unknown Redis initiation error" unless redis
+					redis = Plezi.redis || ::Plezi::Base::WSObject::RedisEmultaion
 					identity = identity.to_s.freeze
 					return Iodine.warn("Identity message reached wrong target (ignored).").clear unless @___identity.include?(identity)
 					messages = redis.multi do
@@ -80,7 +160,8 @@ module Plezi
 						msg = ::Plezi::Base::WSObject.translate_message(msg)
 						next unless msg
 						Iodine.error("Notification recieved but no method can handle it - dump:\r\n #{msg.to_s}") && next unless self.class.has_super_method?(msg[:method])
-						targets.each {|target| target == uuid ? self.method(msg[:method]).call(*msg[:data]) : unicast(target, msg[:method], *msg[:data])}
+						# targets.each {|target| target == uuid ? self.method(msg[:method]).call(*msg[:data]) : unicast(target, msg[:method], *msg[:data])}
+						targets.each {|target| unicast(target, msg[:method], *msg[:data])} # this allows for async execution
 						
 					end
 				end
@@ -91,20 +172,17 @@ module Plezi
 
 				# sends a notification to an Identity. Returns false if the Identity never registered or it's registration expired.
 				def notify identity, event_name, *args
-					redis = Plezi.redis
-					raise "The identity API requires a Redis connection" unless redis
+					redis = Plezi.redis || ::Plezi::Base::WSObject::RedisEmultaion
 					identity = identity.to_s.freeze
 					return false unless redis.llen(identity).to_i > 0
 					redis.rpush identity, ({method: event_name, data: args}).to_yaml
-					target_uuid = redis.lindex "#{identity}_uuid".freeze, 0
-					unicast target_uuid, :___review_identity, identity if target_uuid
+					redis.lrange("#{identity}_uuid".freeze, 0, -1).each {|target| unicast target, :___review_identity, identity }
 					true
 				end
 
 				# returns true if the Identity in question is registered to receive notifications.
 				def registered? identity
-					redis = Plezi.redis
-					return Iodine.warn("Cannot check for Identity registration without a Redis connection (silent).") && false unless redis
+					redis = Plezi.redis || ::Plezi::Base::WSObject::RedisEmultaion
 					identity = identity.to_s.freeze
 					redis.llen(identity).to_i > 0
 				end
