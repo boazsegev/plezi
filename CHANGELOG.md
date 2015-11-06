@@ -2,6 +2,16 @@
 
 ***
 
+Change log v.0.12.7
+
+**Identity API**: Identity API now allows you to set a higher number of allowable concurrent connections per identity, rather than the original single connection limit. Also, allows limited functionality when Redis isn't defined (registration lifetime is limited to the process lifetime and scaling will not work without Redis).
+
+**Template**: minor template updates.
+
+**Fix**: fixed an issue with data and (file) sending, introduced when extending the `send_data` method to allow for big File objects (buffering them through the connection instead of loading them to the memory).
+
+***
+
 Change log v.0.12.6
 
 **Template Fix**: Heroku would load the `environment.rb` file while deploying the application. This would cause Plezi's server to kick in and hang deployment. This issue was circumvented by renaming the `environment.rb` file to `initialize.rb`. Thanks to Adrian Gomez for exposing the issue (issue#9)

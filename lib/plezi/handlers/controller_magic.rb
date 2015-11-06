@@ -133,13 +133,13 @@ module Plezi
 					Plezi.warn 'existing response body was cleared by `#send_data`!'
 					response.body.close if response.body.respond_to? :close
 				end
-				response = data
+				response.body = data
 
 				# set headers
 				content_disposition = options[:inline] ? 'inline' : 'attachment'
 				content_disposition << "; filename=#{::File.basename(options[:filename])}" if options[:filename]
 
-				response['content-type'] = (options[:type] ||= MimeTypeHelper::MIME_DICTIONARY[::File.extname(options[:filename])])
+				response['content-type'] = (options[:type] ||= options[:filename] && MimeTypeHelper::MIME_DICTIONARY[::File.extname(options[:filename])])
 				response['content-disposition'] = content_disposition
 				true
 			end
