@@ -713,7 +713,7 @@ The following is safe:
         global_hash[:change] = "safe"
     end
  
-However, th following is unsafe:
+However, the following is unsafe:
 
     # set data
     Plezi.cache_data :global_hash, Hash.new
@@ -734,5 +734,5 @@ Feel free to fork or contribute. right now I am one person, but together we can 
 4. Push to the branch (`git push origin my-new-feature`)
 5. Create a new Pull Request
 
-[![Plei](https://raw.githubusercontent.com/boazsegev/plezi/master/logo/sign.png)](https://github.com/boazsegev/plezi)
+[![Plezi](https://raw.githubusercontent.com/boazsegev/plezi/master/logo/sign.png)](https://github.com/boazsegev/plezi)
 
