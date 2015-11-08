@@ -4,11 +4,11 @@
 [![Inline docs](http://inch-ci.org/github/boazsegev/plezi.svg?branch=master)](http://www.rubydoc.info/github/boazsegev/plezi/master)
 [![GitHub](https://img.shields.io/badge/GitHub-Open%20Source-blue.svg)](https://github.com/boazsegev/plezi)
 
-Plezi is an easy to use Ruby Websocket Framework, with full RESTful routing support and HTTP streaming support. It's name comes from the word "fun", or "pleasure", since Plezi is a pleasure to work with.
+Plezi is a Ruby framework for realtime web applications. It's name comes from the word "pleasure", since Plezi is a pleasure to work with.
 
 With Plezi, you can easily:
 
-1. Create a full fledged Ruby web application, taking full advantage of RESTful routing, HTTP streaming and scalable Websocket features;
+1. Create a Ruby web application, taking full advantage of RESTful routing, HTTP streaming and scalable Websocket features;
 
 2. Add Websocket services and RESTful HTTP Streaming to your existing Web-App, (Rails/Sinatra or any other Rack based Ruby app);
 
@@ -26,51 +26,46 @@ Or install it yourself as:
 
     $ gem install plezi
 
-## Creating a Plezi Application
+## Our first Plezi Application
 
-I love starting small and growing. So, when I create a Plezi app, I just want the basics that allow me to easily deploy my application. with these goals, I run the following in my terminal:
+I love starting small and growing. So, for my first Plezi application, I just want the basics. I will run the following in my terminal:
 
     $ plezi mini appname
 
-But, some people prefer to have the application template already full blown and ready for heavy lifting, complete with some common settings for common gems and code snippets they can activate. These people open their terminal and execute:
+If you prefer to have the application template already full blown and ready for heavy lifting, complete with some common settings for common gems and code snippets you can activate, open your terminal and type:
 
     $ plezi new appname
 
-That's it, now we have a ready to use basic web server (with some demo code, such as a websocket chatroom).
+That's it, we now have a our first Plezi application - it's a websocket chatroom (that's the starter code).
 
-On MacOS or linux, simply double click the `appname` script file to run. Or, from the terminal:
+On MacOS or linux, simply double click the `appname` script file to start the server. Or, from the terminal:
 
     $ cd appname
     $ ./appname # ( or: plezi s )
 
 See it work: [http://localhost:3000/](http://localhost:3000/)
 
-## So easy, we can an app in the terminal!
+## So easy, we can code an app in the terminal!
 
 The Plezi framework was designed with intuitive ease of use in mind.
 
-Question - what's the shortest "Hello World" web-application when writing for Sinatra or Rails? ... can you write one in your terminal window?
+Question - what's the shortest "Hello World" web-application when writing for Sinatra or Rails? ... can you write one in your own terminal window?
 
 In Plezi, it looks like this:
 
     require 'plezi'
     route('*') { "Hello World!" }
-
-Two lines! You can even start a Plezi application from `irb`, by adding the `exit` at the end:
-
-    require 'plezi'
-    route('*') { "Hello World!" }
     exit # <- this exits the terminal and starts the server
 
-Now visit [localhost:3000](http://localhost:3000/)
+Three lines! Now visit [localhost:3000](http://localhost:3000/)
 
 ### Object Oriented design is fun!
 
-While Plezi allows you to use methods like we just did, Plezi really shines when we use Controller classes.
+While Plezi allows us to utilize methods, like we just did, Plezi really shines when we use Controller classes.
 
 Plezi will automatically map instance methods in any class to routes with complete RESTful routing support.
 
-Let's try this terminal (`irb`):
+Let's copy and paste this into our `irb` terminal:
 
     require 'plezi'
     class MyDemo
@@ -95,7 +90,7 @@ Now visit [index](http://localhost:3000/) and [foo](http://localhost:3000/foo) o
 
 Did you notice how the controller has natural access to the request's `params`?
 
-This is because Plezi inherits our controller and adds some magic to it, allowing us to read and set cookies using the `cookies` Hash based cookie-jar, set or read session data using `session`, look into the `request`, set special headers for the `response`, store self destructing cookies using `flash` and so much more!
+This is because Plezi inherits our controller and adds some magic to it, allowing us to read _and set_ cookies using the `cookies` Hash based cookie-jar, set or read session data using `session`, look into the `request`, set special headers for the `response`, store self destructing cookies using `flash` and so much more!
 
 ### Can websockets do that?!
 
@@ -146,9 +141,9 @@ Here's a websocket chat-room server using Plezi, comeplete with minor authentica
     # try two browsers with the client provided by http://www.websocket.org/echo.html
     exit
 
-Broadcasting in not the only help Plezi has to offer, we can also send a message to a specific connection using `unicast`, or send a message to everyone (no matter what controller is handling their connection) using `multicast`...
+Broadcasting isn't the only tool Plezi offers, we can also send a message to a specific connection using `unicast`, or send a message to everyone (no matter what controller is handling their connection) using `multicast`...
 
-...It's even possible to register a unique identity, such as a specific user or even a `session.id`, so their messages are waiting for them even when they're off-line (you decide how long they wait)!
+...It's even possible to register a unique identity, such as a specific user or even a `session.id`, so their messages are waiting for them even when they're off-line (you decide how long they wait)! We simply use `register_as @user.id` in our `on_open` callback, and than the user can get notifications sent by `notify user.id, :evet_method, *args`.
 
 ### Websocket scaling is as easy as one line of code!
 
@@ -192,11 +187,11 @@ Each host has it's own settings for a public folder, asset rendering, templates 
     route '/', MyDemo
     exit
 
-Plezi supports ERB (i.e. `template.html.erb`), Slim (i.e. `template.html.slim`), Haml (i.e. `template.html.haml`), CoffeeScript (i.e. `template.js.coffee`) and Sass (i.e. `template.css.scss`) right out of the box... but it's expendable using the `Plezi::Renderer.register` and `Plezi::AssetManager.register`
+Plezi supports ERB (i.e. `template.html.erb`), Slim (i.e. `template.html.slim`), Haml (i.e. `template.html.haml`), CoffeeScript (i.e. `asset.js.coffee`) and Sass (i.e. `asset.css.scss`) right out of the box... and it's even extendible using the `Plezi::Renderer.register` and `Plezi::AssetManager.register`
 
 ## More about Plezi Controller classes
 
-One of the best things about the Plezi is it's ability to take in any class as a controller class and route to the classes methods with special support for RESTful methods (`index`, `show`, `new`, `save`, `update`, `delete`, `before` and `after`) and for WebSockets (`pre_connect`, `on_open`, `on_message(data)`, `on_close`, `broadcast`, `unicast`, `multicast`, `on_broadcast(data)`).
+One of the best things about the Plezi is it's ability to take in any class as a controller class and route to the classes methods with special support for RESTful methods (`index`, `show`, `new`, `save`, `update`, `delete`, `before` and `after`) and for WebSockets (`pre_connect`, `on_open`, `on_message(data)`, `on_close`, `broadcast`, `unicast`, `multicast`, `on_broadcast(data)`, `register_as(identity)`, `notify`).
 
 Here is a Hello World using a Controller class (run in `irb`):
 
