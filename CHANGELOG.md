@@ -2,6 +2,12 @@
 
 ***
 
+Change log v.0.12.8
+
+**Fix**: Sass cacheing now works as expected, so that repeated calls to the SASS renderer are loaded from the cache without failing.
+
+***
+
 Change log v.0.12.7
 
 **Identity API**: Identity API now allows you to set a higher number of allowable concurrent connections per identity, rather than the original single connection limit. Also, allows limited functionality when Redis isn't defined (registration lifetime is limited to the process lifetime and scaling will not work without Redis).

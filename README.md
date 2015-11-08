@@ -1,4 +1,6 @@
 # [Plezi](https://github.com/boazsegev/plezi), The Ruby framework for realtime web-apps
+[![Logo](logo/dark.png)](https://github.com/boazsegev/plezi)
+
 [![Gem Version](https://badge.fury.io/rb/plezi.svg)](http://badge.fury.io/rb/plezi)
 [![Inline docs](http://inch-ci.org/github/boazsegev/plezi.svg?branch=master)](http://www.rubydoc.info/github/boazsegev/plezi/master)
 [![GitHub](https://img.shields.io/badge/GitHub-Open%20Source-blue.svg)](https://github.com/boazsegev/plezi)
@@ -732,3 +734,5 @@ Feel free to fork or contribute. right now I am one person, but together we can 
 3. Commit your changes (`git commit -am 'Add some feature'`)
 4. Push to the branch (`git push origin my-new-feature`)
 5. Create a new Pull Request
+[![Logo](logo/sign.png)](https://github.com/boazsegev/plezi)
+

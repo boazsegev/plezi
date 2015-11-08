@@ -51,8 +51,10 @@ module Plezi
 					Plezi.cache_data filename, eng.dependencies
 					css, map = eng.render_with_sourcemap("#{File.basename(filename, '.*'.freeze)}.map".freeze)
 					Plezi.cache_data filename.sub(/\.s[ac]ss$/, '.map'.freeze), map.to_json( css_uri: File.basename(filename, '.*'.freeze) )
-					css
+					Plezi.cache_data "#{filename}.css", css
+					return css
 				end
+				Plezi.get_cached("#{filename}.css")
 			end
 
 			def refresh_sass? sass
