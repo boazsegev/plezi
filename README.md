@@ -733,5 +733,5 @@ Feel free to fork or contribute. right now I am one person, but together we can 
 3. Commit your changes (`git commit -am 'Add some feature'`)
 4. Push to the branch (`git push origin my-new-feature`)
 5. Create a new Pull Request
-[![Logo](logo/sign.png)](https://github.com/boazsegev/plezi)
+[![Plei](logo/sign.png =100x)](https://github.com/boazsegev/plezi)
 
