@@ -1,4 +1,4 @@
-# [![Plezi - the Ruby framework for realtime web-apps](https://raw.githubusercontent.com/boazsegev/plezi/master/logo/light.png)](https://github.com/boazsegev/plezi)
+# [![Plezi - the Ruby framework for realtime web-apps](https://raw.githubusercontent.com/boazsegev/plezi/master/logo/dark.png)](https://github.com/boazsegev/plezi)
 
 [![Gem Version](https://badge.fury.io/rb/plezi.svg)](http://badge.fury.io/rb/plezi)
 [![Inline docs](http://inch-ci.org/github/boazsegev/plezi.svg?branch=master)](http://www.rubydoc.info/github/boazsegev/plezi/master)
