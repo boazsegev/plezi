@@ -174,7 +174,12 @@ module Plezi
 				# make sure templates are enabled
 				return false if host_params[:templates].nil?
 				# render layout by recursion, if exists
-				(return render(options.delete(:layout), options) { render template, options, &block }) if options[:layout]
+				if options[:layout]
+					layout = options.delete(:layout)
+					inner = render(template, options, &block)
+					return false unless inner
+					return render(layout, options) { inner }
+				end
 				# set up defaults
 				options[:type] ||= 'html'.freeze
 				options[:locale] ||= params[:locale].to_sym if params[:locale]
@@ -188,7 +193,9 @@ module Plezi
 				# Circumvents I18n persistance issues (live updating and thread data storage).
 				I18n.locale = options[:locale] || I18n.default_locale if defined?(I18n) # sets the locale to nil for default behavior even if the locale was set by a previous action - removed: # && options[:locale]
 				# find template and create template object
-				filename = template.is_a?(String) ? File.join( host_params[:templates].to_s, template) : (File.join( host_params[:templates].to_s, *template.to_s.split('_')) + (options[:type].empty? ? '': ".#{options[:type]}"))
+				template = [template] if template.is_a?(String)
+				filename = ( template.is_a?(Array) ? File.join( host_params[:templates].to_s, *template) : File.join( host_params[:templates].to_s, *template.to_s.split('_') ) ) + (options[:type].empty? ? '': ".#{options[:type]}")
+				puts "searching for #{filename}"
 				::Plezi::Renderer.render filename, binding, &block
 			end
 

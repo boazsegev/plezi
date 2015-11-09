@@ -2,6 +2,14 @@
 
 ***
 
+Change log v.0.12.9
+
+**Fix**: Layered rendering (when using layout) will now fail if the inner layer (the actual page) fails to render - directing the user to the 404 error page instead of displaying the layout with no data.
+
+**Update**: `render` will now accept either a String (for a template name in the root of the template folder), a Symbol (the `_` sign will be used to delimit folders, if needed) or an Array of Strings (delimiting folders up to the file's base name).
+
+***
+
 Change log v.0.12.8
 
 **Fix**: Sass cacheing now works as expected, so that repeated calls to the SASS renderer are loaded from the cache without failing.
