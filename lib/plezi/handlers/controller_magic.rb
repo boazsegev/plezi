@@ -195,7 +195,6 @@ module Plezi
 				# find template and create template object
 				template = [template] if template.is_a?(String)
 				filename = ( template.is_a?(Array) ? File.join( host_params[:templates].to_s, *template) : File.join( host_params[:templates].to_s, *template.to_s.split('_') ) ) + (options[:type].empty? ? '': ".#{options[:type]}")
-				puts "searching for #{filename}"
 				::Plezi::Renderer.render filename, binding, &block
 			end
 

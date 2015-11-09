@@ -2,6 +2,14 @@
 
 ***
 
+Change log v.0.12.10
+
+**Fix**: removed a debug message introduced when fixing the renderer for version 0.12.9.
+
+**Update**: updated gemspecs to link to [plezi.io](http://www.plezi.io).
+
+***
+
 Change log v.0.12.9
 
 **Fix**: Layered rendering (when using layout) will now fail if the inner layer (the actual page) fails to render - directing the user to the 404 error page instead of displaying the layout with no data.

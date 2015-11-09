@@ -10,7 +10,7 @@ Gem::Specification.new do |spec|
   spec.email         = ['boaz@2be.co.il']
   spec.summary       = %q{Plezi - the easy way to add Websockets, RESTful routing and HTTP streaming serviced to Ruby Web-Apps.}
   spec.description   = %q{Plezi - the easy way to add Websockets, RESTful routing and HTTP streaming serviced to Ruby Web-Apps.}
-  spec.homepage      = "http://boazsegev.github.io/plezi/"
+  spec.homepage      = "http://www.plezi.io/"
   spec.license       = "MIT"
 
   spec.files         = `git ls-files -z`.split("\x0")
