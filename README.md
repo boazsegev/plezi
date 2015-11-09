@@ -1,4 +1,4 @@
-# [![Plezi - the Ruby framework for realtime web-apps](https://raw.githubusercontent.com/boazsegev/plezi/master/logo/dark.png)](https://github.com/boazsegev/plezi)
+# [![Plezi - the Ruby framework for realtime web-apps](https://raw.githubusercontent.com/boazsegev/plezi/master/logo/dark.png)](http://www.plezi.io)
 
 [![Gem Version](https://badge.fury.io/rb/plezi.svg)](http://badge.fury.io/rb/plezi)
 [![Inline docs](http://inch-ci.org/github/boazsegev/plezi.svg?branch=master)](http://www.rubydoc.info/github/boazsegev/plezi/master)
@@ -729,5 +729,5 @@ Feel free to fork or contribute. right now I am one person, but together we can 
 4. Push to the branch (`git push origin my-new-feature`)
 5. Create a new Pull Request
 
-[![Plezi](https://raw.githubusercontent.com/boazsegev/plezi/master/logo/sign.png)](https://github.com/boazsegev/plezi)
+[![Plezi](https://raw.githubusercontent.com/boazsegev/plezi/master/logo/sign.png)](http://www.plezi.io)
 
