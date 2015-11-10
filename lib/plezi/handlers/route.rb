@@ -106,7 +106,7 @@ module Plezi
 				raise NotImplementedError, "#url_for isn't implemented for this router - could this be a Regexp based router?" unless @url_array
 				case dest
 				when :index, nil, false
-					dest = {}					
+					dest = {}
 				when String
 					dest = {id: dest.dup}
 				when Numeric, Symbol
