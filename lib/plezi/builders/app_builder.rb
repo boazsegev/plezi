@@ -119,10 +119,7 @@ module Plezi
 			puts "starting to write template data...".red
 			puts ""
 			Builder.write_files app_tree
-			File.chmod 0775, "#{app_name}"
-			puts "tried to update execution permissions. this is system dependent and might have failed.".pink
-			puts "use: chmod +x ./#{app_name} to set execution permissions on Unix machines."
-			puts ""
+			File.chmod 0775, "#{app_name}" rescue true
 			puts "done."
 			puts "\n#{@end_comments.join("\n")}" unless @end_comments.empty?
 			puts ""
