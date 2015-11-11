@@ -14,6 +14,14 @@ With Plezi, you can easily:
 
 3. Create an easily scalable backend for your SPA.
 
+## Guides an documentation
+
+You can find [tutorials and guides at Plezi.io](http://www.plezi.io/guides).
+
+Plezi leverages Ruby's mixins and meta-programming, so the YARD documentation is hard to navigate... I started writing guides for Plezi and would really appreciate any help you can offer.
+
+Please feel free to [contribute to Plezi's guides](https://github.com/boazsegev/plezi-website), or even just observe the [plezi.io website's code](https://github.com/boazsegev/plezi-website) (implemented using Plezi).
+
 ## Installation
 
 Add this line to your application's Gemfile:
@@ -26,46 +34,42 @@ Or install it yourself as:
 
     $ gem install plezi
 
-## Our first Plezi Application
+## Quick start
 
-I love starting small and growing. So, for my first Plezi application, I just want the basics. I will run the following in my terminal:
+Plezi is super easy. Please read our [Getting Started guide](http://www.plezi.io/guides/basics) for more information.
+
+Here's a super quick intro:
+
+### A running start
+
+Get a jump start by typing (in your terminal):
 
     $ plezi mini appname
-
-If you prefer to have the application template already full blown and ready for heavy lifting, complete with some common settings for common gems and code snippets you can activate, open your terminal and type:
-
+OR
     $ plezi new appname
 
-That's it, we now have a our first Plezi application - it's a websocket chatroom (that's the starter code).
-
-On MacOS or linux, simply double click the `appname` script file to start the server. Or, from the terminal:
+Next, simply double click the `appname` script file to start the server. Or, from the terminal:
 
     $ cd appname
-    $ ./appname # ( or: plezi s )
+    $ ruby ./appname
 
 See it work: [http://localhost:3000/](http://localhost:3000/)
 
-## So easy, we can code an app in the terminal!
+### Hello world
 
 The Plezi framework was designed with intuitive ease of use in mind.
 
-Question - what's the shortest "Hello World" web-application when writing for Sinatra or Rails? ... can you write one in your own terminal window?
-
-In Plezi, it looks like this:
+Open the `irb` terminal and type:
 
     require 'plezi'
     route('*') { "Hello World!" }
     exit # <- this exits the terminal and starts the server
 
-Three lines! Now visit [localhost:3000](http://localhost:3000/)
+A Hello World web application using three lines of code (one line is the actual code)... see it at [localhost:3000](http://localhost:3000/).
 
-### Object Oriented design is fun!
+### Hello Object Oriented design
 
-While Plezi allows us to utilize methods, like we just did, Plezi really shines when we use Controller classes.
-
-Plezi will automatically map instance methods in any class to routes with complete RESTful routing support.
-
-Let's copy and paste this into our `irb` terminal:
+Plezi really shines when we use Controller classes. Try this in your `irb` terminal:
 
     require 'plezi'
     class MyDemo
@@ -77,7 +81,7 @@ Let's copy and paste this into our `irb` terminal:
         def foo
             "Bar!"
         end
-        # show is RESTful, it will answer '/(:id)'
+        # show is RESTful, it will answer any request looking like: '/(:id)'
         def show
             "Are you looking for: #{params[:id]}?"
         end
@@ -88,11 +92,7 @@ Let's copy and paste this into our `irb` terminal:
 
 Now visit [index](http://localhost:3000/) and [foo](http://localhost:3000/foo) or request an id, i.e. [http://localhost:3000/1](http://localhost:3000/1).
 
-Did you notice how the controller has natural access to the request's `params`?
-
-This is because Plezi inherits our controller and adds some magic to it, allowing us to read _and set_ cookies using the `cookies` Hash based cookie-jar, set or read session data using `session`, look into the `request`, set special headers for the `response`, store self destructing cookies using `flash` and so much more!
-
-### Can websockets do that?!
+### Quick, websockets!
 
 Plezi was designed for websockets from the ground up. If your controller class defines an `on_message(data)` callback, plezi will automatically enable websocket connections for that route.
 
@@ -109,29 +109,25 @@ Here's a Websocket echo server using Plezi:
     route '/', MyDemo
     exit
 
-But that's not all, each controller is also a "channel" which can broadcast to everyone who's connected to it.
+Each controller is also a "channel" which can broadcast to everyone who's connected to it.
 
 Here's a websocket chat-room server using Plezi, comeplete with minor authentication (requires a chat handle):
 
     require 'plezi'
     class MyDemo
         def on_open
-            # there's a better way to require a user handle, but this is good enough for now.
             close unless params[:id]
         end
         def on_message data
-            # sanitize the data.
-            data = ERB::Util.html_escape data
             # broadcast to everyone else (NOT ourselves):
-            # this will have every connection execute the `chat_message` with the following argument(s).
-            broadcast :chat_message, "#{params[:id]}: #{data}"
+            broadcast :chat_message,  "#{params[:id]}: #{data}"
             # write to our own websocket:
-            write "Me: #{data}"
+            chat_message "Me: #{data}"
         end
         protected
-        # receive and implement the broadcast
+        # implement the broadcast event
         def chat_message data
-            write data
+            write ERB::Util.html_escape(data)
         end
     end
 
@@ -145,16 +141,15 @@ Broadcasting isn't the only tool Plezi offers, we can also send a message to a s
 
 ...It's even possible to register a unique identity, such as a specific user or even a `session.id`, so their messages are waiting for them even when they're off-line (you decide how long they wait)! We simply use `register_as @user.id` in our `on_open` callback, and than the user can get notifications sent by `notify user.id, :evet_method, *args`.
 
-### Websocket scaling is as easy as one line of code!
+### Scaling? easy!
 
-A common issue with Websocket scaling is trying to send websocket messages from server X to a user connected to server Y... On Heroku, it's enough add one Dyno (a total of two Dynos) to break some websocket applications.
-
-Plezi leverages the power or Redis to automatically push both websocket messages and Http session data across servers, so that you can easily scale your applications (on Heroku, add Dynos) with only one line of code!
-
-Just tell Plezi how to acess your Redis server and Plezi will make sure that your users get their messages and that your application can access it's session data accross different servers:
+Scale your Websocket application with one line of code:
 
     # REDIS_URL is where Herolu-Redis stores it's URL
     ENV['PL_REDIS_URL'] ||= ENV['REDIS_URL'] || "redis://username:password@my.host:6389"
+
+Websocket messages (broadcasts, unicasts, etc') will now sync using Redis throughout all your server instances.
+
 
 ### Hosts, template rendering, assets...?
 
@@ -189,7 +184,8 @@ Each host has it's own settings for a public folder, asset rendering, templates 
 
 Plezi supports ERB (i.e. `template.html.erb`), Slim (i.e. `template.html.slim`), Haml (i.e. `template.html.haml`), CoffeeScript (i.e. `asset.js.coffee`) and Sass (i.e. `asset.css.scss`) right out of the box... and it's even extendible using the `Plezi::Renderer.register` and `Plezi::AssetManager.register`
 
-## More about Plezi Controller classes
+
+## Longer version - Plezi Controller classes
 
 One of the best things about the Plezi is it's ability to take in any class as a controller class and route to the classes methods with special support for RESTful methods (`index`, `show`, `new`, `save`, `update`, `delete`, `before` and `after`) and for WebSockets (`pre_connect`, `on_open`, `on_message(data)`, `on_close`, `broadcast`, `unicast`, `multicast`, `on_broadcast(data)`, `register_as(identity)`, `notify`).
 
