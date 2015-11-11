@@ -6,6 +6,8 @@ Change log v.0.12.10
 
 **Fix**: removed a debug message introduced when fixing the renderer for version 0.12.9.
 
+**Update**: Plezi will respect changes to the response status when rendering error massges (i.e. 404 or 500 error templates), allowing us to change the response status to 302 (redirect) and set a location header using (response['location'] = '/')... This allows for a more gracefull error 500 handling.
+
 **Update**: updated gemspecs to link to [plezi.io](http://www.plezi.io).
 
 ***

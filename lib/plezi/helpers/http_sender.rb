@@ -61,7 +61,7 @@ module Plezi
 			# sends raw data through the connection. always returns true (data send).
 			def send_raw_data request, response, data, mime, status_code = 200, headers = {}
 				headers.each {|k, v| response[k] = v}
-				response.status = status_code
+				response.status = status_code if response.status == 200 # avoid resetting a manually set status 
 				response['content-type'] = mime
 				response['cache-control'] ||= 'public, max-age=86400'					
 				response.body = data
