@@ -14,7 +14,7 @@ With Plezi, you can easily:
 
 3. Create an easily scalable backend for your SPA.
 
-## Guides an documentation
+## Guides and documentation
 
 You can find [tutorials and guides at Plezi.io](http://www.plezi.io/guides).
 
@@ -148,7 +148,7 @@ Scale your Websocket application with one line of code:
     # REDIS_URL is where Herolu-Redis stores it's URL
     ENV['PL_REDIS_URL'] ||= ENV['REDIS_URL'] || "redis://username:password@my.host:6389"
 
-Websocket messages (broadcasts, unicasts, etc') will now sync using Redis throughout all your server instances.
+Websocket messages (broadcasts, unicasts, etc') and even session data (Plezi keeps it away from the client) will now sync using Redis throughout all your server instances.
 
 
 ### Hosts, template rendering, assets...?
