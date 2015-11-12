@@ -6,6 +6,8 @@ Change log v.0.12.12
 
 **Update**: Redis will now connect to the selected database if the database is set in the `ENV['PL_REDIS_URL']`.
 
+**Compatibility**: minor fixes and changes in preperation for Ruby 2.3.0.
+
 ***
 
 Change log v.0.12.11
