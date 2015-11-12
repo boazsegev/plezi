@@ -2,6 +2,12 @@
 
 ***
 
+Change log v.0.12.11
+
+**Update/Fix**: dedicated methods for Controllers shouldn't be case sensitive. i.e. `/humans` and `/huMans/` should lead to the same route, IF that route is a method called `:humans` within a Controller class.
+
+***
+
 Change log v.0.12.10
 
 **Fix**: removed a debug message introduced when fixing the renderer for version 0.12.9.

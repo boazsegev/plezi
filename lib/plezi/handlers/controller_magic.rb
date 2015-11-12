@@ -213,9 +213,9 @@ module Plezi
 				# respond to save 'new' special case
 				return (self.class.has_method?(:save) ? :save : false) if (request.request_method =~ /POST|PUT|PATCH/i.freeze) && (params[:id].nil? || params[:id] == 'new')
 				# set DELETE method if simulated
-				request.request_method = 'DELETE' if params[:_method].to_s.downcase == 'delete'
+				request.request_method = 'DELETE' if params[:_method] && params[:_method].to_s.downcase == 'delete'
 				# respond to special :id routing
-				return params[:id].to_s.to_sym if params[:id] && self.class.has_exposed_method?(params[:id].to_s.to_sym)
+				params[:id].to_s.downcase.to_sym.tap { |met| return met if self.class.has_exposed_method?(met) } if params[:id]
 				#review general cases
 				case request.request_method
 				when 'GET'.freeze, 'HEAD'.freeze
