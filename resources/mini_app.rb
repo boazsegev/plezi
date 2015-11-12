@@ -22,7 +22,7 @@
 	ENV['PL_REDIS_URL'] ||= ENV['REDIS_URL'] ||
 							ENV['REDISCLOUD_URL'] ||
 							ENV['REDISTOGO_URL'] ||
-							nil # "redis://username:password@my.host:6389"
+							nil # "redis://:password@my.host:6389/0"
 	# # redis channel name should be changed is using Placebo API
 	# Plezi::Settings.redis_channel_name = 'appsecret'
 

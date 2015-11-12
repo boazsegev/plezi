@@ -18,7 +18,7 @@ if defined? Redis
 	ENV['PL_REDIS_URL'] ||= ENV['REDIS_URL'] ||
 							ENV['REDISCLOUD_URL'] ||
 							ENV['REDISTOGO_URL'] || 
-							nil # use: "redis://username:password@my.host:6389"
+							nil # use: "redis://:password@my.host:6389/0"
 
 
 	# ## OR, write your own custom Redis implementation here
