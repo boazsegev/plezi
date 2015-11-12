@@ -2,6 +2,12 @@
 
 ***
 
+Change log v.0.12.12
+
+**Update**: Redis will now connect to the selected database if the database is set in the `ENV['PL_REDIS_URL']`.
+
+***
+
 Change log v.0.12.11
 
 **Update/Fix**: dedicated methods for Controllers shouldn't be case sensitive. i.e. `/humans` and `/huMans/` should lead to the same route, IF that route is a method called `:humans` within a Controller class.
