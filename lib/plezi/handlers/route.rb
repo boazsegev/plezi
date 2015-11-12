@@ -120,7 +120,7 @@ module Plezi
 				end
 				dest.default_proc = Plezi::Base::Helpers::HASH_SYM_PROC
 
-				url = '/'
+				url = '/'.dup
 
 				@url_array.each do |sec|
 					raise NotImplementedError, "#url_for isn't implemented for this router - Regexp multi-path routes are still being worked on... use a named parameter instead (i.e. '/foo/(:multi_route){route1|route2}/bar')" if REGEXP_FORMATTED_PATH === sec
@@ -130,19 +130,19 @@ module Plezi
 
 					if param_name && dest[param_name]
 						url << Plezi::Base::Helpers.encode_url(dest.delete(param_name))
-						url << '/' 
+						url << '/'.freeze
 					elsif !param_name
 						url << sec
-						url << '/' 
+						url << '/'.freeze
 					elsif REGEXP_REQUIRED_PARAMS === sec || REGEXP_OPTIONAL_PARAMS === sec
-						url << '/'
+						url << '/'.freeze
 					elsif REGEXP_FORMATTED_REQUIRED_PARAMS === sec
 						raise ArgumentError, "URL can't be formatted becuse a required parameter (#{param_name.to_s}) isn't specified and it requires a special format (#{REGEXP_FORMATTED_REQUIRED_PARAMS.match(sec)[2]})."
 					end
 				end
 				unless dest.empty?
-					add = '?'
-					dest.each {|k, v| url << "#{add}#{Plezi::Base::Helpers.encode_url k}=#{Plezi::Base::Helpers.encode_url v}"; add = '&'}
+					add = '?'.freeze
+					dest.each {|k, v| url << "#{add}#{Plezi::Base::Helpers.encode_url k}=#{Plezi::Base::Helpers.encode_url v}"; add = '&'.freeze}
 				end
 				url
 
@@ -177,9 +177,9 @@ module Plezi
 					@url_array = []
 
 					# prep path string and split it where the '/' charected is unescaped.
-					@url_array = path.gsub(/(^\/)|(\/$)/, '').gsub(/([^\\])\//, '\1 - /').split ' - /'
+					@url_array = path.gsub(/(^\/)|(\/$)/, ''.freeze).gsub(/([^\\])\//, '\1 - /').split ' - /'
 					@url_array.each.with_index do |section, section_index|
-						if section == '*'
+						if section == '*'.freeze
 							# create catch all
 							section_index == 0 ? (@path << "(.*)") : (@path << "(\\/.*)?")
 							# finish
@@ -252,7 +252,7 @@ module Plezi
 				# end
 				m = @path.match path
 				return false unless m
-				@fill_parameters.each { |k, v| hash[v] = m[k][1..-1] if m[k] && m[k] != '/' }
+				@fill_parameters.each { |k, v| hash[v] = m[k][1..-1] if m[k] && m[k] != '/'.freeze }
 				hash
 			end
 
@@ -270,7 +270,7 @@ module Plezi
 			# flash:: an amazing Hash object that sets temporary cookies for one request only - greate for saving data between redirect calls.
 			#
 			def self.make_controller_magic(controller, container)
-				new_class_name = "Plezi__#{controller.name.gsub /[\:\-\#\<\>\{\}\(\)\s]/, '_'}"
+				new_class_name = "Plezi__#{controller.name.gsub /[\:\-\#\<\>\{\}\(\)\s]/, '_'.freeze}"
 				return Module.const_get new_class_name if Module.const_defined? new_class_name
 				# controller.include Plezi::ControllerMagic
 				controller.instance_exec(container) {|r| include Plezi::ControllerMagic; }

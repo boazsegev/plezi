@@ -194,7 +194,7 @@ module Plezi
 				I18n.locale = options[:locale] || I18n.default_locale if defined?(I18n) # sets the locale to nil for default behavior even if the locale was set by a previous action - removed: # && options[:locale]
 				# find template and create template object
 				template = [template] if template.is_a?(String)
-				filename = ( template.is_a?(Array) ? File.join( host_params[:templates].to_s, *template) : File.join( host_params[:templates].to_s, *template.to_s.split('_') ) ) + (options[:type].empty? ? '': ".#{options[:type]}")
+				filename = ( template.is_a?(Array) ? File.join( host_params[:templates].to_s, *template) : File.join( host_params[:templates].to_s, *template.to_s.split('_'.freeze) ) ) + (options[:type].empty? ? ''.freeze : ".#{options[:type]}".freeze)
 				::Plezi::Renderer.render filename, binding, &block
 			end
 
@@ -211,9 +211,9 @@ module Plezi
 				# respond to websocket special case
 				return :pre_connect if request.upgrade?
 				# respond to save 'new' special case
-				return (self.class.has_method?(:save) ? :save : false) if (request.request_method =~ /POST|PUT|PATCH/i.freeze) && (params[:id].nil? || params[:id] == 'new')
+				return (self.class.has_method?(:save) ? :save : false) if (request.request_method =~ /POST|PUT|PATCH/i.freeze) && (params[:id].nil? || params[:id] == 'new'.freeze)
 				# set DELETE method if simulated
-				request.request_method = 'DELETE' if params[:_method] && params[:_method].to_s.downcase == 'delete'
+				request.request_method = 'DELETE'.freeze if params[:_method] && params[:_method].to_s.downcase == 'delete'.freeze
 				# respond to special :id routing
 				params[:id].to_s.downcase.to_sym.tap { |met| return met if self.class.has_exposed_method?(met) } if params[:id]
 				#review general cases

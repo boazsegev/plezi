@@ -15,9 +15,9 @@ module Plezi
 			require 'plezi/version'
 			app_tree["#{app_name}"] ||= IO.read( File.join(@root, "resources" ,"mini_exec.rb")).gsub('appname', app_name)
 			app_tree["#{app_name}.rb"] ||= IO.read( File.join(@root, "resources" ,"mini_app.rb")).gsub('appname', app_name).gsub('appsecret', "#{app_name}_#{SecureRandom.hex}")
-			app_tree["Procfile"] ||= ""
+			app_tree["Procfile"] ||= String.new
 			app_tree["Procfile"] << "\nweb: bundle exec ruby ./#{app_name} -p $PORT\n"		
-			app_tree["Gemfile"] ||= ''
+			app_tree["Gemfile"] ||= String.new
 			app_tree["Gemfile"] << "source 'https://rubygems.org'\n\n####################\n# core gems\n\n# include the basic plezi framework and server\ngem 'plezi', '~> #{Plezi::VERSION}'\n"
 			app_tree["Gemfile"] << "\n\n\nruby '#{RUBY_VERSION}'\n"
 			app_tree["templates"] ||= {}
