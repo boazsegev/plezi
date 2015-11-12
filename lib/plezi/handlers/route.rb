@@ -270,7 +270,7 @@ module Plezi
 			# flash:: an amazing Hash object that sets temporary cookies for one request only - greate for saving data between redirect calls.
 			#
 			def self.make_controller_magic(controller, container)
-				new_class_name = "Plezi__#{controller.name.gsub /[\:\-\#\<\>\{\}\(\)\s]/, '_'.freeze}"
+				new_class_name = "Plezi__#{controller.name.gsub(/[\:\-\#\<\>\{\}\(\)\s]/ , '_'.freeze)}"
 				return Module.const_get new_class_name if Module.const_defined? new_class_name
 				# controller.include Plezi::ControllerMagic
 				controller.instance_exec(container) {|r| include Plezi::ControllerMagic; }

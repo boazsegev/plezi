@@ -77,7 +77,7 @@ module Plezi
 						@results << ret if @results
 						ret
 					else
-						@locker.synchronize { sync &block }
+						@locker.synchronize { sync(&block) }
 					end
 				end
 

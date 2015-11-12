@@ -33,7 +33,7 @@ module Plezi
 
 
 			def render base_filename, context = ( Object.new.instance_eval { binding } ), &block
-				@render_library.each {|ext, handler| f = "#{base_filename}.#{ext}".freeze ; return handler.call(f, context, &block) if File.exists?(f) }
+				@render_library.each {|ext, handler| f = "#{base_filename}.#{ext}".freeze ; return handler.call(f, context, &block) if File.exist?(f) }
 				false
 			end
 
@@ -104,8 +104,8 @@ module Plezi
 
 
 		def render base_filename, context = ( Object.new.instance_eval { binding } ), &block
-			handler = @render_library[File.extname(base_filename)[1..-1]]
-			handler.each {|ext, handler| f = "#{base_filename}.#{ext}".freeze ; return handler.call(f, context, &block) if File.exists?(f) } if handler
+			handlers = @render_library[File.extname(base_filename)[1..-1]]
+			handlers.each {|ext, handler| f = "#{base_filename}.#{ext}".freeze ; return handler.call(f, context, &block) if File.exists?(f) } if handlers
 			false
 		end
 	end

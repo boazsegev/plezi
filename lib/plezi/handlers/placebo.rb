@@ -92,7 +92,7 @@ module Plezi
 		end
 		module_function
 		def new placebo_class, create = true
-			new_class_name = "PlaceboPlezi__#{placebo_class.name.gsub /[\:\-\#\<\>\{\}\(\)\s]/, '_'}"
+			new_class_name = "PlaceboPlezi__#{placebo_class.name.gsub( /[\:\-\#\<\>\{\}\(\)\s]/ , '_')}"
 			new_class = nil
 			new_class =  Module.const_get new_class_name if Module.const_defined? new_class_name
 			unless new_class
@@ -105,7 +105,7 @@ module Plezi
 			i, o = IO.pipe
 			req = {}
 			handler = new_class.new(i, o, req)
-			io = Placebo::Base::PlaceboIO.new i, handler: handler, request: req
+			Placebo::Base::PlaceboIO.new i, handler: handler, request: req
 			handler
 		end
 	end

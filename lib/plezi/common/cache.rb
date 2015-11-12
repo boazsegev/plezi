@@ -49,7 +49,7 @@ module Plezi
 			cache_data filename, data if CACHABLE.include? filename.match(/\.([^\.]+)$/)[1]
 			begin
 				IO.binwrite filename, data if save_to_disk
-			rescue Exception => e
+			rescue
 				Plezi.warn("File couldn't be written (#{filename}) - file system error?")
 			end
 			data
@@ -89,7 +89,7 @@ module Plezi
 
 		# returns true if the file exists on disk or in the cache.
 		def file_exists? filename
-			( CACHE_STORE[filename] || File.exists?(filename) ) && true
+			( CACHE_STORE[filename] || File.exist?(filename) ) && true
 		end
 
 		# returns true if the file has been update since data was last cached.

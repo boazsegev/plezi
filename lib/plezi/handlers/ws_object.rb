@@ -29,7 +29,7 @@ module Plezi
 			def self.translate_message msg
 				begin
 					@safe_types ||= [Symbol, Date, Time, Encoding, Struct, Regexp, Range, Set]
-					data = YAML.safe_load(msg, @safe_types)
+					YAML.safe_load(msg, @safe_types)
 				rescue => e
 					Iodine.error "The following could be a security breach attempt:"
 					Iodine.error e
@@ -79,7 +79,7 @@ module Plezi
 					return false if data[:type] && data[:type] != :all && !self.is_a?(data[:type])
 					# return ( self.class.placebo? ? true : we.write(ws.data)) if :method == :to_client
 					return ((data[:type] == :all) ? false : (raise "Broadcasting recieved but no method can handle it - dump:\r\n #{data.to_s}") ) unless self.class.has_super_method?(data[:method])
-					self.method(data[:method]).call *data[:data]
+					self.method(data[:method]).call(*data[:data])
 				end
 
 				# Get's the websocket's unique identifier for unicast transmissions.

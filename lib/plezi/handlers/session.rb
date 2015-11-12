@@ -20,7 +20,7 @@ module Plezi
 		# called by the Plezi framework to initiate a session with the id requested
 		def initialize id
 			@id = id
-			if id && (conn=Plezi.redis)
+			if id && Plezi.redis
 				return self
 			end
 			failed
