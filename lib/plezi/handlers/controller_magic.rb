@@ -80,7 +80,7 @@ module Plezi
 			def redirect_to url, options = {}
 				return super() if defined? super
 				raise 'Cannot redirect after headers were sent.' if response.headers_sent?
-				url = "#{request.base_url}/#{url.to_s.gsub('_', '/')}" if url.is_a?(Symbol) || ( url.is_a?(String) && url.empty? ) || url.nil?
+				url = url_for(url) unless url.is_a?(String) || url.nil?
 				# redirect
 				response.status = options.delete(:status) || 302
 				response['location'] = url
@@ -113,17 +113,17 @@ module Plezi
 
 			# Send raw data to be saved as a file or viewed as an attachment. Browser should believe it had recieved a file.
 			#
-			# this is usful for sending 'attachments' (data to be downloaded) rather then
+			# this is useful for sending 'attachments' (data to be downloaded) rather then
 			# a regular response.
 			#
-			# this is also usful for offering a file name for the browser to "save as".
+			# this is also useful for offering a file name for the browser to "save as".
 			#
 			# it accepts:
 			# data:: the data to be sent - this could be a String or an open File handle.
 			# options:: a hash of any of the options listed furtheron.
 			#
 			# the :symbol=>value options are:
-			# type:: the type of the data to be sent. defaults to empty. if :filename is supplied, an attempt to guess will be made.
+			# type:: the mime-type of the data to be sent. defaults to empty. if :filename is supplied, an attempt to guess will be made.
 			# inline:: sets the data to be sent an an inline object (to be viewed rather then downloaded). defaults to false.
 			# filename:: sets a filename for the browser to "save as". defaults to empty.
 			#
@@ -144,16 +144,16 @@ module Plezi
 				true
 			end
 
-			# Renders a template file (.slim/.erb/.haml) or an html file (.html) to text and attempts to set the response's 'content-type' header (if it's still empty).
+			# Renders a template file (.slim/.erb/.haml) to a String and attempts to set the response's 'content-type' header (if it's still empty).
 			#
 			# For example, to render the file `body.html.slim` with the layout `main_layout.html.haml`:
 			#   render :body, layout: :main_layout
 			#
 			# or, for example, to render the file `json.js.slim`
-			#   render :json, type: 'js'
+			#   render :json, format: 'js'
 			#
 			# or, for example, to render the file `template.haml`
-			#   render :template, type: ''
+			#   render :template, format: ''
 			#
 			# template:: a Symbol for the template to be used.
 			# options:: a Hash for any options such as `:layout` or `locale`.
