@@ -92,6 +92,7 @@ module Plezi
 			module InstanceMethods
 				protected
 
+				# @!visibility public
 				# The following method registers the connections as a unique global identity.
 				#
 				# Like {Plezi::Base::WSObject::SuperClassMethods#notify}, using this method requires an active Redis connection
@@ -134,10 +135,12 @@ module Plezi
 					end
 				end
 
+				# @!visibility public
 				# sends a notification to an Identity. Returns false if the Identity never registered or it's registration expired.
 				def notify identity, event_name, *args
 					self.class.notify identity, event_name, *args
 				end
+				# @!visibility public
 				# returns true if the Identity in question is registered to receive notifications.
 				def registered? identity
 					self.class.registered? identity
