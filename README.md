@@ -225,7 +225,7 @@ Remember to connect to the service from at least two browser windows - to truly 
 
     # do you need automated redis support?
     # require 'redis'
-    # ENV['PL_REDIS_URL'] = "redis://user:password@localhost:6379"
+    # ENV['PL_REDIS_URL'] = "redis://:password@localhost:6379/0"
 
     class BroadcastCtrl
         def index
