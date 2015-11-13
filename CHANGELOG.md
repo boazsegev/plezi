@@ -6,7 +6,11 @@ Change log v.0.12.12
 
 **Update**: Redis will now connect to the selected database if the database is set in the `ENV['PL_REDIS_URL']`.
 
-**Compatibility**: minor fixes and changes in preperation for Ruby 2.3.0.
+**Security**: Redis session local storage will now expire after 24 hours from last visit.
+
+**Compatibility**: minor fixes and changes in preperation for Ruby 2.3.0. Updated the Session object API to match Iodine (added the `#refresh` method as an alias for `#to_h`).
+
+**Change**: changed the `Controller#render` method to accept `:format` instead of `:type`, for more clarity. `:type` is still supported for the 0.12.0 version line.
 
 ***
 
