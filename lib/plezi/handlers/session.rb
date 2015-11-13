@@ -15,8 +15,8 @@ module Plezi
 	# delete(key); clear;
 	class Session
 
-		# The session's lifetime in seconds = 5 days. This is only true when using the built in support for the Redis persistent storage.
-		SESSION_LIFETIME = 432_000
+		# The session's lifetime in seconds = 24 hours. This is only true when using the built in support for the Redis persistent storage.
+		SESSION_LIFETIME = 60*60*24
 		# called by the Plezi framework to initiate a session with the id requested
 		def initialize id
 			@id = id
@@ -67,6 +67,7 @@ module Plezi
 			end
 			failed
 		end
+		alias :refresh :to_h
 
 		# @return [String] returns the Session data in YAML format.
 		def to_s
