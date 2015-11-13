@@ -160,7 +160,7 @@ module Plezi
 			# block:: an optional block, in case the template has `yield`, the block will be passed on to the template and it's value will be used inplace of the yield statement.
 			#
 			# options aceept the following keys:
-			# type:: the types for the `:layout' and 'template'. can be any extention, such as `"json"`. defaults to `"html"`.
+			# format:: the format for the `:layout' and 'template'. can be any format (the file's sub-extention), such as `"json"`. defaults to `"html"`.
 			# layout:: a layout template that has at least one `yield` statement where the template will be rendered.
 			# locale:: the I18n locale for the render. (defaults to params\[:locale]) - only if the I18n gem namespace is defined (`require 'i18n'`).
 			#
@@ -181,20 +181,21 @@ module Plezi
 					return render(layout, options) { inner }
 				end
 				# set up defaults
-				options[:type] ||= 'html'.freeze
+				@warned_type ||= (Iodine.warn("Deprecation warning! `#render` method called with optional `:type`. Use `:format` instead!") && true) if options[:type]
+				options[:format] ||= options[:type] || params[:response_format].to_s || 'html'.freeze
 				options[:locale] ||= params[:locale].to_sym if params[:locale]
 				#update content-type header
-				case options[:type]
+				case options[:format]
 				when 'html', 'js', 'txt'
-					response['content-type'] ||= "#{MimeTypeHelper::MIME_DICTIONARY[".#{options[:type]}".freeze]}; charset=utf-8".freeze
+					response['content-type'] ||= "#{MimeTypeHelper::MIME_DICTIONARY[".#{options[:format]}".freeze]}; charset=utf-8".freeze
 				else
-					response['content-type'] ||= "#{MimeTypeHelper::MIME_DICTIONARY[".#{options[:type]}".freeze]}".freeze
+					response['content-type'] ||= "#{MimeTypeHelper::MIME_DICTIONARY[".#{options[:format]}".freeze]}".freeze
 				end
 				# Circumvents I18n persistance issues (live updating and thread data storage).
 				I18n.locale = options[:locale] || I18n.default_locale if defined?(I18n) # sets the locale to nil for default behavior even if the locale was set by a previous action - removed: # && options[:locale]
 				# find template and create template object
 				template = [template] if template.is_a?(String)
-				filename = ( template.is_a?(Array) ? File.join( host_params[:templates].to_s, *template) : File.join( host_params[:templates].to_s, *template.to_s.split('_'.freeze) ) ) + (options[:type].empty? ? ''.freeze : ".#{options[:type]}".freeze)
+				filename = ( template.is_a?(Array) ? File.join( host_params[:templates].to_s, *template) : File.join( host_params[:templates].to_s, *template.to_s.split('_'.freeze) ) ) + (options[:format].empty? ? ''.freeze : ".#{options[:format]}".freeze)
 				::Plezi::Renderer.render filename, binding, &block
 			end
 
