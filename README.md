@@ -145,8 +145,8 @@ Broadcasting isn't the only tool Plezi offers, we can also send a message to a s
 
 Scale your Websocket application with one line of code:
 
-    # REDIS_URL is where Herolu-Redis stores it's URL
-    ENV['PL_REDIS_URL'] ||= ENV['REDIS_URL'] || "redis://username:password@my.host:6389"
+    # REDIS_URL is where Heroku-Redis stores it's URL
+    ENV['PL_REDIS_URL'] ||= ENV['REDIS_URL'] || "redis://:password@my.host:6389/0"
 
 Websocket messages (broadcasts, unicasts, etc') and even session data (Plezi keeps it away from the client) will now sync using Redis throughout all your server instances.
 
@@ -305,7 +305,7 @@ require './my_plezi_app/environment.rb'
 require './my_plezi_app/routes.rb'
 
 # # Make sure the following is already in your 'my_plezi_app/environment.rb' file:
-# ENV['PL_REDIS_URL'] = "redis://username:password@my.host:6379"
+# ENV['PL_REDIS_URL'] = "redis://:password@my.host:6379/0"
 # Plezi::Settings.redis_channel_name = 'unique_channel_name_for_app_b24270e2'
 
 Plezi.start_placebo

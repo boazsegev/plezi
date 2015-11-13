@@ -47,7 +47,7 @@ module Plezi
 	# for example:
 	#      ENV['PL_REDIS_URL'] = ENV['REDISCLOUD_URL']`
 	# or
-	#      ENV['PL_REDIS_URL'] = "redis://username:password@my.host:6379"
+	#      ENV['PL_REDIS_URL'] = "redis://:password@my.host:6379/0"
 	#
 	# Accepts an optional block that will receive the Redis connection object. i.e.
 	#

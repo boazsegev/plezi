@@ -28,10 +28,10 @@ if defined? Redis
 	# ##
 	# ## the following is only sample code for you to change:
 	# RADIS_CHANNEL = 'appsecret'
-	# RADIS_URI = URI.parse(ENV['REDIS_URL'] || ENV['REDISCLOUD_URL'] || "redis://username:password@my.host:6389")
-	# RADIS_CONNECTION = Redis.new(host: RADIS_URI.host, port: RADIS_URI.port, password: RADIS_URI.password)
+	# RADIS_URI = ENV['REDIS_URL'] || ENV['REDISCLOUD_URL'] || "redis://:password@my.host:6389/0"
+	# RADIS_CONNECTION = Redis.new(RADIS_URI)
 	# RADIS_THREAD = Thread.new do
-	# 	Redis.new(host: RADIS_URI.host, port: RADIS_URI.port, password: RADIS_URI.password).subscribe(RADIS_CHANNEL) do |on|
+	# 	Redis.new(RADIS_URI).subscribe(RADIS_CHANNEL) do |on|
 	# 		on.message do |channel, msg|
 	# 			msg = JSON.parse(msg)
 	# 			# do stuff, i.e.:
