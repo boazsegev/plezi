@@ -64,7 +64,7 @@ if ARGV[0] == 'new' || ARGV[0] == 'n' || ARGV[0] == "force" || ARGV[0] == 'mini'
 	end
 
 	# building
-	template = Plezi::AppBuilder.new
+	template = Plezi::Base::AppBuilder.new
 	(ARGV[0] == 'mini' || ARGV[0] == 'm' ) ? template.build_mini(ARGV[1]) : template.build(ARGV[1])
 elsif ARGV[0] == 'server' || ARGV[0] == 'start' || ARGV[0] == 's'
 	ARGV.shift
