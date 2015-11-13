@@ -2,6 +2,12 @@
 
 ***
 
+Change log v.0.12.14
+
+**Update**: `Controller#redirect_to` will now attempt to guess the URL using `url_for`, unless the URL given is a String.
+
+***
+
 Change log v.0.12.13
 
 **Fix**: fixed an error in te rendering engine, where the default :format was an empty String instead of 'html'.
