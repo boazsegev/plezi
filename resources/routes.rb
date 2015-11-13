@@ -13,6 +13,11 @@
 # i.e.: `/en/home` will be rewriten as `/home`, while setting params[:locale] to "en"
 route "/:locale{#{I18n.available_locales.join "|"}}/*" , false if defined? I18n
 
+# # This is an optional re-write route response formats.
+# # Response format re-write, i.e.: `/xml/home` will use .xml templates automatically
+# # with :locale a request might look like `/en/json/...`
+# route "/:format{html|json|xml}/*" , false
+
 ###
 # add your routes here:
 

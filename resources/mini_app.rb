@@ -68,6 +68,10 @@ host templates: Root.join('templates').to_s,
 # # I18n re-write, i.e.: `/en/home` will be rewriten as `/home`, while setting params[:locale] to "en"
 # route "/:locale{#{I18n.available_locales.join "|"}}/*" , false if defined? I18n
 
+# # Response format re-write, i.e.: `/xml/home` will use .xml templates automatically
+# # with :locale a request might look like `/en/json/...`
+# route "/:format{html|json|xml}/*" , false
+
 # # OAuth2 - Facebook / Google authentication
 # ENV["FB_APP_ID"] ||= "app id"; ENV["FB_APP_SECRET"] ||= "secret"; ENV['GOOGLE_APP_ID'] = "app id"; ENV['GOOGLE_APP_SECRET'] = "secret"
 # require 'plezi/oauth' # do this AFTER setting ENV variables.

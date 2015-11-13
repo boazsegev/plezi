@@ -2,6 +2,14 @@
 
 ***
 
+Change log v.0.12.13
+
+**Fix**: fixed an error in te rendering engine, where the default :format was an empty String instead of 'html'.
+
+**Update**: if `params[:format]` exists, the `params[:format]` will be used to set the format of the template to be rendered (i.e., if `params[:format] == 'json'`, Plezi will look for `template_name.json.erb` instead of `template_name.html.erb`)
+
+***
+
 Change log v.0.12.12
 
 **Update**: Redis will now connect to the selected database if the database is set in the `ENV['PL_REDIS_URL']`.
