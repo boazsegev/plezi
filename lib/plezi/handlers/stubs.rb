@@ -94,6 +94,7 @@ module Plezi
 		end
 
 		# called immediately after a WebSocket connection has been established.
+		# it blocks all the connection's actions until the `on_open` initialization is finished.
 		def on_open
 			true
 		end
@@ -106,9 +107,13 @@ module Plezi
 			_push "your message was sent: #{data.to_s}"
 		end
 
-		# called when a disconnect packet has been recieved or the connection has been cut
-		# (ISN'T called after a disconnect message has been sent).
+		# called once, AFTER the connection was closed.
 		def on_close
+		end
+
+		# called once, during **server shutdown**, BEFORE the connection is closed.
+		# this will only be called for connections that are open while the server is shutting down.
+		def on_shutdown
 		end
 
 		# a demo event method that recieves a broadcast from instance siblings.
