@@ -113,7 +113,7 @@ module Plezi
 				begin
 					Dir.mkdir app_name
 					puts "created the #{app_name} application directory.".green
-				rescue Exception => e
+				rescue => e
 					puts "the #{app_name} application directory exists - trying to rebuild (no overwrite).".pink
 				end
 				Dir.chdir app_name

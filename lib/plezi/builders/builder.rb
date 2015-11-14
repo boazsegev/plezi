@@ -11,7 +11,7 @@ module Plezi
 							begin
 								Dir.mkdir k
 								puts "    created #{parent}/#{k}".green
-							rescue Exception => e
+							rescue => e
 								puts "    exists #{parent}/#{k}".red
 							end
 							Dir.chdir k
