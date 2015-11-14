@@ -1,7 +1,7 @@
 module Plezi
 	# This module holds the mime dictionary. 
 	module MimeTypeHelper
-		# thank you Apache group (and many more), for compiling mime-type list for me to search through.
+		# thank you Apache group (and many more), for compiling mime-type lists for me to search through.
 		MIME_DICTIONARY = { ".123"=>"application/vnd.lotus-1-2-3".freeze,
 			".3dml"=>"text/vnd.in3d.3dml".freeze,
 			".3ds"=>"image/x-3ds".freeze,

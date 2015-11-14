@@ -97,16 +97,19 @@ module Plezi
 
 				protected
 
+				# @!visibility public
 				# allows writing of data to the websocket (if opened). Otherwise appends the message to the Http response.
 				def write data
 					(@ws_io || @response) << data
 				end
 
+				# @!visibility public
 				# Performs a websocket unicast to the specified target.
 				def unicast target_uuid, method_name, *args
 					self.class.unicast target_uuid, method_name, *args
 				end
 
+				# @!visibility public
 				# Use this to brodcast an event to all 'sibling' objects (websockets that have been created using the same Controller class).
 				#
 				# Accepts:
@@ -119,6 +122,8 @@ module Plezi
 					return false unless self.class.has_method? method_name
 					self.class._inner_broadcast({ method: method_name, data: args, type: self.class}, __get_io )
 				end
+
+				# @!visibility public
 				# Use this to multicast an event to ALL websocket connections on EVERY controller, including Placebo controllers.
 				#
 				# Accepts:
