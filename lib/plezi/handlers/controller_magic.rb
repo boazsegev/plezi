@@ -62,31 +62,26 @@ module Plezi
 			# this method does two things.
 			#
 			# 1. sets redirection headers for the response.
-			# 2. sets the `flash` object (short-time cookies) with all the values passed except the :status value.
+			# 2. sets the `flash` object (short-time cookies) with all the values passed except the :permanent value.
 			#
 			# use:
-			#      redirect_to 'http://google.com', notice: "foo", status: 302
-			#      # => redirects to 'http://google.com' with status 302 and adds notice: "foo" to the flash
-			# or simply:
+			#      redirect_to 'http://google.com', notice: "foo", permanent: true
+			#      # => redirects to 'http://google.com' with status 301 (permanent redirection) and adds notice: "foo" to the flash
+			# or, a simple temporary redirect:
 			#      redirect_to 'http://google.com'
-			#      # => redirects to 'http://google.com' with status 302 (default status)
+			#      # => redirects to 'http://google.com' with status 302 (default temporary redirection)
 			#
-			# if the url is a symbol, the method will try to format it into a correct url, replacing any
-			# underscores ('_') with a backslash ('/').
+			# if the url is a symbol or a hash, the method will try to format it into a url Srting, using the `url_for` method.
 			#
-			# if the url is an empty string, the method will try to format it into a correct url
-			# representing the index of the application (http://server/)
+			# if the url is a String, it will be passed along as is.
+			#
+			# An empty String or `nil` will be replaced with the root path for the request's specific host (i.e. `http://localhost:3000/`).
 			#
 			def redirect_to url, options = {}
 				return super() if defined? super
-				raise 'Cannot redirect after headers were sent.' if response.headers_sent?
-				url = url_for(url) unless url.is_a?(String) || url.nil?
+				url = full_url_for(url) unless url.is_a?(String) || url.nil?
 				# redirect
-				response.status = options.delete(:status) || 302
-				response['location'] = url
-				response['content-length'] ||= 0
-				flash.update options
-				true
+				response.redirect_to url, options
 			end
 
 			# Returns the RELATIVE url for methods in THIS controller (i.e.: "/path_to_controller/restful/params?non=restful&params=foo")
@@ -108,7 +103,7 @@ module Plezi
 			end
 			# same as #url_for, but returns the full URL (protocol:port:://host/path?params=foo)
 			def full_url_for dest
-				request.base_url + url_for(dest)
+				"#{request.base_url}#{self.class.url_for(dest)}"
 			end
 
 			# Send raw data to be saved as a file or viewed as an attachment. Browser should believe it had recieved a file.
