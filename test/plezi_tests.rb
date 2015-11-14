@@ -344,7 +344,7 @@ module PleziTestTasks
 		puts "    **** #url_for test FAILED TO RUN!!!"
 		puts e
 	end
-	def test_placebo
+	def placebo_test
 		puts "    * Starting placebo tests..."
 		ws = Iodine::Http::WebsocketClient.connect("ws://localhost:3000/ws/placebo") {|ws| 'ME?'}
 		ws << "    * Placebo WS connected."
@@ -355,15 +355,15 @@ module PleziTestTasks
 		puts e
 	end
 	def test_websocket
-		connection_test = broadcast_test = echo_test = unicast_test = false
+		connection_test = broadcast_test = echo_test = unicast_test = nil
 		begin
-			ws4 = Iodine::Http::WebsocketClient.connect("ws://localhost:3000") do |data|
+			ws4 = Iodine::Http::WebsocketClient.connect("ws://localhost:3000/") do |data|
 				if data == "unicast"
 					puts "    * Websocket unicast testing: #{RESULTS[false]}"
 					unicast_test = :failed
 				end
 			end
-			ws2 = Iodine::Http::WebsocketClient.connect("ws://localhost:3000") do |data|
+			ws2 = Iodine::Http::WebsocketClient.connect("ws://localhost:3000/") do |data|
 				next unless @is_connected || !( (@is_connected = true) )
 				if data == "unicast"
 					puts "    * Websocket unicast message test: #{RESULTS[false]}"
@@ -374,17 +374,17 @@ module PleziTestTasks
 					go_test = false
 				end
 			end
-			ws3 = Iodine::Http::WebsocketClient.connect("ws://localhost:3000", on_open: -> { write 'get uuid' } ) do |data|
+			ws3 = Iodine::Http::WebsocketClient.connect("ws://localhost:3000/", on_open: -> { write 'get uuid' } ) do |data|
 				if data.match /uuid: ([^s]*)/
 					ws2 << "to: #{data.match(/^uuid: ([^s]*)/)[1]}"
 					puts "    * Websocket UUID for unicast testing: #{data.match(/^uuid: ([^s]*)/)[1]}"
 				elsif data == "unicast"
-					puts "    * Websocket unicast testing: #{RESULTS[:waiting]}"
+					puts "    * Websocket unicast testing: #{RESULTS[:waiting]} (target received data)"
 					unicast_test ||= true
 				end
 			end
 			puts "    * Websocket client test: #{RESULTS[ws2 && true]}"
-			ws1 = Iodine::Http::WebsocketClient.connect("ws://localhost:3000") do |data|
+			ws1 = Iodine::Http::WebsocketClient.connect("ws://localhost:3000/") do |data|
 				unless @connected
 					puts "    * Websocket connection message test: #{RESULTS[connection_test = (data == 'connected')]}"
 					@connected = true
@@ -409,8 +409,7 @@ module PleziTestTasks
 		else
 			remote << "Hello websockets!"
 		end
-		sleep 0.5
-		[ws1, ws2, ws3, ws4, remote].each {|ws| ws.close}
+		Iodine.run_after(30) { [ws1, ws2, ws3, ws4, remote].each {|ws| ws.close} }
 		PL.on_shutdown {puts "    * Websocket connection message test: #{RESULTS[connection_test]}" unless connection_test}
 		PL.on_shutdown {puts "    * Websocket echo message test: #{RESULTS[echo_test]}" unless echo_test}
 		PL.on_shutdown {puts "    * Websocket broadcast message test: #{RESULTS[broadcast_test]}" unless broadcast_test}
@@ -422,7 +421,7 @@ module PleziTestTasks
 				if should_disconnect
 					puts "    * Websocket size disconnection test: #{RESULTS[false]}"
 				else
-					puts "    * Websocket message size test: got #{data.bytesize} bytes"
+					puts "    * Websocket message size test: got #{data.bytesize} bytes starting with #{data[0..10]}"
 				end
 			end
 			ws.on_close do
@@ -566,15 +565,17 @@ Plezi.run do
 	puts "    --- Starting tests"
 	puts "    --- Failed tests should read: #{PleziTestTasks::RESULTS[false]}"
 
+	PleziTestTasks.run_tests
+
 	r = Plezi::Placebo.new PlaceboCtrl
 	puts "    * Create Placebo test: #{PleziTestTasks::RESULTS[r && true]}"
 	puts "    * Placebo admists to being placebo: #{PleziTestTasks::RESULTS[PlaceboCtrl.placebo?]}"
 	puts "    * Regular controller answers placebo: #{PleziTestTasks::RESULTS[!PlaceboTestCtrl.placebo?]}"
-
-	PleziTestTasks.run_tests
+	PleziTestTasks.placebo_test
 
 	shoutdown_test = false
 	Plezi.on_shutdown { puts "    * Shutdown test: #{ PleziTestTasks::RESULTS[shoutdown_test] }" }
 	Plezi.on_shutdown { shoutdown_test = true }
+	puts "Press ^C to exit."
 	
 end
