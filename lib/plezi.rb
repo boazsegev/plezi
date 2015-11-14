@@ -29,8 +29,6 @@ require 'plezi/common/settings.rb'
 require 'plezi/common/renderer.rb'
 
 ### helpers
-
-require 'plezi/helpers/http_sender.rb'
 require 'plezi/helpers/magic_helpers.rb'
 require 'plezi/helpers/mime_types.rb'
 
@@ -44,6 +42,9 @@ require 'plezi/handlers/controller_core.rb'
 require 'plezi/handlers/placebo.rb'
 require 'plezi/handlers/stubs.rb'
 require 'plezi/handlers/session.rb'
+
+# error and last resort handling
+require 'plezi/helpers/http_sender.rb'
 
 ## erb templating
 begin
