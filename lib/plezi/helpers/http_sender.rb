@@ -3,12 +3,18 @@ module Plezi
 
 		# Sends common basic HTTP responses.
 		module HTTPSender
-			class CodeContext
-				attr_accessor :request
-				def initialize request
-					@request = request
+			class ErrorCtrl
+				include ::Plezi::Base::ControllerCore
+				include ::Plezi::ControllerMagic
+
+				def index
+					render(response.status.to_s) || (params[:format] && (params[:format] != 'html'.freeze) && render(response.status.to_s, format: 'html'.freeze)) || ((response['content-type'.freeze] = 'text/plain'.freeze) && response.class::STATUS_CODES[response.status])
+				end
+				def requested_method
+					:index
 				end
 			end
+
 			module_function
 
 			######
@@ -18,13 +24,10 @@ module Plezi
 			# sends a response for an error code, rendering the relevent file (if exists).
 			def send_by_code request, response, code, headers = {}
 				begin
-					base_code_path = request[:host_settings][:templates] || File.expand_path('.')
-					fn = File.join(base_code_path, "#{code}.html")
-					rendered = ::Plezi::Renderer.render fn, binding #CodeContext.new(request)
-					return send_raw_data request, response, rendered, 'text/html', code, headers if rendered
-					return send_file(request, response, fn, code, headers) if Plezi.file_exists?(fn)
-					return true if send_raw_data(request, response, response.class::STATUS_CODES[code], 'text/plain', code, headers)
-				rescue Exception => e
+					response.status = code
+					headers.each {|k, v| response[k] = v}
+					return ErrorCtrl.new(request, response).index
+				rescue => e
 					Plezi.error e
 				end
 				false
@@ -36,8 +39,8 @@ module Plezi
 			def send_static_file request, response
 				root = request[:host_settings][:public]
 				return false unless root
-				file_requested = request[:path].to_s.split('/')
-				unless file_requested.include? '..'
+				file_requested = request[:path].to_s.split('/'.freeze)
+				unless file_requested.include? '..'.freeze
 					file_requested.shift
 					file_requested = File.join(root, *file_requested)
 					return true if send_file request, response, file_requested
@@ -62,14 +65,12 @@ module Plezi
 			def send_raw_data request, response, data, mime, status_code = 200, headers = {}
 				headers.each {|k, v| response[k] = v}
 				response.status = status_code if response.status == 200 # avoid resetting a manually set status 
-				response['content-type'] = mime
-				response['cache-control'] ||= 'public, max-age=86400'					
+				response['content-type'.freeze] = mime
+				response['cache-control'.freeze] ||= 'public, max-age=86400'.freeze				
 				response.body = data
 				# response['content-length'] = data.bytesize #this one is automated by the server and should be avoided to support Range requests.
 				true
-			end##########
-
-
+			end
 		end
 
 	end
