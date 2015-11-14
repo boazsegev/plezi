@@ -11,11 +11,11 @@ module Plezi
 				@redis_locker.synchronize do
 					return @redis if (@redis_sub_thread && @redis_sub_thread.alive?) && @redis # repeat the test once syncing is done.
 					@redis.quit if @redis
-					@redis = ::Redis.new(ENV['PL_REDIS_URL'])
+					@redis = ::Redis.new(url: ENV['PL_REDIS_URL'])
 					raise "Redis connction failed for: #{ENV['PL_REDIS_URL']}" unless @redis
 					@redis_sub_thread = Thread.new do
 						begin
-							::Redis.new(ENV['PL_REDIS_URL']).subscribe(Plezi::Settings.redis_channel_name, Plezi::Settings.uuid) do |on|
+							::Redis.new(url: ENV['PL_REDIS_URL']).subscribe(Plezi::Settings.redis_channel_name, Plezi::Settings.uuid) do |on|
 								on.message do |channel, msg|
 									::Plezi::Base::WSObject.forward_message ::Plezi::Base::WSObject.translate_message(msg)
 								end

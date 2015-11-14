@@ -1,9 +1,14 @@
 module Plezi
 	module Base
 
+
 		# Sends common basic HTTP responses.
 		module HTTPSender
-			class ErrorCtrl
+			# makes sure to methods are injected to class Class
+			class Container
+			end
+			# the Error Controller, for rendering error templates.
+			class ErrorCtrl < Container
 				include ::Plezi::Base::ControllerCore
 				include ::Plezi::ControllerMagic
 

@@ -2,6 +2,16 @@
 
 ***
 
+Change log v.0.12.15
+
+**Fix**: fixed the Redis connection, which was failing after DB selection support was added.
+
+**Fix**: Iodine update fixes an issue where unicasting might fail when connection is still very new.
+
+**Fixe**: fixed an issue with the Identity API where Redis emulation would loose the historic messages due to unicasting failure for the unregistered (super new) connection.
+
+***
+
 Change log v.0.12.14
 
 **Update**: `Controller#redirect_to` will now attempt to guess the URL using `url_for`, unless the URL given is a String. It also leverages the new `redirect_to` Iodine::Response method, allowing you to set the FUTURE response's status_code.

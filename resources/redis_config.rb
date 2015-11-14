@@ -29,7 +29,7 @@ if defined? Redis
 	# ## the following is only sample code for you to change:
 	# RADIS_CHANNEL = 'appsecret'
 	# RADIS_URI = ENV['REDIS_URL'] || ENV['REDISCLOUD_URL'] || "redis://:password@my.host:6389/0"
-	# RADIS_CONNECTION = Redis.new(RADIS_URI)
+	# RADIS_CONNECTION = Redis.new(url: RADIS_URI)
 	# RADIS_THREAD = Thread.new do
 	# 	Redis.new(RADIS_URI).subscribe(RADIS_CHANNEL) do |on|
 	# 		on.message do |channel, msg|

@@ -243,7 +243,7 @@ module Plezi
 				# sends the broadcast
 				def _inner_broadcast data, ignore_io = nil
 					if data[:target]
-						if data[:target] && (data[:to_server] == Plezi::Settings.uuid )
+						if data[:to_server] == Plezi::Settings.uuid
 							return ( ::Iodine::Http::Websockets.unicast( data[:target], data ) || ___faild_unicast( data ) )
 						end
 						return ( data[:to_server].nil? && ::Iodine::Http::Websockets.unicast(data[:target], data) ) || ( Plezi::Base::AutoRedis.away?(data[:to_server]) && ___faild_unicast( data ) ) || __inner_redis_broadcast(data)
