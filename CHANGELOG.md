@@ -4,7 +4,9 @@
 
 Change log v.0.12.14
 
-**Update**: `Controller#redirect_to` will now attempt to guess the URL using `url_for`, unless the URL given is a String.
+**Update**: `Controller#redirect_to` will now attempt to guess the URL using `url_for`, unless the URL given is a String. It also leverages the new `redirect_to` Iodine::Response method, allowing you to set the FUTURE response's status_code.
+
+**Update**: Error page rendering is now performed within a controller class called `ErrorCtrl`. This means that the error templates have acess to all the helper methods and properties of a controller, including `render`, `redirect_to`, etc'.
 
 ***
 
