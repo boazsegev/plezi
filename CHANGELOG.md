@@ -2,6 +2,12 @@
 
 ***
 
+Change log v.0.12.17
+
+**Fix**: error template format would (and should) fallback to 'html' if the originally requested format (i.e. 'json') was missing. An issue with nested template rendering (when the error template would call `render` to render a partial or other template) caused the fallback to revert to the original (missing) format when searching for the nested template. This issue is now fixed, by instructing ErrorCtrl to set the global format rather than the local one.
+
+***
+
 Change log v.0.12.16
 
 **Fix**: fixed an issue with the `#url_for` method, which couldn't be used as a class method.
