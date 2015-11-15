@@ -2,6 +2,14 @@
 
 ***
 
+Change log v.0.12.16
+
+**Fix**: fixed an issue with the `#url_for` method, which couldn't be used as a class method.
+
+**Update**: a new and improved `#url_for` method (both for Controller class and instance). The instance class will attempt to preserve any re-write route paramerets, such as the `:locale` and `:format` parameters. The class method will do the same IF it receives the exiting request's `params` Hash as a second argument. `#url_for` is always a "best guess" and should be accurate for when guessing isn't super difficult.
+
+***
+
 Change log v.0.12.15
 
 **Fix**: fixed the Redis connection, which was failing after DB selection support was added.
