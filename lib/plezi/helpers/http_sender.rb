@@ -13,7 +13,9 @@ module Plezi
 				include ::Plezi::ControllerMagic
 
 				def index
-					render(response.status.to_s) || (params[:format] && (params[:format] != 'html'.freeze) && render(response.status.to_s, format: 'html'.freeze)) || ((response['content-type'.freeze] = 'text/plain'.freeze) && response.class::STATUS_CODES[response.status])
+					render(response.status.to_s) ||
+						(params[:format] && (params[:format] != 'html'.freeze) && (params[:format] = 'html'.freeze) && (response['content-type'] = nil).nil? && render(response.status.to_s)) ||
+						((response['content-type'.freeze] = 'text/plain'.freeze) && response.class::STATUS_CODES[response.status])
 				end
 				def requested_method
 					:index
