@@ -9,6 +9,8 @@ module Plezi
 			attr_reader :proc
 			# the parameters for the router and service that were used to create the service, router and host.
 			attr_reader :params
+			# an array containing the parts of the original url, if any. `false` for Regexp or non relevant routes.
+			attr_reader :url_array
 
 			# lets the route answer the request. returns false if no response has been sent.
 			def on_request request, response
@@ -74,80 +76,6 @@ module Plezi
 					# end
 				end
 			end
-
-			# # returns the url for THIS route (i.e. `url_for :index`)
-			# #
-			# # This will be usually used by the Controller's #url_for method to get the relative part of the url.
-			# def url_for dest = :index
-			# 	raise NotImplementedError, "#url_for isn't implemented for this router - could this be a Regexp based router?" unless @url_array
-			# 	# convert dest.id and dest[:id] to their actual :id value.
-			# 	dest = (dest.id rescue false) || (raise TypeError, "Expecting a Symbol, Hash, String, Numeric or an object that answers to obj[:id] or obj.id") unless !dest || dest.is_a?(Symbol) || dest.is_a?(String) || dest.is_a?(Numeric) || dest.is_a?(Hash)
-			# 	url = '/'
-			# 	case dest
-			# 	when false, nil, '', :index
-			# 		add = true
-			# 		@url_array.each do |sec|
-			# 			add = false unless sec[0] != :path
-			# 			url << sec[1] if add
-			# 			raise NotImplementedError, '#url_for(index) cannot be implementedfor this path.' if !add && sec[0] == :path
-			# 			# todo: :multi_path
-			# 		end
-			# 	when Hash
-			# 	when Symbol, String, Numeric
-			# 	end
-			# end
-
-
-
-			# returns the url for THIS route (i.e. `url_for :index`)
-			#
-			# This will be usually used by the Controller's #url_for method to get the relative part of the url.
-			def url_for dest = :index
-				raise NotImplementedError, "#url_for isn't implemented for this router - could this be a Regexp based router?" unless @url_array
-				case dest
-				when :index, nil, false
-					dest = {}
-				when String
-					dest = {id: dest.dup}
-				when Numeric, Symbol
-					dest = {id: dest}
-				when Hash
-					dest = dest.dup
-					dest.each {|k,v| dest[k] = v.dup if v.is_a? String }
-				else
-					# convert dest.id and dest[:id] to their actual :id value.
-					dest = {id: (dest.id rescue false) || (raise TypeError, "Expecting a Symbol, Hash, String, Numeric or an object that answers to obj[:id] or obj.id") }
-				end
-				dest.default_proc = Plezi::Base::Helpers::HASH_SYM_PROC
-
-				url = '/'.dup
-
-				@url_array.each do |sec|
-					raise NotImplementedError, "#url_for isn't implemented for this router - Regexp multi-path routes are still being worked on... use a named parameter instead (i.e. '/foo/(:multi_route){route1|route2}/bar')" if REGEXP_FORMATTED_PATH === sec
-
-					param_name = (REGEXP_OPTIONAL_PARAMS.match(sec) || REGEXP_FORMATTED_OPTIONAL_PARAMS.match(sec) || REGEXP_REQUIRED_PARAMS.match(sec) || REGEXP_FORMATTED_REQUIRED_PARAMS.match(sec))
-					param_name = param_name[1].to_sym if param_name
-
-					if param_name && dest[param_name]
-						url << Plezi::Base::Helpers.encode_url(dest.delete(param_name))
-						url << '/'.freeze
-					elsif !param_name
-						url << sec
-						url << '/'.freeze
-					elsif REGEXP_REQUIRED_PARAMS === sec || REGEXP_OPTIONAL_PARAMS === sec
-						url << '/'.freeze
-					elsif REGEXP_FORMATTED_REQUIRED_PARAMS === sec
-						raise ArgumentError, "URL can't be formatted becuse a required parameter (#{param_name.to_s}) isn't specified and it requires a special format (#{REGEXP_FORMATTED_REQUIRED_PARAMS.match(sec)[2]})."
-					end
-				end
-				unless dest.empty?
-					add = '?'.freeze
-					dest.each {|k, v| url << "#{add}#{Plezi::Base::Helpers.encode_url k}=#{Plezi::Base::Helpers.encode_url v}"; add = '&'.freeze}
-				end
-				url
-
-			end
-
 
 			# Used to check for routes formatted: /:paramater - required parameters
 			REGEXP_REQUIRED_PARAMS = /^\:([^\(\)\{\}\:]*)$/
@@ -279,7 +207,6 @@ module Plezi
 				end
 				Object.const_set(new_class_name, ret)
 				Module.const_get(new_class_name).reset_routing_cache
-				ret.instance_exec(container) {|r| set_pl_route r;}
 				ret
 			end
 

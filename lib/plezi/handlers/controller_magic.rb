@@ -79,7 +79,7 @@ module Plezi
 			#
 			def redirect_to url, options = {}
 				return super() if defined? super
-				url = full_url_for(url) unless url.is_a?(String) || url.nil?
+				url = full_url_for(url, params) unless url.is_a?(String) || url.nil?
 				# redirect
 				response.redirect_to url, options
 			end
@@ -97,13 +97,15 @@ module Plezi
 			#
 			# * If you use the same controller in different routes, the first route will dictate the returned url's structure (cause by route priority).
 			#
+			# * The route's host will be ignored. Even when using {#full_url_for}, the same host as the current request will be assumed. To change hosts, add the new host's address manualy, i.e.: `request.base_url.gsub('//www.', '//admin.') + UserController.url_for(user.id, params)
+			#
 			# * Not all controllers support this method. Regexp controller paths and multi-path options will throw an exception.
 			def url_for dest = nil
-				self.class.url_for dest
+				self.class.url_for dest, params
 			end
 			# same as #url_for, but returns the full URL (protocol:port:://host/path?params=foo)
 			def full_url_for dest
-				"#{request.base_url}#{self.class.url_for(dest)}"
+				"#{request.base_url}#{self.class.url_for(dest, params)}"
 			end
 
 			# Send raw data to be saved as a file or viewed as an attachment. Browser should believe it had recieved a file.
@@ -229,9 +231,24 @@ module Plezi
 		module ClassMethods
 			public
 
-			# This class method behaves the same way as the instance method #url_for. See the instance method's documentation for more details.
-			def url_for dest
-				get_pl_route.url_for dest
+			# This class method behaves the same way as the instance method #url_for, but accepts an added `params` Hash
+			# that will be used to infer any persistent re-write parameters (i.e. `:locale` or `:format`).
+			# See the instance method's documentation for more details.
+			def url_for dest, params={}
+				case dest
+				when :index, nil, false
+					dest = {}
+				when String
+					dest = {id: dest}
+				when Numeric, Symbol
+					dest = {id: dest}
+				when Hash
+					true
+				else
+					# convert dest.id and dest[:id] to their actual :id value.
+					dest = {id: (dest.id rescue false) || (raise TypeError, "Expecting a Symbol, Hash, String, Numeric or an object that answers to obj[:id] or obj.id") }
+				end
+				::Plezi::Base::HTTPRouter.url_for self, dest, params
 			end
 
 			# resets the routing cache
@@ -240,20 +257,6 @@ module Plezi
 			end
 
 			protected
-
-			# Sets the HTTP route that is the owner of this controller.
-			#
-			# This is used by the Plezi framework internally and is supplied only for advanced purposes. It is better to avoid using this method. 
-			def set_pl_route route
-				@pl_http_route = route
-			end
-
-			# Gets the HTTP route that is the owner of this controller.
-			#
-			# This is used to utilize the `url_for` method.
-			def get_pl_route
-				@pl_http_route
-			end
 
 			# a callback that resets the class router whenever a method (a potential route) is added
 			def method_added(id)

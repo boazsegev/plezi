@@ -91,6 +91,61 @@ module Plezi
 				end
 			end
 
+			# This method attempts to guess at the desired controller's URL, based on it's first path in order of route creation (ignoring host hierarchy).
+			#
+			# This will be usually used by the Controller's #url_for method to get the relative part of the url.
+			def url_for controller, dest, params = {}
+				raise TypeError, "Expecting destination parameter to be a Hash" unless dest.is_a?(Hash)
+				host = nil
+				@hosts.values.each do |h|
+					h.routes.each {|r| (host = h) && (controller = r.controller) && break if r.controller && r.controller.ancestors.include?(controller) }
+					break if host
+				end
+				raise "couldn't find Controller's route and host." unless host
+				url = []
+				dest = dest.dup
+				dest.default_proc = Plezi::Base::Helpers::HASH_SYM_PROC
+				host.routes.each do |r|
+					if r.controller == false
+						add = []
+						r.url_array.each do |sec|
+							next if sec == '*'
+							param_name = (::Plezi::Base::Route::REGEXP_OPTIONAL_PARAMS.match(sec) || ::Plezi::Base::Route::REGEXP_FORMATTED_OPTIONAL_PARAMS.match(sec) || ::Plezi::Base::Route::REGEXP_REQUIRED_PARAMS.match(sec) || ::Plezi::Base::Route::REGEXP_FORMATTED_REQUIRED_PARAMS.match(sec))
+							param_name = param_name[1].to_sym if param_name
+
+							if param_name && (dest[param_name] || params[param_name])
+								add << Plezi::Base::Helpers.encode_url(dest.delete(param_name) || params[param_name])
+							elsif !param_name
+								add << sec
+							else
+								add.clear
+								next
+							end
+						end if r.url_array
+						url.concat add
+					end
+					if r.controller == controller
+						raise NotImplementedError, "#url_for isn't implemented for this controller's route - could this be a Regexp based or special route?" unless r.url_array
+						r.url_array.each do |sec|
+							next if sec == '*'
+							param_name = (::Plezi::Base::Route::REGEXP_OPTIONAL_PARAMS.match(sec) || ::Plezi::Base::Route::REGEXP_FORMATTED_OPTIONAL_PARAMS.match(sec) || ::Plezi::Base::Route::REGEXP_REQUIRED_PARAMS.match(sec) || ::Plezi::Base::Route::REGEXP_FORMATTED_REQUIRED_PARAMS.match(sec))
+							param_name = param_name[1].to_sym if param_name
+							if param_name && dest[param_name]
+								url << Plezi::Base::Helpers.encode_url(dest.delete(param_name))
+							elsif !param_name
+								url << sec
+							elsif ::Plezi::Base::Route::REGEXP_REQUIRED_PARAMS === sec || ::Plezi::Base::Route::REGEXP_OPTIONAL_PARAMS === sec
+								url << ''.freeze
+							elsif ::Plezi::Base::Route::REGEXP_FORMATTED_REQUIRED_PARAMS === sec
+								raise ArgumentError, "URL can't be formatted becuse a required parameter (#{param_name.to_s}) isn't specified and it requires a special format (#{::Plezi::Base::Route::REGEXP_FORMATTED_REQUIRED_PARAMS.match(sec)[2]})."
+							end
+						end
+						return "/#{url.join '/'.freeze}#{"?#{dest.map {|k,v| "#{Plezi::Base::Helpers.encode_url k}=#{Plezi::Base::Helpers.encode_url v}" } .join('&'.freeze)}" if dest.any?}" 
+					end
+				end
+				false
+			end
+
 			protected
 
 			def get_host host_name

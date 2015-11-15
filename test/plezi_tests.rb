@@ -335,9 +335,9 @@ module PleziTestTasks
 		end
 	end
 	def test_url_for
-		test_url = "/some/path/test/my_url/ask/"
-		puts "    * simple #url_for test: #{RESULTS[URI.parse("http://localhost:3000" + test_url).read == test_url]}"
-		test_url = "/some/another_path/my_url/ask/"
+		test_url = "/some/path/test/my_url/ask"
+		puts "    * simple #url_for test: #{RESULTS[(URI.parse("http://localhost:3000" + test_url).read == test_url) || puts("Got path: #{URI.parse("http://localhost:3000" + test_url).read}")]}"
+		test_url = "/some/another_path/my_url/ask"
 		puts "    * missing arguments #url_for test: #{RESULTS[URI.parse("http://localhost:3000" + test_url).read == test_url]}"
 
 		rescue => e
@@ -364,7 +364,7 @@ module PleziTestTasks
 				end
 			end
 			ws2 = Iodine::Http::WebsocketClient.connect("ws://localhost:3000/") do |data|
-				next unless @is_connected || !( (@is_connected = true) )
+				next unless @is_connected || !( ( @is_connected = true ) == true )
 				if data == "unicast"
 					puts "    * Websocket unicast message test: #{RESULTS[false]}"
 					unicast_test = :failed
