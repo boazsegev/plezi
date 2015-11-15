@@ -21,6 +21,7 @@ module Plezi
 				app_tree["Gemfile"] ||= String.new
 				app_tree["Gemfile"] << "source 'https://rubygems.org'\n\n####################\n# core gems\n\n# include the basic plezi framework and server\ngem 'plezi', '~> #{Plezi::VERSION}'\n"
 				app_tree["Gemfile"] << "\n\n\nruby '#{RUBY_VERSION}'\n"
+				app_tree["rakefile"] ||= IO.read File.join(@root,"resources" ,"rakefile")
 				app_tree["templates"] ||= {}
 				app_tree["templates"]["404.html.erb"] ||= IO.read(File.join(@root, "resources" ,"404.erb"))
 				app_tree["templates"]["500.html.erb"] ||= IO.read(File.join(@root, "resources" ,"500.erb"))
