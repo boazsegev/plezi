@@ -12,8 +12,6 @@ module Plezi
 		CACHE_LOCK = Mutex.new
 		CACHABLE = (%w{cache object slim haml css map js html scss sass coffee txt xml json yaml rb}).to_set
 
-		@cache_to_disk = true
-
 		# this class holds cached objects (data and modification times)
 		class CacheObject
 			# Cached attributes
@@ -92,11 +90,30 @@ module Plezi
 			( CACHE_STORE[filename] || File.exist?(filename) ) && true
 		end
 
-		# returns true if the file has been update since data was last cached.
+		# returns true if the {#allow_cache_update?} is true and the file has been update since data was last cached.
 		def cache_needs_update? filename
-			return true if CACHE_STORE[filename].nil? || CACHE_STORE[filename].mtime < File.mtime(filename)
+			return true if CACHE_STORE[filename].nil? || (CACHE_STORE[filename].mtime < File.mtime(filename))
 			false
 		end
+
+		# # # The following was discarded because benchmarks show the difference is negligible
+		# @refresh_cache ||= (ENV['ENV'] != 'production')
+		# # get the cache refresh directive for {#cache_needs_update}. Defaults to ENV['ENV'] != 'production'
+		# def allow_cache_update?
+		# 	@refresh_cache ||= (ENV['ENV'] != 'production')
+		# end
+		# # set the cache refresh directive for {#cache_needs_update}
+		# def allow_cache_update= val
+		# 	@refresh_cache = val
+		# end
+		# # returns true if the {#allow_cache_update?} is true and the file has been update since data was last cached.
+		# def cache_needs_update? filename
+		# 	return true if CACHE_STORE[filename].nil? || (allow_cache_update? && (CACHE_STORE[filename].mtime < File.mtime(filename)))
+		# 	false
+		# end
+
+
+
 	end
 
 	public

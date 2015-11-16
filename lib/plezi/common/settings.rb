@@ -36,5 +36,17 @@ module Plezi
 		def uuid
 			@uuid ||= SecureRandom.uuid
 		end
+
+
+		# # # The following was discarded because benchmarks show the difference is negligible
+		# # Get the cache refresh directive for the {#cache_needs_update?} implementation. Defaults to ENV['ENV'] != 'production'
+		# def allow_cache_update?
+		# 	Plezi.allow_cache_update?
+		# end
+		# # Set the cache refresh directive for the {#cache_needs_update?} implementation. Defaults to ENV['ENV'] != 'production'
+		# def allow_cache_update= val
+		# 	Plezi.allow_cache_update = val
+		# end
+		# # **Update**: up until now, Plezi would allow refresh any cached assets ot templated when they are edited. This file review is usually a waste of resources after deployment, since the files never get updated in production environments. Plezi now supports a two new settings options: `Plezi.allow_cache_update?` and `Plezi.allow_cache_update=` which will dictate if file review should be performed after caching. The default is now set to AVOID file reviews for production environments (`ENV['ENV'] || ENV['RACK_ENV'] != 'production'`).
 	end
 end
