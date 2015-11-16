@@ -1,6 +1,7 @@
 # encoding: UTF-8
 
-## Set working directory, load gems and create logs
+## Set environment, working directory, load gems and create logs
+	ENV['ENV'] ||= ENV['RACK_ENV'] # production ENV will render SASS as compressed.
 	## Using pathname extentions for setting public folder
 	require 'pathname'
 	## Set up root object, it might be used by the environment and\or the plezi extension gems.
