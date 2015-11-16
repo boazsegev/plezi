@@ -41,13 +41,14 @@ module Plezi
 
 		module SASSExt
 			module_function
+			SASS_OPTIONS = { style: (ENV['SASS_STYLE'] || ((ENV['ENV'] || ENV['RACK_ENV']) == 'production' ? :compressed : :nested )) }
 
 			def call filename, context, &block
 				return false unless defined? ::Sass
-				@sass_cache ||= Sass::CacheStores::Memory.new if defined?(::Sass)
+				SASS_OPTIONS[:cache_store] ||= Sass::CacheStores::Memory.new
 				# review mtime and render sass if necessary
 				if refresh_sass?(filename)
-					eng = Sass::Engine.for_file(filename, cache_store: @sass_cache)
+					eng = Sass::Engine.for_file(filename, SASS_OPTIONS)
 					Plezi.cache_data filename, eng.dependencies
 					css, map = eng.render_with_sourcemap("#{File.basename(filename, '.*'.freeze)}.map".freeze)
 					Plezi.cache_data filename.sub(/\.s[ac]ss$/, '.map'.freeze), map.to_json( css_uri: File.basename(filename, '.*'.freeze) )
@@ -58,8 +59,8 @@ module Plezi
 			end
 
 			def refresh_sass? sass
-				return false unless File.exists?(sass)
 				return true if Plezi.cache_needs_update?(sass)
+				# return false unless Plezi.allow_cache_update? # no meaningful performance boost.
 				mt = Plezi.file_mtime(sass)
 				Plezi.get_cached(sass).each {|e| return true if File.exists?(e.options[:filename]) && (File.mtime(e.options[:filename]) > mt)} # fn = File.join( e.options[:load_paths][0].root, e.options[:filename]) 
 				false
