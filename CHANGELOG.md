@@ -6,6 +6,8 @@ Change log v.0.12.17
 
 **Fix**: error template format would (and should) fallback to 'html' if the originally requested format (i.e. 'json') was missing. An issue with nested template rendering (when the error template would call `render` to render a partial or other template) caused the fallback to revert to the original (missing) format when searching for the nested template. This issue is now fixed, by instructing ErrorCtrl to set the global format rather than the local one.
 
+**Update**: when the `ENV["ENV"]` or `ENV["ENV"]` are set to `"production"`, the SASS asset render engine will be set to compress the css (minify), for smaller transfers.
+
 ***
 
 Change log v.0.12.16
