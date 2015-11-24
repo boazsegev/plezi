@@ -4,6 +4,8 @@ module Plezi
 
 		module WSObject
 
+			# Used to emulate the Redis connection when the Identoty API
+			# is used on a single process with no Redis support.
 			module RedisEmultaion
 				public
 				def lrange key, first, last = -1
@@ -59,7 +61,7 @@ module Plezi
 					end
 				end
 				def expire key, seconds
-					Iodine.warn "Identity API requires Redis - no persistent storage!"
+					@warning_sent ||= Iodine.warn "Identity API requires Redis - no persistent storage!".freeze
 					sync do
 						return 0 unless @cache[key]
 						if @timers[key]
@@ -173,6 +175,9 @@ module Plezi
 			end
 			module SuperInstanceMethods
 				protected
+
+				# this is the identity event and ittells the connection to "read" the messages in the "mailbox",
+				# and forward the messages to the rest of the connections.
 				def ___review_identity identity
 					redis = Plezi.redis || ::Plezi::Base::WSObject::RedisEmultaion
 					identity = identity.to_s.freeze
