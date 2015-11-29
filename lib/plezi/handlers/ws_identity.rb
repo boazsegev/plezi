@@ -170,6 +170,12 @@ module Plezi
 				def registered? identity
 					self.class.registered? identity
 				end
+				# # handles websocket being closed.
+				# def on_close
+				# 	super if defined? super
+				# 	redis = Plezi.redis || ::Plezi::Base::WSObject::RedisEmultaion
+				# 	@___identity.each { |identity| redis.lrem "#{identity}_uuid".freeze, 0, uuid }
+				# end
 			end
 			module ClassMethods
 			end
@@ -197,7 +203,7 @@ module Plezi
 						Iodine.run do
 							targets.each {|target| unicast(target, msg[:method], *msg[:data]) }
 						end
-						self.method(msg[:method]).call(*msg[:data])
+						self.__send__(msg[:method], *msg[:data])
 					end
 					# ___extend_lifetime identity
 				end
