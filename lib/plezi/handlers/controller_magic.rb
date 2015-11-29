@@ -164,23 +164,23 @@ module Plezi
 			# if template is a string, it will assume the string is an
 			# absolute path to a template file. it will NOT search for the template but might raise exceptions.
 			#
-			# if the template is a symbol, the '_' caracters will be used to destinguish sub-folders (NOT a partial template).
+			# if the template is a symbol, the '_' characters will be used to destinguish sub-folders (NOT a partial template).
 			#
 			# returns false if the template or layout files cannot be found.
 			def render template, options = {}, &block
 				# make sure templates are enabled
 				return false if host_params[:templates].nil?
-				# render layout by recursion, if exists
+				# set up defaults
+				@warned_type ||= (Iodine.warn("Deprecation warning! `#render` method called with optional `:type`. Use `:format` instead!") && true) if options[:type]
+				options[:format] ||= (options[:type] || params[:format] || 'html'.freeze).to_s
+				options[:locale] ||= params[:locale].to_sym if params[:locale]
+				# render layout using recursion, if exists
 				if options[:layout]
 					layout = options.delete(:layout)
 					inner = render(template, options, &block)
 					return false unless inner
 					return render(layout, options) { inner }
 				end
-				# set up defaults
-				@warned_type ||= (Iodine.warn("Deprecation warning! `#render` method called with optional `:type`. Use `:format` instead!") && true) if options[:type]
-				options[:format] ||= (options[:type] || params[:format] || 'html'.freeze).to_s
-				options[:locale] ||= params[:locale].to_sym if params[:locale]
 				#update content-type header
 				case options[:format]
 				when 'html', 'js', 'txt'
