@@ -32,7 +32,7 @@ module Plezi
 				# (with a protocol instance of WSProtocol and an instance of the Controller class set as a handler)
 				def pre_connect
 					# make sure this is a websocket controller
-					return false unless self.class.has_super_method?(:on_message)
+					return false unless self.class.has_super_method?(:on_message) || self.class.superclass.instance_variable_get(:@auto_dispatch)
 					# call the controller's original method, if exists, and check connection.
 					return false if (defined?(super) && !super)
 					# finish if the response was sent
@@ -43,6 +43,27 @@ module Plezi
 					return self
 				end
 
+				# Websockets
+				#
+				# this method either forwards the on_message handling to the `on_message` callback, OR
+				# auto-dispatches the messages by translating the JSON into a method call using the `event` keyword.
+				def on_message data
+					unless self.class.superclass.instance_variable_get(:@auto_dispatch)
+						return super if defined? super
+						return false
+					end
+					begin
+						data = JSON.parse data						
+					rescue
+						return close
+					end
+					unless self.class.has_super_method?(data['event'] = data['event'].to_s.to_sym)
+						return write({ event: :error, status: 404, result: :error, request: data }.to_json)
+					end
+					Plezi::Base::Helpers.make_hash_accept_symbols data
+					self.__send__(data['event'], data)
+				end 
+
 				# Inner Routing
 				def _route_path_to_methods_and_set_the_response_
 					#run :before filter
@@ -50,7 +71,7 @@ module Plezi
 					#check request is valid and call requested method
 					ret = requested_method
 					return false unless ret
-					ret = self.method(ret).call
+					ret = self.__send__(ret)
 					return false unless ret
 					#run :after filter
 					return false if self.class.has_method?(:after) && self.after == false
