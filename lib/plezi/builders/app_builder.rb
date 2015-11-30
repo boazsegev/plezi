@@ -28,6 +28,7 @@ module Plezi
 				app_tree["templates"]["welcome.html.erb"] ||= IO.read(File.join(@root, "resources" ,"mini_welcome_page.html")).gsub('appname', app_name)
 				app_tree["assets"] ||= {}
 				app_tree["assets"]["websocket.js"] ||= IO.read(File.join(@root, "resources" ,"websockets.js")).gsub('appname', app_name)
+				app_tree["assets"]["plezi_client.js"] ||= IO.read(File.join(@root,"resources" ,"plezi_client.js")).gsub('appname', app_name)
 				finalize app_name
 			end
 
