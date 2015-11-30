@@ -59,8 +59,15 @@ module Plezi
 					rescue
 						return close
 					end
+					@@no_dispatch ||= (Class.new.instance_methods +
+											Plezi::Base::WSObject::InstanceMethods.instance_methods +
+											Plezi::Base::WSObject::SuperInstanceMethods.instance_methods +
+											Plezi::ControllerMagic::InstanceMethods.instance_methods +
+											Plezi::Base::ControllerCore::InstanceMethods.instance_methods +
+											[:before, :after, :initialize]).to_set
+					puts @@no_dispatch.to_a.to_s
 					Plezi::Base::Helpers.make_hash_accept_symbols data
-					unless self.class.has_super_method?(data['event'.freeze] = data['event'.freeze].to_s.to_sym)
+					unless self.class.has_super_method?(data['event'.freeze] = data['event'.freeze].to_s.to_sym) && !@@no_dispatch.include?(data['event'.freeze])
 						return (self.class.has_super_method?(:unknown_event) && ( unknown_event(data) || true)) || write({ event: :err, status: 404, result: "not found", request: data }.to_json)
 					end
 					ret = self.__send__(data['event'.freeze], data)
