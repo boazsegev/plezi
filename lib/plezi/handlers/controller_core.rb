@@ -60,11 +60,11 @@ module Plezi
 						return close
 					end
 					self.class.instance_variable_set :@allow_dispatch, (( self.class.instance_methods - (Class.new.instance_methods +
-												Plezi::Base::WSObject::InstanceMethods.instance_methods +
-												Plezi::Base::WSObject::SuperInstanceMethods.instance_methods +
-												Plezi::ControllerMagic::InstanceMethods.instance_methods +
-												Plezi::Base::ControllerCore::InstanceMethods.instance_methods +
-												[:before, :after, :initialize]) ).delete_if {|m| m.to_s[0] == '_'}).to_set unless self.class.instance_variable_get :@allow_dispatch
+							Plezi::Base::WSObject::InstanceMethods.instance_methods +
+							Plezi::Base::WSObject::SuperInstanceMethods.instance_methods +
+							Plezi::ControllerMagic::InstanceMethods.instance_methods +
+							Plezi::Base::ControllerCore::InstanceMethods.instance_methods +
+							[:before, :after, :initialize]) ).delete_if {|m| m.to_s[0] == '_'}).to_set unless self.class.instance_variable_get(:@allow_dispatch)
 					Plezi::Base::Helpers.make_hash_accept_symbols data
 					unless self.class.has_super_method?(data['event'.freeze] = data['event'.freeze].to_s.to_sym) && self.class.instance_variable_get(:@allow_dispatch).include?(data['event'.freeze])
 						return (self.class.has_super_method?(:unknown_event) && ( unknown_event(data) || true)) || write({ event: :err, status: 404, result: "not found", request: data }.to_json)
