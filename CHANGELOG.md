@@ -4,6 +4,10 @@
 
 Change log v.0.12.18
 
+**Feature**: Auto-dispatching allows, when enabled, to automatically map JSON websocket messages to controller methods, according to their `event` property. Also, when using the auto-dispatch, Plezi will automatically send the returned value for dispatch methods that return a String (just like when using Http). This means that unifying Websocket and RESTful APIs is now easier than ever.
+
+**Change**: the `json` format is now automatically assumed when a websocket connection is established - allowing `render` calls to automatically prefer `json` format templates.
+
 **Change**: The warning shown when using the Identity API without Redis will now only appear once, instead of repeating itself.
 
 ***
