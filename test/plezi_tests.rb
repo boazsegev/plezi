@@ -557,7 +557,7 @@ end
 # Plezi.processes = 3
 
 Plezi.threads = 9
-# PL.logger = nil
+PL.logger = nil
 
 Plezi.run do
 
