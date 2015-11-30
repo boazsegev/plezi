@@ -58,6 +58,7 @@ module Plezi
 				app_tree["assets"]["stylesheets"] ||= {}
 				app_tree["assets"]["javascripts"] ||= {}
 				app_tree["assets"]["javascripts"]["websocket.js"] ||= IO.read(File.join(@root,"resources" ,"websockets.js")).gsub('appname', app_name)
+				app_tree["assets"]["javascripts"]["plezi_client.js"] ||= IO.read(File.join(@root,"resources" ,"plezi_client.js")).gsub('appname', app_name)
 				app_tree["assets"]["welcome.html"] ||= IO.read(File.join(@root,"resources" ,"welcome_page.html")).gsub('appname', app_name)
 
 				# app core files.

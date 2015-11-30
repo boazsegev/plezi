@@ -39,6 +39,8 @@ module Plezi
 					return false if response.headers_sent?
 					# make sure that the session object is available for websocket connections
 					session
+					# make sure that rendering uses JSON for websocket messages (unless already set)
+					params[:format] ||= 'json'
 					# complete handshake
 					return self
 				end
@@ -53,15 +55,16 @@ module Plezi
 						return false
 					end
 					begin
-						data = JSON.parse data						
+						data = JSON.parse data
 					rescue
 						return close
 					end
-					unless self.class.has_super_method?(data['event'] = data['event'].to_s.to_sym)
-						return write({ event: :error, status: 404, result: :error, request: data }.to_json)
-					end
 					Plezi::Base::Helpers.make_hash_accept_symbols data
-					self.__send__(data['event'], data)
+					unless self.class.has_super_method?(data['event'.freeze] = data['event'.freeze].to_s.to_sym)
+						return (self.class.has_super_method?(:unknown_event) && ( unknown_event(data) || true)) || write({ event: :err, status: 404, result: "not found", request: data }.to_json)
+					end
+					ret = self.__send__(data['event'.freeze], data)
+					write(ret) if ret.is_a?(String)
 				end 
 
 				# Inner Routing
