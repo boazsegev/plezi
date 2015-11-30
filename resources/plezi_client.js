@@ -1,4 +1,4 @@
-// This is a commonly used structure used for WebSocket messanging.
+// This is a commonly used structure for WebSocket messanging.
 //
 // To open a websocket connection to the current location
 // (i.e, "https://example.com/path" => "wss://example.com/path"), use:

@@ -1,4 +1,9 @@
-// Add this file to your html to add websocket support
+// Edit and add this file to your html, to implement
+// raw websocket support.
+
+// This file should be edited to implement your raw websocket application logic.
+
+// For an auto-dispatch, JSON implementation, consoder using the PleziClient.
 
 // Your websocket URI should be an absolute path. The following sets the base URI.
 // remember to update to the specific controller's path to your websocket URI.
