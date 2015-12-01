@@ -56,6 +56,7 @@ module Plezi
 					end
 					begin
 						data = JSON.parse data
+						return close unless data.is_a?(Hash)
 					rescue
 						return close
 					end
@@ -64,12 +65,19 @@ module Plezi
 							Plezi::Base::WSObject::SuperInstanceMethods.instance_methods +
 							Plezi::ControllerMagic::InstanceMethods.instance_methods +
 							Plezi::Base::ControllerCore::InstanceMethods.instance_methods +
-							[:before, :after, :initialize]) ).delete_if {|m| m.to_s[0] == '_'}).to_set unless self.class.instance_variable_get(:@allow_dispatch)
+							[:before, :after, :initialize, :unknown , :unknown_event]) ).delete_if {|m| m.to_s[0] == '_'}).to_set unless self.class.instance_variable_get(:@allow_dispatch)
 					Plezi::Base::Helpers.make_hash_accept_symbols data
-					unless self.class.has_super_method?(data['event'.freeze] = data['event'.freeze].to_s.to_sym) && self.class.instance_variable_get(:@allow_dispatch).include?(data['event'.freeze])
-						return (self.class.has_super_method?(:unknown_event) && ( unknown_event(data) || true)) || write({ event: :err, status: 404, result: "not found", request: data }.to_json)
+					ret = nil
+					begin
+						if self.class.has_super_method?(data['event'.freeze] = data['event'.freeze].to_s.to_sym) && self.class.instance_variable_get(:@allow_dispatch).include?(data['event'.freeze])
+							ret = self.__send__(data['event'.freeze], data)
+						else
+							ret = (self.class.has_super_method?(:unknown) && ( unknown(data) || true)) || (self.class.has_super_method?(:unknown_event) && Iodine.warn('Auto-Dispatch API updated: use `unknown` instead of `unknown_event`') && ( unknown_event(data) || true)) || ({ event: :err, status: 404, result: "not found", request: data }.to_json)
+						end
+					rescue ArgumentError => e
+						Iodine.error "Auto-Dispatch Error for event :#{data['event'.freeze]} - #{e.message}"
 					end
-					ret = self.__send__(data['event'.freeze], data)
+					ret = ret.to_json if ret.is_a?(Hash)
 					write(ret) if ret.is_a?(String)
 				end 
 

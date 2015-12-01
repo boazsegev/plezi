@@ -27,9 +27,9 @@
 //      var client = new PleziClient(PleziClient.origin + "/path", true)
 //      client.reconnect_interval = 250 // Or use the default 50 ms.
 //
-// To set up event handling, directly set an `on<event name>` callback. i.e., for an event called `chat`:
+// To set up event handling, directly set an `<event name>` callback. i.e., for an event called `chat`:
 //
-//      client.onchat = function(event) { "..." }
+//      client.chat = function(event) { "..." }
 //
 // To sent / emit event in JSON format, use the `emit` method:
 //
@@ -80,7 +80,10 @@ function PleziClient(url, reconnect) {
 PleziClient.prototype.___on_message = function(e) {
     try {
         var msg = JSON.parse(e.data);
-        if ( (msg.event) && (this.owner['on' + msg.event])) {
+        if ( (msg.event) && (this.owner[msg.event])) {
+            this.owner[msg.event](msg);
+        } else if ( (msg.event) && (this.owner['on' + msg.event])) {
+            console.warn('PleziClient: use a callback called "' + msg.event + '" instead of of "on' + msg.event + '"');
             this.owner['on' + msg.event](msg);
         } else
         {

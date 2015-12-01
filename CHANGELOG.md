@@ -2,6 +2,16 @@
 
 ***
 
+Change log v.0.12.19
+
+**Updates**: Auto-Dispatch updates:
+
+* Updated the Auto-Dispatch API conventions, so that the client and the server conventions are the same (both map events to methods with the same name (without the `on` prefix) and map unknown events to the `unknown` callback).
+
+* Auto-Dispatch callbacks can return a Hash as well as a String when the return value is meant to be written to the websockets.
+
+***
+
 Change log v.0.12.18
 
 **Feature**: Auto-dispatching allows, when enabled, to automatically map JSON websocket messages to controller methods, according to their `event` property. Also, when using the auto-dispatch, Plezi will automatically send the returned value for dispatch methods that return a String (just like when using Http). This means that unifying Websocket and RESTful APIs is now easier than ever.

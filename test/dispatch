@@ -25,7 +25,10 @@ class DispatchTest
 		data[:data] ||= "test"
 		{event: 'alert', data: data[:data]}.to_json
 	end
-	def index
+	def unknown data
+		{event: 'alert', data: "Unknown!"}
+	end
+	def index event = nil
 		%q{<html><head><script src='/assets/plezi_client.js'></script>
 </head>
 <body>
