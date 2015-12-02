@@ -10,6 +10,12 @@ Change log v.0.12.19
 
 * Auto-Dispatch callbacks can return a Hash as well as a String when the return value is meant to be written to the websockets.
 
+* Auto-Dispatch sends an `_ack_` event whenever an event contains an event ID (`_EID_`) property.
+
+* Auto-Dispatch client's `emit` supports timeout callbacks (for easier fallback to AJAX).
+
+* A `:client` route allows serving Auto-Dispatch's updated client rather than the original client provided in the template. This allows the application to serve the updated client when Plezi is updated.
+
 ***
 
 Change log v.0.12.18

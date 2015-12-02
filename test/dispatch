@@ -25,25 +25,23 @@ class DispatchTest
 		data[:data] ||= "test"
 		{event: 'alert', data: data[:data]}.to_json
 	end
-	def unknown data
-		{event: 'alert', data: "Unknown!"}
-	end
 	def index event = nil
-		%q{<html><head><script src='/assets/plezi_client.js'></script>
+		%q{<html><head><script src='/client.js'></script>
 </head>
 <body>
 <button onclick='connection.emit({event: "test", data: "Woohooo!"});' value='test'>Test!</button>
 <script>
 document.body.onload = function() {
 	connection = new PleziClient();
-	connection.onalert = function(data) {
+	connection.alert = function(data) {
 		alert(JSON.stringify(data));
 		console.log(data);
 	}
-//	connection.onerr = function(data) {
-//		alert("Error: " + JSON.stringify(data));
-//		console.log(data);
-//	}
+	connection.err = function(data) {
+		alert("Error: " + JSON.stringify(data));
+		console.log(data);
+	}
+	connection.emit_timeout = 3000;
 	connection.unknown = function(data) {
 		alert("Unknown event: " + JSON.stringify(data));
 		console.log(data);
@@ -52,5 +50,6 @@ document.body.onload = function() {
 </script></body></html>}
 	end
 end
-host assets: File.expand_path(File.join('..','..', 'resources'), __FILE__)
+host
+route '/client.js', :client
 route '/', DispatchTest

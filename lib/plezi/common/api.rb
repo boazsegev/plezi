@@ -13,6 +13,11 @@ module Plezi
 
 	# adds a route to the last server created
 	def route(path, controller = nil, &block)
+		if controller == :client
+			client_path = File.expand_path(File.join('..','..','..','..','resources','plezi_client.js'), __FILE__)
+			controller = nil
+			block = Proc.new {  Plezi.cache_needs_update?(client_path) ? Plezi.reload_file(client_path) : Plezi.load_file(client_path) }
+		end
 		::Plezi::Base::HTTPRouter.add_route path, controller, &block
 	end
 

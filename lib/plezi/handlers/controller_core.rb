@@ -69,6 +69,9 @@ module Plezi
 					Plezi::Base::Helpers.make_hash_accept_symbols data
 					ret = nil
 					begin
+						if data['_EID_'.freeze]
+							write "{\"event\":\"_ack_\",\"_EID_\":#{data['_EID_'.freeze]}}"
+						end
 						if self.class.has_super_method?(data['event'.freeze] = data['event'.freeze].to_s.to_sym) && self.class.instance_variable_get(:@allow_dispatch).include?(data['event'.freeze])
 							ret = self.__send__(data['event'.freeze], data)
 						else

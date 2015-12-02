@@ -50,7 +50,6 @@ end
 if ARGV[0] == 'new' || ARGV[0] == 'n' || ARGV[0] == "force" || ARGV[0] == 'mini' || ARGV[0] == 'm' 
 	#########
 	## set up building environment
-	NO_PLEZI_AUTO_START = true
 	ARGV[1] = ARGV[1].gsub /[^a-zA-Z0-9]/, '_'
 	if Dir.exists?(ARGV[1]) && ARGV[0] != "force"
 		puts ""
