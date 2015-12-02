@@ -104,6 +104,13 @@ module Plezi
 				end
 
 				# @!visibility public
+				# Closes the connection
+				def close
+					# @request[:io] contains the Websockets Protocol instance
+					(@ws_io || @request[:io]).go_away
+				end
+
+				# @!visibility public
 				# Performs a websocket unicast to the specified target.
 				def unicast target_uuid, method_name, *args
 					self.class.unicast target_uuid, method_name, *args
