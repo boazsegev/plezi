@@ -13,8 +13,8 @@
 //
 // To automatically renew the connection when disconnections are reported by the browser, use:
 //
-//      client.reconnect = true
-//      client.reconnect_interval = 250 // sets how long to wait before reconnection attempts. default is 50 ms.
+//      client.autoreconnect = true
+//      client.reconnect_interval = 250 // sets how long to wait before reconnection attempts. default is 250 ms.
 //
 // To set up event handling, directly set an `<event name>` callback. i.e., for an event called `chat`:
 //
@@ -24,9 +24,7 @@
 //
 //      client.emit({event: "chat", data: "the message"})
 //
-function PleziClient(url, reconnect) {
-    // Set connected ststus (none).
-    this.connected = NaN;
+function PleziClient(url, autoreconnect) {
     // Set URL
     if(url) {
         this.url = url
@@ -34,24 +32,14 @@ function PleziClient(url, reconnect) {
         this.url = PleziClient.origin + window.location.pathname
     }
     // Connect Websocket
-    this.ws = new WebSocket(this.url);
-    // needed to access this object from the websocket callback.
-    this.ws.owner = this
+    this.reconnect();
     // auto-reconnection
-    this.reconnect = false;
-    this.reconnect_interval = 50
+    this.autoreconnect = false;
+    this.reconnect_interval = 200
     // the timeout for a message ack receipt
     this.emit_timeout = false
-    // Set the reconnect property
-    if(reconnect) {this.reconnect = true;}
-    // The Websocket onopen callback
-    this.ws.on_open = this.___on_open
-    // The Websocket onclose callback
-    this.ws.onclose = this.___on_close
-    // The Websocket onerror callback
-    this.ws.onerror = this.___on_error
-    // The Websocket onmessage callback
-    this.ws.onmessage = this.___on_message
+    // Set the autoreconnect property
+    if(autoreconnect) {this.autoreconnect = true;}
 }
 // The Websocket onopen callback
 PleziClient.prototype.___on_open = function(e) {
@@ -60,14 +48,12 @@ PleziClient.prototype.___on_open = function(e) {
 }
 // The Websocket onclose callback
 PleziClient.prototype.___on_close = function(e) {
-    this.connected = false;
+    this.owner.connected = false;
     if (this.owner.onclose) { this.owner.onclose(e) }
-    if(this.owner.reconnect) {
+    if(this.owner.autoreconnect) {
         setTimeout( function(obj) {
-            obj.connected = NaN;
-            obj.ws = new Websocket(obj.url);
-            obj.ws.owner = obj
-        }, this.reconnect_interval, this.owner);
+            obj.reconnect();
+        }, this.owner.reconnect_interval, this.owner);
     }
 }
 // The Websocket onerror callback
@@ -115,8 +101,23 @@ PleziClient.prototype.ontimeout = function(event) {
     console.log(this);
 }
 
+PleziClient.prototype.reconnect = function() {
+    this.connected = NaN;
+    this.ws = new WebSocket(this.url);
+    // lets us access the client from the callbacks
+    this.ws.owner = this
+    // The Websocket onopen callback
+    this.ws.on_open = this.___on_open
+    // The Websocket onclose callback
+    this.ws.onclose = this.___on_close
+    // The Websocket onerror callback
+    this.ws.onerror = this.___on_error
+    // The Websocket onmessage callback
+    this.ws.onmessage = this.___on_message
+}
+
 PleziClient.prototype.close = function() {
-    this.reconnect = false;
+    this.autoreconnect = false;
     this.ws.close();
 }
 
