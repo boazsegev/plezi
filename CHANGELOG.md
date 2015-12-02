@@ -4,6 +4,8 @@
 
 Change log v.0.12.19
 
+**Fix**: The Controller's `close` method went missing... It's back. Closing the Websocket/Http connections was never easier with the `close` method available straight from the controller.
+
 **Updates**: Auto-Dispatch updates:
 
 * Updated the Auto-Dispatch API conventions, so that the client and the server conventions are the same (both map events to methods with the same name (without the `on` prefix) and map unknown events to the `unknown` callback).
