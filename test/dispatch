@@ -35,17 +35,17 @@ document.body.onload = function() {
 	connection = new PleziClient();
 	connection.alert = function(data) {
 		alert(JSON.stringify(data));
-		console.log(data);
-	}
-	connection.err = function(data) {
-		alert("Error: " + JSON.stringify(data));
-		console.log(data);
 	}
 	connection.emit_timeout = 3000;
-	connection.unknown = function(data) {
-		alert("Unknown event: " + JSON.stringify(data));
-		console.log(data);
-	}
+	connection.log_events = true;
+//	connection.err = function(data) {
+//		alert("Error: " + JSON.stringify(data));
+//		console.log(data);
+//	}
+//	connection.unknown = function(data) {
+//		alert("Unknown event: " + JSON.stringify(data));
+//		console.log(data);
+//	}
 }
 </script></body></html>}
 	end

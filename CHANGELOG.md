@@ -2,6 +2,14 @@
 
 ***
 
+Change log v.0.12.20
+
+**Fix (Client)**: The onopen callback is now called (the issue was related to a typo in the name of the onopen callback).
+
+**Updates**: Auto-Dispatch Client - logging is now easier with the `log_events` property (set to `true` to log all events).
+
+***
+
 Change log v.0.12.19
 
 **Fix**: The Controller's `close` method went missing... It's back. Closing the Websocket/Http connections was never easier with the `close` method available straight from the controller.
