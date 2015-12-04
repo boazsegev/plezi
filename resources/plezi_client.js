@@ -36,6 +36,8 @@ function PleziClient(url, autoreconnect) {
     // auto-reconnection
     this.autoreconnect = false;
     this.reconnect_interval = 200
+    // dump data to console?
+    this.log_events = false
     // the timeout for a message ack receipt
     this.emit_timeout = false
     // Set the autoreconnect property
@@ -64,6 +66,7 @@ PleziClient.prototype.___on_error = function(e) {
 PleziClient.prototype.___on_message = function(e) {
     try {
         var msg = JSON.parse(e.data);
+        if (this.owner.log_events) {console.log(msg)}
         if ( msg.event == '_ack_') { clearTimeout(msg._EID_) }
         if ( (msg.event) && (this.owner[msg.event])) {
             this.owner[msg.event](msg);
@@ -107,7 +110,7 @@ PleziClient.prototype.reconnect = function() {
     // lets us access the client from the callbacks
     this.ws.owner = this
     // The Websocket onopen callback
-    this.ws.on_open = this.___on_open
+    this.ws.onopen = this.___on_open
     // The Websocket onclose callback
     this.ws.onclose = this.___on_close
     // The Websocket onerror callback
