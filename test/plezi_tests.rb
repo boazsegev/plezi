@@ -376,7 +376,7 @@ module PleziTestTasks
 			end
 			ws3 = Iodine::Http::WebsocketClient.connect("ws://localhost:3000/", on_open: -> { write 'get uuid' } ) do |data|
 				if data.match /uuid: ([^s]*)/
-					ws2 << "to: #{data.match(/^uuid: ([^s]*)/)[1]}"
+					ws3 << "to: #{data.match(/^uuid: ([^s]*)/)[1]}"
 					puts "    * Websocket UUID for unicast testing: #{data.match(/^uuid: ([^s]*)/)[1]}"
 				elsif data == "unicast"
 					puts "    * Websocket unicast testing: #{RESULTS[:waiting]} (target received data)"
