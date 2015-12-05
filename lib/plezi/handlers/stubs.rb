@@ -46,7 +46,7 @@ module Plezi
 			"update called - updating #{params[:id]}"
 		end
 
-		# called when request is DELETE (or params["_method"] == 'delete') and request.params\[:id] exists
+		# called when request is DELETE (or params[:_method] == 'delete') and request.params\[:id] exists
 		def delete
 			"delete called - deleting object #{params[:id]}"
 		end
