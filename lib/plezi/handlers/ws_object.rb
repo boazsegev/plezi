@@ -77,7 +77,7 @@ module Plezi
 						return false
 					end
 					return false if data[:type] && data[:type] != :all && !self.is_a?(data[:type])
-					# return ( self.class.placebo? ? true : we.write(ws.data)) if :method == :to_client
+					# return (data[:data].each {|e| emit(e)}) if data[:method] == :emit
 					return ((data[:type] == :all) ? false : (raise "Broadcasting recieved but no method can handle it - dump:\r\n #{data.to_s}") ) unless self.class.has_super_method?(data[:method])
 					self.__send__(data[:method], *data[:data])
 				end
@@ -102,6 +102,14 @@ module Plezi
 				def write data
 					(@ws_io || @response) << data
 				end
+
+				# # @!visibility public
+				# # A helper method for easily sending JSON data. Accepts a Hash that will be translated to JSON and sent to the client as a JSON string.
+				# #
+				# # This method is available as a broadcast event.
+				# def emit event
+				# 	write event.to_json
+				# end
 
 				# @!visibility public
 				# Closes the connection
@@ -153,9 +161,11 @@ module Plezi
 					@methods_list = nil
 					@exposed_methods_list = nil
 					@super_methods_list = nil
+					@auto_dispatch_list = nil
 					has_method? nil
 					has_exposed_method? nil
 					has_super_method? nil
+					has_auto_dispatch_method? nil
 				end
 				def has_method? method_name
 					@methods_list ||= self.instance_methods.to_set
@@ -174,6 +184,15 @@ module Plezi
 						[:before, :after, :save, :show, :update, :delete, :initialize]
 					@exposed_methods_list ||= ( (self.public_instance_methods - @reserved_methods_list ).delete_if {|m| m.to_s[0] == '_'} ).to_set
 					@exposed_methods_list.include? method_name
+				end
+				def has_auto_dispatch_method? method_name
+					@auto_dispatch_list ||= (( self.instance_methods - (Class.new.instance_methods +
+							Plezi::Base::WSObject::InstanceMethods.instance_methods +
+							Plezi::Base::WSObject::SuperInstanceMethods.instance_methods +
+							Plezi::ControllerMagic::InstanceMethods.instance_methods +
+							Plezi::Base::ControllerCore::InstanceMethods.instance_methods +
+							[:before, :after, :initialize, :unknown , :unknown_event]) ).delete_if {|m| m.to_s[0] == '_' || instance_method(m).arity == 0 }).to_set
+					@auto_dispatch_list.include? method_name
 				end
 
 				protected

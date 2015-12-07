@@ -21,6 +21,9 @@ class DispatchTest
 	def _hidden
 		{event: :failed, data: :forbidden}.to_json
 	end
+	def html
+		{event: 'html', data: 'only'}.to_json
+	end
 	def test data = {}
 		data[:data] ||= "test"
 		{event: 'alert', data: data[:data]}.to_json

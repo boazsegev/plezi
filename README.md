@@ -666,17 +666,23 @@ Plezi and Iodine are written for Ruby versions 2.1.0 or greater (or API compatib
 
 ## Who's afraid of multi-threading?
 
+Let's start with the obvious, **if** your code is short and efficient (no blocking tasks), it is best to run Plezi (Iodine) in a single threaded mode - you get better performance AND safer code, **as long as there are no blocking tasks**:
+
+      Plezi.threads = 1
+
+But... most applications will naturally have blocking tasks, such as database queries etc'. This is why...:
+
 Plezi builds on Iodine's concept of "connection locking", meaning that your controllers shouldn't be acessed by more than one thread at the same time.
 
 This allows you to run Plezi as a multi-threaded (and even multi-process) application as long as your controllers don't change or set any global data... Readeing global data after it was set during initialization is totally fine, just not changing or setting it...
 
 But wait, global data is super important, right?
 
-Well, sometimes it is. And although it's a better practice to avoide storing any global data in global variables, sometimes storing stuff in the global space is exactly what we need.
+Well, sometimes it is. And although it's a better practice to avoide storing any global data in global variables (databases are usually thread safe storage places), sometimes storing stuff in the global space is exactly what we need.
 
 The solution is simple - if you can't use persistent databases with thread-safe libraries (i.e. Sequel / ActiveRecord / Redis, etc'), use Plezi's global cache storage (see Plezi::Cache).
 
-Plezi's global cache storage is a memory based storage protected by a mutex for any reading or writing from the cache.
+Plezi's global cache storage is a local memory based storage protected by a mutex whenever reading or writing from the cache.
 
 So... these are protected:
 
@@ -713,7 +719,7 @@ However, the following is unsafe:
     global_hash[:change] = "NOT safe"
  
 
-\* be aware, if using Plezi in as a multi-process application, that each process has it's own cache and that processes can't share the cache. The different threads in each of the processes will be able to acess their process's cache, but each process runs in a different memory space, so they can't share.
+\* be aware, if using Plezi in as a multi-process application, that each process has it's own cache and that processes can't share the cache. The different threads in each of the processes will be able to access their process's cache, but each process runs in a different memory space, so they can't share.
 
 ## Contributing
 

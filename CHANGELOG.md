@@ -2,6 +2,12 @@
 
 ***
 
+Change log v.0.12.21
+
+**Update**: Auto-Dispatch method whitlisting process was updates. Method arity is now reviewed, so that only methods that accept one or more parameters are recognized as websocket auto-dispatch methods (allowing for Http only methods).
+
+***
+
 Change log v.0.12.20
 
 **Fix (Client)**: The onopen callback is now called (the issue was related to a typo in the name of the onopen callback).
