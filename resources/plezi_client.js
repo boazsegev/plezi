@@ -33,6 +33,13 @@ function PleziClient(url, autoreconnect) {
     }
     // Connect Websocket
     this.reconnect();
+    // Setup AJAJ
+    this.ajaj = {};
+    this.ajaj.client = this
+    this.ajaj.url = this.url.replace(/^ws:\/\//i, "http://").replace(/^wss:\/\//i, "https://");
+    this.ajaj.add = {};
+    this.ajaj.emit = this.___ajaj__emit;
+    this.ajaj.auto = false
     // auto-reconnection
     this.autoreconnect = false;
     this.reconnect_interval = 200
@@ -66,23 +73,32 @@ PleziClient.prototype.___on_error = function(e) {
 PleziClient.prototype.___on_message = function(e) {
     try {
         var msg = JSON.parse(e.data);
-        if (this.owner.log_events) {console.log(msg)}
+        this.owner.___dispatch(msg);
+    } catch(err) {
+        console.error("PleziClient experienced an error parsing the following data (not JSON):",
+            err, e.data)
+    }
+}
+PleziClient.prototype.___dispatch = function(msg) {
+    try {
+        if (this.log_events) {console.log(msg)}
         if ( msg.event == '_ack_') { clearTimeout(msg._EID_) }
-        if ( (msg.event) && (this.owner[msg.event])) {
-            this.owner[msg.event](msg);
-        } else if ( (msg.event) && (this.owner['on' + msg.event])) {
+        if ( (msg.event) && (this[msg.event])) {
+            this[msg.event](msg);
+        } else if ( (msg.event) && (this['on' + msg.event])) {
             console.warn('PleziClient: use a callback called "' + msg.event +
                 '" instead of of "on' + msg.event + '"');
-            this.owner['on' + msg.event](msg);
+            this['on' + msg.event](msg);
         } else
         {
-            if (this.owner['unknown'] && (msg.event != '_ack_') ) {this.owner['unknown'](msg)};
+            if (this['unknown'] && (msg.event != '_ack_') ) {this['unknown'](msg)};
         }
     } catch(err) {
         console.error("PleziClient experienced an error while responding to the following onmessage event",
             err, e)
     }
 }
+
 // Sets a timeout for the websocket message
 PleziClient.prototype.___set_failed_timeout = function(event, callback, timeout) {
     if(event._EID_) {return event;};
@@ -95,7 +111,12 @@ PleziClient.prototype.___set_failed_timeout = function(event, callback, timeout)
 // Removes the _client_ property from the event and calls
 // the ontimeout callback within the correct scope
 PleziClient.prototype.___on_timeout = function(event, client) {
-    client.ontimeout(event)
+    if (client.ajaj.auto) {
+        if (client.log_events) {console.log("falling back on AJAJ for the event:", event)}
+        client.ajaj.emit(event, client.ontimeout);
+    } else {
+        client.ontimeout(event);
+    }
 }
 // The timeout callback
 PleziClient.prototype.ontimeout = function(event) {
@@ -139,3 +160,39 @@ PleziClient.prototype.emit = function(event, callback, timeout) {
 }
 
 PleziClient.prototype.readyState = function() { return this.ws.readyState; }
+
+PleziClient.prototype.___ajaj__emit = function(event, callback) {
+    var combined = {}
+    for (var k in this.add) {combined[k] = this.add[k];};
+    for (var k in event) {combined[k] = event[k];};
+    if(!combined.id) {combined.id = event.event;};
+    var req = new XMLHttpRequest();
+    req.client = this.client;
+    req.json = combined;
+    req.callback = callback
+    // if(!req.callback) req.callback = this.failed
+    req.onreadystatechange = function() {
+        if (this.readyState != 4) { return }
+        if (this.status == 200) {
+            try {
+                var res = JSON.parse(this.responseText);
+                this.client.___dispatch(res);
+            } catch(err) {
+                console.error("PleziClient experienced an error parsing the following data (not JSON):",
+            err, this.responseText)
+            }
+            
+        } else {
+            if(this.callback) {
+                this.callback(this.json);
+            }
+        }
+    }
+    req.open("POST", this.url ,true);
+    req.setRequestHeader("Content-type", "application/json");
+    try {
+        req.send(JSON.stringify(combined));
+    } catch(err) {
+        callback(event)
+    }
+}

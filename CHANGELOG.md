@@ -4,7 +4,11 @@
 
 Change log v.0.12.21
 
-**Update**: Auto-Dispatch method whitlisting process was updates. Method arity is now reviewed, so that only methods that accept one or more parameters are recognized as websocket auto-dispatch methods (allowing for Http only methods).
+**Update**: Auto-Dispatch:
+
+* method whitlisting process was updates. Method arity is now reviewed, so that only methods that accept one or more parameters are recognized as websocket auto-dispatch methods (allowing for Http only methods without throwing exceptions).
+
+* client now adds helper methods for AJAJ (like AJAX, but JSON instead of XML). The javascript client supports the `client.ajaj.emit` to send AJAJ requests and the `client.ajaj.auto=true` to automatically fallback on AJAJ after timeout (unless a custom callback is defined for the specific `emit`).
 
 ***
 
