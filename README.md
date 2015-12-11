@@ -16,7 +16,7 @@ With Plezi, you can easily:
 
 ## Guides and documentation
 
-You can find [tutorials and guides at Plezi.io](http://www.plezi.io/guides).
+You can find [tutorials and guides at Plezi.io](http://www.plezi.io/docs).
 
 Plezi leverages Ruby's mixins and meta-programming, so the YARD documentation is hard to navigate... I started writing guides for Plezi and would really appreciate any help you can offer.
 
@@ -36,7 +36,7 @@ Or install it yourself as:
 
 ## Quick start
 
-Plezi is super easy. Please read our [Getting Started guide](http://www.plezi.io/guides/basics) for more information.
+Plezi is super easy. Please read our [Getting Started guide](http://www.plezi.io/docs/basics) for more information.
 
 Here's a super quick intro:
 
