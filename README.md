@@ -4,6 +4,28 @@
 [![Inline docs](http://inch-ci.org/github/boazsegev/plezi.svg?branch=master)](http://www.rubydoc.info/github/boazsegev/plezi/master)
 [![GitHub](https://img.shields.io/badge/GitHub-Open%20Source-blue.svg)](https://github.com/boazsegev/plezi)
 
+## Special notice - pre version 13
+
+One of the best compliments Plezi keeps receiving is the feedback about how easy it is to set up a websocket application using Plezi.
+
+On the other hand, Plezi's server, Iodine 0.1.x was written in Ruby and allowed a very fast and easy development...
+
+...but with time and experience we all discovered the Ruby's `select` was limited to ~1024 connections, and that Plezi developers wanted more - more connections, more performance, more ease of deployment and more integration with Rails/Sinatra.
+
+I'm working very hard on rewriting the core server in C. Iodine 0.2.x is written in C and it supports only Unix based systems with `kqueue` or `epoll` support (BSD/Linux/MacOSX).
+
+This means that if your machine has the memory and the resources (open file descriptor limits apply), Iodine could support tens of thousands of concurrent connections.
+
+Also, a lot of the API is changing for better integration with Rack based frameworks (Rails/Sinatra). 
+
+This also means that some sacrefices will be made. i.e. more Rack integration means that we loose HTTP streaming (Rack's specifications have their limits).
+
+This is where you come in. **Now** is the time to push those changes you wanted to integrate into Plezi. Send in your thoughts and feedback. You can open an issue or email me. Just write about how you use Plezi and what features you think are super important to keep and which once bother you.
+
+Even if I cannot answer everyone, it will all go into the next version's design and I'll do my best.
+
+## Plezi
+
 Plezi is a Ruby framework for realtime web applications. It's name comes from the word "pleasure", since Plezi is a pleasure to work with.
 
 With Plezi, you can easily:

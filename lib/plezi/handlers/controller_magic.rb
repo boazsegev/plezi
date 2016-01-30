@@ -20,6 +20,10 @@ module Plezi
 	# {include: Plezi::ControllerMagic::InstanceMethods}
 	# 
 	module ControllerMagic
+		# @!parse include Plezi::Base::WSObject
+		# @!parse include InstanceMethods
+		# @!parse extend ClassMethods
+
 		def self.included base
 			base.send :include, InstanceMethods
 			base.extend ClassMethods

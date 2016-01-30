@@ -3,6 +3,10 @@ module Plezi
 
 		# the methods defined in this module will be injected into the Controller's Core class (inherited from the controller).
 		module ControllerCore
+			# @!parse include Plezi::Base::WSObject
+			# @!parse include InstanceMethods
+			# @!parse extend ClassMethods
+
 			def self.included base
 				base.send :include, Plezi::Base::WSObject
 				base.send :include, InstanceMethods
