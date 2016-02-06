@@ -62,7 +62,7 @@ module Plezi
 				return true if Plezi.cache_needs_update?(sass)
 				# return false unless Plezi.allow_cache_update? # no meaningful performance boost.
 				mt = Plezi.file_mtime(sass)
-				Plezi.get_cached(sass).each {|e| return true if File.exists?(e.options[:filename]) && (File.mtime(e.options[:filename]) > mt)} # fn = File.join( e.options[:load_paths][0].root, e.options[:filename]) 
+				Plezi.get_cached(sass).each {|e| return true if File.exists?(e.options[:filename]) && (File.mtime(e.options[:filename]) > mt)} # fn = File.join( e.options[:load_paths][0].root, e.options[:filename])
 				false
 			end
 		end
@@ -76,7 +76,7 @@ module Plezi
 		module_function
 		# Registers a rendering extention for a specific asset type (js, css, etc').
 		#
-		# type:: the type of 
+		# type:: the type of
 		# extention:: a Symbol or String representing the extention of the file to be rendered. i.e. 'scss', 'sass', 'coffee', etc'
 		# handler :: a Proc or other object that answers to call(filename, context, &block) and returnes the rendered string. The block accepted by the handler is for chaining rendered actions (allowing for `yield` within templates) and the context is a Binding object which is offered to the rendering (if `binding` handling is supported by the engine).
 		#
@@ -116,22 +116,22 @@ module Plezi
 
 	Renderer.register :erb do |filename, context, &block|
 		next unless defined? ::ERB
-		( Plezi.cache_needs_update?(filename) ? Plezi.cache_data( filename, ( ERB.new( IO.binread(filename) ) ) )  : (Plezi.get_cached filename) ).result((context) , &block)
+		( Plezi.cache_needs_update?(filename) ? Plezi.cache_data( filename, ( ERB.new( Plezi::Base::Helpers.try_utf8! IO.binread(filename) ) ) )  : (Plezi.get_cached filename) ).result((context) , &block)
 	end
 	Renderer.register :slim do |filename, context, &block|
 		next unless defined? ::Slim
-		( Plezi.cache_needs_update?(filename) ? Plezi.cache_data( filename, ( Slim::Template.new() { IO.binread filename } ) )  : (Plezi.get_cached filename) ).render(context.receiver, &block)
+		( Plezi.cache_needs_update?(filename) ? Plezi.cache_data( filename, ( Slim::Template.new() { Plezi::Base::Helpers.try_utf8! IO.binread(filename) } ) )  : (Plezi.get_cached filename) ).render(context.receiver, &block)
 	end
 	Renderer.register :haml do |filename, context, &block|
 		next unless defined? ::Haml
-		( Plezi.cache_needs_update?(filename) ? Plezi.cache_data( filename, ( Haml::Engine.new( IO.binread(filename) ) ) )  : (Plezi.get_cached filename) ).render(context.receiver, &block)
+		( Plezi.cache_needs_update?(filename) ? Plezi.cache_data( filename, ( Haml::Engine.new( Plezi::Base::Helpers.try_utf8! IO.binread(filename) ) ) )  : (Plezi.get_cached filename) ).render(context.receiver, &block)
 	end
 
 	# JavaScript asset rendering
 	AssetManager.register :js, :erb, Renderer.review(:erb)
 	AssetManager.register :js, :coffee do |filename, context, &block|
 		next unless defined? ::CoffeeScript
-		( Plezi.cache_needs_update?(filename) ? Plezi.cache_data( filename, CoffeeScript.compile(IO.binread filename) )  : (Plezi.get_cached filename) )
+		( Plezi.cache_needs_update?(filename) ? Plezi.cache_data( filename, CoffeeScript.compile(Plezi::Base::Helpers.try_utf8!(IO.binread(filename))) )  : (Plezi.get_cached filename) )
 	end
 
 	# CSS asset rendering
