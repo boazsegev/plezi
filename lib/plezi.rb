@@ -19,6 +19,7 @@ require "plezi/version"
 
 ####### Plezi 0.13.x
 require 'plezi/core/constants.rb'
+require 'plezi/core/logging.rb'
 require 'plezi/core/cache.rb'
 require 'plezi/core/controller_core.rb'
 require 'plezi/core/controller_magic.rb'

@@ -164,8 +164,7 @@ module Plezi
 				# make sure templates are enabled
 				return false if host_params[:templates].nil?
 				# set up defaults
-				@warned_type ||= (Iodine.warn("Deprecation warning! `#render` method called with optional `:type`. Use `:format` instead!") && true) if options[:type]
-				options[:format] ||= (options[:type] || params[:format] || 'html'.freeze).to_s
+				options[:format] ||= (params[:format] || 'html'.freeze).to_s
 				options[:locale] ||= params[:locale].to_sym if params[:locale]
 				# render layout using recursion, if exists
 				if options[:layout]

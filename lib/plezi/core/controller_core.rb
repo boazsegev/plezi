@@ -72,10 +72,10 @@ module Plezi
 						if self.class.has_auto_dispatch_method?(data['event'.freeze] = data['event'.freeze].to_s.to_sym)
 							ret = self.__send__(data['event'.freeze], data)
 						else
-							ret = (self.class.has_super_method?(:unknown) && ( unknown(data) || true)) || (self.class.has_super_method?(:unknown_event) && Iodine.warn('Auto-Dispatch API updated: use `unknown` instead of `unknown_event`') && ( unknown_event(data) || true)) || ({ event: :err, status: 404, result: "not found", request: data }.to_json)
+							ret = (self.class.has_super_method?(:unknown) && ( unknown(data) || true)) || (self.class.has_super_method?(:unknown_event) && ::Plezi.warn('Auto-Dispatch API updated: use `unknown` instead of `unknown_event`') && ( unknown_event(data) || true)) || ({ event: :err, status: 404, result: "not found", request: data }.to_json)
 						end
 					rescue ArgumentError => e
-						Iodine.error "Auto-Dispatch Error for event :#{data['event'.freeze]} - #{e.message}"
+						::Plezi.error "Auto-Dispatch Error for event :#{data['event'.freeze]} - #{e.message}"
 					end
 					ret = ret.to_json if ret.is_a?(Hash)
 					write(ret) if ret.is_a?(String)
