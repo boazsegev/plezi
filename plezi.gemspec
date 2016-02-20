@@ -18,11 +18,15 @@ Gem::Specification.new do |spec|
   spec.test_files    = spec.files.grep(%r{^(test|spec|features)/})
   spec.require_paths = ["lib"]
 
-  spec.add_dependency "iodine", "~> 0.1.20"
+  spec.add_dependency "rack"
+  spec.add_dependency "iodine", "~> 0.2.0"
+  spec.add_development_dependency "pry"
   spec.add_development_dependency "bundler", "~> 1.7"
   spec.add_development_dependency "rake", "~> 10.0"
 
-  spec.post_install_message = "Thank you for installing Plezi, the native Ruby Framework for real time web-apps."
-  # spec.post_install_message = "** Deprecation Warning:\n\nThank you for installing Plezi, the native Ruby Framework for real time web-apps."
+  # spec.post_install_message = "Thank you for installing Plezi, the native Ruby Framework for real time web-apps."
+  spec.post_install_message = "** Deprecation Warning:\n" +
+       "Plezi 0.13.0 and Iodine 0.2.0 introduce MAJOR API changes! It is likely that some of the code for your Plezi 0.12.x application will need to be revised.\n\n" +
+       "Thank you for installing Plezi, the native Ruby Framework for real time web-apps."
 
 end

@@ -1,14 +1,13 @@
-module Plezi
-	module Base
 
-		# the methods defined in this module will be injected into the Controller's Core class (inherited from the controller).
-		module ControllerCore
-			# @!parse include Plezi::Base::WSObject
+module Plezi
+  module Base
+    # This module will be mixed-in to the class which inherits the original
+    # Controller class.
+    module ControllerCore
 			# @!parse include InstanceMethods
 			# @!parse extend ClassMethods
 
 			def self.included base
-				base.send :include, Plezi::Base::WSObject
 				base.send :include, InstanceMethods
 				base.extend ClassMethods
 			end
@@ -19,7 +18,7 @@ module Plezi
 				def initialize request, response
 					@request = request
 					@params = request.params
-					@flash = response.flash
+					# @flash = response.flash
 					@host_params = request[:host_settings]
 					@response = response
 					@cookies = request.cookies
@@ -100,56 +99,10 @@ module Plezi
 			end
 
 			module ClassMethods
-				protected
-
-				def reset_routing_cache
-					@methods_list = nil
-					@exposed_methods_list = nil
-					@super_methods_list = nil
-					@auto_dispatch_list = nil
-					has_method? nil
-					has_exposed_method? nil
-					has_super_method? nil
-					has_auto_dispatch_method? nil
-				end
-				def has_method? method_name
-					@methods_list ||= self.instance_methods.to_set
-					@methods_list.include? method_name
-				end
-				def has_super_method? method_name
-					@super_methods_list ||= self.superclass.instance_methods.to_set
-					@super_methods_list.include? method_name
-				end
-				def has_exposed_method? method_name
-					@reserved_methods_list ||= Class.new.public_instance_methods +
-						# Plezi::Base::WSObject::InstanceMethods.public_instance_methods +
-						# Plezi::Base::WSObject::SuperInstanceMethods.public_instance_methods +
-						Plezi::ControllerMagic::InstanceMethods.public_instance_methods +
-						Plezi::Base::ControllerCore::InstanceMethods.public_instance_methods +
-						[:before, :after, :save, :show, :update, :delete, :initialize]
-					@exposed_methods_list ||= ( (self.superclass.public_instance_methods.to_set - @reserved_methods_list ).delete_if {|m| m.to_s[0] == '_'} ).to_set
-					@exposed_methods_list.include? method_name
-				end
-				def has_auto_dispatch_method? method_name
-					@auto_dispatch_list ||= (( self.superclass.instance_methods.to_set - (Class.new.instance_methods +
-							# Plezi::Base::WSObject::InstanceMethods.instance_methods +
-							# Plezi::Base::WSObject::SuperInstanceMethods.instance_methods +
-							Plezi::ControllerMagic::InstanceMethods.instance_methods +
-							Plezi::Base::ControllerCore::InstanceMethods.instance_methods +
-							[:before, :after, :initialize, :unknown , :unknown_event]) ).delete_if {|m| m.to_s[0] == '_' || instance_method(m).arity == 0 }).to_set
-					@auto_dispatch_list.include? method_name
-				end
-				def has_method? method_name
-					@methods_list ||= self.superclass.instance_methods.to_set
-					@methods_list.include? method_name
-				end
-				def has_class_method? method_name
-					@class_methods_list ||= self.superclass.methods.to_set - Object.methods
-					@class_methods_list.include? method_name
-				end
-
 
 			end
-		end
-	end
+
+
+    end
+  end
 end

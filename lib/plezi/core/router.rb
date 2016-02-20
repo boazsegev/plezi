@@ -1,42 +1,72 @@
+
 module Plezi
+  module Base
+    # this handles Plezi routing
+    module Router
+      # initializes the HTTP router (the normal Handler for HTTP requests)
+      #
+      # the router holds the different hosts and sends them messages/requests.
 
-	module Base
+      # represents a single host (every app should have at least one).
+      class Host
+        attr_reader :params
+        attr_reader :routes
+        def initialize params
+          @params = params
+          @routes = []
+          update
+        end
+        def update
+          @params[:assets_public_regex] = /^#{@params[:assets_public].to_s.chomp('/')}\//i.freeze
+          @params[:assets_public_length] = @params[:assets_public].to_s.chomp('/').length + 1
+          @params[:assets_refuse_templates] = /(#{AssetManager.all_extentions.join('|')}|\.\.\/)$/i.freeze
+          self
+        end
+      end
 
-		#####
-		# handles the HTTP Routing
-		module HTTPRouter
+			# the hosts mapping
+      @hosts = {}
+			@active_host = nil
 
-			class Host
-				attr_reader :params
-				attr_reader :routes
-				def initialize params
-					@params = params
-					@routes = []
-					@params[:assets_public_regex] = /^#{params[:assets_public].to_s.chomp('/')}\//i.freeze
-					@params[:assets_public_length] = @params[:assets_public].to_s.chomp('/').length + 1
-					@params[:assets_refuse_templates] = /(#{AssetManager.all_extentions.join('|')}|\.\.\/)$/i.freeze
-				end
-			end
+      # handles requests send by the HTTP Protocol (HTTPRequest objects)
+      def call env
+        # cookies =
+  				begin
+  					host = get_host(env['SERVER_NAME'.freeze]) || @hosts[:default]
+  					return [404, {"Content-Length".freeze => "15"}, ["Host not found.".freeze]] unless host
+            # create request and response objects
+            request = Rack::Request.new env
+            response = Rack::Response.new
+            # TODO: fixme, shouldn't store the data in the params Hash.
+  					request[:host_settings] = host.params
+  					# render any assets?
+  					return response.to_a if render_assets request, response, host.params
+  					# return if a route answered the request
+  					host.routes.each do |r| a = r.on_request(request, response);
+              if(a)
+                response.write a if a.is_a?(String)
+                return response.to_a
+              end
+            end
+  					#return error code or 404 not found
+  					return [404, {"Content-Length" => "10"}, ["Not Found."]]
+  				rescue => e
+  					# return 500 internal server error.
+  					Iodine.error e
+            return [500, {"Content-Length" => "15"}, ["Internal Error."]]
+  				end
+  			end
 
-			# return the upgrade handler (the self.on_upgrade method)
-			def upgrade_proc
-				self.method :on_upgrade
-			end
-			#handles websocket connection requests.
-			def on_upgrade request, response
-				host = get_host(request[:host_name].to_s.downcase) || @hosts[:default]
+      #handles websocket connection requests.
+      def ws_call env
+        host = get_host(request[:host_name].to_s.downcase) || @hosts[:default]
 				return false unless host
 				request[:host_settings] = host.params
 				# return if a route answered the request
-				host.routes.each {|r| a = r.on_request(request, response); return a if a}
+				host.routes.each {|r| a = r.on_request(request, response); return [101, {}, [], a] if a}
 				# websockets should cut out here
 				false
-			end
-			# initializes the HTTP router (the normal Handler for HTTP requests)
-			#
-			# the router holds the different hosts and sends them messages/requests.
-			@hosts = {}
-			@active_host = nil
+      end
 
 			# adds a host to the router (or activates an existing host to add new routes). accepts a host name and any parameters not related to the actual connection (ssl etc') (see {Plezi.host})
 			def add_host host_name, params = {}
@@ -44,9 +74,10 @@ module Plezi
 				params[:index_file] ||= 'index.html'
 				params[:assets_public] ||= '/assets'
 				params[:assets_public].chomp! '/'
-				params[:public] ||= params[:root] # backwards compatability
+				Iodine::Rack.public_folder = params[:public] if params[:public] # the public folder is globaly shared.
 				host_name = (host_name.is_a?(String) ? host_name.to_s.downcase : (host_name.is_a?(Regexp) ? host_name : :default))
 				@active_host = get_host(host_name) || ( @hosts[host_name] = Host.new(params) )
+        @active_host.params.update(params) && @active_host.update unless params.empty?
 				add_alias host_name, *params[:alias] if params[:alias] # && host_name != :default
 				@active_host
 			end
@@ -61,34 +92,13 @@ module Plezi
 			# adds a route to the active host. The active host is the last host referenced by the `add_host`.
 			def add_route path, controller, &block
 				@active_host ||= add_host :default
-				@active_host.routes << ::Plezi::Base::Route.new(path, controller, &block)
+				@active_host.routes << ::Plezi::Base::Router::Route.new(path, controller, &block)
 			end
 
 			# adds a route to all existing hosts.
 			def add_shared_route path, controller, &block
 				add_host :default if @hosts.empty?
-				@hosts.each {|n, h| h.routes << ::Plezi::Base::Route.new(path, controller, &block) }
-			end
-
-			# handles requests send by the HTTP Protocol (HTTPRequest objects)
-			def call request, response
-				begin
-					host = get_host(request[:host_name].to_s.downcase) || @hosts[:default]
-					return false unless host
-					request[:host_settings] = host.params
-					# render any assets?
-					return true if render_assets request, response, host.params
-					# send static file, if exists and root is set.
-					return true if Base::HTTPSender.send_static_file request, response
-					# return if a route answered the request
-					host.routes.each {|r| a = r.on_request(request, response); return a if a}
-					#return error code or 404 not found
-					return Base::HTTPSender.send_by_code request, response, 404 unless ( @avoid_404 ||= ( Iodine::Http.on_http == ::Iodine::Http::Rack ? 1 : 0 ) ) == 1
-				rescue => e
-					# return 500 internal server error.
-					Iodine.error e
-					Base::HTTPSender.send_by_code request, response, 500
-				end
+				@hosts.each {|n, h| h.routes << ::Plezi::Base::Router::Route.new(path, controller, &block) }
 			end
 
 			# This method attempts to guess at the desired controller's URL, based on it's first path in order of route creation (ignoring host hierarchy).
@@ -110,7 +120,10 @@ module Plezi
 						add = []
 						r.url_array.each do |sec|
 							next if sec == '*'
-							param_name = (::Plezi::Base::Route::REGEXP_OPTIONAL_PARAMS.match(sec) || ::Plezi::Base::Route::REGEXP_FORMATTED_OPTIONAL_PARAMS.match(sec) || ::Plezi::Base::Route::REGEXP_REQUIRED_PARAMS.match(sec) || ::Plezi::Base::Route::REGEXP_FORMATTED_REQUIRED_PARAMS.match(sec))
+							param_name = (::Plezi::Base::Router::Route::REGEXP_OPTIONAL_PARAMS.match(sec) ||
+                            ::Plezi::Base::Router::Route::REGEXP_FORMATTED_OPTIONAL_PARAMS.match(sec) ||
+                            ::Plezi::Base::Router::Route::REGEXP_REQUIRED_PARAMS.match(sec) ||
+                            ::Plezi::Base::Router::Route::REGEXP_FORMATTED_REQUIRED_PARAMS.match(sec)   )
 							param_name = param_name[1].to_sym if param_name
 
 							if param_name && (dest[param_name] || params[param_name])
@@ -128,16 +141,20 @@ module Plezi
 						raise NotImplementedError, "#url_for isn't implemented for this controller's route - could this be a Regexp based or special route?" unless r.url_array
 						r.url_array.each do |sec|
 							next if sec == '*'
-							param_name = (::Plezi::Base::Route::REGEXP_OPTIONAL_PARAMS.match(sec) || ::Plezi::Base::Route::REGEXP_FORMATTED_OPTIONAL_PARAMS.match(sec) || ::Plezi::Base::Route::REGEXP_REQUIRED_PARAMS.match(sec) || ::Plezi::Base::Route::REGEXP_FORMATTED_REQUIRED_PARAMS.match(sec))
+							param_name = (::Plezi::Base::Router::Route::REGEXP_OPTIONAL_PARAMS.match(sec) ||
+                            ::Plezi::Base::Router::Route::REGEXP_FORMATTED_OPTIONAL_PARAMS.match(sec) ||
+                            ::Plezi::Base::Router::Route::REGEXP_REQUIRED_PARAMS.match(sec) ||
+                            ::Plezi::Base::Router::Route::REGEXP_FORMATTED_REQUIRED_PARAMS.match(sec)  )
 							param_name = param_name[1].to_sym if param_name
 							if param_name && dest[param_name]
 								url << Plezi::Base::Helpers.encode_url(dest.delete(param_name))
 							elsif !param_name
 								url << sec
-							elsif ::Plezi::Base::Route::REGEXP_REQUIRED_PARAMS === sec || ::Plezi::Base::Route::REGEXP_OPTIONAL_PARAMS === sec
+							elsif ::Plezi::Base::Router::Route::REGEXP_REQUIRED_PARAMS === sec ||
+                    ::Plezi::Base::Router::Route::REGEXP_OPTIONAL_PARAMS === sec
 								url << ''.freeze
-							elsif ::Plezi::Base::Route::REGEXP_FORMATTED_REQUIRED_PARAMS === sec
-								raise ArgumentError, "URL can't be formatted becuse a required parameter (#{param_name.to_s}) isn't specified and it requires a special format (#{::Plezi::Base::Route::REGEXP_FORMATTED_REQUIRED_PARAMS.match(sec)[2]})."
+							elsif ::Plezi::Base::Router::Route::REGEXP_FORMATTED_REQUIRED_PARAMS === sec
+								raise ArgumentError, "URL can't be formatted becuse a required parameter (#{param_name.to_s}) isn't specified and it requires a special format (#{::Plezi::Base::Router::Route::REGEXP_FORMATTED_REQUIRED_PARAMS.match(sec)[2]})."
 							end
 						end
 						return "/#{url.join '/'.freeze}#{"?#{dest.map {|k,v| "#{Plezi::Base::Helpers.encode_url k}=#{Plezi::Base::Helpers.encode_url v}" } .join('&'.freeze)}" if dest.any?}"
@@ -150,7 +167,7 @@ module Plezi
 
 			def get_host host_name
 				@hosts.each {|k, v| return v if k === host_name}
-				nil
+        nil
 			end
 
 			###############
@@ -180,26 +197,36 @@ module Plezi
 					else
 						::File.new source_file, 'rb'
 					end
-					return (data ? Base::HTTPSender.send_raw_data(request, response, data, MimeTypeHelper::MIME_DICTIONARY[::File.extname(source_file)]) : false)
+          if data
+            response.write data
+            response.set_header Rack::CONTENT_TYPE, MimeTypeHelper::MIME_DICTIONARY[::File.extname(source_file)]
+            return true
+          end
+          return false
 				end
 
 				# render the file if it's a registered asset
 				data = ::Plezi::AssetManager.render source_file, binding
 				if data
-					return ::Plezi::Base::HTTPSender.send_raw_data request, response, Plezi.save_file(target_file, data, (params[:public] && params[:save_assets])), MimeTypeHelper::MIME_DICTIONARY[::File.extname(source_file)]
+          response.write Plezi.save_file(target_file, data, (params[:public] && params[:save_assets]))
+          response.set_header Rack::CONTENT_TYPE, MimeTypeHelper::MIME_DICTIONARY[::File.extname(source_file)]
+          return true
 				end
 
 				# send the data if it's a cached asset (map files and similar assets that were cached while rendering)
 				if Plezi.cached?(source_file)
-					return Base::HTTPSender.send_raw_data(request, response, Plezi.get_cached(source_file), MimeTypeHelper::MIME_DICTIONARY[::File.extname(source_file)])
+          response.write Plezi.get_cached(source_file)
+          response.set_header Rack::CONTENT_TYPE, MimeTypeHelper::MIME_DICTIONARY[::File.extname(source_file)]
+          return true
 				end
 
 				# return false if an asset couldn't be rendered and wasn't found.
 				return false
-			end
-			extend self
-		end
-		Iodine::Http.on_http ::Plezi::Base::HTTPRouter
-		Iodine::Http.on_websocket ::Plezi::Base::HTTPRouter.upgrade_proc
-	end
+      end
+      extend self
+    end
+  end
 end
+
+Iodine::Rack.on_http = Plezi::Base::Router
+Iodine::Rack.on_websocket = Plezi::Base::Router.method :ws_call

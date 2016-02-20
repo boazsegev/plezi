@@ -3,11 +3,34 @@
 
 $LOAD_PATH.unshift File.expand_path(File.join('..', '..', 'lib'), __FILE__ )
 require "plezi"
+require "pry"
 
-Iodine.logger = nil
+HELLO = 'Hello Plezi 0.13'
 
-HELLO = 'Hello Plezi'
+class Ctrl
+  def index
+    "Hi!"
+  end
+  def dbg
+    pry.binding
+    "did we debug?"
+  end
+end
+
+# Plezi.route('/dbg') {|request, response| pry.binding }
+Plezi.route('/ctrl', Ctrl)
+# Plezi.route('/env') { |i, o| i.env.to_s }
 Plezi.route('*') { HELLO }
+
+Iodine::Rack.on_start do
+  puts "counting...";
+  Iodine::Rack.run_after(1) { puts "#{Iodine::Rack.count} Clients - 1time"}
+  Iodine::Rack.run_every(1000) { puts "#{Iodine::Rack.count} Clients"}
+end
+
+# Iodine::Rack.threads = 16
+# Iodine::Rack.processes = 4
+Iodine::Rack.start
 
 # ab -n 10000 -c 200 -k http://127.0.0.1:3000/
 # ~/ruby/wrk/wrk -c400 -d10 -t12 http://localhost:3000/

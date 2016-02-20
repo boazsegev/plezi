@@ -12,44 +12,57 @@ require 'uri'
 require 'set'
 
 # Iodine server
-require 'iodine/http'
-
+require 'rack'
+require 'iodine'
 ### version
-
 require "plezi/version"
 
-### common
+####### Plezi 0.13.x
+require 'plezi/core/constants.rb'
+require 'plezi/core/cache.rb'
+require 'plezi/core/controller_core.rb'
+require 'plezi/core/controller_magic.rb'
+require 'plezi/core/helpers.rb'
+require 'plezi/core/renderer.rb'
+require 'plezi/core/route.rb'
+require 'plezi/core/router.rb'
+require 'plezi/core/mime_types.rb'
+require 'plezi/core/api.rb'
+require 'plezi/core/dsl.rb'
 
-require 'plezi/common/defer.rb'
-require 'plezi/common/cache.rb'
-require 'plezi/common/api.rb'
-require 'plezi/common/dsl.rb'
-require 'plezi/common/redis.rb'
-require 'plezi/common/settings.rb'
-require 'plezi/common/renderer.rb'
-
-### helpers
-require 'plezi/helpers/magic_helpers.rb'
-require 'plezi/helpers/mime_types.rb'
-
-### HTTP and WebSocket Handlers
-require 'plezi/handlers/http_router.rb'
-require 'plezi/handlers/route.rb'
-require 'plezi/handlers/ws_object.rb'
-require 'plezi/handlers/ws_identity.rb'
-require 'plezi/handlers/controller_magic.rb'
-require 'plezi/handlers/controller_core.rb'
-require 'plezi/handlers/placebo.rb'
-require 'plezi/handlers/stubs.rb'
-require 'plezi/handlers/session.rb'
-
-# error and last resort handling
-require 'plezi/helpers/http_sender.rb'
+# ####### Plezi 0.12.x
+#
+# ### common
+# require 'plezi/common/defer.rb'
+# require 'plezi/common/cache.rb'
+# require 'plezi/common/api.rb'
+# require 'plezi/common/dsl.rb'
+# require 'plezi/common/redis.rb'
+# require 'plezi/common/settings.rb'
+# require 'plezi/common/renderer.rb'
+#
+# ### helpers
+# require 'plezi/helpers/magic_helpers.rb'
+# require 'plezi/helpers/mime_types.rb'
+#
+# ### HTTP and WebSocket Handlers
+# require 'plezi/handlers/http_router.rb'
+# require 'plezi/handlers/route.rb'
+# require 'plezi/handlers/ws_object.rb'
+# require 'plezi/handlers/ws_identity.rb'
+# require 'plezi/handlers/controller_magic.rb'
+# require 'plezi/handlers/controller_core.rb'
+# require 'plezi/handlers/placebo.rb'
+# require 'plezi/handlers/stubs.rb'
+# require 'plezi/handlers/session.rb'
+#
+# # error and last resort handling
+# require 'plezi/helpers/http_sender.rb'
 
 ## erb templating
 begin
 	require 'erb'
-rescue 
+rescue
 
 end
 
@@ -57,7 +70,7 @@ end
 #
 # Plezi is an easy to use Ruby Websocket Framework, with full RESTful routing support and HTTP streaming support. It's name comes from the word "fun" in Haitian, since Plezi is really fun to work with and it keeps our code clean and streamlined.
 #
-# Plezi is a wonderful alternative to Socket.io which makes writing the server using Ruby a breeze. 
+# Plezi is a wonderful alternative to Socket.io which makes writing the server using Ruby a breeze.
 #
 # Plezi is multi-threaded by default (you can change this) and supports asynchronous callbacks,
 # so it will keep going even if some requests take a while to compute.
@@ -134,14 +147,14 @@ end
 # all the examples above shoold be good to run from irb. updated examples can be found at the Readme file in the Github project: https://github.com/boazsegev/plezi
 #
 # thanks to Russ Olsen for his ideas for a DSL and his blog post at:
-# http://www.jroller.com/rolsen/entry/building_a_dsl_in_ruby1 
+# http://www.jroller.com/rolsen/entry/building_a_dsl_in_ruby1
 #
 # ...he doesn't know it, but he inspired a revolution.
 ##############################################################################
 module Plezi
 end
 
-Iodine.threads = 30
-Iodine.run { puts "Plezi is feeling optimistic running version #{::Plezi::VERSION}.\n\n"}
+Iodine::Rack.threads ||= 30
+Iodine::Rack.on_start { puts "Plezi is feeling optimistic running version #{::Plezi::VERSION} using Iodine #{::Iodine::VERSION}.\n\n"}
 # PL is a shortcut for the Plezi module, so that `PL == Plezi`.
 PL = Plezi
