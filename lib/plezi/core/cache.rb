@@ -54,13 +54,13 @@ module Plezi
 		end
 
 		# places data into the cache, under an identifier ( file name ).
-		def cache_data filename, data, mtime = Iodine.time
+		def cache_data filename, data, mtime = Time.now
 			CACHE_LOCK.synchronize { CACHE_STORE[filename] = CacheObject.new( data, mtime )  }
 			data
 		end
 
 		# Get data from the cache. will throw an exception if there is no data in the cache.
-		# 
+		#
 		# If a block is passed to the method, it will allows you to modify the protected cache in a thread safe manner.
 		#
 		# This is useful for manipulating strings or arrays that are stored in the cache.

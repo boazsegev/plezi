@@ -3,10 +3,45 @@ module Plezi
   module Base
     # a collection of global helper methods used as part of Plezi's core functionality.
     module Helpers
+      # the Flash class handles flash cookies
+      class Flash < ::Hash
+        def initialize request, response
+          super()
+          @request = request
+          @response = response
+          request.cookies.each {|k, v|
+            self[k] = v if k.to_s.start_with? 'magic_flash_'.freeze
+            response.delete_cookie k
+          }
+        end
+        # overrides the []= method to set the cookie for the response (by encoding it and preparing it to be sent), as well as to save the cookie in the combined cookie jar (unencoded and available).
+				def []= key, val
+					if key.is_a?(Symbol) && self.has_key?( key.to_s)
+						key = key.to_s
+            set_cookie key, val
+					else
+            set_cookie key.to_s, val
+						key = key.to_s.to_sym if self.has_key?( key.to_s.to_sym)
+					end
+					super
+
+				end
+				# overrides th [] method to allow Symbols and Strings to mix and match
+				def [] key
+					if key.is_a?(Symbol) && self.has_key?( key.to_s)
+						key = key.to_s
+					elsif self.has_key?( key.to_s.to_sym)
+						key = key.to_s.to_sym
+					elsif self.has_key? "magic_flash_#{key.to_s}".freeze.to_sym
+						key = "magic_flash_#{key.to_s}".freeze.to_sym
+					end
+					super
+				end
+      end
 
       # re-encodes a string into UTF-8 unly when the encoding will remail valid.
 			def try_utf8!(string, encoding= ::Encoding::UTF_8)
-				return self unless string.is_a?(String)
+				return string unless string.is_a?(String)
 				string.force_encoding(::Encoding::ASCII_8BIT) unless string.force_encoding(encoding).valid_encoding?
 				string
 			end

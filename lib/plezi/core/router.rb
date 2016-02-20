@@ -30,31 +30,26 @@ module Plezi
 
       # handles requests send by the HTTP Protocol (HTTPRequest objects)
       def call env
-        # cookies =
-  				begin
-  					host = get_host(env['SERVER_NAME'.freeze]) || @hosts[:default]
-  					return [404, {"Content-Length".freeze => "15"}, ["Host not found.".freeze]] unless host
-            # create request and response objects
-            request = Rack::Request.new env
-            response = Rack::Response.new
-            # TODO: fixme, shouldn't store the data in the params Hash.
-  					request[:host_settings] = host.params
-  					# render any assets?
-  					return response.to_a if render_assets request, response, host.params
-  					# return if a route answered the request
-  					host.routes.each do |r| a = r.on_request(request, response);
-              if(a)
-                response.write a if a.is_a?(String)
-                return response.to_a
-              end
+					host = get_host(env['SERVER_NAME'.freeze]) || @hosts[:default]
+					return [404, {"Content-Length".freeze => "15"}, ["Host not found.".freeze]] unless host
+          # create request and response objects
+          request = Rack::Request.new env
+          response = Rack::Response.new
+          request['plezi.flash'.freeze] = ::Plezi::Base::Helpers::Flash.new request, response
+          # request['plezi.cookie_jar'.freeze] = ::Plezi::Base::Helpers::Flash.new request, response
+          # TODO: fixme, shouldn't store the data in the params Hash.
+          request[:host_settings] = host.params
+					# render any assets?
+					return response.to_a if render_assets request, response, host.params
+					# return if a route answered the request
+					host.routes.each do |r| a = r.on_request(request, response);
+            if(a)
+              response.write a if a.is_a?(String)
+              return response.to_a
             end
-  					#return error code or 404 not found
-  					return [404, {"Content-Length" => "10"}, ["Not Found."]]
-  				rescue => e
-  					# return 500 internal server error.
-  					Iodine.error e
-            return [500, {"Content-Length" => "15"}, ["Internal Error."]]
-  				end
+          end
+					#return error code or 404 not found
+					return [404, {"Content-Length" => "10"}, ["Not Found."]]
   			end
 
       #handles websocket connection requests.
@@ -199,7 +194,7 @@ module Plezi
 					end
           if data
             response.write data
-            response.set_header Rack::CONTENT_TYPE, MimeTypeHelper::MIME_DICTIONARY[::File.extname(source_file)]
+            response[Rack::CONTENT_TYPE] = MimeTypeHelper::MIME_DICTIONARY[::File.extname(source_file)]
             return true
           end
           return false
@@ -209,14 +204,14 @@ module Plezi
 				data = ::Plezi::AssetManager.render source_file, binding
 				if data
           response.write Plezi.save_file(target_file, data, (params[:public] && params[:save_assets]))
-          response.set_header Rack::CONTENT_TYPE, MimeTypeHelper::MIME_DICTIONARY[::File.extname(source_file)]
+          response[Rack::CONTENT_TYPE] = MimeTypeHelper::MIME_DICTIONARY[::File.extname(source_file)]
           return true
 				end
 
 				# send the data if it's a cached asset (map files and similar assets that were cached while rendering)
 				if Plezi.cached?(source_file)
           response.write Plezi.get_cached(source_file)
-          response.set_header Rack::CONTENT_TYPE, MimeTypeHelper::MIME_DICTIONARY[::File.extname(source_file)]
+          response[Rack::CONTENT_TYPE] = MimeTypeHelper::MIME_DICTIONARY[::File.extname(source_file)]
           return true
 				end
 
@@ -227,6 +222,3 @@ module Plezi
     end
   end
 end
-
-Iodine::Rack.on_http = Plezi::Base::Router
-Iodine::Rack.on_websocket = Plezi::Base::Router.method :ws_call

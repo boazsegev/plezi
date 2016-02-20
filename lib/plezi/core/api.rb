@@ -8,10 +8,10 @@ module Plezi
 		@app ||= ::Plezi::Base::Router
 	end
 	# adds middleware
-	def use middleware, *args, &block
-		@app = proc { |app| middleware.new(::Plezi.app, *args, &block) }
-		Iodine::Rack.on_htttp = app
-		::Plezi.app
+	def middleware middleware, *args, &block
+		@app = middleware.new(::Plezi.app, *args, &block)
+		Iodine::Rack.on_http = @app
+		@app
 	end
 
 	# Defines methods used to set up the Plezi app.
@@ -83,5 +83,20 @@ module Plezi
 		end
 		receiver ? Plezi::Placebo.new(receiver) : true
 	end
+
+
+	# Defers any missing methods to the Iodine Library.
+	def method_missing name, *args, &block
+		return super unless REACTOR_METHODS.include? name
+		::Iodine::Rack.__send__ name, *args, &block
+	end
+	# Defers any missing methods to the Iodine Library.
+	def respond_to_missing?(name, include_private = false)
+		REACTOR_METHODS.include?(name) || super
+	end
+
+	protected
+
+	REACTOR_METHODS = ::Iodine::Rack.public_methods
 
 end

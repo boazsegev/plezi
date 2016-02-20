@@ -68,7 +68,7 @@ end
 
 ##############################################################################
 #
-# Plezi is an easy to use Ruby Websocket Framework, with full RESTful routing support and HTTP streaming support. It's name comes from the word "fun" in Haitian, since Plezi is really fun to work with and it keeps our code clean and streamlined.
+# Plezi is an easy to use Ruby Websocket Framework, with full RESTful routing support. It's name comes from the word "fun" in Haitian, since Plezi is really fun to work with and it keeps our code clean and streamlined.
 #
 # Plezi is a wonderful alternative to Socket.io which makes writing the server using Ruby a breeze.
 #
@@ -154,7 +154,14 @@ end
 module Plezi
 end
 
+Iodine::Rack.on_http = Plezi.app
+Iodine::Rack.on_websocket = Plezi::Base::Router.method :ws_call
 Iodine::Rack.threads ||= 30
 Iodine::Rack.on_start { puts "Plezi is feeling optimistic running version #{::Plezi::VERSION} using Iodine #{::Iodine::VERSION}.\n\n"}
+Iodine::Rack.on_start { ::NO_PLEZI_AUTOSTART = true }
 # PL is a shortcut for the Plezi module, so that `PL == Plezi`.
 PL = Plezi
+
+at_exit do
+	Iodine::Rack.start unless defined?(::NO_PLEZI_AUTOSTART) || ::Plezi::Base::Router.instance_variable_get(:@hosts).empty?
+end

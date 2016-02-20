@@ -18,7 +18,7 @@ module Plezi
 				def initialize request, response
 					@request = request
 					@params = request.params
-					# @flash = response.flash
+					@flash = request['plezi.flash'.freeze]
 					@host_params = request[:host_settings]
 					@response = response
 					@cookies = request.cookies

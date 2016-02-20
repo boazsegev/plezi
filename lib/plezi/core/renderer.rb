@@ -120,7 +120,7 @@ module Plezi
 	end
 	Renderer.register :slim do |filename, context, &block|
 		next unless defined? ::Slim
-		( Plezi.cache_needs_update?(filename) ? Plezi.cache_data( filename, ( Slim::Template.new() { Plezi::Base::Helpers.try_utf8! IO.binread(filename) } ) )  : (Plezi.get_cached filename) ).render(context.receiver, &block)
+		( Plezi.cache_needs_update?(filename) ? Plezi.cache_data( filename, ( Slim::Template.new() { Plezi::Base::Helpers.try_utf8!(IO.binread(filename)) } ) )  : (Plezi.get_cached filename) ).render(context.receiver, &block)
 	end
 	Renderer.register :haml do |filename, context, &block|
 		next unless defined? ::Haml
