@@ -20,7 +20,13 @@ module Plezi
 					else
 						key = key.to_s.to_sym if self.has_key?( key.to_s.to_sym)
 					end
-          @response.set_cookie "magic_flash_#{key.to_s}".freeze, val.to_s if @response
+          if @response
+            if(val)
+              @response.set_cookie "magic_flash_#{key.to_s}".freeze, val.to_s
+            else
+              @response.delete_cookie "magic_flash_#{key.to_s}".freeze
+            end
+          end
 					super
 				end
 				# overrides th [] method to allow Symbols and Strings to mix and match
