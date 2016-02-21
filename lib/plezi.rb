@@ -169,7 +169,7 @@ Iodine::Rack.on_http = Plezi.app
 Iodine::Rack.on_websocket = Plezi::Base::Router.method :ws_call
 Iodine::Rack.threads ||= 30
 Iodine::Rack.on_start { puts "Plezi is feeling optimistic running version #{::Plezi::VERSION} using Iodine #{::Iodine::VERSION}.\n\n"}
-Iodine::Rack.on_start { ::NO_PLEZI_AUTOSTART = true }
+Iodine::Rack.on_start { ::NO_PLEZI_AUTOSTART = true unless defined?(::NO_PLEZI_AUTOSTART) }
 # PL is a shortcut for the Plezi module, so that `PL == Plezi`.
 PL = Plezi
 

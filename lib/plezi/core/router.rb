@@ -3,6 +3,24 @@ module Plezi
   module Base
     # this handles Plezi routing
     module Router
+      # makes sure to methods are injected to class Class
+			class Container
+			end
+			# the Error Controller, for rendering error templates.
+			class ErrorCtrl < Container
+				include ::Plezi::Base::ControllerCore
+				include ::Plezi::ControllerMagic
+
+				def index
+					response.write (render(response.status.to_s) ||
+						(params[:format] && (params[:format] != 'html'.freeze) && (params[:format] = 'html'.freeze) && (response['content-type'] = nil).nil? && render(response.status.to_s)) ||
+            ((response['content-type'.freeze] = 'text/plain'.freeze) && ::Rack::Utils::HTTP_STATUS_CODES[response.status]))
+          response.to_a
+				end
+				def requested_method
+					:index
+				end
+			end
       # initializes the HTTP router (the normal Handler for HTTP requests)
       #
       # the router holds the different hosts and sends them messages/requests.
@@ -30,7 +48,8 @@ module Plezi
 
       # handles requests send by the HTTP Protocol (HTTPRequest objects)
       def call env
-					host = get_host(env['SERVER_NAME'.freeze]) || @hosts[:default]
+        begin
+          host = get_host(env['SERVER_NAME'.freeze]) || @hosts[:default]
 					return [404, {"Content-Length".freeze => "15"}, ["Host not found.".freeze]] unless host
           # create request response and helper objects
           request = Rack::Request.new env
@@ -49,8 +68,17 @@ module Plezi
               return response.to_a
             end
           end
+          # attempt to send static files (?) this really is a wasted resource
+          return response.to_a if send_static_file request, response
 					#return error code or 404 not found
-					return [404, {"Content-Length" => "10"}, ["Not Found."]]
+          response.status = 404
+          return ErrorCtrl.new(request, response).index
+        rescue => e
+          response.status = 500
+          ::Plezi.error e
+          return ErrorCtrl.new(request, response).index
+        end
+
   			end
 
       #handles websocket connection requests.
@@ -235,6 +263,34 @@ module Plezi
 				# return false if an asset couldn't be rendered and wasn't found.
 				return false
       end
+
+      # attempts to send a static file by the request path.
+			#
+			# returns true if data was sent.
+			def send_static_file request, response
+				root = request['plezi.host_settings'.freeze][:public]
+				return false unless root
+				# file_requested = request[:path].to_s.split('/'.freeze)
+				# unless file_requested.include? '..'.freeze
+				# 	file_requested.shift
+				# 	file_requested = File.join(root, *file_requested)
+        #   if Plezi.file_exists?(file_requested) && !::File.directory?(file_requested)
+  			# 		data = if Plezi::Cache::CACHABLE.include?(::File.extname(file_requested)[1..-1])
+  			# 			Plezi.load_file(file_requested)
+  			# 		else
+  			# 			::File.new file_requested, 'rb'
+  			# 		end
+        #     response.write data
+        #     response[::Rack::CONTENT_TYPE] = MimeTypeHelper::MIME_DICTIONARY[::File.extname(filename)]
+        #     response['Cache-Control'.freeze] ||= 'public, max-age=86400'.freeze
+  			# 		return true
+  			# 	end
+  			# 	return false
+				# end
+				false
+			end
+
+
       extend self
     end
   end

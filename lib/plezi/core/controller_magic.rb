@@ -70,9 +70,13 @@ module Plezi
 			#
 			def redirect_to url, options = {}
 				return super() if defined? super
+        url = '/' if url.nil? || url == ''.freeze
 				url = full_url_for(url, params) unless url.is_a?(String) || url.nil?
 				# redirect
-				response.redirect_to url, options
+				response.redirect url, (options.delete(:permanent) ? 301 : 302)
+        options.each {|k,v|
+          @flash[k] = v
+        }
 			end
 
 			# Returns the RELATIVE url for methods in THIS controller (i.e.: "/path_to_controller/restful/params?non=restful&params=foo")
@@ -247,7 +251,7 @@ module Plezi
 				when Hash
 					true
 				else
-					# convert dest.id and dest[:id] to their actual :id value.
+					# convert dest.id and dest['id'] to their actual :id value.
 					dest = {id: (dest.id rescue false) || (raise TypeError, "Expecting a Symbol, Hash, String, Numeric or an object that answers to obj['id'] or obj.id") }
 				end
 				::Plezi::Base::HTTPRouter.url_for self, dest, params

@@ -74,6 +74,39 @@ module Plezi
       protected
 
       # @!visibility public
+      # Performs a websocket unicast to the specified target.
+      def unicast target_uuid, method_name, *args
+        self.class.unicast target_uuid, method_name, *args
+      end
+
+      # @!visibility public
+      # Use this to brodcast an event to all 'sibling' objects (websockets that have been created using the same Controller class).
+      #
+      # Accepts:
+      # method_name:: a Symbol with the method's name that should respond to the broadcast.
+      # args*:: The method's argumenst - It MUST be possible to stringify the arguments into a YAML string, or broadcasting and unicasting will fail when scaling beyond one process / one machine.
+      #
+      # The method will be called asynchrnously for each sibling instance of this Controller class.
+      #
+      def broadcast method_name, *args
+        return false unless self.class.has_method? method_name
+        self.class._inner_broadcast({ method: method_name, data: args, type: self.class}, __get_io )
+      end
+
+      # @!visibility public
+      # Use this to multicast an event to ALL websocket connections on EVERY controller, including Placebo controllers.
+      #
+      # Accepts:
+      # method_name:: a Symbol with the method's name that should respond to the broadcast.
+      # args*:: The method's argumenst - It MUST be possible to stringify the arguments into a YAML string, or broadcasting and unicasting will fail when scaling beyond one process / one machine.
+      #
+      # The method will be called asynchrnously for ALL websocket connections.
+      #
+      def multicast method_name, *args
+        self.class._inner_broadcast({ method: method_name, data: args, type: :all}, __get_io )
+      end
+
+      # @!visibility public
       # The following method registers the connections as a unique global identity.
       #
       # The Identity API works best when a Redis server is used. See {Plezi#redis} for more information.
@@ -191,7 +224,94 @@ module Plezi
 		end
 
 		module ClassMethods
+
+      public
+
+      # answers the question if this is a placebo object.
+      def placebo?; false end
+
+      # WebSockets: fires an event on all of this controller's active websocket connections.
+      #
+      # Class method.
+      #
+      # Use this to brodcast an event to all connections.
+      #
+      # accepts:
+      # method_name:: a Symbol with the method's name that should respond to the broadcast.
+      # *args:: any arguments that should be passed to the method (IF REDIS IS USED, LIMITATIONS APPLY).
+      #
+      # this method accepts and optional block (NON-REDIS ONLY) to be used as a callback for each sibling's event.
+      #
+      # the method will be called asynchrnously for each sibling instance of this Controller class.
+      def broadcast method_name, *args
+        return false unless has_method? method_name
+        _inner_broadcast method: method_name, data: args, type: self
+      end
+
+      # WebSockets: fires an event on a specific websocket connection using it's UUID.
+      #
+      # Use this to unidcast an event to specific websocket connection using it's UUID.
+      #
+      # accepts:
+      # target_uuid:: the target's unique UUID.
+      # method_name:: a Symbol with the method's name that should respond to the broadcast.
+      # *args:: any arguments that should be passed to the method (IF REDIS IS USED, LIMITATIONS APPLY).
+      def unicast target_uuid, method_name, *args
+        raise 'No target specified for unicasting!' unless target_uuid
+        @uuid_cutoff ||= Plezi::Settings.uuid.length
+        _inner_broadcast method: method_name, data: args, target: target_uuid[@uuid_cutoff..-1], to_server: target_uuid[0...@uuid_cutoff], type: :all
+      end
+
+      # Use this to multicast an event to ALL websocket connections on EVERY controller, including Placebo controllers.
+      #
+      # Accepts:
+      # method_name:: a Symbol with the method's name that should respond to the broadcast.
+      # args*:: The method's argumenst - It MUST be possible to stringify the arguments into a YAML string, or broadcasting and unicasting will fail when scaling beyond one process / one machine.
+      #
+      # The method will be called asynchrnously for ALL websocket connections.
+      #
+      def multicast method_name, *args
+        _inner_broadcast method: method_name, data: args, type: :all
+      end
+
+      # WebSockets
+
+      # sends the broadcast
+      def _inner_broadcast data, ignore_io = nil
+        if data[:target]
+          if data[:to_server] == Plezi::Settings.uuid
+            return ( ::Iodine::Http::Websockets.unicast( data[:target], data ) || ___faild_unicast( data ) )
+          end
+          return ( data[:to_server].nil? && ::Iodine::Http::Websockets.unicast(data[:target], data) ) || ( Plezi::Base::AutoRedis.away?(data[:to_server]) && ___faild_unicast( data ) ) || __inner_redis_broadcast(data)
+        else
+          ::Iodine::Http::Websockets.broadcast data, ignore_io
+          __inner_redis_broadcast data
+        end
+        true
+      end
+
+      def __inner_redis_broadcast data
+        return unless conn = Plezi.redis
+        data = data.dup
+        data[:type] = data[:type].name if data[:type].is_a?(Class)
+        data[:server] = Plezi::Settings.uuid
+        return conn.publish( ( data[:to_server] || Plezi::Settings.redis_channel_name ), data.to_yaml ) if conn
+        false
+      end
+
+      def ___faild_unicast data
+        has_class_method?(:failed_unicast) && failed_unicast( data[:to_server].to_s + data[:target], data[:method], data[:data] )
+        true
+      end
+
+
+
 			public
+
+
+
+
+
       # sends a notification to an Identity. Returns false if the Identity never registered or it's registration expired.
       def notify identity, event_name, *args
         redis = Plezi.redis || ::Plezi::Base::RedisEmultaion
