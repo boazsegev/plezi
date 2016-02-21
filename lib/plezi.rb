@@ -11,8 +11,11 @@ require 'yaml'
 require 'uri'
 require 'set'
 
-# Iodine server
+
+# Rack and fixes
 require 'rack'
+require 'plezi/core/monkey_patching_rack.rb'
+# Iodine server
 require 'iodine'
 ### version
 require "plezi/version"
