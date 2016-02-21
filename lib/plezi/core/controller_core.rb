@@ -38,12 +38,10 @@ module Plezi
 					return false unless self.class.has_super_method?(:on_message) || self.class.superclass.instance_variable_get(:@auto_dispatch)
 					# call the controller's original method, if exists, and check connection.
 					return false if (defined?(super) && !super)
-					# finish if the response was sent
-					return false if response.headers_sent?
 					# make sure that the session object is available for websocket connections
-					session
+					# session
 					# make sure that rendering uses JSON for websocket messages (unless already set)
-					params[:format] ||= 'json'
+					params['format'] ||= 'json'
 					# complete handshake
 					return self
 				end
@@ -99,6 +97,10 @@ module Plezi
 			end
 
 			module ClassMethods
+
+        def has_super_method? method_name
+          (@super_methods_list ||= self.superclass.instance_methods.to_set).include? method_name
+        end
 
 			end
 

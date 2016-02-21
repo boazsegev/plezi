@@ -17,19 +17,29 @@ require 'iodine'
 ### version
 require "plezi/version"
 
-####### Plezi 0.13.x
+####### Plezi 0.13.x Core requirements
+# constants and core support
 require 'plezi/core/constants.rb'
 require 'plezi/core/logging.rb'
 require 'plezi/core/cache.rb'
+# redis and websockets support
+require 'plezi/core/redis.rb'
+require 'plezi/core/redis_emulation.rb'
+require 'plezi/core/websockets.rb'
+# controller methods and helpers
 require 'plezi/core/controller_core.rb'
 require 'plezi/core/controller_magic.rb'
 require 'plezi/core/helpers.rb'
 require 'plezi/core/renderer.rb'
+# routing
 require 'plezi/core/route.rb'
 require 'plezi/core/router.rb'
 require 'plezi/core/mime_types.rb'
+# public facing API
 require 'plezi/core/api.rb'
 require 'plezi/core/dsl.rb'
+# core management
+require 'plezi/core/settings.rb'
 
 # ####### Plezi 0.12.x
 #

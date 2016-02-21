@@ -7,5 +7,5 @@ module Plezi
 	NEW = 'new'.freeze
 	GET = 'GET'.freeze
 	POST = 'POST'.freeze
-	UPGRADE = 'UPGRADE'.freeze
+	UPGRADE = 'HTTP_UPGRADE'.freeze
 end

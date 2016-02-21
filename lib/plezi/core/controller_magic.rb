@@ -16,6 +16,7 @@ module Plezi
 		end
 
 		module InstanceMethods
+      include Plezi::ControllerWebsockets::InstanceMethods
 
 			public
 
@@ -93,6 +94,7 @@ module Plezi
 			def url_for dest = nil
 				self.class.url_for dest, params
 			end
+
 			# same as #url_for, but returns the full URL (protocol:port:://host/path?params=foo)
 			def full_url_for dest
 				"#{request.base_url}#{self.class.url_for(dest, params)}"
@@ -205,7 +207,7 @@ module Plezi
 			# (which is the last method called before the protocol is switched from HTTP to WebSockets).
 			def requested_method
 				# respond to websocket special case
-				return :pre_connect if request[UPGRADE] && /websocket/i.freeze =~ request[UPGRADE]
+				return :pre_connect if request.env[UPGRADE] && request.env[UPGRADE] =~ /websocket/i.freeze
 				# respond to save 'new' special case
 				return (self.class.has_method?(:save) ? :save : false) if (request.request_method =~ /POST|PUT|PATCH/i.freeze) && (params[ID].nil? || params[ID] == NEW)
 				# set DELETE method if simulated
@@ -227,6 +229,8 @@ module Plezi
 		end
 
 		module ClassMethods
+      include Plezi::ControllerWebsockets::ClassMethods
+
 			public
 
 			# This class method behaves the same way as the instance method #url_for, but accepts an added `params` Hash

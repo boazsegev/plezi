@@ -32,14 +32,13 @@ module Plezi
       def call env
 					host = get_host(env['SERVER_NAME'.freeze]) || @hosts[:default]
 					return [404, {"Content-Length".freeze => "15"}, ["Host not found.".freeze]] unless host
-          # create request and response objects
+          # create request response and helper objects
           request = Rack::Request.new env
           response = Rack::Response.new
           cookies = ::Plezi::Base::Helpers::Cookies.new request.cookies, response
           Plezi::Base::Helpers.make_hash_accept_symbols request.params
           request['plezi.cookie_jar'.freeze] = cookies
           request['plezi.flash'.freeze] = ::Plezi::Base::Helpers::Flash.new cookies.to_h, response
-          # TODO: fixme, shouldn't store the data in the params Hash.
           request['plezi.host_settings'.freeze] = host.params
 					# render any assets?
 					return response.to_a if render_assets request, response, host.params
@@ -56,11 +55,27 @@ module Plezi
 
       #handles websocket connection requests.
       def ws_call env
-        host = get_host(request[:host_name].to_s.downcase) || @hosts[:default]
+        host = get_host(env['SERVER_NAME'.freeze]) || @hosts[:default]
 				return false unless host
-				request[:host_settings] = host.params
+        # create request response and helper objects
+        request = Rack::Request.new env
+        response = Rack::Response.new
+        cookies = ::Plezi::Base::Helpers::Cookies.new request.cookies, response
+        Plezi::Base::Helpers.make_hash_accept_symbols request.params
+        request['plezi.cookie_jar'.freeze] = cookies
+        request['plezi.flash'.freeze] = ::Plezi::Base::Helpers::Flash.new cookies.to_h, response
+        request['plezi.host_settings'.freeze] = host.params
 				# return if a route answered the request
-				host.routes.each {|r| a = r.on_request(request, response); return [101, {}, [], a] if a}
+				host.routes.each do |r|
+          a = r.on_request(request, response)
+          if a
+            response = response.to_a
+            response[0] = "101".freeze
+            response[2] = nil
+            response << a
+            return response
+          end
+        end
 				# websockets should cut out here
 				false
       end
