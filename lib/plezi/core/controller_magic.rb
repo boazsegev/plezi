@@ -132,7 +132,7 @@ module Plezi
 
 				# set headers
 				content_disposition = String.new
-        content_disposition << options[:inline] ? 'inline'.freeze : 'attachment'.freeze
+        content_disposition << (options[:inline] ? 'inline'.freeze : 'attachment'.freeze)
 				content_disposition << "; filename=#{::File.basename(options[:filename])}" if options[:filename]
 
 				response[Rack::CONTENT_TYPE] = (options[:type] ||= options[:filename] && MimeTypeHelper::MIME_DICTIONARY[::File.extname(options[:filename])])

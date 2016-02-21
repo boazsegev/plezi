@@ -82,6 +82,35 @@ module Plezi
 				# (str.to_s.gsub(/[^a-z0-9\*\.\_\-]/i) {|m| '%%%02x'.freeze % m.ord }).force_encoding(::Encoding::ASCII_8BIT)
 			end
 
+      # Changes a String to a Ruby Object, if it's a special string...
+			def rubyfy(string)
+				return string unless string.is_a?(String)
+				try_utf8! string
+				if string == 'true'.freeze
+					string = true
+				elsif string == 'false'.freeze
+					string = false
+				elsif string.to_i.to_s == string
+					string = string.to_i
+				end
+				string
+			end
+
+      # Updates a Hash's values from Strings to Ruby Object.
+			def rubyfy_hash!(hash)
+				hash.keys.each do |k|
+          data = hash[k]
+          if data.is_a?(String)
+            hash[k] = rubyfy(data)
+          elsif data.is_a?(Array)
+            data.map! {|o| rubyfy(o) }
+          elsif data.is_a?(Hash)
+            rubyfy_hash!(data)
+          end
+        end
+        hash
+			end
+
 
 
       # a proc that allows Hashes to search for key-value pairs while also converting keys from objects to symbols and from symbols to strings.

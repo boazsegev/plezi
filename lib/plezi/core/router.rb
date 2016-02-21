@@ -55,7 +55,7 @@ module Plezi
           request = Rack::Request.new env
           response = Rack::Response.new
           cookies = ::Plezi::Base::Helpers::Cookies.new request.cookies, response
-          Plezi::Base::Helpers.make_hash_accept_symbols request.params
+          Plezi::Base::Helpers.make_hash_accept_symbols(::Plezi::Base::Helpers.rubyfy_hash!(request.params))
           request['plezi.cookie_jar'.freeze] = cookies
           request['plezi.flash'.freeze] = ::Plezi::Base::Helpers::Flash.new cookies.to_h, response
           request['plezi.host_settings'.freeze] = host.params
