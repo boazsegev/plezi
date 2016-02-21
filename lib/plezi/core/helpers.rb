@@ -7,23 +7,21 @@ module Plezi
       class Flash < ::Hash
         def initialize cookies, response
           super()
-          @response = response
           cookies.each {|k, v|
             self[k] = v if k.to_s.start_with? 'magic_flash_'.freeze
             response.delete_cookie k
           }
+          @response = response
         end
         # overrides the []= method to set the cookie for the response (by encoding it and preparing it to be sent), as well as to save the cookie in the combined cookie jar (unencoded and available).
 				def []= key, val
 					if key.is_a?(Symbol) && self.has_key?( key.to_s)
 						key = key.to_s
-            set_cookie key, val
 					else
-            @response.set_cookie "magic_flash_#{key.to_s}".freeze, val
 						key = key.to_s.to_sym if self.has_key?( key.to_s.to_sym)
 					end
+          @response.set_cookie "magic_flash_#{key.to_s}".freeze, val.to_s if @response
 					super
-
 				end
 				# overrides th [] method to allow Symbols and Strings to mix and match
 				def [] key
