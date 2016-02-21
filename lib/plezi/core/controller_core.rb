@@ -17,11 +17,11 @@ module Plezi
 
 				def initialize request, response
 					@request = request
+          @response = response
 					@params = request.params
 					@flash = request['plezi.flash'.freeze]
-					@host_params = request[:host_settings]
-					@response = response
-					@cookies = request.cookies
+					@host_params = request['plezi.host_settings'.freeze]
+					@cookies = request['plezi.cookie_jar'.freeze]
 					# # \@response["content-type"] ||= ::Plezi.default_content_type
 					super()
 				end

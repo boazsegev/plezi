@@ -5,11 +5,10 @@ module Plezi
     module Helpers
       # the Flash class handles flash cookies
       class Flash < ::Hash
-        def initialize request, response
+        def initialize cookies, response
           super()
-          @request = request
           @response = response
-          request.cookies.each {|k, v|
+          cookies.each {|k, v|
             self[k] = v if k.to_s.start_with? 'magic_flash_'.freeze
             response.delete_cookie k
           }
@@ -20,7 +19,7 @@ module Plezi
 						key = key.to_s
             set_cookie key, val
 					else
-            set_cookie key.to_s, val
+            @response.set_cookie "magic_flash_#{key.to_s}".freeze, val
 						key = key.to_s.to_sym if self.has_key?( key.to_s.to_sym)
 					end
 					super
@@ -32,12 +31,39 @@ module Plezi
 						key = key.to_s
 					elsif self.has_key?( key.to_s.to_sym)
 						key = key.to_s.to_sym
-					elsif self.has_key? "magic_flash_#{key.to_s}".freeze.to_sym
-						key = "magic_flash_#{key.to_s}".freeze.to_sym
+					elsif self.has_key? "magic_flash_#{key.to_s}".freeze
+						key = "magic_flash_#{key.to_s}".freeze
 					end
 					super
 				end
       end
+      # Sets magic cookies - NOT part of the API.
+			#
+			# magic cookies keep track of both incoming and outgoing cookies, setting the response's cookies as well as the combined cookie respetory (held by the request object).
+			#
+			# use only the []= for magic cookies. merge and update might not set the response cookies.
+			class Cookies
+        def initialize cookies, response
+          @response = response
+          @data = cookies
+        end
+				# overrides the []= method to set the cookie for the response (by encoding it and preparing it to be sent), as well as to save the cookie in the combined cookie jar (unencoded and available).
+				def []= key, val
+					@response.set_cookie key, val
+          @data[key] = val
+				end
+				# overrides th [] method to allow Symbols and Strings to mix and match
+				def [] key
+					@data[key] || request.cookies[key]
+				end
+        def each
+          return @data.each {|k, v| yield(k,v) } if block_given?
+          @data.each
+        end
+        def to_h
+          @data
+        end
+			end
 
       # re-encodes a string into UTF-8 unly when the encoding will remail valid.
 			def try_utf8!(string, encoding= ::Encoding::UTF_8)

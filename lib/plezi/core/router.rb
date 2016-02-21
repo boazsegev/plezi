@@ -35,10 +35,12 @@ module Plezi
           # create request and response objects
           request = Rack::Request.new env
           response = Rack::Response.new
-          request['plezi.flash'.freeze] = ::Plezi::Base::Helpers::Flash.new request, response
-          # request['plezi.cookie_jar'.freeze] = ::Plezi::Base::Helpers::Flash.new request, response
+          cookies = ::Plezi::Base::Helpers::Cookies.new request.cookies, response
+          Plezi::Base::Helpers.make_hash_accept_symbols request.params
+          request['plezi.cookie_jar'.freeze] = cookies
+          request['plezi.flash'.freeze] = ::Plezi::Base::Helpers::Flash.new cookies.to_h, response
           # TODO: fixme, shouldn't store the data in the params Hash.
-          request[:host_settings] = host.params
+          request['plezi.host_settings'.freeze] = host.params
 					# render any assets?
 					return response.to_a if render_assets request, response, host.params
 					# return if a route answered the request
