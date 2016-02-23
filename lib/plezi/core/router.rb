@@ -81,33 +81,6 @@ module Plezi
 
   			end
 
-      #handles websocket connection requests.
-      def ws_call env
-        host = get_host(env['SERVER_NAME'.freeze]) || @hosts[:default]
-				return false unless host
-        # create request response and helper objects
-        request = Rack::Request.new env
-        response = Rack::Response.new
-        cookies = ::Plezi::Base::Helpers::Cookies.new request.cookies, response
-        Plezi::Base::Helpers.make_hash_accept_symbols request.params
-        request['plezi.cookie_jar'.freeze] = cookies
-        request['plezi.flash'.freeze] = ::Plezi::Base::Helpers::Flash.new cookies.to_h, response
-        request['plezi.host_settings'.freeze] = host.params
-				# return if a route answered the request
-				host.routes.each do |r|
-          a = r.on_request(request, response)
-          if a
-            response = response.to_a
-            response[0] = "101".freeze
-            response[2] = nil
-            response << a
-            return response
-          end
-        end
-				# websockets should cut out here
-				false
-      end
-
 			# adds a host to the router (or activates an existing host to add new routes). accepts a host name and any parameters not related to the actual connection (ssl etc') (see {Plezi.host})
 			def add_host host_name, params = {}
 				(params = host_name) && (host_name = params.delete(:host)) if host_name.is_a?(Hash)

@@ -34,6 +34,11 @@ module Plezi
 				# and the WebSockets connection
 				# (with a protocol instance of WSProtocol and an instance of the Controller class set as a handler)
 				def pre_connect
+          # make sure we're running Iodine
+          unless request.env.has_key?('iodine.websocket'.freeze)
+            Plezi.error "Websockets require Iodine - cannot perform upgrade."
+            return false
+          end
 					# make sure this is a websocket controller
 					return false unless self.class.has_super_method?(:on_message) || self.class.superclass.instance_variable_get(:@auto_dispatch)
 					# call the controller's original method, if exists, and check connection.
@@ -43,7 +48,8 @@ module Plezi
 					# make sure that rendering uses JSON for websocket messages (unless already set)
 					params['format'] ||= 'json'
 					# complete handshake
-					return self
+          response.status = 101
+          request.env['iodine.websocket'.freeze] = self
 				end
 
 				# Websockets
