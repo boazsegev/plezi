@@ -16,11 +16,11 @@ I'm working very hard on rewriting the core server in C. Iodine 0.2.x is written
 
 This means that if your machine has the memory and the resources (open file descriptor limits apply), Iodine could support tens of thousands of concurrent connections.
 
-Also, a lot of the API is changing for better integration with Rack based frameworks (Rails/Sinatra). 
+Also, a lot of the API is changing for better integration with Rack based frameworks (Rails/Sinatra).
 
 This also means that some sacrefices will be made. i.e. more Rack integration means that we loose HTTP streaming (Rack's specifications have their limits).
 
-This is where you come in. **Now** is the time to push those changes you wanted to integrate into Plezi. Send in your thoughts and feedback. You can open an issue or email me. Just write about how you use Plezi and what features you think are super important to keep and which once bother you.
+This is where you come in. **Now** is the time to push those changes you wanted to integrate into Plezi. Send in your thoughts and feedback. You can open an issue or email me. Just write about how you use Plezi and what features you think are super important to keep and which ones bother you.
 
 Even if I cannot answer everyone, it will all go into the next version's design and I'll do my best.
 
@@ -731,7 +731,7 @@ The following is safe:
     Plezi.get_cached :global_hash do |global_hash|
         global_hash[:change] = "safe"
     end
- 
+
 However, the following is unsafe:
 
     # set data
@@ -739,7 +739,7 @@ However, the following is unsafe:
     # manipulate data
     global_hash = Plezi.get_cached :global_hash do |global_hash|
     global_hash[:change] = "NOT safe"
- 
+
 
 \* be aware, if using Plezi in as a multi-process application, that each process has it's own cache and that processes can't share the cache. The different threads in each of the processes will be able to access their process's cache, but each process runs in a different memory space, so they can't share.
 
