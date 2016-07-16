@@ -30,11 +30,13 @@ Plezi is a Ruby framework for realtime web applications. It's name comes from th
 
 With Plezi, you can easily:
 
-1. Create a Ruby web application, taking full advantage of RESTful routing, HTTP streaming and scalable Websocket features;
+1. Create a Ruby web application, taking full advantage of RESTful routing and scalable Websocket features;
 
-2. Add Websocket services and RESTful HTTP Streaming to your existing Web-App, (Rails/Sinatra or any other Rack based Ruby app);
+2. Add Websocket services and a RESTful API to your existing Web-App, (Rails/Sinatra or any other Rack based Ruby app);
 
 3. Create an easily scalable backend for your SPA.
+
+That's it. Plezi brings you the router and common task automation (i.e. rendering, basic template caching, horizontal scaling, etc') - anything else (databases, models, form generators) is left alone, so you can choose the best gem for your application and situation.
 
 ## Guides and documentation
 

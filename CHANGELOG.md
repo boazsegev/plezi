@@ -2,6 +2,20 @@
 
 ***
 
+Change log v.0.13.0 (unreleased)
+
+Everything. Total rewrite.
+
+Iodine was updated to version 0.2.0, which is a total rewrite. Iodine is now a Rack server implemented as a Ruby C extension, limited to Ruby MRI on Linux, OSX and BSD systems.
+
+Plezi is now a Rack framework (somewhat sadly) as well as a middleware. Plezi will work with any Rack server, but Plezi Websocket support requires the Iodine server (Linux/BSD/OSX using Ruby MRI).
+
+Autostart and API changes. Existing applications will break on new version and require an update process.
+
+Plezi Sessions are now stored using session cookies instead of local storage (blame convention over security).
+
+***
+
 Change log v.0.12.21
 
 **Update**: Auto-Dispatch:
@@ -168,7 +182,7 @@ Change log v.0.12.3
 
 * Websocket Identity API allows you to link a websocket connection with a unique "identity" (i.e., `user.id` or even `session.id`).
 
-     This is called "registering", as the identity "registers" and is henceforth recognized. 
+     This is called "registering", as the identity "registers" and is henceforth recognized.
 
 * Notifications sent to the identidy will persist until the identity's "lifetime" expires.
 
@@ -176,7 +190,7 @@ Change log v.0.12.3
 
 * This allows you to send notifications that will "wait" until a user or visitor reconnects and registers the new connection under their Identity.
 
-* This is an alternative to persistant storage, where either visitors messages that aren't read within a certain timespan 
+* This is an alternative to persistant storage, where either visitors messages that aren't read within a certain timespan
 
 **Fix**: the Placebo API was fixed to correspond with the changes in Iodine's API.
 
@@ -212,7 +226,7 @@ Change log v.0.12.0 - API changes (throwing out dead code and many more changes)
 
 **Feature** The `Controller.failed_unicast(target, method, arguments_array)` callback is here, allowing you to write a class level callback that will be called if `unicast` fails to find it's target (i.e. if the Websocket connection was already closed or the hosting server shutdown).
 
-\* the lack of this callback being called does NOT imply that the unicast was processed without errors, it's only called if the target itself wasn't found (the connection already recognized as closed). Errors can occure within the method originally called by `unicast` when the target was found but the connection was dropped while processing was underway. The `failed_unicast` callback, together with error handling in the original method (i.e. `response << "message"` returning `nil`) should cover any reasonable scenario. 
+\* the lack of this callback being called does NOT imply that the unicast was processed without errors, it's only called if the target itself wasn't found (the connection already recognized as closed). Errors can occure within the method originally called by `unicast` when the target was found but the connection was dropped while processing was underway. The `failed_unicast` callback, together with error handling in the original method (i.e. `response << "message"` returning `nil`) should cover any reasonable scenario.
 
 **Minor**: updated asset pipeline performance; API for the `Plezi.route` methods now auto-creates an empty listening service (no assets, no templates, no public folder...) if one is missing.
 
@@ -248,13 +262,13 @@ Change log v.0.11.0
 
 **Update**: Requires GRHttp server and GReactor version 0.1.0 or above, adjusted to the updated API.
 
-**Update**: Better pinging and timout support courtesy of the updated GRHttp server. 
+**Update**: Better pinging and timout support courtesy of the updated GRHttp server.
 
 **Update**: The default number of threads is now 30. It seems that once we move beyond 1 thread (which is also supported), the added threads are adding more security against blocking code without effecting performance as much. It is expected that advanced users will consider moving away from multi-threading to muli-processing while avoiding blocking code. All these options are supported by Plezi, GRHttp and GReactor.
 
 **Fix**: Fixed an issue where requests for folders within the assets folder (folder indexing) would fail with an internal error message (error 500) instead of a not found message (error 404).
 
-**Fix**: fixed an issue that caused the static file service to fail when using the preferred `:public` vs. the older `:root` option used to set the public folder's path. 
+**Fix**: fixed an issue that caused the static file service to fail when using the preferred `:public` vs. the older `:root` option used to set the public folder's path.
 
 **Minor**: minor adjustments and improvements, such as: auto-setting the `content-type` header when using `render`.
 
@@ -272,7 +286,7 @@ Change log v.0.10.17
 
 Change log v.0.10.16
 
-**Fix**: Requires a newer version of the GRHttp server, which fixs an issue with Firefox's websocket implementation. 
+**Fix**: Requires a newer version of the GRHttp server, which fixs an issue with Firefox's websocket implementation.
 
 **New Feature**: Persistent and synchronized Session data(!) using Redis (if supplied) with a fallback to temporary memory storage. Session lifetime is 5 days.
 
@@ -829,7 +843,7 @@ Change log v.0.6.5
 
 Rack code and Plezi code are NOT fully compatible. for example: Rack's parameters aren't always fully decoded. Also, Rack's file upload contains tmporary files, where Plezi's request object contains the binary data in a binary String object.
 
-Also, Rack does NOT support native WebSocket Controllers (you will need middle ware for that). 
+Also, Rack does NOT support native WebSocket Controllers (you will need middle ware for that).
 
 ***
 
@@ -901,7 +915,7 @@ Change log v.0.5.0
 
 Change log v.0.4.3
 
-**notice!:** v.0.5.0 might break any code using the `listen :vhost => "foo.bar.com"` format. hosts and aliases will be restructured. 
+**notice!:** v.0.5.0 might break any code using the `listen :vhost => "foo.bar.com"` format. hosts and aliases will be restructured.
 
 **fix**: an issue with the router was discovered, where non-RESTful Controller methods weren't called for POST, PUT or DELETE http requests. this issue is now fixed, so that non-RESTful methods will be attempted and will exclude ID's with the same value from being created...
 
@@ -913,7 +927,7 @@ Change log v.0.4.2
 
 **error-detection**: Plezi will check that the same port isn't used for to services and will return a warning. a `listen` call with `RackServer` will return an existing router object if a service is already assigned to the requested port.
 
-**notice!:** v.0.5.0 will break any code using the `listen :vhost => "foo.bar.com"` format. hosts and aliases will be restructured. 
+**notice!:** v.0.5.0 will break any code using the `listen :vhost => "foo.bar.com"` format. hosts and aliases will be restructured.
 
 **fix**: 404 error handler should now be immune to path rewrites (displays originally requested path).
 

@@ -58,7 +58,7 @@ module Plezi
 				end
 				# overrides th [] method to allow Symbols and Strings to mix and match
 				def [] key
-					@data[key] || request.cookies[key]
+					@data[key] || @data[key.to_s]
 				end
         def each
           return @data.each {|k, v| yield(k,v) } if block_given?

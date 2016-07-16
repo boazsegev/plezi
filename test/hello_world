@@ -1,19 +1,26 @@
 #!/usr/bin/env ruby
 # encoding: UTF-8
 
-$LOAD_PATH.unshift File.expand_path(File.join('..', '..', 'lib'), __FILE__ )
-require "plezi"
-require "pry"
+$LOAD_PATH.unshift File.expand_path(File.join('..', '..', 'lib'), __FILE__)
+require 'plezi'
+require 'pry'
 
-HELLO = 'Hello Plezi 0.13'
+HELLO = 'Hello Plezi 0.13'.freeze
 
 class Ctrl
   def index
-    "Hi!"
+    cookies[:visits] = cookies[:visits].to_i + 1
+    "you came here #{cookies[:visits].to_i} times...?"
   end
+
   def dbg
     pry.binding
-    "did we debug?"
+    'did we debug?'
+  end
+
+  def on_message(data)
+    puts "WS message: #{data}"
+    write data
   end
 end
 
@@ -22,15 +29,14 @@ Plezi.route('/ctrl', Ctrl)
 # Plezi.route('/env') { |i, o| i.env.to_s }
 Plezi.route('*') { HELLO }
 
-Iodine::Rack.on_start do
-  puts "counting...";
-  Iodine::Rack.run_after(1) { puts "#{Iodine::Rack.count} Clients - 1time"}
-  Iodine::Rack.run_every(1000) { puts "#{Iodine::Rack.count} Clients"}
-end
+# Iodine::Rack.on_start do
+#   puts "counting...";
+#   Iodine::Rack.run_after(1) { puts "#{Iodine::Rack.count} Clients - 1time"}
+#   Iodine::Rack.run_every(1000) { puts "#{Iodine::Rack.count} Clients"}
+# end
 
-# Iodine::Rack.threads = 16
-# Iodine::Rack.processes = 4
-Iodine::Rack.start
+Iodine.threads = 16
+Iodine.processes = 4
 
 # ab -n 10000 -c 200 -k http://127.0.0.1:3000/
 # ~/ruby/wrk/wrk -c400 -d10 -t12 http://localhost:3000/

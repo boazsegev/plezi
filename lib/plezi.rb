@@ -11,20 +11,20 @@ require 'yaml'
 require 'uri'
 require 'set'
 
-
 # Rack and fixes
 require 'rack'
 require 'plezi/core/monkey_patching_rack.rb'
 # Iodine server
 require 'iodine'
 ### version
-require "plezi/version"
+require 'plezi/version'
 
 ####### Plezi 0.13.x Core requirements
 # constants and core support
 require 'plezi/core/constants.rb'
 require 'plezi/core/logging.rb'
 require 'plezi/core/cache.rb'
+require 'plezi/core/autostart.rb'
 # redis and websockets support
 require 'plezi/core/redis.rb'
 require 'plezi/core/redis_emulation.rb'
@@ -75,7 +75,7 @@ require 'plezi/core/settings.rb'
 
 ## erb templating
 begin
-	require 'erb'
+  require 'erb'
 rescue
 
 end
@@ -167,14 +167,5 @@ end
 ##############################################################################
 module Plezi
 end
-
-Iodine::Rack.on_http = Plezi.app
-Iodine::Rack.threads ||= 30
-Iodine::Rack.on_start { puts "Plezi is feeling optimistic running version #{::Plezi::VERSION} using Iodine #{::Iodine::VERSION}.\n\n"}
-Iodine::Rack.on_start { ::NO_PLEZI_AUTOSTART = true unless defined?(::NO_PLEZI_AUTOSTART) }
 # PL is a shortcut for the Plezi module, so that `PL == Plezi`.
 PL = Plezi
-
-at_exit do
-	Iodine::Rack.start unless defined?(::NO_PLEZI_AUTOSTART) || ::Plezi::Base::Router.instance_variable_get(:@hosts).empty?
-end
