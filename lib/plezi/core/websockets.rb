@@ -1,33 +1,29 @@
 
 module Plezi
-
   module Base
     module WSHelpers
-      def self.translate_message msg
-				begin
-					@safe_types ||= [Symbol, Date, Time, Encoding, Struct, Regexp, Range, Set]
-					YAML.safe_load(msg, @safe_types)
-				rescue => e
-					::Plezi.error "The following could be a security breach attempt:"
-					::Plezi.error e
-					nil
-				end
-			end
-			def self.forward_message data
-				begin
-					return false if data[:server] == Plezi::Settings.uuid
-					data[:type] = Object.const_get(data[:type]) unless data[:type].nil? || data[:type] == :all
-					if data[:target]
-						data[:type].___faild_unicast( data ) unless Iodine::Http::Websockets.unicast data[:target], data
-					else
-						Iodine::Http::Websockets.broadcast data
-					end
-				rescue => e
-					::Plezi.error "The following could be a security breach attempt:"
-					::Plezi.error e
-					nil
-				end
-			end
+      def self.translate_message(msg)
+        @safe_types ||= [Symbol, Date, Time, Encoding, Struct, Regexp, Range, Set]
+        YAML.safe_load(msg, @safe_types)
+      rescue => e
+        ::Plezi.error 'The following could be a security breach attempt:'
+        ::Plezi.error e
+        nil
+      end
+
+      def self.forward_message(data)
+        return false if data[:server] == Plezi::Settings.uuid
+        data[:type] = Object.const_get(data[:type]) unless data[:type].nil? || data[:type] == :all
+        if data[:target]
+          data[:type].___faild_unicast(data) unless Iodine::Websockets.defer(data[:target]) { |ws| ws.on_broadcast data }
+        else
+          Iodine::Http::Websockets.broadcast data
+        end
+      rescue => e
+        ::Plezi.error 'The following could be a security breach attempt:'
+        ::Plezi.error e
+        nil
+      end
     end
   end
   # this module and all it's methods and properties will be mixed into any
@@ -35,26 +31,23 @@ module Plezi
   #
   # The Websocket helper methods, such as {#broadcast} are described here.
   module ControllerWebsockets
-
-
     # @!parse include InstanceMethods
-		# @!parse extend ClassMethods
+    # @!parse extend ClassMethods
 
-		module InstanceMethods
-			public
-
+    module InstanceMethods
+      public
 
       # handles broadcasts / unicasts
-      def on_broadcast data
+      def on_broadcast(data)
         unless data.is_a?(Hash) && (data[:type] || data[:target]) && data[:method] && data[:data]
-          ::Plezi.warn "Broadcast message unknown... falling back on base broadcasting"
+          ::Plezi.warn 'Broadcast message unknown... falling back on base broadcasting'
           return super(data) if defined? super
           return false
         end
-        return false if data[:type] && data[:type] != :all && !self.is_a?(data[:type])
+        return false if data[:type] && data[:type] != :all && !is_a?(data[:type])
         # return (data[:data].each {|e| emit(e)}) if data[:method] == :emit
-        return ((data[:type] == :all) ? false : (raise "Broadcasting recieved but no method can handle it - dump:\r\n #{data.to_s}") ) unless self.class.has_super_method?(data[:method])
-        self.__send__(data[:method], *data[:data])
+        return ((data[:type] == :all) ? false : (raise "Broadcasting recieved but no method can handle it - dump:\r\n #{data}")) unless self.class.has_super_method?(data[:method])
+        __send__(data[:method], *data[:data])
       end
 
       # Get's the websocket's unique identifier for unicast transmissions.
@@ -63,19 +56,16 @@ module Plezi
       # boadcasting object's event.
       def uuid
         return @uuid if @uuid
-        if __get_io
-          return (@uuid ||=  Plezi::Settings.uuid + self.object_id.to_s(16))
-        end
+        return (@uuid ||= Plezi::Settings.uuid + super.to_s(16)) if defined? super
         nil
       end
-      alias :unicast_id :uuid
-
+      alias unicast_id uuid
 
       protected
 
       # @!visibility public
       # Performs a websocket unicast to the specified target.
-      def unicast target_uuid, method_name, *args
+      def unicast(target_uuid, method_name, *args)
         self.class.unicast target_uuid, method_name, *args
       end
 
@@ -88,9 +78,9 @@ module Plezi
       #
       # The method will be called asynchrnously for each sibling instance of this Controller class.
       #
-      def broadcast method_name, *args
+      def broadcast(method_name, *args)
         return false unless self.class.has_method? method_name
-        self.class._inner_broadcast({ method: method_name, data: args, type: self.class}, __get_io )
+        self.class._inner_broadcast({ method: method_name, data: args, type: self.class }, __get_io)
       end
 
       # @!visibility public
@@ -102,8 +92,8 @@ module Plezi
       #
       # The method will be called asynchrnously for ALL websocket connections.
       #
-      def multicast method_name, *args
-        self.class._inner_broadcast({ method: method_name, data: args, type: :all}, __get_io )
+      def multicast(method_name, *args)
+        self.class._inner_broadcast({ method: method_name, data: args, type: :all }, __get_io)
       end
 
       # @!visibility public
@@ -138,7 +128,7 @@ module Plezi
       #
       # Do NOT call this method asynchronously unless Plezi is set to run as in a single threaded mode - doing so
       # will execute any pending events outside the scope of the IO's mutex lock, thus introducing race conditions.
-      def register_as identity, options = {}
+      def register_as(identity, options = {})
         redis = Plezi.redis || ::Plezi::Base::RedisEmultaion
         options[:max_connections] ||= 1
         options[:max_connections] = 1 if options[:max_connections].to_i < 1
@@ -152,7 +142,7 @@ module Plezi
           redis.lpush(identity, ''.freeze)
           redis.lrem "#{identity}_uuid".freeze, 0, uuid
           redis.lpush "#{identity}_uuid".freeze, uuid
-          redis.ltrim "#{identity}_uuid".freeze, 0, (options[:max_connections]-1)
+          redis.ltrim "#{identity}_uuid".freeze, 0, (options[:max_connections] - 1)
           redis.expire identity, options[:lifetime]
           redis.expire "#{identity}_uuid".freeze, options[:lifetime]
         end
@@ -162,37 +152,38 @@ module Plezi
 
       # @!visibility public
       # sends a notification to an Identity. Returns false if the Identity never registered or it's registration expired.
-      def notify identity, event_name, *args
+      def notify(identity, event_name, *args)
         self.class.notify identity, event_name, *args
       end
+
       # @!visibility public
       # returns true if the Identity in question is registered to receive notifications.
-      def registered? identity
+      def registered?(identity)
         self.class.registered? identity
       end
 
       # this is the identity event and ittells the connection to "read" the messages in the "mailbox",
       # and forward the messages to the rest of the connections.
-      def ___review_identity identity
+      def ___review_identity(identity)
         redis = Plezi.redis || ::Plezi::Base::RedisEmultaion
         identity = identity.to_s.freeze
-        return ::Plezi.warn("Identity message reached wrong target (ignored).").clear unless @___identity[identity]
+        return ::Plezi.warn('Identity message reached wrong target (ignored).').clear unless @___identity[identity]
         messages = redis.multi do
           redis.lrange identity, 1, -1
           redis.ltrim identity, 0, 0
-          redis.expire identity,  @___identity[identity][:lifetime]
-          redis.expire "#{identity}_uuid".freeze,  @___identity[identity][:lifetime]
+          redis.expire identity, @___identity[identity][:lifetime]
+          redis.expire "#{identity}_uuid".freeze, @___identity[identity][:lifetime]
         end[0]
         targets = redis.lrange "#{identity}_uuid", 0, -1
         targets.delete(uuid)
         while msg = messages.shift
           msg = ::Plezi::Base::WSHelpers.translate_message(msg)
           next unless msg
-          ::Plezi.error("Notification recieved but no method can handle it - dump:\r\n #{msg.to_s}") && next unless self.class.has_super_method?(msg[:method])
-          ::Plezi.run do
-            targets.each {|target| unicast(target, msg[:method], *msg[:data]) }
+          ::Plezi.error("Notification recieved but no method can handle it - dump:\r\n #{msg}") && next unless self.class.has_super_method?(msg[:method])
+          ::Iodine.run do
+            targets.each { |target| unicast(target, msg[:method], *msg[:data]) }
           end
-          self.__send__(msg[:method], *msg[:data])
+          __send__(msg[:method], *msg[:data])
         end
         # ___extend_lifetime identity
       end
@@ -221,14 +212,15 @@ module Plezi
       # 	redis = Plezi.redis || ::Plezi::Base::WSObject::RedisEmultaion
       # 	@___identity.each { |identity| redis.lrem "#{identity}_uuid".freeze, 0, uuid }
       # end
-		end
+    end
 
-		module ClassMethods
-
+    module ClassMethods
       public
 
       # answers the question if this is a placebo object.
-      def placebo?; false end
+      def placebo?
+        false
+      end
 
       # WebSockets: fires an event on all of this controller's active websocket connections.
       #
@@ -243,7 +235,7 @@ module Plezi
       # this method accepts and optional block (NON-REDIS ONLY) to be used as a callback for each sibling's event.
       #
       # the method will be called asynchrnously for each sibling instance of this Controller class.
-      def broadcast method_name, *args
+      def broadcast(method_name, *args)
         return false unless has_method? method_name
         _inner_broadcast method: method_name, data: args, type: self
       end
@@ -256,7 +248,7 @@ module Plezi
       # target_uuid:: the target's unique UUID.
       # method_name:: a Symbol with the method's name that should respond to the broadcast.
       # *args:: any arguments that should be passed to the method (IF REDIS IS USED, LIMITATIONS APPLY).
-      def unicast target_uuid, method_name, *args
+      def unicast(target_uuid, method_name, *args)
         raise 'No target specified for unicasting!' unless target_uuid
         @uuid_cutoff ||= Plezi::Settings.uuid.length
         _inner_broadcast method: method_name, data: args, target: target_uuid[@uuid_cutoff..-1], to_server: target_uuid[0...@uuid_cutoff], type: :all
@@ -270,66 +262,59 @@ module Plezi
       #
       # The method will be called asynchrnously for ALL websocket connections.
       #
-      def multicast method_name, *args
+      def multicast(method_name, *args)
         _inner_broadcast method: method_name, data: args, type: :all
       end
 
       # WebSockets
 
       # sends the broadcast
-      def _inner_broadcast data, ignore_io = nil
+      def _inner_broadcast(data, ignore_io = nil)
         if data[:target]
           if data[:to_server] == Plezi::Settings.uuid
-            return ( ::Iodine::Http::Websockets.unicast( data[:target], data ) || ___faild_unicast( data ) )
+            return ((::Iodine::Websockets.defer(data[:target]) { |ws| ws.on_broadcast(data) }) || ___faild_unicast(data))
           end
-          return ( data[:to_server].nil? && ::Iodine::Http::Websockets.unicast(data[:target], data) ) || ( Plezi::Base::AutoRedis.away?(data[:to_server]) && ___faild_unicast( data ) ) || __inner_redis_broadcast(data)
+          return (data[:to_server].nil? && (::Iodine::Websockets.defer(data[:target]) { |ws| ws.on_broadcast(data) })) || (Plezi::Base::AutoRedis.away?(data[:to_server]) && ___faild_unicast(data)) || __inner_redis_broadcast(data)
         else
-          ::Iodine::Http::Websockets.broadcast data, ignore_io
+          ::Iodine::Websockets.each { |_ws| (ignore_io || self).on_broadcast data }
           __inner_redis_broadcast data
         end
         true
       end
 
-      def __inner_redis_broadcast data
+      def __inner_redis_broadcast(data)
         return unless conn = Plezi.redis
         data = data.dup
         data[:type] = data[:type].name if data[:type].is_a?(Class)
         data[:server] = Plezi::Settings.uuid
-        return conn.publish( ( data[:to_server] || Plezi::Settings.redis_channel_name ), data.to_yaml ) if conn
+        return conn.publish((data[:to_server] || Plezi::Settings.redis_channel_name), data.to_yaml) if conn
         false
       end
 
-      def ___faild_unicast data
-        has_class_method?(:failed_unicast) && failed_unicast( data[:to_server].to_s + data[:target], data[:method], data[:data] )
+      def ___faild_unicast(data)
+        has_class_method?(:failed_unicast) && failed_unicast(data[:to_server].to_s + data[:target], data[:method], data[:data])
         true
       end
 
-
-
-			public
-
-
-
-
+      public
 
       # sends a notification to an Identity. Returns false if the Identity never registered or it's registration expired.
-      def notify identity, event_name, *args
+      def notify(identity, event_name, *args)
         redis = Plezi.redis || ::Plezi::Base::RedisEmultaion
         identity = identity.to_s.freeze
         return false unless redis.llen(identity).to_i > 0
-        redis.rpush identity, ({method: event_name, data: args}).to_yaml
-        redis.lrange("#{identity}_uuid".freeze, 0, -1).each {|target| unicast target, :___review_identity, identity }
+        redis.rpush identity, { method: event_name, data: args }.to_yaml
+        redis.lrange("#{identity}_uuid".freeze, 0, -1).each { |target| unicast target, :___review_identity, identity }
         # puts "pushed notification #{event_name}"
         true
       end
 
       # returns true if the Identity in question is registered to receive notifications.
-      def registered? identity
+      def registered?(identity)
         redis = Plezi.redis || ::Plezi::Base::RedisEmultaion
         identity = identity.to_s.freeze
         redis.llen(identity).to_i > 0
       end
     end
-
   end
 end
