@@ -1,3 +1,3 @@
 module Plezi
-    VERSION = "0.12.22"
+  VERSION = '0.13.0'.freeze
 end

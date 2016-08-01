@@ -2,6 +2,20 @@
 
 ***
 
+Change log v.0.13.0
+
+Rewrote the whole thing. v. 0.13.0 is a total restart.
+
+API changes ahead.
+
+Features were **removed** (I know, features are usually *added*, but Plezi will not become another Sinatra / Rails).
+
+***
+
+Pre 0.13.0
+
+***
+
 Change log v.0.12.22
 
 **Fix**: fix for issue #17 where unicode characters might cause `erb` rendering to fail. Credit to @davidjuin0519 (Juin Chiu) for reporting the issue and helping resolve it.
