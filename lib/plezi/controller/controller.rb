@@ -3,7 +3,6 @@ module Plezi
     module Controller
       def self.included(base)
         base.extend ::Plezi::Base::Controller::ClassMethods
-        puts base._pl_get_map
       end
 
       attr_reader :request, :response, :params

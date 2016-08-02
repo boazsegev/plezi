@@ -34,6 +34,8 @@ Things Plezi **doesn't** do (anymore / ever):
 
   Plezi's default server, Iodine, provides a poor-man's file server that is easy to set up.
 
+* No development mode. If you want to restart the application automatically whenever you update the code, there are probably plenty of gems that will take care of that.
+
 
 
 Do notice, Websockets require Iodine (the server), since (currently) it's the only Ruby server known to support native Websockets using a Websocket Callback Object.
