@@ -1,11 +1,12 @@
 require 'test_helper'
 
-class PleziTest < Minitest::Test
-  def test_that_it_has_a_version_number
-    refute_nil ::Plezi::VERSION
-  end
+class Stub
+end
 
-  def test_it_does_something_useful
-    assert false
+class RouteTest < Minitest::Test
+  def test_it_sets_a_route
+    Plezi.no_autostart
+    route = Plezi.route('/here/:goes/(:the)/(:manchkin)', Stub).last
+    assert route.match('/here/goes/lenny/bruce/1')
   end
 end

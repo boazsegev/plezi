@@ -1,4 +1,8 @@
 require 'plezi/version'
+require 'iodine'
+
+require 'plezi/api'
+require 'plezi/controller/controller'
 
 # Your code goes here...
 module Plezi
