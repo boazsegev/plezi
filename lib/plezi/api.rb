@@ -12,7 +12,7 @@ module Plezi
   # Returns the Plezi Rack application
   def app
     no_autostart
-    puts "Plezi version: #{::Plezi::VERSION}"
+    puts "Running Plezi version: #{::Plezi::VERSION}"
     Plezi::Base::Router.method :call
   end
 

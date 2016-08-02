@@ -13,11 +13,12 @@ module Plezi
         response = Rack::Response.new
         ret = nil
         @routes.each { |route| ret = route.call(request, response); break if ret }
-        return [404, {}, []] unless ret
+        return [404, {'Content-Length': "20"}, ["Error 404, not found"]] unless ret
         response.write(ret) if ret.is_a?(String)
         return response.finish
-      rescue
-        return [500, {}, []]
+      rescue => e
+        puts e.message, e.backtrace
+        return [500, {'Content-Length': "18"}, ["Internal Error 500"]]
       end
 
       def route(path, controller)

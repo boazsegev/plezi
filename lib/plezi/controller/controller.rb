@@ -13,10 +13,7 @@ module Plezi
         @params = params
         m = requested_method
         # puts "m == #{m.nil? ? 'nil' : m.to_s}"
-        if m
-          params.update request.params if request.params
-          return __send__(m)
-        end
+        return __send__(m) if m
         false
       end
 
@@ -61,7 +58,9 @@ module Plezi
         def _pl_params2method(params)
           # puts "matching against #{params}"
           case params['_method'.freeze]
-          when :put
+          when :get # since this is common, it's pushed upwards.
+            _pl_get_map[params['id'.freeze]]
+          when :put, :patch
             return :update if _pl_has_update
           when :post
             return :create if _pl_has_create

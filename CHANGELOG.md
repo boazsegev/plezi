@@ -2,9 +2,11 @@
 
 ***
 
-Change log v.0.13.0
+Change log v.0.14.0
 
-Rewrote the whole thing. v. 0.13.0 is a total restart.
+Rewrote the whole thing. v. 0.14.0 is a total restart...
+
+...in fact, the changes were so big, we're bumping the developemnt version twice.
 
 API changes ahead.
 
@@ -12,7 +14,7 @@ Features were **removed** (I know, features are usually *added*, but Plezi will 
 
 ***
 
-Pre 0.13.0
+Pre 0.14.0
 
 ***
 

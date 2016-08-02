@@ -5,15 +5,24 @@ require 'plezi'
 
 class HWController
   def index
-    "Hello World!!!"
+    'Hello World!!!'
   end
+
   def secret
-    "Shhh...."
+    'Shhh....'
+  end
+
+  def list
+    params.inspect
+  end
+
+  def blow
+    raise 'up'
   end
 end
 
-Plezi.route "/hello", HWController
-Plezi.route "/", HWController
+Plezi.route '/hello', HWController
+Plezi.route '/', HWController
 
 # ab -n 100000 -c 200 -k http://127.0.0.1:3000/
 # ab -n 100000 -c 4000 -k http://127.0.0.1:3000/

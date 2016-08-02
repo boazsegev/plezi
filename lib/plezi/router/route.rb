@@ -1,5 +1,7 @@
 require 'plezi/controller/controller'
 require 'thread'
+require 'rack'
+require 'rack/query_parser.rb'
 
 module Plezi
   module Base
@@ -22,11 +24,12 @@ module Plezi
         @param_names = []
         @origial = path.dup.freeze
         path2regex(m[2])
+        self.class.qp
         prep_controller if controller
       end
 
       def call(request, response)
-        return nil unless match(request.path_info)
+        return nil unless match(request.path_info, request)
         if @controller
           c = @controller.new
           return c._pl_respond(request, response, Thread.current[@route_id])
@@ -38,19 +41,21 @@ module Plezi
         nil
       end
 
-      def fits_params(path)
+      def fits_params(path, request)
         params = Thread.current[@route_id].clear
+        params.update request.params.to_h if request && request.params
         # puts "cutting: #{path[(@prefix_length)..-1] ? path[(@prefix_length + 1)..-1] : 'nil'}"
         pa = (path[@prefix_length..-1] || ''.freeze).split('/'.freeze)
         # puts "check param count: #{pa}"
         return false unless @params_range.include?(pa.length)
-        @param_names.each { |key| params[key] = pa[0] ? Rack::Utils.unescape(pa.shift) : nil }
+        @param_names.each { |key| next if pa[0].nil?; self.class.qp.normalize_params(params, key, Rack::Utils.unescape(pa.shift), 100) }
+        params.each { |prm| }
         true
       end
 
-      def match(req_path)
+      def match(req_path, request = nil)
         # puts "#{req_path} starts with #{@prefix}? #{req_path.start_with?(@prefix)}"
-        req_path.start_with?(@prefix) && fits_params(req_path)
+        req_path.start_with?(@prefix) && fits_params(req_path, request)
       end
 
       def path2regex(postfix)
@@ -85,6 +90,10 @@ module Plezi
 
       def prep_controller
         @controller.include Plezi::Base::Controller
+      end
+
+      def self.qp
+        @qp ||= ::Rack::QueryParser.new(Hash, 65_536, 100)
       end
     end
   end
