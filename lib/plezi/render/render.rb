@@ -9,7 +9,7 @@ module Plezi
     end
 
     def self.date_library
-      Thread.current[:_pl_render_engins] ||= {}.dup
+      Thread.current[:_pl_render_dates] ||= {}.dup
     end
 
     def self.render_library
@@ -70,7 +70,7 @@ module Plezi
 
     def render(base_filename, context = (Object.new.instance_eval { binding }), &block)
       ret = nil
-      render_library.each { |ext, handler| ret = handler.call("#{base_filename}.#{ext}".freeze, context, &block); break if ret; }
+      @render_library.each { |ext, handler| ret = handler.call("#{base_filename}.#{ext}".freeze, context, &block); return ret if ret; }
       ret
     end
     # Renderer.register :haml do |filename, context, &block|

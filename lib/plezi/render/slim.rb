@@ -18,7 +18,7 @@ module Plezi
       else
         def load_engine(filename)
           engine = ::Plezi::Renderer.get_cached(filename)
-          return engine if engine && ::Plezi::Renderer.cached_date(filename) == File.mtime(filename)
+          return engine if engine && (::Plezi::Renderer.cached_date(filename) == File.mtime(filename))
           ::Plezi::Renderer.cache_engine(filename, (Slim::Template.new { ::Plezi.try_utf8!(IO.binread(filename)) }), File.mtime(filename))
         end
     end
