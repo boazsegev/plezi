@@ -11,14 +11,14 @@ module Plezi
       end
       if ENV['RACK_ENV'.freeze] == 'production'.freeze
         def load_engine(filename)
-          engine = ::Plezi::Renderer.get_cached(filename)
+          engine, tm = ::Plezi::Renderer.get_cached(filename)
           return engine if engine
           ::Plezi::Renderer.cache_engine(filename, ERB.new(::Plezi.try_utf8!(IO.binread(filename))), File.mtime(filename))
         end
       else
         def load_engine(filename)
-          engine = ::Plezi::Renderer.get_cached(filename)
-          return engine if engine && ::Plezi::Renderer.cached_date(filename) == File.mtime(filename)
+          engine, tm = ::Plezi::Renderer.get_cached(filename)
+          return engine if engine && tm == File.mtime(filename)
           ::Plezi::Renderer.cache_engine(filename, ERB.new(::Plezi.try_utf8!(IO.binread(filename))), File.mtime(filename))
         end
     end

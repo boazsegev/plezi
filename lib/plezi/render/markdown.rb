@@ -28,19 +28,17 @@ begin
         end
         if ENV['RACK_ENV'.freeze] == 'production'.freeze
           def load_engine(filename)
-            engine = ::Plezi::Renderer.get_cached(filename)
+            engine, tm = ::Plezi::Renderer.get_cached(filename)
             return engine if engine
             data = IO.read filename
-            data = ::Plezi::Renderer.cache_engine(filename, "<div class='toc'>#{::Plezi::Base::RenderMarkDown::MD_RENDERER_TOC.render(data)}</div>\n#{::Plezi::Base::RenderMarkDown::MD_RENDERER.render(data)}", File.mtime(filename))
-            data
+            ::Plezi::Renderer.cache_engine(filename, "<div class='toc'>#{::Plezi::Base::RenderMarkDown::MD_RENDERER_TOC.render(data)}</div>\n#{::Plezi::Base::RenderMarkDown::MD_RENDERER.render(data)}", File.mtime(filename))
           end
         else
           def load_engine(filename)
-            engine = ::Plezi::Renderer.get_cached(filename)
-            return engine if engine && ::Plezi::Renderer.cached_date(filename) == File.mtime(filename)
+            engine, tm = ::Plezi::Renderer.get_cached(filename)
+            return engine if engine && tm == File.mtime(filename)
             data = IO.read filename
-            data = ::Plezi::Renderer.cache_engine(filename, "<div class='toc'>#{::Plezi::Base::RenderMarkDown::MD_RENDERER_TOC.render(data)}</div>\n#{::Plezi::Base::RenderMarkDown::MD_RENDERER.render(data)}", File.mtime(filename))
-            data
+            ::Plezi::Renderer.cache_engine(filename, "<div class='toc'>#{::Plezi::Base::RenderMarkDown::MD_RENDERER_TOC.render(data)}</div>\n#{::Plezi::Base::RenderMarkDown::MD_RENDERER.render(data)}", File.mtime(filename))
           end
       end
     end

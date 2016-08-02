@@ -7,7 +7,7 @@ module Plezi
     if @plezi_autostart.nil?
       @plezi_autostart = true
       at_exit do
-        return if @plezi_autostart == false
+        next if @plezi_autostart == false
         ::Iodine::Rack.app = ::Plezi.app
         ::Iodine.start
       end

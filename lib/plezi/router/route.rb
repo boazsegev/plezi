@@ -47,8 +47,11 @@ module Plezi
         pa = (path[@prefix_length..-1] || ''.freeze).split('/'.freeze)
         # puts "check param count: #{pa}"
         return false unless @params_range.include?(pa.length)
-        @param_names.each { |key| next if pa[0].nil?; self.class.qp.normalize_params(params, key, Rack::Utils.unescape(pa.shift), 100) }
-        params.each { |prm| }
+        @param_names.each do |key|
+          next if pa[0].nil?
+          self.class.qp.normalize_params(params, Plezi.try_utf8!(Rack::Utils.unescape(key)),
+                                         Plezi.try_utf8!(Rack::Utils.unescape(pa.shift)), 100)
+        end
         true
       end
 

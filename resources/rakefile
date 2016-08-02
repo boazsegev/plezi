@@ -1,0 +1,7 @@
+# load all application code and gems
+require 'bundler'
+Bundler.require(:default, ENV['ENV'].to_s.to_sym)
+# set Plezi to rake mode and load it's tasks (if relevant).
+Plezi.no_autostart
+
+# Add your tasks

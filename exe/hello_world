@@ -1,0 +1,44 @@
+#!/usr/bin/env ruby
+Dir.chdir(File.expand_path(File.join('..', '..', 'lib'), __FILE__))
+require 'bundler/setup'
+require 'plezi'
+
+class HWController
+  def index
+    'Hello World!!!'
+  end
+
+  def secret
+    'Shhh....'
+  end
+
+  def list
+    params.inspect
+  end
+
+  def blow
+    raise 'up'
+  end
+end
+
+Plezi.route '/hello', HWController
+Plezi.route '/', HWController
+
+# ab -n 100000 -c 200 -k http://127.0.0.1:3000/
+# ab -n 100000 -c 4000 -k http://127.0.0.1:3000/
+# ab -n 1000000 -c 20000 -k http://127.0.0.1:3000/
+# ~/ruby/wrk/wrk -c400 -d10 -t12 http://localhost:3000/
+# wrk -c200 -d4 -t12 http://localhost:3000/
+# ab -n 2000 -c 20 -H "Connection: close" http://127.0.0.1:3000/
+# RACK_ENV="production" rackup -p 3000 -s iodine
+
+# thor --amount 5000 ws://localhost:3000/echo
+# thor --amount 5000 ws://localhost:3000/broadcast
+
+# ws = new WebSocket("ws://localhost:3000"); ws.onmessage = function(e) {console.log("Got message!"); console.log(e.data);}; ws.onclose = function(e) {console.log("closed")}; ws.onopen = function(e) {ws.send("hi");};
+# for(i = 0; i< 256; i++) {
+#   ws = new WebSocket("ws://localhost:3000");
+#   ws.onmessage = function(e) {console.log("Got message!"); console.log(e.data); e.target.close(); };
+#   ws.onclose = function(e) {console.log("closed")};
+#   ws.onopen = function(e) {e.target.send("hi");};
+# };

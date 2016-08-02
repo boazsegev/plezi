@@ -8,6 +8,8 @@ Rewrote the whole thing. v. 0.14.0 is a total restart...
 
 ...in fact, the changes were so big, we're bumping the developemnt version twice.
 
+You might wonder what changed and what stayed the same. Well... we kept the name.
+
 API changes ahead.
 
 Features were **removed** (I know, features are usually *added*, but Plezi will not become another Sinatra / Rails).

@@ -8,10 +8,6 @@ module Plezi
       Thread.current[:_pl_render_engins] ||= {}.dup
     end
 
-    def self.date_library
-      Thread.current[:_pl_render_dates] ||= {}.dup
-    end
-
     def self.render_library
       @render_library ||= {}.dup
     end
@@ -52,20 +48,20 @@ module Plezi
     end
 
     # returns the engine and date stored
+    # Use:
+    #
+    #      my_engine, the_date = get_cached "file.sass"
     def get_cached(filename)
       engine_library[filename]
     end
 
-    # returns date for the cached engine
-    def cached_date(filename)
-      date_library[filename]
-    end
-
-    # stores the engine and date, using the filename as a key
-    def cache_engine(filename, engine, date)
-      date_library[filename] = date
-      engine_library[filename] = engine
-      engine
+    # stores the engine and date, using the filename as a key.
+    #
+    # Use:
+    #
+    #      cache_engine "file.sass", my_engine, the_date
+    def cache_engine(filename, *args)
+      (engine_library[filename] = args)[0]
     end
 
     def render(base_filename, context = (Object.new.instance_eval { binding }), &block)

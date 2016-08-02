@@ -3,9 +3,12 @@ require 'plezi/router/router'
 
 module Plezi
   class << self
-    # Get / set the template folder
+    # Get / set the template folder for the {Controller#render} function.
     attr_accessor :templates
+    # Get / set the application name, which is also used to identify the global pub/sub channel.
+    attr_accessor :app_name
   end
+  @app_name = "#{File.basename($PROGRAM_NAME, '.*')}_app"
 
   module_function
 
