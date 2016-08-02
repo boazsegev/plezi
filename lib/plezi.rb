@@ -24,3 +24,9 @@ end
 #
 #
 #
+# def uuid
+#   @uuid ||= SecureRandom.uuid
+# end
+# def redis_channel_name
+# 		@redis_channel_name ||= "#{File.basename($0, '.*')}_redis_channel"
+# end

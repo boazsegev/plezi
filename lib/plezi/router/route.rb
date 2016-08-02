@@ -11,7 +11,6 @@ module Plezi
       def initialize(path, controller)
         raise 'Controller should be a class object' unless controller.is_a?(Class)
         @route_id = "Route#{object_id.to_s(16)}".to_sym
-        Thread.current[@route_id] ||= {}
         m = path.match(/([^\:\(\*]*)(.*)/)
         @prefix = m[1].chomp('/'.freeze)
         if @prefix.nil? || @prefix == ''.freeze
@@ -42,7 +41,7 @@ module Plezi
       end
 
       def fits_params(path, request)
-        params = Thread.current[@route_id].clear
+        params = (Thread.current[@route_id] ||= {}).clear
         params.update request.params.to_h if request && request.params
         # puts "cutting: #{path[(@prefix_length)..-1] ? path[(@prefix_length + 1)..-1] : 'nil'}"
         pa = (path[@prefix_length..-1] || ''.freeze).split('/'.freeze)

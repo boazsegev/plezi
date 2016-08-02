@@ -1,3 +1,5 @@
+require 'plezi/render/render'
+
 module Plezi
   module Base
     module Controller
@@ -21,6 +23,26 @@ module Plezi
       def requested_method
         params['_method'.freeze] = (params['_method'.freeze] || request.request_method.downcase).to_sym
         self.class._pl_params2method params
+      end
+
+      # Renders the requested template (should be a string, subfolders are fine).
+      #
+      # Template name shouldn't include the template's extension or format - this allows for dynamic format template resolution, so that `json` and `html` requests can share the same code. i.e.
+      #
+      #       Plezi.templates = "views/"
+      #       render "users/index"
+      #
+      # Using layouts (nested templates) is easy by using a block (a little different then other frameworks):
+      #
+      #       render("users/layout") { render "users/index" }
+      #
+      def render(template, &block)
+        ret = nil
+        if params['format'.freeze]
+          ret = ::Plezi::Renderer.render "#{File.join(::Plezi.templates, template.to_s)}.#{params['format'.freeze]}", binding, &block
+          return ret if ret
+        end
+        ::Plezi::Renderer.render "#{File.join(::Plezi.templates, template.to_s)}.html", binding, &block if params['format'.freeze] != 'html'.freeze
       end
 
       module ClassMethods
@@ -81,6 +103,10 @@ module Plezi
           _pl_has_update
           _pl_has_create
           _pl_has_show
+        end
+
+        def url_for(func, params = {})
+          ::Plezi::Base::Router.url_for self, func, params
         end
       end
     end

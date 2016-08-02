@@ -10,11 +10,13 @@ Plezi is a Rack based framework with support for native (server side implemented
 
 Plezi will provide the following features over plain Rack:
 
-* Object Oriented (M)VC design, BYO models.
+* Object Oriented (M)VC design, BYO (Bring Your Own) models.
 
 * A case sensitive RESTful router to map HTTP requests to your Controllers.
 
-* An extensible template rendering abstraction engine, supports Markdown, Slim, ERB and SASS out of the box.
+    Non-RESTful public Controller methods will be automatically published as valid HTTP routes, allowing the Controller to feel like an intuitive "virtual folder" with RESTful features.
+
+* An extensible template rendering abstraction engine, supports Slim, Markdown (using RedCarpet), ERB and SASS (mostly for embedded CSS) out of the box.
 
 * Raw Websocket connections (non of that fancy "subscribe" thingy).
 
