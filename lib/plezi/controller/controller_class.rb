@@ -1,9 +1,27 @@
+require 'json'
 module Plezi
   module Controller
     module ClassMethods
       def self.extended(base)
         base._pl_init_class_data
       end
+
+      def url_for(func, params = {})
+        ::Plezi::Base::Router.url_for self, func, params
+      end
+
+      def unicast(target, event_method, *args)
+        ::Plezi::Base::MessageDispatch.unicast(self, target, event_method, args)
+      end
+
+      def broadcast(event_method, *args)
+        ::Plezi::Base::MessageDispatch.broadcast(self, event_method, args)
+      end
+
+      def multicast(event_method, *args)
+        ::Plezi::Base::MessageDispatch.multicast(self, event_method, args)
+      end
+
       # @private
       # This is used internally by Plezi, do not use.
       REST_METHODS = [:delete, :create, :update, :show, :pre_connect].freeze
@@ -14,7 +32,7 @@ module Plezi
 
         @_pl_get_map = {}
         mths = public_instance_methods false
-        mths.delete_if { |m| m.to_s[0] == '_' || instance_method(m).arity.abs > 0 }
+        mths.delete_if { |m| m.to_s[0] == '_' || !(-1..0).cover?(instance_method(m).arity) }
         @_pl_get_map[nil] = :index if mths.include?(:index)
         REST_METHODS.each { |m| mths.delete m }
         mths.each { |m| @_pl_get_map[m.to_s.freeze] = m }
@@ -74,7 +92,7 @@ module Plezi
 
         @_pl_ad_map = {}
         mths = public_instance_methods false
-        mths.delete_if { |m| m.to_s[0] == '_' || instance_method(m).arity.abs < 1 }
+        mths.delete_if { |m| m.to_s[0] == '_' || ![-2, -1, 1].freeze.include?(instance_method(m).arity) }
         REST_METHODS.each { |m| mths.delete m }
         mths.each { |m| @_pl_ad_map[m.to_s.freeze] = m; @_pl_ad_map[m] = m }
 
@@ -110,26 +128,10 @@ module Plezi
         @_pl_has_create = public_instance_methods(false).include?(:create)
         @_pl_has_update = public_instance_methods(false).include?(:update)
         @_pl_has_delete = public_instance_methods(false).include?(:delete)
-        @_pl_is_websocket = instance_methods(false).include?(:on_message)
+        @_pl_is_websocket = @auto_dispatch || instance_methods(false).include?(:on_message)
         _pl_get_map
         _pl_ad_map
         _pl_ws_map
-      end
-
-      def url_for(func, params = {})
-        ::Plezi::Base::Router.url_for self, func, params
-      end
-
-      def unicast(target, event_method, *args)
-        ::Plezi::Base::MessageDispatch.unicast(self, target, event_method, args)
-      end
-
-      def broadcast(event_method, *args)
-        ::Plezi::Base::MessageDispatch.broadcast(self, event_method, args)
-      end
-
-      def multicast(event_method, *args)
-        ::Plezi::Base::MessageDispatch.multicast(self, event_method, args)
       end
     end
   end

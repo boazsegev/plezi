@@ -13,8 +13,10 @@ begin
           end
         end
 
+        # Extensions
+        MD_EXTENSIONS = { with_toc_data: true, strikethrough: true, autolink: true, fenced_code_blocks: true, no_intra_emphasis: true, tables: true, footnotes: true, underline: true, highlight: true }.freeze
         # create a single gloabl renderer for all markdown files.
-        MD_RENDERER = Redcarpet::Markdown.new NewPageLinksMDRenderer.new(with_toc_data: true), autolink: true, fenced_code_blocks: true, no_intra_emphasis: true, tables: true, footnotes: true
+        MD_RENDERER = Redcarpet::Markdown.new NewPageLinksMDRenderer.new(MD_EXTENSIONS.dup), MD_EXTENSIONS.dup
 
         # create a single gloabl renderer for all markdown TOC.
         MD_RENDERER_TOC = Redcarpet::Markdown.new Redcarpet::Render::HTML_TOC.new

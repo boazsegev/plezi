@@ -5,6 +5,18 @@ require 'rack'
 module Plezi
   module Base
     module Router
+      class ADClient
+        def index
+          fname = File.expand_path(File.join(File.dirname(__FILE__), '..', '..', '..', 'resources', 'client.js'))
+          response.body = File.open(fname)
+          response['X-Sendfile'] = fname
+          true
+        end
+
+        def show
+          index
+        end
+      end
       @routes = []
       @empty_hashes = {}
 
@@ -26,6 +38,7 @@ module Plezi
       end
 
       def route(path, controller)
+        controller = ADClient if controller == :client
         @routes << Route.new(path, controller)
       end
 
@@ -54,7 +67,14 @@ module Plezi
         else
           params['id'.freeze] = method_sym
         end
-        r.prefix + Rack::Utils.build_nested_query(params)
+        names = r.param_names
+        tmp = r.prefix.dup
+        tmp.clear if tmp == '/'.freeze
+        while names.any? && params[name[0]]
+          tmp << "/#{Rack::Utils.escape params[names.shift]}"
+        end
+        tmp = '/'.freeze if tmp.empty?
+        tmp + Rack::Utils.build_nested_query(params)
       end
     end
   end

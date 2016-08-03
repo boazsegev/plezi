@@ -1,4 +1,5 @@
 require 'plezi/render/render'
+require 'plezi/controller/cookies'
 require 'plezi/controller/controller_class'
 require 'plezi/websockets/message_dispatch'
 
@@ -8,7 +9,7 @@ module Plezi
       base.extend ::Plezi::Controller::ClassMethods
     end
 
-    attr_reader :request, :response, :params, :uuid
+    attr_reader :request, :response, :params, :cookies
 
     # @private
     # This function is used internally by Plezi, do not call.
@@ -16,6 +17,7 @@ module Plezi
       @request = request
       @response = response
       @params = params
+      @cookies = Cookies.new(request, response)
       m = requested_method
       # puts "m == #{m.nil? ? 'nil' : m.to_s}"
       return __send__(m) if m
@@ -115,6 +117,32 @@ module Plezi
     # This function is used internally by Plezi, do not call.
     def _pl_ad_map
       @_pl_ad_map ||= {}
+    end
+
+    # @private
+    # This function is used internally by Plezi, for Auto-Dispatch support do not call.
+    def on_message(data)
+      json = nil
+      begin
+        json = JSON.parse(data, symbolize_names: true)
+      rescue => e
+        puts 'AutoDispatch Warnnig: Received non-JSON message. Closing Connection.'
+        close
+        return
+      end
+      envt = _pl_ad_map[json[:event]] || _pl_ad_map[:unknown]
+      if json['event'.freeze].nil? || envt.nil?
+        puts "AutoDispatch Warnnig: JSON missing/invalid `event` name '#{json[:event]}' for class #{self.class.name}. Closing Connection."
+        close
+      end
+      write("{\"event\":\"_ack_\",\"_EID_\":\"#{json[:_EID_]}\"}") if json[:_EID_]
+      ret = __send__(envt, json)
+      case ret
+      when Hash, Array
+        write ret.to_json
+      when String
+        write ret
+      end
     end
 
     private
