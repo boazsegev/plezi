@@ -6,8 +6,9 @@ module Plezi
       SASS_OPTIONS = { style: (ENV['SASS_STYLE'] || ((ENV['ENV'] || ENV['RACK_ENV']) == 'production' ? :compressed : :nested)) }.dup
 
       def call(filename, _context)
+        tmp = nil
         return unless defined? ::Sass
-        return ::Plezi::Renderer.get_cached(filename)[0] if File.extname(filename) == '.map'.freeze
+        return (tmp = ::Plezi::Renderer.get_cached(filename)) && tmp[0] if File.extname(filename) == '.map'.freeze
         return unless File.exist?(filename)
         load_engine(filename)
       end

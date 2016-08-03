@@ -16,15 +16,19 @@ Plezi will provide the following features over plain Rack:
 
     Non-RESTful public Controller methods will be automatically published as valid HTTP routes, allowing the Controller to feel like an intuitive "virtual folder" with RESTful features.
 
-* An extensible template rendering abstraction engine, supports Slim, Markdown (using RedCarpet), ERB and SASS (mostly for embedded CSS) out of the box.
+* An extensible template rendering abstraction engine, supports Slim, Markdown (using RedCarpet) and ERB out of the box.
 
-* Raw Websocket connections (non of that fancy "subscribe" thingy).
+* Raw Websocket connections.
+
+    Non-RESTful public Controller methods will be automatically published as valid HTTP routes, allowing the Controller to feel like an intuitive "virtual folder" with RESTful features.
 
 * An (optional) Auto-Dispatch to map JSON websocket "events" to Controller functions (handlers).
 
 * Automatic (optional) scaling using Redis.
 
 Things Plezi **doesn't** do (anymore / ever):
+
+* No DSL. Plezi won't clutter the global namespace.
 
 * No application logic inside.
 

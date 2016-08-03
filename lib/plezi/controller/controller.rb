@@ -40,8 +40,10 @@ module Plezi
     #       render("users/layout") { render "users/index" }
     #
     def render(template, &block)
-      return ::Plezi::Renderer.render "#{File.join(::Plezi.templates, template.to_s)}.#{params['format'.freeze]}", binding, &block if params['format'.freeze]
-      ::Plezi::Renderer.render "#{File.join(::Plezi.templates, template.to_s)}.html", binding, &block
+      frmt = params['format'.freeze] || 'html'.freeze
+      mime = nil
+      response[Rack::CONTENT_TYPE] = mime unless response.content_type || (mime = Rack::Mime.mime_type(".#{frmt}".freeze, nil)).nil?
+      ::Plezi::Renderer.render "#{File.join(::Plezi.templates, template.to_s)}.#{frmt}", binding, &block
     end
 
     # A connection's Plezi ID uniquely identifies the connection across application instances, allowing it to receieve and send messages using {#unicast}.

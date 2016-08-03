@@ -1,5 +1,3 @@
-
-
 module Plezi
   protected
 
@@ -9,6 +7,7 @@ module Plezi
       at_exit do
         next if @plezi_autostart == false
         ::Iodine::Rack.app = ::Plezi.app
+        ::Iodine.threads ||= 16
         ::Iodine.start
       end
     end
