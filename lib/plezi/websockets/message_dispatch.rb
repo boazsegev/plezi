@@ -14,40 +14,71 @@ module Plezi
 
       def pid
         @uuid ||= SecureRandom.hex
+        @prefix_len = @uuid.length
       end
 
       def push(message)
-        message[:type] = message[:type].name if message[:type].is_a?(Class)
+        # message[:type] = message[:type].name if message[:type].is_a?(Class)
         message[:origin] = pid
         yml = message.to_yaml
-        @drivers.each { |d| d.push(yml, message[:host] || Plezi.app_name) }
+        @drivers.each { |d| d.push(message.delete(:host) || Plezi.app_name, yml) }
       end
 
       def <<(msg)
         @safe_types ||= [Symbol, Date, Time, Encoding, Struct, Regexp, Range, Set].freeze
-        YAML.safe_load(msg, @safe_types)
+        msg = YAML.safe_load(msg, @safe_types)
+        if msg[:target] ||= msg['target'.freeze]
+          Iodine::Websocket.defer(target2uuid(msg[:target])) { |ws| ws.__send__(ws.class._pl_ws_map[msg[:event]], *(msg[:args] ||= msg['args'.freeze] || [])) if ws.class._pl_ws_map[msg[:event] ||= msg['event'.freeze]] }
+        elsif (msg[:type] ||= msg['type'.freeze]) == :all
+          Iodine::Websocket.each { |ws| ws.__send__(ws.class._pl_ws_map[msg[:event]], *(msg[:args] ||= msg['args'.freeze] || [])) if ws.class._pl_ws_map[msg[:event] ||= msg['event'.freeze]] }
+        else
+          Iodine::Websocket.each { |ws| ws.__send__(ws.class._pl_ws_map[msg[:event]], *(msg[:args] ||= msg['args'.freeze] || [])) if ws.class.name == msg[:type] && ws.class._pl_ws_map[msg[:event] ||= msg['event'.freeze]] }
+        end
+
       rescue => e
-        puts 'The following could be a security breach attempt:', e.message, e.backtrace
+        puts '*** The following could be a security breach attempt:', e.message, e.backtrace
         nil
       end
 
-      def unicast(sender, target, data)
-        sender
-        target
-        data
+      def unicast(_sender, target, meth, args)
+        return false if target.nil?
+        if (tuuid = target2uuid)
+          Iodine::Websocket.defer(tuuid) { |ws| ws.__send__(ws.class._pl_ws_map[meth], *args) if ws.class._pl_ws_map[meth] }
+          return true
+        end
+        push target: target, args: args, host: target2pid(target)
       end
 
-      def broadcast(sender, data)
-        sender
-        data
+      def broadcast(sender, meth, args)
+        if sender.is_a?(Class)
+          Iodine::Websocket.each { |ws| ws.__send__(ws.class._pl_ws_map[meth], *args) if ws.class == sender && ws.class._pl_ws_map[meth] }
+          push type: sender.name, args: args, event: meth
+        else
+          sender.each { |ws| ws.__send__(ws.class._pl_ws_map[meth], *args) if ws.class == sender.class && ws.class._pl_ws_map[meth] }
+          push type: sender.class.name, args: args, event: meth
+        end
       end
 
-      def multicast(sender, data)
-        sender
-        data
+      def multicast(sender, meth, args)
+        if sender.is_a?(Class)
+          Iodine::Websocket.each { |ws| ws.__send__(ws.class._pl_ws_map[meth], *args) if ws.class._pl_ws_map[meth] }
+          push type: :all, args: args, event: meth
+        else
+          sender.each { |ws| ws.__send__(ws.class._pl_ws_map[meth], *args) if ws.class._pl_ws_map[meth] }
+          push type: :all, args: args, event: meth
+        end
+      end
+
+      def target2uuid(target)
+        return nil unless target.start_with? pid
+        target[@prefix_len..-1].to_i
+      end
+
+      def target2pid(target)
+        target ? target[0..(@prefix_len - 1)] : Plezi.app_name
       end
     end
   end
 end
 # connect default drivers
-require '/plezi/websockets/redis'
+require 'plezi/websockets/redis'

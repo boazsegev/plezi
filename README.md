@@ -1,8 +1,8 @@
 # Plezi - a real-time web application framework for Ruby
 
-Are microservices on your mind? Do you dream of easy websockets, RESTful AJAX or a small and consice web application that could fit in a few lines of code?
+Are microservices on your mind? Do you dream of a an SPA that's easy to scale? Did you wonder if you could write a whole Websockets, RESTful AJAX back-end with just a few lines of code (application logic not included)?
 
-Welcome to your new home with [plezi.io](http://www.plezi.io).
+Welcome to your new home with [plezi.io](http://www.plezi.io), the Ruby real-time framework that assumes the application's logic is *not* part of the web service.
 
 ## What does Plezi have to offer?
 
@@ -26,19 +26,25 @@ Plezi will provide the following features over plain Rack:
 
 Things Plezi **doesn't** do (anymore / ever):
 
-* No native session support. Rack has a lot of session support options. Pick one.
+* No application logic inside.
 
-* No asset pipeline.
+    Conneting your application logic to Plezi is easy, however, application logic should really be *independent*, **reusable** and secure. There are plenty of gems that support independent application logic authoring.
 
-  Assets can be emulated using a Controller, if you wish, but they should probably be baked and served as static files when possible.
+* No native session support. If you *must* have session support, Rack middleware gems provide a lot of options. Pick one... However...
 
-* No Ruby based static file service - static file serving should be left to the Server, not the application.
+    Session have been proved over and over to be insecure and resource draining.
 
-  Plezi's default server, Iodine, provides a poor-man's file server that is easy to set up.
+    Why use a session when you can save server resources and add security by using a persistent connection, i.e. a Websocket? If you really feel like storing unimportant stuff, why not use javascript's `local storage` on the *client's* machine? (if you need to save important stuff, you probably shouldn't be using sessions anyway).
+
+* No asset pipeline (Plezi does support templates, but not "assets").
+
+    Most of the HTML, CSS and JavaScript could be (and probably should be) rendered ahead of time. Assets are a classic example.
+
+    However, Assets can be emulated using a Controller, if you really wish to server them dynamically.
+
+    Besides, Plezi is oriented towards being a good back-end for your SPA (Single Page Application), not an HTML / CSS / JS renderinging machine.
 
 * No development mode. If you want to restart the application automatically whenever you update the code, there are probably plenty of gems that will take care of that.
-
-
 
 Do notice, Websockets require Iodine (the server), since (currently) it's the only Ruby server known to support native Websockets using a Websocket Callback Object.
 

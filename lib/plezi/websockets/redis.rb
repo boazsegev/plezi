@@ -36,10 +36,10 @@ module Plezi
           @redis || connected
         end
 
-        def push(message, to = nil)
+        def push(channel, message)
           return unless connected
-          return if to && away?(to)
-          redis.publish((to || Plezi.app_name), message)
+          return if away?(channel)
+          redis.publish(channel, message)
         end
 
         def get_redis

@@ -1,10 +1,12 @@
 require 'plezi/router/route'
+require 'plezi/router/errors'
 require 'rack'
 
 module Plezi
   module Base
     module Router
       @routes = []
+      @empty_hashes = {}
 
       module_function
 
@@ -13,12 +15,14 @@ module Plezi
         response = Rack::Response.new
         ret = nil
         @routes.each { |route| ret = route.call(request, response); break if ret }
-        return [404, {'Content-Length': "20"}, ["Error 404, not found"]] unless ret
+        ret ||= ::Plezi::Base::Err404Ctrl.new._pl_respond(request, response, @empty_hashes.clear)
         response.write(ret) if ret.is_a?(String)
         return response.finish
       rescue => e
         puts e.message, e.backtrace
-        return [500, {'Content-Length': "18"}, ["Internal Error 500"]]
+        response = Rack::Response.new
+        response.write ::Plezi::Base::Err500Ctrl.new._pl_respond(request, response, @empty_hashes.clear)
+        return response.finish
       end
 
       def route(path, controller)
