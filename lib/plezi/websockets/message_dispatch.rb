@@ -27,12 +27,14 @@ module Plezi
       def <<(msg)
         @safe_types ||= [Symbol, Date, Time, Encoding, Struct, Regexp, Range, Set].freeze
         msg = YAML.safe_load(msg, @safe_types)
+        msg[:type] ||= msg['type'.freeze]
+        msg[:type] = Object.const_get msg[:type] if msg[:type] && msg[:type] != :all
         if msg[:target] ||= msg['target'.freeze]
-          Iodine::Websocket.defer(target2uuid(msg[:target])) { |ws| ws.__send__(ws.class._pl_ws_map[msg[:event]], *(msg[:args] ||= msg['args'.freeze] || [])) if ws.class._pl_ws_map[msg[:event] ||= msg['event'.freeze]] }
-        elsif (msg[:type] ||= msg['type'.freeze]) == :all
-          Iodine::Websocket.each { |ws| ws.__send__(ws.class._pl_ws_map[msg[:event]], *(msg[:args] ||= msg['args'.freeze] || [])) if ws.class._pl_ws_map[msg[:event] ||= msg['event'.freeze]] }
+          Iodine::Websocket.defer(target2uuid(msg[:target])) { |ws| ws.__send__(ws._pl_ws_map[msg[:event]], *(msg[:args] ||= msg['args'.freeze] || [])) if ws._pl_ws_map[msg[:event] ||= msg['event'.freeze]] }
+        elsif (msg[:type]) == :all
+          Iodine::Websocket.each { |ws| ws.__send__(ws._pl_ws_map[msg[:event]], *(msg[:args] ||= msg['args'.freeze] || [])) if ws._pl_ws_map[msg[:event] ||= msg['event'.freeze]] }
         else
-          Iodine::Websocket.each { |ws| ws.__send__(ws.class._pl_ws_map[msg[:event]], *(msg[:args] ||= msg['args'.freeze] || [])) if ws.class.name == msg[:type] && ws.class._pl_ws_map[msg[:event] ||= msg['event'.freeze]] }
+          Iodine::Websocket.each { |ws| ws.__send__(ws._pl_ws_map[msg[:event]], *(msg[:args] ||= msg['args'.freeze] || [])) if ws.is_a?(msg[:type]) && msg[:type]._pl_ws_map[msg[:event] ||= msg['event'.freeze]] }
         end
 
       rescue => e
@@ -43,7 +45,7 @@ module Plezi
       def unicast(_sender, target, meth, args)
         return false if target.nil?
         if (tuuid = target2uuid)
-          Iodine::Websocket.defer(tuuid) { |ws| ws.__send__(ws.class._pl_ws_map[meth], *args) if ws.class._pl_ws_map[meth] }
+          Iodine::Websocket.defer(tuuid) { |ws| ws.__send__(ws._pl_ws_map[meth], *args) if ws._pl_ws_map[meth] }
           return true
         end
         push target: target, args: args, host: target2pid(target)
@@ -51,20 +53,20 @@ module Plezi
 
       def broadcast(sender, meth, args)
         if sender.is_a?(Class)
-          Iodine::Websocket.each { |ws| ws.__send__(ws.class._pl_ws_map[meth], *args) if ws.class == sender && ws.class._pl_ws_map[meth] }
+          Iodine::Websocket.each { |ws| ws.__send__(ws._pl_ws_map[meth], *args) if ws.is_a?(sender) && ws._pl_ws_map[meth] }
           push type: sender.name, args: args, event: meth
         else
-          sender.each { |ws| ws.__send__(ws.class._pl_ws_map[meth], *args) if ws.class == sender.class && ws.class._pl_ws_map[meth] }
+          sender.each { |ws| ws.__send__(ws._pl_ws_map[meth], *args) if ws.is_a?(sender.class) && ws._pl_ws_map[meth] }
           push type: sender.class.name, args: args, event: meth
         end
       end
 
       def multicast(sender, meth, args)
         if sender.is_a?(Class)
-          Iodine::Websocket.each { |ws| ws.__send__(ws.class._pl_ws_map[meth], *args) if ws.class._pl_ws_map[meth] }
+          Iodine::Websocket.each { |ws| ws.__send__(ws._pl_ws_map[meth], *args) if ws._pl_ws_map[meth] }
           push type: :all, args: args, event: meth
         else
-          sender.each { |ws| ws.__send__(ws.class._pl_ws_map[meth], *args) if ws.class._pl_ws_map[meth] }
+          sender.each { |ws| ws.__send__(ws._pl_ws_map[meth], *args) if ws._pl_ws_map[meth] }
           push type: :all, args: args, event: meth
         end
       end

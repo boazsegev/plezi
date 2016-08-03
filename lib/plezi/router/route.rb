@@ -91,7 +91,7 @@ module Plezi
       end
 
       def prep_controller
-        @controller.include Plezi::Base::Controller
+        @controller.include Plezi::Controller
       end
 
       def self.qp

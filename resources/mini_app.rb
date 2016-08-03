@@ -11,13 +11,11 @@ Root ||= Pathname.new(File.dirname(__FILE__)).expand_path
 require 'bundler'
 Bundler.require(:default, ENV['ENV'].to_s.to_sym)
 
-# # Optional code auto-loading and logging:
-
-# # Load all the code from a subfolder called 'app'
+# Load all the code from a subfolder called 'app'
 Dir[File.join '{app}', '**', '*.rb'].each { |file| load File.expand_path(file) }
 
-## Log to a file?
-# Iodine.logger = Logger.new Root.join('server.log').to_s
+## Logging
+Iodine::Rack.log = 1
 
 # # Optional Scaling (across processes or machines):
 ENV['PL_REDIS_URL'] ||= ENV['REDIS_URL'] ||

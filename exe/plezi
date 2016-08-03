@@ -62,7 +62,7 @@ module Builder
 
   def self.create_app(app_name = ARGV[1])
     require Root.join('lib', 'plezi', 'version')
-    app_tree[app_name.to_s] ||= IO.read(Root.join('resources', 'mini_exec.sh')).gsub('appname', app_name)
+    app_tree[app_name.to_s] ||= IO.read(Root.join('resources', 'mini_exec.rb')).gsub('appname', app_name)
     app_tree["#{app_name}.rb"] ||= IO.read(Root.join('resources', 'mini_app.rb')).gsub('appname', app_name).gsub('appsecret', "#{app_name}_#{SecureRandom.hex}")
     app_tree['routes.rb'] ||= IO.read(Root.join('resources', 'routes.rb')).gsub('appname', app_name)
     app_tree['config.ru'] ||= IO.read(Root.join('resources', 'config.ru')).gsub('appname', app_name)
