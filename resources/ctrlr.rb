@@ -26,6 +26,6 @@ class RootController
   protected
 
   def print(data)
-    response << data
+    write data
   end
 end
