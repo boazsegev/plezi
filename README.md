@@ -16,8 +16,6 @@ Plezi will provide the following features over plain Rack:
 
     Non-RESTful public Controller methods will be automatically published as valid HTTP routes, allowing the Controller to feel like an intuitive "virtual folder" with RESTful features.
 
-* An extensible template rendering abstraction engine, supports Slim, Markdown (using RedCarpet) and ERB out of the box.
-
 * Raw Websocket connections.
 
     Non-RESTful public Controller methods will be automatically published as valid HTTP routes, allowing the Controller to feel like an intuitive "virtual folder" with RESTful features.
@@ -25,6 +23,16 @@ Plezi will provide the following features over plain Rack:
 * An (optional) Auto-Dispatch to map JSON websocket "events" to Controller functions (handlers).
 
 * Automatic (optional) scaling using Redis.
+
+* An extensible template rendering abstraction engine, supports Slim, Markdown (using RedCarpet) and ERB out of the box.
+
+* Belated, extensible, asset baking (a fallback for when the application's assets weren't baked before deployment).
+
+    It's possible to define an asset route (this isn't the default) to bake assets on the fly.
+
+    In production mode, assets will be baked directly to the public folder supplied to Iodine (the web server) with a matching path. This allows the static file server to serve future requests.
+
+    However, during development, baking will save the files to the asset's folder, so that the Ruby layer will be the one serving the content and dynamic updates could be supported.
 
 Things Plezi **doesn't** do (anymore / ever):
 
@@ -40,15 +48,7 @@ Things Plezi **doesn't** do (anymore / ever):
 
     Why use a session when you can save server resources and add security by using a persistent connection, i.e. a Websocket? If you really feel like storing unimportant stuff, why not use javascript's `local storage` on the *client's* machine? (if you need to save important stuff, you probably shouldn't be using sessions anyway).
 
-* No asset pipeline (Plezi does support templates, but not "assets").
-
-    Most of the HTML, CSS and JavaScript could be (and probably should be) rendered ahead of time. Assets are a classic example.
-
-    However, Assets can be emulated using a Controller, if you really wish to server them dynamically.
-
-    Besides, Plezi is oriented towards being a good back-end for your SPA (Single Page Application), not an HTML / CSS / JS renderinging machine.
-
-* No development mode. If you want to restart the application automatically whenever you update the code, there are probably plenty of gems that will take care of that.
+* No code refresh / development mode. If you want to restart the application automatically whenever you update the code, there are probably plenty of gems that will take care of that.
 
 Do notice, Websockets require Iodine (the server), since (currently) it's the only Ruby server known to support native Websockets using a Websocket Callback Object.
 
@@ -70,7 +70,25 @@ Or install it yourself as:
 
 ## Usage
 
-TODO: Write usage instructions here
+A new application:
+
+     $  plezi new app_name
+
+A simple hello world from `irb`:
+
+```ruby
+require 'plezi'
+
+class HelloWorld
+  def index
+    "Hello World!"
+  end
+end
+
+Plezi.route '*', HelloWorld
+
+exit # <= if running from terminal, this will start the server
+```
 
 ## Development
 
