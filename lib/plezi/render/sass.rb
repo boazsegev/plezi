@@ -43,7 +43,7 @@ if defined?(::Sass)
           return true unless eng.nil? || refresh_sass?(filename)
           self[filename] = (eng = Sass::Engine.for_file(filename, SASS_OPTIONS)).dependencies
           map_name = "#{target}.map".freeze
-          css, map = eng.render_with_sourcemap(map_name)
+          css, map = eng.render_with_sourcemap(File.basename(map_name))
           self[filename.to_sym] = Time.now
           IO.write map_name, map.to_json(css_uri: File.basename(target))
           self[target] = css
