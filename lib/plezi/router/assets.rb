@@ -5,10 +5,10 @@ module Plezi
     class Assets
       if ENV['RACK_ENV'.freeze] == 'production'.freeze
         def index
-          name = File.join(Plezi.assets, *params['*'.freeze])
+          name = File.join(Plezi.assets, *params['*'.freeze]).freeze
           data = ::Plezi::AssetBaker.bake(name)
           return false unless data
-          name = File.join((Iodine::Rack.public || Plezi.assets), *params['*'.freeze])
+          name = File.join(Iodine::Rack.public, request.path_info[1..-1]).freeze if Iodine::Rack.public
           FileUtils.mkpath File.dirname(name)
           IO.binwrite(name, data)
           response['X-Sendfile'] = name
@@ -17,14 +17,15 @@ module Plezi
         end
       else
         def index
-          name = File.join(Plezi.assets, *params['*'.freeze])
+          name = File.join(Plezi.assets, *params['*'.freeze]).freeze
           data = ::Plezi::AssetBaker.bake(name)
-          return false unless data
-          name = File.join(Plezi.assets, *params['*'.freeze])
-          IO.binwrite(name, data)
-          response['X-Sendfile'] = name
-          response.body = File.open(name)
-          true
+          IO.binwrite(name, data) if data.is_a?(String)
+          if File.exist? name
+            response['X-Sendfile'] = name
+            response.body = File.open(name)
+            return true
+          end
+          false
         end
       end
 

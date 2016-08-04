@@ -40,19 +40,19 @@ if defined?(::Sass)
         def review_cache(filename, target)
           return nil unless File.exist?(filename)
           eng = self[filename]
-          return self[target] unless eng.nil? || refresh_sass?(filename)
+          return true unless eng.nil? || refresh_sass?(filename)
           self[filename] = (eng = Sass::Engine.for_file(filename, SASS_OPTIONS)).dependencies
           map_name = "#{target}.map".freeze
           css, map = eng.render_with_sourcemap(map_name)
           self[filename.to_sym] = Time.now
-          IO.write map_name, map.to_json(css_uri: File.basename(filename, '.*'.freeze))
+          IO.write map_name, map.to_json(css_uri: File.basename(target))
           self[target] = css
         end
 
         def refresh_sass?(sass)
           mt = self[sass.to_sym]
           return true if mt < File.mtime(sass)
-          self[sass].each { |e| return true.tap { puts "returning true for #{e.options[:filename]}" } if File.exist?(e.options[:filename]) && (File.mtime(e.options[:filename]) > mt) }
+          self[sass].each { |e| return true if File.exist?(e.options[:filename]) && (File.mtime(e.options[:filename]) > mt) }
           false
         end
       end
