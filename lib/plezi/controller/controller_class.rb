@@ -24,7 +24,7 @@ module Plezi
 
       # @private
       # This is used internally by Plezi, do not use.
-      REST_METHODS = [:delete, :create, :update, :show, :pre_connect].freeze
+      RESERVED_METHODS = [:delete, :create, :update, :show, :pre_connect, :on_open, :on_close, :on_shutdown, :on_message].freeze
       # @private
       # This function is used internally by Plezi, do not call.
       def _pl_get_map
@@ -34,7 +34,7 @@ module Plezi
         mths = public_instance_methods false
         mths.delete_if { |m| m.to_s[0] == '_' || !(-1..0).cover?(instance_method(m).arity) }
         @_pl_get_map[nil] = :index if mths.include?(:index)
-        REST_METHODS.each { |m| mths.delete m }
+        RESERVED_METHODS.each { |m| mths.delete m }
         mths.each { |m| @_pl_get_map[m.to_s.freeze] = m }
 
         @_pl_get_map
@@ -79,7 +79,7 @@ module Plezi
         mths = instance_methods false
         mths.delete :new
         mths.delete :index
-        REST_METHODS.each { |m| mths.delete m }
+        RESERVED_METHODS.each { |m| mths.delete m }
         mths.each { |m| @_pl_ws_map[m.to_s.freeze] = m; @_pl_ws_map[m] = m }
 
         @_pl_ws_map
@@ -93,7 +93,9 @@ module Plezi
         @_pl_ad_map = {}
         mths = public_instance_methods false
         mths.delete_if { |m| m.to_s[0] == '_' || ![-2, -1, 1].freeze.include?(instance_method(m).arity) }
-        REST_METHODS.each { |m| mths.delete m }
+        mths.delete :new
+        mths.delete :index
+        RESERVED_METHODS.each { |m| mths.delete m }
         mths.each { |m| @_pl_ad_map[m.to_s.freeze] = m; @_pl_ad_map[m] = m }
 
         @_pl_ad_map

@@ -1,4 +1,5 @@
 require 'plezi/activation'
+require 'plezi/helpers'
 require 'plezi/router/router'
 
 module Plezi
@@ -48,12 +49,5 @@ module Plezi
   # False positives (invalid URL strings) are possible (i.e., when requesting a URL of a method that doesn't exist).
   def url_for(controller, method_sym, params = {})
     Plezi::Base::Router.url_for controller, method_sym, params
-  end
-
-  # attempts to convert a string's encoding to UTF-8, but only when the string is a valid UTF-8 encoded string.
-  def try_utf8!(string, encoding = ::Encoding::UTF_8)
-    return nil unless string
-    string.force_encoding(::Encoding::ASCII_8BIT) unless string.force_encoding(encoding).valid_encoding?
-    string
   end
 end

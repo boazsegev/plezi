@@ -25,6 +25,9 @@ class RootController
 
   protected
 
+  # write is inherites when a Websocket connection is opened.
+  #
+  # Inherited functions aren't exposed (for our security), so we need to wrap it.
   def print(data)
     write data
   end
