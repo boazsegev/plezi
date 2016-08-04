@@ -104,20 +104,23 @@ module Plezi
       # @private
       # This function is used internally by Plezi, do not call.
       def _pl_params2method(params, env)
+        par_id = params['id'.freeze]
+        meth_id = _pl_get_map[par_id]
+        return meth_id if par_id && meth_id
         # puts "matching against #{params}"
         case params['_method'.freeze]
         when :get # since this is common, it's pushed upwards.
-          return :preform_upgrade if env['HTTP_UPGRADE'] && _pl_is_websocket? && env['HTTP_UPGRADE'].downcase.start_with?('websocket'.freeze)
-          return (_pl_get_map[params['id'.freeze]] || (_pl_has_show && :show) || nil)
+          return :preform_upgrade if env['HTTP_UPGRADE'.freeze] && _pl_is_websocket? && env['HTTP_UPGRADE'.freeze].downcase.start_with?('websocket'.freeze)
+          return meth_id || (_pl_has_show && :show) || nil
         when :put, :patch
-          return :create if _pl_has_create && (params['id'.freeze].nil? || params['id'.freeze] == 'new')
+          return :create if _pl_has_create && (par_id.nil? || par_id == 'new'.freeze)
           return :update if _pl_has_update
         when :post
           return :create if _pl_has_create
         when :delete
           return :delete if _pl_has_delete
         end
-        (_pl_get_map[params['id'.freeze]] || (_pl_has_show && :show) || nil)
+        meth_id || (_pl_has_show && :show) || nil
       end
 
       # @private
