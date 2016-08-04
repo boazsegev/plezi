@@ -1,22 +1,12 @@
 require 'plezi/router/route'
 require 'plezi/router/errors'
+require 'plezi/router/assets'
+require 'plezi/router/adclient'
 require 'rack'
 
 module Plezi
   module Base
     module Router
-      class ADClient
-        def index
-          fname = File.expand_path(File.join(File.dirname(__FILE__), '..', '..', '..', 'resources', 'client.js'))
-          response.body = File.open(fname)
-          response['X-Sendfile'] = fname
-          true
-        end
-
-        def show
-          index
-        end
-      end
       @routes = []
       @empty_hashes = {}
 
@@ -38,7 +28,12 @@ module Plezi
       end
 
       def route(path, controller)
-        controller = ADClient if controller == :client
+        case controller
+        when :client
+          controller = ::Plezi::Base::Router::ADClient
+        when :assets
+          controller = ::Plezi::Base::Assets
+        end
         @routes << Route.new(path, controller)
       end
 

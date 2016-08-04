@@ -1,14 +1,19 @@
-require 'plezi/autostart'
+require 'plezi/activation'
 require 'plezi/router/router'
 
 module Plezi
   class << self
     # Get / set the template folder for the {Controller#render} function.
     attr_accessor :templates
+    # Get / set the assets folder for the `:assets` route (the root for `Plezi.route '/assets/path'`, :assets).
+    attr_accessor :assets
     # Get / set the application name, which is also used to identify the global pub/sub channel.
     attr_accessor :app_name
   end
   @app_name = "#{File.basename($PROGRAM_NAME, '.*')}_app"
+  @templates = File.expand_path(File.join(File.dirname($PROGRAM_NAME), 'views'.freeze))
+  @assets = File.expand_path(File.join(File.dirname($PROGRAM_NAME), 'assets'.freeze))
+  @plezi_autostart = nil
 
   module_function
 
@@ -24,9 +29,18 @@ module Plezi
     Plezi::Base::Router.method :call
   end
 
-  # Will add a route to the Plezi application
+  # Will add a route to the Plezi application.
+  #
+  # path:: the HTTP path for the route. Inline parameters and optional parameters are supported. i.e.
+  #
+  #                Plezi.route '/fixed/path', controller
+  #                Plezi.route '/fixed/path/:required_param/(:optional_param)', controller
+  #                Plezi.route '*', controller # catch all
+  #
+  #
+  # controller:: A Controller class or one of the included controllers: `false` for rewrite routes; `:client` for the Javascript Auto Dispatch client; `:assets` for a missing asset baker controller (bakes any unbaked assets into the public folder file).
   def route(path, controller)
-    set_autostart
+    plezi_initialize
     Plezi::Base::Router.route path, controller
   end
 

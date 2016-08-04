@@ -1,7 +1,13 @@
 # Redcarpet might not be available, if so, allow the require to throw it's exception.
-begin
-  require 'redcarpet'
+unless defined?(::Redcarpet::Markdown)
+  begin
+    require('redcarpet')
+  rescue Exception
 
+  end
+end
+
+if defined?(Redcarpet::Markdown)
   module Plezi
     module Base
       module RenderMarkDown
@@ -30,7 +36,7 @@ begin
         end
         if ENV['RACK_ENV'.freeze] == 'production'.freeze
           def load_engine(filename)
-            engine, tm = ::Plezi::Renderer.get_cached(filename)
+            engine, _tm = ::Plezi::Renderer.get_cached(filename)
             return engine if engine
             data = IO.read filename
             ::Plezi::Renderer.cache_engine(filename, "<div class='toc'>#{::Plezi::Base::RenderMarkDown::MD_RENDERER_TOC.render(data)}</div>\n#{::Plezi::Base::RenderMarkDown::MD_RENDERER.render(data)}", File.mtime(filename))
@@ -42,12 +48,10 @@ begin
             data = IO.read filename
             ::Plezi::Renderer.cache_engine(filename, "<div class='toc'>#{::Plezi::Base::RenderMarkDown::MD_RENDERER_TOC.render(data)}</div>\n#{::Plezi::Base::RenderMarkDown::MD_RENDERER.render(data)}", File.mtime(filename))
           end
+        end
       end
-    end
     end
   end
 
   ::Plezi::Renderer.register :md, ::Plezi::Base::RenderMarkDown
-rescue Exception
-
 end

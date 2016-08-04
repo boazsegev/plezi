@@ -52,6 +52,14 @@ class RouteTest < Minitest::Test
     assert (params == { 'id' => '1', 'go' => { 'home' => 'Boston', 'left' => 'hand' } }), params.to_s
   end
 
+  def test_it_maps_reminder
+    Plezi.no_autostart
+    route = Plezi.route('/here/*', Stub).last
+    assert(route.match('/here/Boston/hand/1'), 'route\'s * tail refused')
+    params = Thread.current["Route#{route.object_id.to_s(16)}".to_sym]
+    assert((params && params['*'.freeze] && params['*'.freeze].join('/') == 'Boston/hand/1'), "params == #{params.inspect}")
+  end
+
   def test_it_maps_to_rest
     Plezi.no_autostart
     response = Rack::Response.new

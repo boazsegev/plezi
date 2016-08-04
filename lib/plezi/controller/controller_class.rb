@@ -128,7 +128,7 @@ module Plezi
         @_pl_has_create = public_instance_methods(false).include?(:create)
         @_pl_has_update = public_instance_methods(false).include?(:update)
         @_pl_has_delete = public_instance_methods(false).include?(:delete)
-        @_pl_is_websocket = @auto_dispatch || instance_methods(false).include?(:on_message)
+        @_pl_is_websocket = (instance_variable_defined?(:@auto_dispatch) && instance_variable_get(:@auto_dispatch)) || instance_methods(false).include?(:on_message)
         _pl_get_map
         _pl_ad_map
         _pl_ws_map

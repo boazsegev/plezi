@@ -79,4 +79,3 @@ end
 require 'plezi/render/slim.rb'
 require 'plezi/render/markdown.rb'
 require 'plezi/render/erb.rb'
-# require 'plezi/render/sass.rb'

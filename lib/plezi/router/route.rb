@@ -24,19 +24,26 @@ module Plezi
         @origial = path.dup.freeze
         path2regex(m[2])
         self.class.qp
-        prep_controller if controller
+        case @controller
+        when Class
+          prep_controller
+        when RegExp
+          raise "Rewrite Routes can't contain more then one parameter to collect" if @param_names.length > 1
+        end
       end
 
       def call(request, response)
         return nil unless match(request.path_info, request)
-        if @controller
+        case @controller
+        when Class
           c = @controller.new
           return c._pl_respond(request, response, Thread.current[@route_id])
+        when RegExp
+          params = Thread.current[@route_id]
+          return nil unless controller =~ params[@param_names[0]]
+          request.path_info = "/#{params.delete('*'.freeze).to_a.join '/'}"
+          request.params.update params
         end
-
-        request.params.update Thread.current[@route_id]
-        request.path_info = request.path_info[@prefix_length..-1]
-        request.path_info = '/'.freeze if request.path_info.nil? || request.path_info == ''.freeze
         nil
       end
 
@@ -52,6 +59,7 @@ module Plezi
           self.class.qp.normalize_params(params, Plezi.try_utf8!(Rack::Utils.unescape(key)),
                                          Plezi.try_utf8!(Rack::Utils.unescape(pa.shift)), 100)
         end
+        params['*'.freeze] = pa unless pa.empty?
         true
       end
 
@@ -66,7 +74,7 @@ module Plezi
         optional = false
         while pfa.any?
           name = pfa.shift
-          raise "#{name} is not a valid path section in #{@origial}" if /^(\:[\w]+)|(\(\:[\w\.\[\]]+\))$/.match(name).nil?
+          raise "#{name} is not a valid path section in #{@origial}" if /^((\:[\w\.\[\]]+)|(\(\:[\w\.\[\]]+\))|(\*))$/.match(name).nil?
           if name[0] == ':'
             raise "Cannot have a required parameter after an optional parameter in #{@origial}" if optional
             @param_names << name[1..-1].freeze

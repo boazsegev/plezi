@@ -1,7 +1,32 @@
 #!/usr/bin/env ruby
+require 'benchmark'
 Dir.chdir(File.expand_path(File.join('..', '..', 'lib'), __FILE__))
 require 'bundler/setup'
 require 'plezi'
+
+module A
+  @a = nil
+  def review1
+    @a = @a if @a
+  end
+
+  def review2
+    case @a
+    when Proc
+      return
+    when Class
+      @a = @a if @a
+    when String
+      @a = @a if @a
+    end
+  end
+  extend self
+end
+
+Benchmark.bm do |b|
+  b.report('simple if') { 1_000_000.times { A.review1 } }
+  b.report('class case') { 1_000_000.times { A.review2 } }
+end
 
 class HWController
   def index
@@ -24,6 +49,7 @@ end
 Plezi.route '/hello', HWController
 Plezi.route '/', HWController
 
+puts $PROGRAM_NAME
 # ab -n 100000 -c 200 -k http://127.0.0.1:3000/
 # ab -n 100000 -c 4000 -k http://127.0.0.1:3000/
 # ab -n 1000000 -c 20000 -k http://127.0.0.1:3000/

@@ -125,7 +125,7 @@ module Plezi
       json = nil
       begin
         json = JSON.parse(data, symbolize_names: true)
-      rescue => e
+      rescue
         puts 'AutoDispatch Warnnig: Received non-JSON message. Closing Connection.'
         close
         return
