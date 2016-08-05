@@ -62,12 +62,11 @@ module Builder
 
   def self.create_app(app_name = ARGV[1])
     require Root.join('lib', 'plezi', 'version')
-    app_tree[app_name.to_s] ||= IO.read(Root.join('resources', 'mini_exec.rb')).gsub('appname', app_name)
+    app_tree[app_name.to_s] ||= IO.read(Root.join('resources', 'mini_exec')).gsub('appname', app_name)
     app_tree["#{app_name}.rb"] ||= IO.read(Root.join('resources', 'mini_app.rb')).gsub('appname', app_name).gsub('appsecret', "#{app_name}_#{SecureRandom.hex}")
     app_tree['routes.rb'] ||= IO.read(Root.join('resources', 'routes.rb')).gsub('appname', app_name)
     app_tree['config.ru'] ||= IO.read(Root.join('resources', 'config.ru')).gsub('appname', app_name)
     app_tree['Procfile'] ||=  IO.read(Root.join('resources', 'procfile')).gsub('appname', app_name)
-    app_tree['Procfile'] << "\nweb: bundle exec iodine -p $PORT -t 16 -w 1 -www ./public\n"
     app_tree['Gemfile'] ||= ''
     app_tree['Gemfile'] << "source 'https://rubygems.org'\n\n# include the basic plezi framework and server\ngem 'plezi', '~> #{Plezi::VERSION}'\n"
     app_tree['Gemfile'] << IO.read(Root.join('resources', 'gemfile'))
