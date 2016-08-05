@@ -47,7 +47,7 @@ module Plezi
       def url_for(controller, method_sym, params = {})
         # GET,PUT,POST,DELETE
         r = nil
-        prefix = '/'.dup
+        url = '/'.dup
         @routes.each do |tmp|
           case tmp.controller
           when Class
@@ -55,7 +55,10 @@ module Plezi
             r = tmp
             break
           when Regexp
-            prefix << "#{params.delete tmp.param_names[0]}/" if params[tmp.param_names[0]]
+            nm = nil
+            nm = tmp.param_names[0] if params[tmp.param_names[0]]
+            nm ||= tmp.param_names[0].to_sym
+            url << "#{params.delete nm}/" if params[nm] && params[nm].to_s =~ tmp.controller
           else
             next
           end
@@ -63,32 +66,44 @@ module Plezi
         return nil if r.nil?
         case method_sym.to_sym
         when :new
-          params['id'.freeze] = :new
+          params.delete :id
+          params.delete :_method
           params.delete '_method'.freeze
+          params['id'.freeze] = :new
         when :create
           params['id'.freeze] = :new
+          params.delete :id
           params['_method'.freeze] = :post
+          params.delete :_method
         when :update
+          params.delete :_method
           params['_method'.freeze] = :put
         when :delete
+          params.delete :_method
           params['_method'.freeze] = :delete
         when :index
           params.delete 'id'.freeze
           params.delete '_method'.freeze
+          params.delete :id
+          params.delete :_method
         when :show
           raise "The URL for ':show' MUST contain a valid 'id' parameter for the object's index to display." unless params['id'.freeze].nil? && params[:id].nil?
-          params['_method'.freeze] = :get
+          params.delete '_method'.freeze
+          params.delete :_method
         else
+          params.delete :id
           params['id'.freeze] = method_sym
         end
         names = r.param_names
-        tmp = r.prefix.dup
-        tmp.clear if tmp == '/'.freeze
+        url.chomp! '/'.freeze
+        url << r.prefix
+        url.clear if url == '/'.freeze
         while names.any? && params[name[0]]
-          tmp << "/#{Rack::Utils.escape params[names.shift]}"
+          url << "/#{Rack::Utils.escape params[names.shift]}"
         end
-        tmp = '/'.freeze if tmp.empty?
-        tmp + Rack::Utils.build_nested_query(params)
+        url = '/'.dup if url.empty?
+        (url << '?') << Rack::Utils.build_nested_query(params) if params.any?
+        url
       end
     end
   end

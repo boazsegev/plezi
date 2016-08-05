@@ -4,12 +4,21 @@ require 'plezi/controller/controller_class'
 require 'plezi/websockets/message_dispatch'
 
 module Plezi
+  # This module contains the functionality provided to any Controller class.
+  #
+  # This module will be included within every Class that is asigned to a route, providing the functionality without forcing an inheritance model.
   module Controller
     def self.included(base)
       base.extend ::Plezi::Controller::ClassMethods
     end
 
-    attr_reader :request, :response, :params, :cookies
+    # A {Rack::Request} object for the current request.
+    attr_reader :request
+    # A {Rack::Response} object used for the response.
+    attr_reader :response
+    # A union between the `request.params` and the route's inline parameters. This is different then `request.params`
+    attr_reader :params
+    attr_reader :cookies
 
     # @private
     # This function is used internally by Plezi, do not call.
@@ -24,7 +33,11 @@ module Plezi
       false
     end
 
-    # Returns the method that was called by the HTTP request. For Websocket connections this method is most likely to return :preform_upgrade
+    # Returns the method that was called by the HTTP request.
+    #
+    # It's possible to override this method to change the default Controller behavior.
+    #
+    # For Websocket connections this method is most likely to return :preform_upgrade
     def requested_method
       params['_method'.freeze] = (params['_method'.freeze] || request.request_method.downcase).to_sym
       self.class._pl_params2method(params, request.env)
@@ -78,7 +91,7 @@ module Plezi
       response.write filename, options
     end
 
-    # a shortcut for `response.redirect`.
+    # A shortcut for Rack's `response.redirect`.
     def redirect_to(target, status = 302)
       response.redirect target, status
       true
