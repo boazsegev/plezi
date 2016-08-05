@@ -25,7 +25,7 @@ if defined?(Redcarpet::Markdown)
         MD_RENDERER = Redcarpet::Markdown.new NewPageLinksMDRenderer.new(MD_EXTENSIONS.dup), MD_EXTENSIONS.dup
 
         # create a single gloabl renderer for all markdown TOC.
-        MD_RENDERER_TOC = Redcarpet::Markdown.new Redcarpet::Render::HTML_TOC.new
+        MD_RENDERER_TOC = Redcarpet::Markdown.new Redcarpet::Render::HTML_TOC.new(MD_EXTENSIONS.dup), MD_EXTENSIONS.dup
 
         module_function
 
