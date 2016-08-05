@@ -2,7 +2,7 @@ require 'securerandom'
 module Plezi
   module Base
     module MessageDispatch
-      module Redis
+      module RedisDriver
         @redis_locker ||= Mutex.new
         @redis = @redis_sub_thread = nil
 
@@ -10,20 +10,21 @@ module Plezi
 
         def connect
           return false unless ENV['PL_REDIS_URL'] && defined?(::Redis)
+          return @redis if (@redis_sub_thread && @redis_sub_thread.alive?) && @redis
           @redis_locker.synchronize do
-            return @redis if (@redis_sub_thread && @redis_sub_thread.alive?) && @redis # repeat the test once syncing is done.
+            return @redis if (@redis_sub_thread && @redis_sub_thread.alive?) && @redis # repeat the test inside syncing, things change.
             @redis.quit if @redis
             @redis = ::Redis.new(url: ENV['PL_REDIS_URL'])
             raise "Redis connction failed for: #{ENV['PL_REDIS_URL']}" unless @redis
             @redis_sub_thread = Thread.new do
               begin
-                ::Redis.new(url: ENV['PL_REDIS_URL']).subscribe(::Plezi.app_name, ::Plezi::Base::MessageDispatch.uuid) do |on|
+                ::Redis.new(url: ENV['PL_REDIS_URL']).subscribe(::Plezi.app_name, ::Plezi::Base::MessageDispatch.pid) do |on|
                   on.message do |_channel, msg|
                     ::Plezi::Base::MessageDispatch << msg
                   end
                 end
               rescue => e
-                Iodine.error e
+                puts e.message, e.backtrace
                 retry
               end
             end
@@ -38,14 +39,8 @@ module Plezi
 
         def push(channel, message)
           return unless connect
-          return puts("channel is away #{channel}") if away?(channel)
-          puts "pushinh #{message}"
+          return if away?(channel)
           redis.publish(channel, message)
-        end
-
-        def get_redis
-          return @redis if (@redis_sub_thread && @redis_sub_thread.alive?) && @redis
-          inner_init_redis
         end
 
         def away?(server)
@@ -57,4 +52,4 @@ module Plezi
   end
 end
 
-::Plezi::Base::MessageDispatch.drivers << ::Plezi::Base::MessageDispatch::Redis
+::Plezi::Base::MessageDispatch.drivers << ::Plezi::Base::MessageDispatch::RedisDriver

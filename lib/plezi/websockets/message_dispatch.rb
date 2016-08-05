@@ -13,8 +13,7 @@ module Plezi
       module_function
 
       def pid
-        @uuid ||= SecureRandom.hex
-        @prefix_len = @uuid.length
+        @uuid ||= SecureRandom.hex.tap { |str| @prefix_len = str.length }
       end
 
       def _init
@@ -32,6 +31,7 @@ module Plezi
       def <<(msg)
         @safe_types ||= [Symbol, Date, Time, Encoding, Struct, Regexp, Range, Set].freeze
         msg = YAML.safe_load(msg, @safe_types)
+        return if msg[:origin] == pid
         msg[:type] ||= msg['type'.freeze]
         msg[:type] = Object.const_get msg[:type] if msg[:type] && msg[:type] != :all
         if msg[:target] ||= msg['target'.freeze]
