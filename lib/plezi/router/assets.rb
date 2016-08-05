@@ -9,8 +9,10 @@ module Plezi
           data = ::Plezi::AssetBaker.bake(name)
           return false unless data
           name = File.join(Iodine::Rack.public, request.path_info[1..-1]).freeze if Iodine::Rack.public
-          FileUtils.mkpath File.dirname(name)
-          IO.binwrite(name, data)
+          if data.is_a?(String)
+            FileUtils.mkpath File.dirname(name)
+            IO.binwrite(name, data)
+          end
           response['X-Sendfile'] = name
           response.body = File.open(name)
           true

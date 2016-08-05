@@ -33,6 +33,7 @@ module Plezi
           controller = ::Plezi::Base::Router::ADClient
         when :assets
           controller = ::Plezi::Base::Assets
+          path << '/*'.freeze unless path[-1] == '*'.freeze
         end
         @routes << Route.new(path, controller)
       end
