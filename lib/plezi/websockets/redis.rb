@@ -8,7 +8,7 @@ module Plezi
 
         module_function
 
-        def connected
+        def connect
           return false unless ENV['PL_REDIS_URL'] && defined?(::Redis)
           @redis_locker.synchronize do
             return @redis if (@redis_sub_thread && @redis_sub_thread.alive?) && @redis # repeat the test once syncing is done.
@@ -33,12 +33,13 @@ module Plezi
 
         # Get the current redis connection.
         def redis
-          @redis || connected
+          @redis || connect
         end
 
         def push(channel, message)
-          return unless connected
-          return if away?(channel)
+          return unless connect
+          return puts("channel is away #{channel}") if away?(channel)
+          puts "pushinh #{message}"
           redis.publish(channel, message)
         end
 
@@ -48,7 +49,7 @@ module Plezi
         end
 
         def away?(server)
-          return true unless connected
+          return true unless connect
           @redis.pubsub('CHANNELS', server).empty?
         end
       end

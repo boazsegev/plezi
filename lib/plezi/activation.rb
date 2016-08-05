@@ -1,3 +1,5 @@
+require 'plezi/websockets/message_dispatch' unless defined?(::Plezi::Base::MessageDispatch)
+
 module Plezi
   protected
 
@@ -13,6 +15,7 @@ module Plezi
     if @plezi_initialize.nil?
       @plezi_initialize = true
       @plezi_autostart = true if @plezi_autostart.nil?
+      ::Plezi::Base::MessageDispatch._init
       at_exit do
         next if @plezi_autostart == false
         ::Iodine::Rack.app = ::Plezi.app

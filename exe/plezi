@@ -81,7 +81,7 @@ module Builder
     app_tree['views']['welcome.html.erb'] ||= IO.read(Root.join('resources', 'mini_welcome_page.html')).gsub('appname', app_name)
     app_tree['public'] ||= {}
     app_tree['public']['javascripts'] ||= {}
-    app_tree['public']['javascripts']['websocket.js'] ||= IO.read(Root.join('resources', 'websockets.js')).gsub('appname', app_name)
+    app_tree['public']['javascripts']['simple-client.js'] ||= IO.read(Root.join('resources', 'simple-client.js')).gsub('appname', app_name)
     app_tree['public']['javascripts']['client.js'] ||= IO.read(Root.join('resources', 'client.js')).gsub('appname', app_name)
 
     begin

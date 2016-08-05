@@ -17,11 +17,16 @@ module Plezi
         @prefix_len = @uuid.length
       end
 
+      def _init
+        @drivers.each(&:connect)
+      end
+
       def push(message)
         # message[:type] = message[:type].name if message[:type].is_a?(Class)
         message[:origin] = pid
+        hst = message.delete(:host) || Plezi.app_name
         yml = message.to_yaml
-        @drivers.each { |d| d.push(message.delete(:host) || Plezi.app_name, yml) }
+        @drivers.each { |d| d.push(hst, yml) }
       end
 
       def <<(msg)
