@@ -4,6 +4,8 @@ Are microservices on your mind? Do you dream of a an SPA that's easy to scale? D
 
 Welcome to your new home with [plezi.io](http://www.plezi.io), the Ruby real-time framework that assumes the application's logic is *not* part of the web service.
 
+**NOTICE**: Plezi 0.14.0 (this branch) is NOT an update, it's a total rewrite. Features were _removed_ as well as altered. For example, Plezi is now a Rack framework, with the limitations of CGI design and the advantages of using existing middleware. API changes abound.
+
 ## What does Plezi have to offer?
 
 Plezi is a Rack based framework with support for native (server side implemented) Websocket.
