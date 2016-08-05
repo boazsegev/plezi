@@ -1,7 +1,10 @@
 require "bundler/gem_tasks"
+require "rake/testtask"
 
-# create a default task
-desc "Tests most of the basic features for the Plezi framework."
-task :test do
-	load "./test/plezi_tests.rb"
+Rake::TestTask.new(:test) do |t|
+  t.libs << "test"
+  t.libs << "lib"
+  t.test_files = FileList['test/**/*_test.rb']
 end
+
+task :default => :test

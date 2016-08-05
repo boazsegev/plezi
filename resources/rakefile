@@ -1,11 +1,7 @@
 # load all application code and gems
-load ::File.expand_path(File.join("..", "initialize.rb"),  __FILE__)
+require 'bundler'
+Bundler.require(:default, ENV['ENV'].to_s.to_sym)
 # set Plezi to rake mode and load it's tasks (if relevant).
-require "plezi/rake"
+Plezi.no_autostart
 
-# create a default task
-desc "The default task will simply remind you to call 'rake -T'."
-task :default do
-  puts "I don't know what to do. Please choose a task..."
-  puts "You can print a list of all avaiulable tasks using: rake -T"
-end
+# Add your tasks

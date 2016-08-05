@@ -1,0 +1,39 @@
+#!/usr/bin/env ruby
+require 'benchmark'
+Dir.chdir(File.expand_path(File.join('..', '..', 'lib'), __FILE__))
+require 'bundler/setup'
+require 'plezi'
+
+# finish with `exit` if running within `irb`
+class ChatServer
+  def index
+    render :client
+  end
+
+  def on_open
+    return close unless params['id']
+    @name = params['id']
+    broadcast :print,
+              "#{@name} joind the chat."
+    print "Welcome, #{@name}!"
+  end
+
+  def on_close
+    broadcast :print,
+              "#{@name} left the chat."
+  end
+
+  def on_message(data)
+    self.class.broadcast :print,
+                         "#{@name}: #{data}"
+  end
+
+  protected
+
+  def print(data)
+    write ::ERB::Util.html_escape(data)
+  end
+end
+path_to_client = File.expand_path(File.dirname(__FILE__))
+Plezi.templates = path_to_client
+Plezi.route '/', ChatServer

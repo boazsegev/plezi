@@ -1,0 +1,7 @@
+#!/usr/bin/env bash
+# encoding: UTF-8
+
+# set the working directory
+cd "$(dirname "$0")"
+# load the website-app
+bundle exec iodine -t 16 -w 1 -www ./public

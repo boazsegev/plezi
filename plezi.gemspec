@@ -4,25 +4,34 @@ $LOAD_PATH.unshift(lib) unless $LOAD_PATH.include?(lib)
 require 'plezi/version'
 
 Gem::Specification.new do |spec|
-  spec.name          = "plezi"
+  spec.name          = 'plezi'
   spec.version       = Plezi::VERSION
-  spec.authors       = ["Boaz Segev"]
-  spec.email         = ['boaz@2be.co.il']
-  spec.summary       = %q{Plezi - the easy way to add Websockets, RESTful routing and HTTP streaming services to Ruby Web-Apps.}
-  spec.description   = %q{Plezi - the easy way to add Websockets, RESTful routing and HTTP streaming services to Ruby Web-Apps.}
-  spec.homepage      = "http://www.plezi.io/"
-  spec.license       = "MIT"
+  spec.authors       = ['Boaz Segev']
+  spec.email         = ['Boaz@2be.co.il']
 
-  spec.files         = `git ls-files -z`.split("\x0")
-  spec.executables   = spec.files.grep(%r{^bin/}) { |f| File.basename(f) }
-  spec.test_files    = spec.files.grep(%r{^(test|spec|features)/})
-  spec.require_paths = ["lib"]
+  spec.summary       = 'The Plezi.io Ruby Framework for real time web applications.'
+  spec.description   = 'The Plezi.io Ruby Framework for real time web applications.'
+  spec.homepage      = 'http://plezi.io'
+  spec.license       = 'MIT'
 
-  spec.add_dependency "iodine", "~> 0.1.20"
-  spec.add_development_dependency "bundler", "~> 1.7"
-  spec.add_development_dependency "rake", "~> 10.0"
+  # Prevent pushing this gem to RubyGems.org. To allow pushes either set the 'allowed_push_host'
+  # to allow pushing to a single host or delete this section to allow pushing to any host.
+  if spec.respond_to?(:metadata)
+    spec.metadata['allowed_push_host'] = "TODO: Set to 'http://mygemserver.com'"
+  else
+    raise 'RubyGems 2.0 or newer is required to protect against public gem pushes.'
+  end
 
-  spec.post_install_message = "Thank you for installing Plezi, the native Ruby Framework for real time web-apps."
-  # spec.post_install_message = "** Deprecation Warning:\n\nThank you for installing Plezi, the native Ruby Framework for real time web-apps."
+  spec.files         = `git ls-files -z`.split("\x0").reject { |f| f.match(%r{^(test|spec|features)/}) }
+  spec.bindir        = 'exe'
+  spec.executables   = spec.files.grep(%r{^exe/}) { |f| File.basename(f) }
+  spec.require_paths = ['lib']
 
+  spec.add_dependency 'iodine', '~> 0.2.0'
+  # spec.add_dependency 'redcarpet', '> 3.3.0'
+  # spec.add_dependency 'slim', '> 3.0.0'
+
+  spec.add_development_dependency 'bundler', '~> 1.12'
+  spec.add_development_dependency 'rake', '~> 10.0'
+  spec.add_development_dependency 'minitest', '~> 5.0'
 end

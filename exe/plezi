@@ -1,0 +1,143 @@
+#!/usr/bin/env ruby
+$0 = 'Plezi Builder'
+# count lines of code with: ^[ \t]*[\w\d\"\(\{\@\[\]\}\)\:\'\.\*\&]+.*$
+require 'pathname'
+require 'securerandom'
+######################################################################
+# tweek the string class for termial coloring options
+class String
+  # colorization
+  def colorize(color_code)
+    "\e[#{color_code}m#{self}\e[0m"
+  end
+
+  def red
+    colorize(31)
+  end
+
+  def green
+    colorize(32)
+  end
+
+  def yellow
+    colorize(33)
+  end
+
+  def pink
+    colorize(35)
+  end
+end
+
+module Builder
+  Root ||= Pathname.new(File.dirname(__FILE__)).expand_path.join('..')
+
+  def self.app_tree
+    @app_tree ||= {}.dup
+  end
+
+  def self.write_files(files, parent = '.')
+    if files.is_a? Hash
+      files.each do |k, v|
+        if v.is_a? Hash
+          begin
+            Dir.mkdir k
+            puts "    created #{parent}/#{k}".green
+          rescue => e
+            puts "    exists #{parent}/#{k}".red
+          end
+          Dir.chdir k
+          write_files v, (parent + '/' + k)
+          Dir.chdir '..'
+        elsif v.is_a? String
+          if ::File.exist? k
+            puts "    EXISTS(!) #{parent}/#{k}".red
+          else
+            IO.write k, v
+            puts "    wrote #{parent}/#{k}".yellow
+          end
+        end
+      end
+    end
+  end
+
+  def self.create_app(app_name = ARGV[1])
+    require Root.join('lib', 'plezi', 'version')
+    app_tree[app_name.to_s] ||= IO.read(Root.join('resources', 'mini_exec')).gsub('appname', app_name)
+    app_tree["#{app_name}.rb"] ||= IO.read(Root.join('resources', 'mini_app.rb')).gsub('appname', app_name).gsub('appsecret', "#{app_name}_#{SecureRandom.hex}")
+    app_tree['routes.rb'] ||= IO.read(Root.join('resources', 'routes.rb')).gsub('appname', app_name)
+    app_tree['config.ru'] ||= IO.read(Root.join('resources', 'config.ru')).gsub('appname', app_name)
+    app_tree['Procfile'] ||=  IO.read(Root.join('resources', 'procfile')).gsub('appname', app_name)
+    app_tree['Gemfile'] ||= ''
+    app_tree['Gemfile'] << "source 'https://rubygems.org'\n\n# include the basic plezi framework and server\ngem 'plezi', '~> #{Plezi::VERSION}'\n"
+    app_tree['Gemfile'] << IO.read(Root.join('resources', 'gemfile'))
+    app_tree['Gemfile'] << "\n\nruby '#{RUBY_VERSION}'\n"
+    app_tree['rakefile'] ||= IO.read(Root.join('resources', 'rakefile'))
+    app_tree['app'] ||= {}
+    app_tree['app']['my_controler.rb'] ||= IO.read(Root.join('resources', 'ctrlr.rb')).gsub('appname', app_name)
+    app_tree['views'] ||= {}
+    app_tree['views']['404.html.erb'] ||= IO.read(Root.join('resources', '404.erb'))
+    app_tree['views']['500.html.erb'] ||= IO.read(Root.join('resources', '500.erb'))
+    app_tree['views']['welcome.html.erb'] ||= IO.read(Root.join('resources', 'mini_welcome_page.html')).gsub('appname', app_name)
+    app_tree['public'] ||= {}
+    app_tree['public']['javascripts'] ||= {}
+    app_tree['public']['javascripts']['simple-client.js'] ||= IO.read(Root.join('resources', 'simple-client.js')).gsub('appname', app_name)
+    app_tree['public']['javascripts']['client.js'] ||= IO.read(Root.join('resources', 'client.js')).gsub('appname', app_name)
+
+    begin
+      Dir.mkdir app_name
+      puts "created the #{app_name} application directory.".green
+    rescue => e
+      puts "the #{app_name} application directory exists - trying to rebuild (no overwrite).".pink
+    end
+    Dir.chdir app_name
+    puts 'starting to write template data...'.red
+    puts ''
+    Builder.write_files app_tree
+    begin
+      File.chmod 0o775, app_name.to_s
+    rescue
+      true
+    end
+    puts 'done.'
+    puts ''
+    puts "please change directory into the app directory: cd #{app_name}"
+    puts ''
+    puts "run the #{app_name} app using: ./#{app_name} or using: plezi s"
+    puts ''
+  end
+end
+
+######################################################################
+######################################################################
+##
+## Start the Build script
+##
+######################################################################
+######################################################################
+
+# update with http://ruby-doc.org/stdlib-2.2.0/libdoc/optparse/rdoc/OptionParser.html
+
+# require 'optparser'
+
+if ARGV[0] == 'new' || ARGV[0] == 'n' || ARGV[0] == 'force'
+  #########
+  ## set up building environment
+  ARGV[1] = ARGV[1].gsub /[^a-zA-Z0-9]/, '_'
+  if Dir.exist?(ARGV[1]) && ARGV[0] != 'force'
+    puts ''
+    puts "WARNING: app/folder alread exists, use `plezi fource #{ARGV[1]}` to attempt rebuild (no files will be overwritten).".red
+    puts ''
+    exit
+  end
+  Builder.create_app
+else
+  puts ''
+  puts 'Plezi fast web app starter.'.pink
+  puts 'use: plezi new appname'
+  puts 'or: plezi n appname'
+  puts ''
+  puts "Run the app using the app's script with an optional: -p {port number}. i.e."
+  puts '    cd ./appname'.pink
+  puts '    ./appname -p 8080'.pink
+  puts ''
+end
