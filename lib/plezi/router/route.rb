@@ -9,7 +9,6 @@ module Plezi
       attr_reader :prefix, :controller, :param_names
 
       def initialize(path, controller)
-        raise 'Controller should be a class object' unless controller.is_a?(Class)
         @route_id = "Route#{object_id.to_s(16)}".to_sym
         m = path.match(/([^\:\(\*]*)(.*)/)
         @prefix = m[1].chomp('/'.freeze)
@@ -27,8 +26,10 @@ module Plezi
         case @controller
         when Class
           prep_controller
-        when RegExp
+        when Regexp
           raise "Rewrite Routes can't contain more then one parameter to collect" if @param_names.length > 1
+        else
+          raise 'Controller should be a class object' unless controller.is_a?(Class)
         end
       end
 
@@ -38,7 +39,7 @@ module Plezi
         when Class
           c = @controller.new
           return c._pl_respond(request, response, Thread.current[@route_id])
-        when RegExp
+        when Regexp
           params = Thread.current[@route_id]
           return nil unless controller =~ params[@param_names[0]]
           request.path_info = "/#{params.delete('*'.freeze).to_a.join '/'}"

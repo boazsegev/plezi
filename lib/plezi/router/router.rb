@@ -34,6 +34,8 @@ module Plezi
         when :assets
           controller = ::Plezi::Base::Assets
           path << '/*'.freeze unless path[-1] == '*'.freeze
+        when Regexp
+          path << '/*'.freeze unless path[-1] == '*'.freeze
         end
         @routes << Route.new(path, controller)
       end
@@ -45,9 +47,25 @@ module Plezi
       def url_for(controller, method_sym, params = {})
         # GET,PUT,POST,DELETE
         r = nil
-        @routes.each { |tmp| next if tmp.controller != controller; r = tmp; break; }
+        prefix = '/'.dup
+        @routes.each do |tmp|
+          case tmp.controller
+          when Class
+            next if tmp.controller != controller
+            r = tmp
+            break
+          when Regexp
+            prefix << "#{params.delete tmp.param_names[0]}/" if params[tmp.param_names[0]]
+          else
+            next
+          end
+        end
+        return nil if r.nil?
         case method_sym.to_sym
         when :new
+          params['id'.freeze] = :new
+          params.delete '_method'.freeze
+        when :create
           params['id'.freeze] = :new
           params['_method'.freeze] = :post
         when :update
@@ -55,8 +73,8 @@ module Plezi
         when :delete
           params['_method'.freeze] = :delete
         when :index
-          params['id'.freeze] = nil
-          params['_method'.freeze] = :get
+          params.delete 'id'.freeze
+          params.delete '_method'.freeze
         when :show
           raise "The URL for ':show' MUST contain a valid 'id' parameter for the object's index to display." unless params['id'.freeze].nil? && params[:id].nil?
           params['_method'.freeze] = :get
