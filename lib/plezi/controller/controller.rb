@@ -48,6 +48,42 @@ module Plezi
       ::Plezi::Renderer.render "#{File.join(::Plezi.templates, template.to_s)}.#{frmt}", binding, &block
     end
 
+    # Sends a block of data, setting a file name, mime type and content disposition headers when possible. This should also be a good choice when sending large amounts of data.
+    #
+    # By default, `send_data` sends the data as an attachment, unless `inline: true` was set.
+    #
+    # If a mime type is provided, it will be used to set the Content-Type header. i.e. `mime: "text/plain"`
+    #
+    # If a file name was provided, Rack will be used to find the correct mime type (unless provided). i.e. `filename: "sample.pdf"` will set the mime type to `application/pdf`
+    #
+    # Available options: `:inline` (`true` / `false`), `:filename`, `:mime`.
+    def send_data(data, options = {})
+      response.write data if data
+      # set headers
+      content_disposition = options[:inline] ? 'inline'.dup : 'attachment'.dup
+      content_disposition << "; filename=#{::File.basename(options[:filename])}" if options[:filename]
+
+      response['content-type'.freeze] = (options[:mime] ||= options[:filename] && Rack::Mime.mime_type(::File.extname(options[:filename])))
+      response['content-disposition'.freeze] = content_disposition
+      true
+    end
+
+    # Same as {#send_data}, but accepts a file name (to be opened and sent) rather then a String.
+    #
+    # See {#send_data} for available options.
+    def send_file(filename, options = {})
+      response['X-Sendfile'.freeze] = filename
+      options[:filename] ||= filename
+      filename = File.open(filename, 'rb'.freeze) # unless Iodine::Rack.public
+      response.write filename, options
+    end
+
+    # a shortcut for `response.redirect`.
+    def redirect_to(target, status = 302)
+      response.redirect target, status
+      true
+    end
+
     # A connection's Plezi ID uniquely identifies the connection across application instances, allowing it to receieve and send messages using {#unicast}.
     def id
       @_pl_id ||= (uuid && "#{::Plezi::Base::MessageDispatch.pid}-#{uuid.to_s(16)}")
@@ -151,7 +187,7 @@ module Plezi
     # This function is used internally by Plezi, do not call.
     def preform_upgrade
       return false unless pre_connect
-      request.env['iodine.websocket'.freeze] = self
+      request.env['upgrade.websocket'.freeze] = self
       @_pl_ws_map = self.class._pl_ws_map.dup
       @_pl_ad_map = self.class._pl_ad_map.dup
       true
