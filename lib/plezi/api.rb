@@ -23,6 +23,12 @@ module Plezi
     @plezi_autostart = false
   end
 
+  # @private
+  # Allows Plezi to be used as middleware.
+  def new(app, *_args)
+    Plezi::Base::Router.new(app)
+  end
+
   # Returns the Plezi Rack application
   def app
     no_autostart

@@ -9,15 +9,25 @@ module Plezi
     module Router
       @routes = []
       @empty_hashes = {}
+      @app = nil
 
       module_function
+
+      def new(app)
+        puts 'Plezi as Middleware'
+        @app = ((app == Plezi.app) ? nil : app)
+        Plezi.app
+      end
 
       def call(env)
         request = Rack::Request.new(env)
         response = Rack::Response.new
         ret = nil
         @routes.each { |route| ret = route.call(request, response); break if ret }
-        ret ||= ::Plezi::Base::Err404Ctrl.new._pl_respond(request, response, @empty_hashes.clear)
+        unless ret
+          return @app.call(env) if @app
+          ret = ::Plezi::Base::Err404Ctrl.new._pl_respond(request, response, @empty_hashes.clear)
+        end
         response.write(ret) if ret.is_a?(String)
         return response.finish
       rescue => e

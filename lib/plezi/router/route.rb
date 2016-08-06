@@ -16,6 +16,7 @@ module Plezi
           @prefix = '/'.freeze
           @prefix_length = 1
         else
+          @prefix = "/#{@prefix}" if @prefix[0] != '/'.freeze
           @prefix_length = @prefix.length + 1
         end
         @controller = controller
