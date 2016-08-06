@@ -24,7 +24,7 @@ module Plezi
 
       # @private
       # This is used internally by Plezi, do not use.
-      RESERVED_METHODS = [:delete, :create, :update, :show, :pre_connect, :on_open, :on_close, :on_shutdown, :on_message].freeze
+      RESERVED_METHODS = [:delete, :create, :update, :new, :show, :pre_connect, :on_open, :on_close, :on_shutdown, :on_message].freeze
       # @private
       # This function is used internally by Plezi, do not call.
       def _pl_get_map
@@ -60,6 +60,12 @@ module Plezi
 
       # @private
       # This function is used internally by Plezi, do not call.
+      def _pl_has_new
+        @_pl_has_new
+      end
+
+      # @private
+      # This function is used internally by Plezi, do not call.
       def _pl_has_show
         @_pl_has_show
       end
@@ -77,7 +83,6 @@ module Plezi
 
         @_pl_ws_map = {}
         mths = instance_methods false
-        mths.delete :new
         mths.delete :index
         RESERVED_METHODS.each { |m| mths.delete m }
         mths.each { |m| @_pl_ws_map[m.to_s.freeze] = m; @_pl_ws_map[m] = m }
@@ -93,7 +98,6 @@ module Plezi
         @_pl_ad_map = {}
         mths = public_instance_methods false
         mths.delete_if { |m| m.to_s[0] == '_' || ![-2, -1, 1].freeze.include?(instance_method(m).arity) }
-        mths.delete :new
         mths.delete :index
         RESERVED_METHODS.each { |m| mths.delete m }
         mths.each { |m| @_pl_ad_map[m.to_s.freeze] = m; @_pl_ad_map[m] = m }
@@ -111,6 +115,7 @@ module Plezi
         case params['_method'.freeze]
         when :get # since this is common, it's pushed upwards.
           return :preform_upgrade if env['HTTP_UPGRADE'.freeze] && _pl_is_websocket? && env['HTTP_UPGRADE'.freeze].downcase.start_with?('websocket'.freeze)
+          return :new if _pl_has_new && par_id == 'new'.freeze
           return meth_id || (_pl_has_show && :show) || nil
         when :put, :patch
           return :create if _pl_has_create && (par_id.nil? || par_id == 'new'.freeze)
@@ -130,6 +135,7 @@ module Plezi
         @_pl_ad_map = nil
         @_pl_ws_map = nil
         @_pl_has_show = public_instance_methods(false).include?(:show)
+        @_pl_has_new = public_instance_methods(false).include?(:new)
         @_pl_has_create = public_instance_methods(false).include?(:create)
         @_pl_has_update = public_instance_methods(false).include?(:update)
         @_pl_has_delete = public_instance_methods(false).include?(:delete)
