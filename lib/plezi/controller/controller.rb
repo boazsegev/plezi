@@ -97,6 +97,10 @@ module Plezi
       true
     end
 
+    def url_for(func, params = {})
+      ::Plezi::Base::Router.url_for self.class, func, params
+    end
+
     # A connection's Plezi ID uniquely identifies the connection across application instances, allowing it to receieve and send messages using {#unicast}.
     def id
       @_pl_id ||= (uuid && "#{::Plezi::Base::MessageDispatch.pid}-#{uuid.to_s(16)}")
@@ -184,7 +188,7 @@ module Plezi
         puts "AutoDispatch Warnnig: JSON missing/invalid `event` name '#{json[:event]}' for class #{self.class.name}. Closing Connection."
         close
       end
-      write("{\"event\":\"_ack_\",\"_EID_\":\"#{json[:_EID_]}\"}") if json[:_EID_]
+      write("{\"event\":\"_ack_\",\"_EID_\":#{json[:_EID_].to_json}}") if json[:_EID_]
       ret = __send__(envt, json)
       case ret
       when Hash, Array
