@@ -13,7 +13,7 @@ module Plezi
       module_function
 
       def pid
-        @uuid ||= SecureRandom.hex.tap { |str| @prefix_len = str.length }
+        @uuid ||= SecureRandom.urlsafe_base64.tap { |str| @prefix_len = str.length }
       end
 
       def _init
