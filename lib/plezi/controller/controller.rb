@@ -57,8 +57,9 @@ module Plezi
     def render(template, &block)
       frmt = params['format'.freeze] || 'html'.freeze
       mime = nil
-      response[Rack::CONTENT_TYPE] = mime unless response.content_type || (mime = Rack::Mime.mime_type(".#{frmt}".freeze, nil)).nil?
-      ::Plezi::Renderer.render "#{File.join(::Plezi.templates, template.to_s)}.#{frmt}", binding, &block
+      ret = ::Plezi::Renderer.render "#{File.join(::Plezi.templates, template.to_s)}.#{frmt}", binding, &block
+      response[Rack::CONTENT_TYPE] = mime if ret && !response.content_type && (mime = Rack::Mime.mime_type(".#{frmt}".freeze, nil))
+      ret
     end
 
     # Sends a block of data, setting a file name, mime type and content disposition headers when possible. This should also be a good choice when sending large amounts of data.

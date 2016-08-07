@@ -15,7 +15,7 @@ Bundler.require(:default, ENV['ENV'].to_s.to_sym)
 Dir[File.join '{app}', '**', '*.rb'].each { |file| load File.expand_path(file) }
 
 ## Logging
-Iodine::Rack.log = 1
+Iodine::Rack.log = 1 if Iodine::Rack.log.nil?
 
 # # Optional Scaling (across processes or machines):
 ENV['PL_REDIS_URL'] ||= ENV['REDIS_URL'] ||

@@ -8,7 +8,7 @@ Welcome to your new home with [plezi.io](http://www.plezi.io), the Ruby real-tim
 
 ## What does Plezi have to offer?
 
-Plezi is a Rack based framework with support for native (server side implemented) Websocket.
+Plezi is a Rack based framework with support for native (server side implemented) Websockets.
 
 Plezi will provide the following features over plain Rack:
 

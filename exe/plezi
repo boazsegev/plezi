@@ -75,13 +75,13 @@ module Builder
     app_tree['app'] ||= {}
     app_tree['app']['my_controler.rb'] ||= IO.read(Root.join('resources', 'ctrlr.rb')).gsub('appname', app_name)
     app_tree['views'] ||= {}
+    app_tree['views']['welcome.html.erb'] ||= IO.read(Root.join('resources', 'mini_welcome_page.html')).gsub('appname', app_name)
     app_tree['views']['404.html.erb'] ||= IO.read(Root.join('resources', '404.erb'))
     app_tree['views']['500.html.erb'] ||= IO.read(Root.join('resources', '500.erb'))
-    app_tree['views']['welcome.html.erb'] ||= IO.read(Root.join('resources', 'mini_welcome_page.html')).gsub('appname', app_name)
     app_tree['public'] ||= {}
     app_tree['public']['javascripts'] ||= {}
-    app_tree['public']['javascripts']['simple-client.js'] ||= IO.read(Root.join('resources', 'simple-client.js')).gsub('appname', app_name)
     app_tree['public']['javascripts']['client.js'] ||= IO.read(Root.join('resources', 'client.js')).gsub('appname', app_name)
+    app_tree['public']['javascripts']['simple-client.js'] ||= IO.read(Root.join('resources', 'simple-client.js')).gsub('appname', app_name)
 
     begin
       Dir.mkdir app_name
@@ -102,7 +102,7 @@ module Builder
     puts ''
     puts "please change directory into the app directory: cd #{app_name}"
     puts ''
-    puts "run the #{app_name} app using: ./#{app_name} or using: plezi s"
+    puts "run the #{app_name} app using: ./#{app_name} or using the iodine / rackup commands."
     puts ''
   end
 end
@@ -122,7 +122,8 @@ end
 if ARGV[0] == 'new' || ARGV[0] == 'n' || ARGV[0] == 'force'
   #########
   ## set up building environment
-  ARGV[1] = ARGV[1].gsub /[^a-zA-Z0-9]/, '_'
+  ARGV[1] = ARGV[1].gsub(/[^a-zA-Z0-9]/, '_')
+  ARGV[1].downcase!
   if Dir.exist?(ARGV[1]) && ARGV[0] != 'force'
     puts ''
     puts "WARNING: app/folder alread exists, use `plezi fource #{ARGV[1]}` to attempt rebuild (no files will be overwritten).".red

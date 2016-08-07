@@ -26,18 +26,19 @@ module Plezi
         @routes.each { |route| ret = route.call(request, response); break if ret }
         unless ret
           return @app.call(env) if @app
-          ret = ::Plezi::Base::Err404Ctrl.new._pl_respond(request, response, @empty_hashes.clear)
+          ret = ::Plezi::Base::Err404Ctrl.new._pl_respond(request, response, request.params)
         end
         response.write(ret) if ret.is_a?(String)
         return response.finish
       rescue => e
         puts e.message, e.backtrace
         response = Rack::Response.new
-        response.write ::Plezi::Base::Err500Ctrl.new._pl_respond(request, response, @empty_hashes.clear)
+        response.write ::Plezi::Base::Err500Ctrl.new._pl_respond(request, response, request.params)
         return response.finish
       end
 
       def route(path, controller)
+        path = path.chomp('/'.freeze) unless path == '/'.freeze
         case controller
         when :client
           controller = ::Plezi::Base::Router::ADClient

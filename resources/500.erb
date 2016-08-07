@@ -1,8 +1,9 @@
 <%
 # # consider replacing the Html with the following Ruby code:
-# response.redirect_to "/", notice: "Internal error for #{request.original_path}", status: 500
+# cookies[:notice] = "Internal error for #{request.original_path} - error code 500"
+# response.redirect_to "/"
 # # OR
-# render :template, layout: :layout
+# render("layout") { render("template") }
 %><!DOCTYPE html>
 <head>
   <style>
@@ -46,7 +47,7 @@
         }
         h3
         {
-            font-family: 'Architects Daughter', cursive;    
+            font-family: 'Architects Daughter', cursive;
             background-color: #44518E;
             color: #C6CCE7;
             text-align: left;
@@ -80,7 +81,7 @@
         {
             font-size: 1em;
             padding: 0 1em;
-            margin: 0.5em 0;        
+            margin: 0.5em 0;
         }
         a
         {
