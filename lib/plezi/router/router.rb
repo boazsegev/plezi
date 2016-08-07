@@ -8,7 +8,6 @@ module Plezi
   module Base
     module Router
       @routes = []
-      @empty_hashes = {}
       @app = nil
 
       module_function
