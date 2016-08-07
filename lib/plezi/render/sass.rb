@@ -1,4 +1,5 @@
 require 'thread'
+require 'plezi/render/has_cache'
 # Redcarpet might not be available, if so, allow the require to throw it's exception.
 unless defined?(::Sass)
   begin
@@ -14,24 +15,13 @@ if defined?(::Sass)
     module Base
       # This is a baker, not a renderer
       module BakeSASS
-        class << self
-          attr_reader :cache
-          def store(key, value)
-            @lock.synchronize { @cache[key] = value }
-          end
-          alias []= store
-          def get(key)
-            @lock.synchronize { @cache[key] }
-          end
-          alias [] get
-        end
-        @lock = Mutex.new
-        @cache = {}.dup
+        extend HasCache
 
         module_function
 
         SASS_OPTIONS = { cache_store: Sass::CacheStores::Memory.new, style: (ENV['SASS_STYLE'] || ((ENV['ENV'] || ENV['RACK_ENV']) == 'production' ? :compressed : :nested)) }.dup
 
+        # Bakes the SASS for the requested target, if a SASS source file is found.
         def call(target)
           return self[target] if File.extname(target) == '.map'.freeze
           review_cache("#{target}.scss", target) || review_cache("#{target}.sass", target)

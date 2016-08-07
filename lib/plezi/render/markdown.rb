@@ -1,3 +1,4 @@
+require 'plezi/render/has_cache' unless defined? ::Plezi::Base::HasStore
 # Redcarpet might not be available, if so, allow the require to throw it's exception.
 unless defined?(::Redcarpet::Markdown)
   begin
@@ -27,26 +28,31 @@ if defined?(Redcarpet::Markdown)
         # create a single gloabl renderer for all markdown TOC.
         MD_RENDERER_TOC = Redcarpet::Markdown.new Redcarpet::Render::HTML_TOC.new(MD_EXTENSIONS.dup), MD_EXTENSIONS.dup
 
+        extend ::Plezi::Base::HasStore
+
         module_function
 
+        # renders the markdown file, if exists
         def call(filename, _context)
-          return unless defined? ::ERB
           return unless File.exist?(filename)
           load_engine(filename)
         end
+
         if ENV['RACK_ENV'.freeze] == 'production'.freeze
+          # loads the rendered cache
           def load_engine(filename)
-            engine, _tm = ::Plezi::Renderer.get_cached(filename)
+            engine = self[filename]
             return engine if engine
             data = IO.read filename
-            ::Plezi::Renderer.cache_engine(filename, "<div class='toc'>#{::Plezi::Base::RenderMarkDown::MD_RENDERER_TOC.render(data)}</div>\n#{::Plezi::Base::RenderMarkDown::MD_RENDERER.render(data)}", File.mtime(filename))
+            self[filename] = "<div class='toc'>#{::Plezi::Base::RenderMarkDown::MD_RENDERER_TOC.render(data)}</div>\n#{::Plezi::Base::RenderMarkDown::MD_RENDERER.render(data)}"
           end
         else
+          # loads the rendered cache
           def load_engine(filename)
-            engine, tm = ::Plezi::Renderer.get_cached(filename)
+            engine, tm = self[filename]
             return engine if engine && tm == File.mtime(filename)
             data = IO.read filename
-            ::Plezi::Renderer.cache_engine(filename, "<div class='toc'>#{::Plezi::Base::RenderMarkDown::MD_RENDERER_TOC.render(data)}</div>\n#{::Plezi::Base::RenderMarkDown::MD_RENDERER.render(data)}", File.mtime(filename))
+            (self[filename] = ["<div class='toc'>#{::Plezi::Base::RenderMarkDown::MD_RENDERER_TOC.render(data)}</div>\n#{::Plezi::Base::RenderMarkDown::MD_RENDERER.render(data)}", File.mtime(filename)])[0]
           end
         end
       end

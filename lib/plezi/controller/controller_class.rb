@@ -2,22 +2,39 @@ require 'json'
 module Plezi
   module Controller
     module ClassMethods
+      # A Ruby callback used to initialize class data for new Controllers.
       def self.extended(base)
         base._pl_init_class_data
       end
 
+      # Returns a relative URL for the controller, placing the requested parameters in the URL (inline, where possible and as query data when not possible).
       def url_for(func, params = {})
         ::Plezi::Base::Router.url_for self, func, params
       end
 
+      # Invokes a method on the `target` websocket connection. When using Iodine, the method is invoked asynchronously.
+      #
+      #        self.unicast target, :my_method, "argument 1"
+      #
+      # Methods invoked using {unicast}, {broadcast} or {multicast} will quitely fail if the connection was lost, the requested method is undefined or the 'target' was invalid.
       def unicast(target, event_method, *args)
         ::Plezi::Base::MessageDispatch.unicast(self, target, event_method, args)
       end
 
+      # Invokes a method on every websocket connection that belongs to this Controller / Type. When using Iodine, the method is invoked asynchronously.
+      #
+      #        self.broadcast :my_method, "argument 1", "argument 2", 3
+      #
+      # Methods invoked using {unicast}, {broadcast} or {multicast} will quitely fail if the connection was lost, the requested method is undefined or the 'target' was invalid.
       def broadcast(event_method, *args)
         ::Plezi::Base::MessageDispatch.broadcast(self, event_method, args)
       end
 
+      # Invokes a method on every websocket connection in the application.
+      #
+      #        self.multicast :my_method, "argument 1", "argument 2", 3
+      #
+      # Methods invoked using {unicast}, {broadcast} or {multicast} will quitely fail if the connection was lost, the requested method is undefined or the 'target' was invalid.
       def multicast(event_method, *args)
         ::Plezi::Base::MessageDispatch.multicast(self, event_method, args)
       end

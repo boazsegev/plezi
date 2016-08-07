@@ -2,15 +2,7 @@ require 'thread'
 
 module Plezi
   module Renderer
-    protected
-
-    def self.engine_library
-      Thread.current[:_pl_render_engins] ||= {}.dup
-    end
-
-    def self.render_library
-      @render_library ||= {}.dup
-    end
+    @render_library = {}.dup
 
     public
 
@@ -30,40 +22,16 @@ module Plezi
     def register(extention, handler = nil, &block)
       handler ||= block
       raise 'Handler or block required.' unless handler
-      render_library[extention.to_s] = handler
+      @render_library[extention.to_s] = handler
       handler
-    end
-
-    def review(extention)
-      render_library[extention.to_s]
     end
 
     # Removes a registered render extention
     def remove(extention)
-      render_library.delete extention.to_s
+      @render_library.delete extention.to_s
     end
 
-    def each(&block)
-      block ? render_library.each(&block) : render_library.each
-    end
-
-    # returns the engine and date stored
-    # Use:
-    #
-    #      my_engine, the_date = get_cached "file.sass"
-    def get_cached(filename)
-      engine_library[filename]
-    end
-
-    # stores the engine and date, using the filename as a key.
-    #
-    # Use:
-    #
-    #      cache_engine "file.sass", my_engine, the_date
-    def cache_engine(filename, *args)
-      (engine_library[filename] = args)[0]
-    end
-
+    # Attempts to render the requested file (i.e. `'index.html'`) using all known rendering handlers.
     def render(base_filename, context = (Object.new.instance_eval { binding }), &block)
       ret = nil
       @render_library.each { |ext, handler| ret = handler.call("#{base_filename}.#{ext}".freeze, context, &block); return ret if ret; }

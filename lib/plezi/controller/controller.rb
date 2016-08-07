@@ -97,6 +97,7 @@ module Plezi
       true
     end
 
+    # Returns a relative URL for the controller, placing the requested parameters in the URL (inline, where possible and as query data when not possible).
     def url_for(func, params = {})
       ::Plezi::Base::Router.url_for self.class, func, params
     end
@@ -136,7 +137,7 @@ module Plezi
       _pl_ad_map.update mod._pl_ad_map
     end
 
-    # Invokes a method with another Websocket connection instance. i.e.
+    # Invokes a method on the `target` websocket connection. When using Iodine, the method is invoked asynchronously.
     #
     #       def perform_poke(target)
     #         unicast target, :poke, self.id
@@ -145,17 +146,28 @@ module Plezi
     #         unicast from, :poke_back, self.id
     #       end
     #       def poke_back(from)
-    #         puts "#{self.id} is available"
+    #         puts "#{from} is available"
     #       end
     #
+    # Methods invoked using {unicast}, {broadcast} or {multicast} will quitely fail if the connection was lost, the requested method is undefined or the 'target' was invalid.
     def unicast(target, event_method, *args)
       ::Plezi::Base::MessageDispatch.unicast(id ? self : self.class, target, event_method, args)
     end
 
+    # Invokes a method on every websocket connection that belongs to this Controller / Type. When using Iodine, the method is invoked asynchronously.
+    #
+    #        self.broadcast :my_method, "argument 1", "argument 2", 3
+    #
+    # Methods invoked using {unicast}, {broadcast} or {multicast} will quitely fail if the connection was lost, the requested method is undefined or the 'target' was invalid.
     def broadcast(event_method, *args)
       ::Plezi::Base::MessageDispatch.broadcast(id ? self : self.class, event_method, args)
     end
 
+    # Invokes a method on every websocket connection in the application.
+    #
+    #        self.multicast :my_method, "argument 1", "argument 2", 3
+    #
+    # Methods invoked using {unicast}, {broadcast} or {multicast} will quitely fail if the connection was lost, the requested method is undefined or the 'target' was invalid.
     def multicast(event_method, *args)
       ::Plezi::Base::MessageDispatch.multicast(id ? self : self.class, event_method, args)
     end

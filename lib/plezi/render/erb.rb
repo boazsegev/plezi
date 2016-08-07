@@ -1,26 +1,30 @@
+require 'plezi/render/has_cache' unless defined? ::Plezi::Base::HasStore
 require 'erb'
 module Plezi
   module Base
     module RenderERB
+      extend ::Plezi::Base::HasStore
+
       module_function
 
       def call(filename, context, &block)
-        # return unless defined? ::ERB
+        return unless defined? ::ERB
         return unless File.exist?(filename)
         engine = load_engine(filename)
         engine.result(context, &block)
       end
       if ENV['RACK_ENV'.freeze] == 'production'.freeze
         def load_engine(filename)
-          engine, _tm = ::Plezi::Renderer.get_cached(filename)
+          engine = self[filename]
           return engine if engine
-          ::Plezi::Renderer.cache_engine(filename, ERB.new(::Plezi.try_utf8!(IO.binread(filename))), File.mtime(filename))
+          self[filename] = ::ERB.new(::Plezi.try_utf8!(IO.binread(filename)))
         end
       else
         def load_engine(filename)
-          engine, tm = ::Plezi::Renderer.get_cached(filename)
-          return engine if engine && tm == File.mtime(filename)
-          ::Plezi::Renderer.cache_engine(filename, ERB.new(::Plezi.try_utf8!(IO.binread(filename))), File.mtime(filename))
+          engine, tm = self[filename]
+          return engine if engine && (tm == File.mtime(filename))
+          self[filename] = [(engine = ::ERB.new(::Plezi.try_utf8!(IO.binread(filename)))), File.mtime(filename)]
+          engine
         end
       end
     end

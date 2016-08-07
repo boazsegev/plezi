@@ -8,7 +8,7 @@ module Plezi
     attr_accessor :templates
     # Get / set the assets folder for the `:assets` route (the root for `Plezi.route '/assets/path'`, :assets).
     attr_accessor :assets
-    # Get / set the application name, which is also used to identify the global pub/sub channel.
+    # Get / set the application name, which is used to create and identify the application's global pub/sub channel when using Redis.
     attr_accessor :app_name
   end
   @app_name = "#{File.basename($PROGRAM_NAME, '.*')}_app"
@@ -38,10 +38,13 @@ module Plezi
 
   # Will add a route to the Plezi application.
   #
+  # The order of route creation is the order of precedence.
+  #
   # path:: the HTTP path for the route. Inline parameters and optional parameters are supported. i.e.
   #
   #                Plezi.route '/fixed/path', controller
   #                Plezi.route '/fixed/path/:required_param/(:optional_param)', controller
+  #                Plezi.route '/(:format)', /^(html|json|xml)$/ # a rewrite route, usally on top.
   #                Plezi.route '*', controller # catch all
   #
   #

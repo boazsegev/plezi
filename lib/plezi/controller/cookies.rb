@@ -1,5 +1,6 @@
 module Plezi
   module Controller
+    # The cookie jar class. Controllers have an instance of this class named `cookies`.
     class Cookies < Hash
       attr_reader :request, :response
       def initialize(request, response)
@@ -7,6 +8,7 @@ module Plezi
         @response = response
       end
 
+      # Reads a cookie from either the request cookie Hash or the new cookies Hash.
       def[](key)
         if key.is_a? Symbol
           super(key) || super(key.to_s) || @request.cookies[key] || @request.cookies[key.to_s]
@@ -17,6 +19,7 @@ module Plezi
         end
       end
 
+      # Sets (or deletes) a cookie. New cookies are placed in the new cookie Hash and are accessible only to the controller that created them.
       def[]=(key, value)
         if value.nil?
           @response.delete_cookie key
