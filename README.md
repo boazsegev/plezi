@@ -1,5 +1,9 @@
 # Plezi - a real-time web application framework for Ruby
 
+[![Gem Version](https://badge.fury.io/rb/plezi.svg)](https://badge.fury.io/rb/plezi)
+[![Inline docs](http://inch-ci.org/github/boazsegev/plezi.svg?branch=master)](http://www.rubydoc.info/github/boazsegev/plezi/master/frames)
+[![GitHub](https://img.shields.io/badge/GitHub-Open%20Source-blue.svg)](https://github.com/boazsegev/plezi)
+
 Are microservices on your mind? Do you dream of a an SPA that's easy to scale? Did you wonder if you could write a whole Websockets, RESTful AJAX back-end with just a few lines of code (application logic not included)?
 
 Welcome to your new home with [plezi.io](http://www.plezi.io), the Ruby real-time framework that assumes the application's logic is *not* part of the web service.
