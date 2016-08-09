@@ -18,6 +18,21 @@ module Plezi
     attr_reader :response
     # A union between the `request.params` and the route's inline parameters. This is different then `request.params`
     attr_reader :params
+    # A cookie jar for both accessing and setting cookies. Unifies {request.set_cookie}, {request.delete_cookie} and {request.cookies} with a single Hash like inteface.
+    #
+    # Read a cookie:
+    #
+    #         cookies["name"]
+    #
+    # Set a cookie:
+    #
+    #         cookies["name"] = "value"
+    #         cookies["name"] = {value: "value", secure: true}
+    #
+    # Delete a cookie:
+    #
+    #         cookies["name"] = nil
+    #
     attr_reader :cookies
 
     # @private
