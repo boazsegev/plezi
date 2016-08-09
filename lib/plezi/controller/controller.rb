@@ -102,7 +102,7 @@ module Plezi
     # See {#send_data} for available options.
     def send_file(filename, options = {})
       response['X-Sendfile'.freeze] = filename
-      options[:filename] ||= filename
+      options[:filename] ||= File.basename(filename)
       filename = File.open(filename, 'rb'.freeze) # unless Iodine::Rack.public
       response.write filename, options
     end
@@ -118,7 +118,7 @@ module Plezi
       ::Plezi::Base::Router.url_for self.class, func, params
     end
 
-    # A connection's Plezi ID uniquely identifies the connection across application instances, allowing it to receieve and send messages using {#unicast}.
+    # A connection's Plezi ID uniquely identifies the connection across application instances, allowing it to receive and send messages using {#unicast}.
     def id
       @_pl_id ||= (uuid && "#{::Plezi::Base::MessageDispatch.pid}-#{uuid.to_s(16)}")
     end
@@ -136,7 +136,7 @@ module Plezi
       true
     end
 
-    # Experimental: Adopts a module to be used for Websocket callbacks events (listenning, not sending).
+    # Experimental: Adopts a module to be used for Websocket callbacks events (listening, not sending).
     #
     # This function can only be called **after** a websocket connection was established (i.e., within the `on_open` callback).
     #

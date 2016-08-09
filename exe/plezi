@@ -78,6 +78,7 @@ module Builder
     app_tree['views']['welcome.html.erb'] ||= IO.read(Root.join('resources', 'mini_welcome_page.html')).gsub('appname', app_name)
     app_tree['views']['404.html.erb'] ||= IO.read(Root.join('resources', '404.erb'))
     app_tree['views']['500.html.erb'] ||= IO.read(Root.join('resources', '500.erb'))
+    app_tree['views']['503.html'] ||= IO.read(Root.join('resources', '503.html'))
     app_tree['public'] ||= {}
     app_tree['public']['javascripts'] ||= {}
     app_tree['public']['javascripts']['client.js'] ||= IO.read(Root.join('resources', 'client.js')).gsub('appname', app_name)

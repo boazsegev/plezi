@@ -29,7 +29,7 @@ function PleziClient(url, autoreconnect) {
     if(url) {
         this.url = url
     } else {
-        this.url = PleziClient.origin + window.location.pathname
+        this.url = PleziClient.origin + self.location.pathname
     }
     // Connect Websocket
     this.reconnect();
@@ -145,7 +145,7 @@ PleziClient.prototype.close = function() {
     this.ws.close();
 }
 
-PleziClient.origin = (window.location.protocol.match(/https/) ? 'wws' : 'ws') + '://' + window.location.hostname + (window.location.port == '' ? '' : (':' + window.location.port) );
+PleziClient.origin = (self.location.protocol.match(/https/) ? 'wws' : 'ws') + '://' + self.location.hostname + (self.location.port == '' ? '' : (':' + self.location.port) );
 
 PleziClient.prototype.sendraw = function(data) {
     if (this.ws.readyState != 1) { return false; }
@@ -181,7 +181,7 @@ PleziClient.prototype.___ajaj__emit = function(event, callback) {
                 console.error("PleziClient experienced an error parsing the following data (not JSON):",
             err, this.responseText)
             }
-            
+
         } else {
             if(this.callback) {
                 this.callback(this.json);
