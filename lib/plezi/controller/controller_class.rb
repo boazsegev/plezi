@@ -95,6 +95,12 @@ module Plezi
 
       # @private
       # This function is used internally by Plezi, do not call.
+      def _pl_is_ad?
+        @auto_dispatch
+      end
+
+      # @private
+      # This function is used internally by Plezi, do not call.
       def _pl_ws_map
         return @_pl_ws_map if @_pl_ws_map
 
@@ -148,6 +154,7 @@ module Plezi
       # @private
       # This function is used internally by Plezi, do not call.
       def _pl_init_class_data
+        @auto_dispatch ||= nil
         @_pl_get_map = nil
         @_pl_ad_map = nil
         @_pl_ws_map = nil

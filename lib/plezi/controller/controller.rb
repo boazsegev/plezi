@@ -44,7 +44,7 @@ module Plezi
       @cookies = Cookies.new(request, response)
       m = requested_method
       # puts "m == #{m.nil? ? 'nil' : m.to_s}"
-      return __send__(m) if m
+      return _pl_ad_httpreview(__send__(m)) if m
       false
     end
 
@@ -136,19 +136,18 @@ module Plezi
       true
     end
 
-    # Experimental: Adopts a module to be used for Websocket callbacks events (listening, not sending).
+    # Experimental: takes a module to be used for Websocket callbacks events.
     #
     # This function can only be called **after** a websocket connection was established (i.e., within the `on_open` callback).
     #
     # This allows a module "library" to be used similar to the way "rooms" are used in node.js, so that a number of different Controllers can listen to shared events.
     #
-    # By adopting a module into this instance, dynamically, Websocket broadcasts will invoke the module's functions.
-    def adopt(mod)
+    # By dynamically extending a Controller instance using a module, Websocket broadcasts will be allowed to invoke the module's functions.
+    def extend(mod)
       raise TypeError, '`mod` should be a module' unless mod.class == Module
-      class << self
-        mod.extend ::Plezi::Base::Controller::ClassMethods
-        extend mod
-      end unless is_a? mod
+      raise "#{self} already extended by #{mod.name}" if is_a?(mod)
+      mod.extend ::Plezi::Controller::ClassMethods
+      super(mod)
       _pl_ws_map.update mod._pl_ws_map
       _pl_ad_map.update mod._pl_ad_map
     end
@@ -191,13 +190,13 @@ module Plezi
     # @private
     # This function is used internally by Plezi, do not call.
     def _pl_ws_map
-      @_pl_ws_map ||= {}
+      @_pl_ws_map ||= self.class._pl_ws_map.dup
     end
 
     # @private
     # This function is used internally by Plezi, do not call.
     def _pl_ad_map
-      @_pl_ad_map ||= {}
+      @_pl_ad_map ||= self.class._pl_ad_map.dup
     end
 
     # @private
@@ -212,18 +211,34 @@ module Plezi
         return
       end
       envt = _pl_ad_map[json[:event]] || _pl_ad_map[:unknown]
-      if json['event'.freeze].nil? || envt.nil?
+      if json[:event].nil? || envt.nil?
+        puts _pl_ad_map
         puts "AutoDispatch Warnnig: JSON missing/invalid `event` name '#{json[:event]}' for class #{self.class.name}. Closing Connection."
         close
       end
       write("{\"event\":\"_ack_\",\"_EID_\":#{json[:_EID_].to_json}}") if json[:_EID_]
-      ret = __send__(envt, json)
-      case ret
-      when Hash, Array
-        write ret.to_json
+      _pl_ad_review __send__(envt, json)
+    end
+
+    # @private
+    # This function is used internally by Plezi, do not call.
+    def _pl_ad_review(data)
+      case data
+      when Hash
+        write data.to_json
       when String
-        write ret
-      end
+        write data
+        # when Array
+        #   write ret
+      end if self.class._pl_is_ad?
+      data
+    end
+
+    # @private
+    # This function is used internally by Plezi, do not call.
+    def _pl_ad_httpreview(data)
+      data = data.to_json if self.class._pl_is_ad? && data.is_a?(Hash)
+      data
     end
 
     private
@@ -233,6 +248,7 @@ module Plezi
     def preform_upgrade
       return false unless pre_connect
       request.env['upgrade.websocket'.freeze] = self
+      @params = @params.dup # disable memory saving (used a single object per thread)
       @_pl_ws_map = self.class._pl_ws_map.dup
       @_pl_ad_map = self.class._pl_ad_map.dup
       true
