@@ -95,7 +95,7 @@ PleziClient.prototype.___dispatch = function(msg) {
         if (msg.event == '_ack_') {
             clearTimeout(msg._EID_);
             if (this[msg._EID_] && this[msg._EID_].callback) {
-                this[msg._EID_].callback(this[msg._EID_].event);
+                this[msg._EID_].callback(this[msg._EID_].event, this);
             }
             delete this[msg._EID_];
         }
