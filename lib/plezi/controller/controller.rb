@@ -12,13 +12,13 @@ module Plezi
       base.extend ::Plezi::Controller::ClassMethods
     end
 
-    # A {Rack::Request} object for the current request.
+    # A Rack::Request object for the current request.
     attr_reader :request
-    # A {Rack::Response} object used for the response.
+    # A Rack::Response object used for the current request.
     attr_reader :response
     # A union between the `request.params` and the route's inline parameters. This is different then `request.params`
     attr_reader :params
-    # A cookie jar for both accessing and setting cookies. Unifies {request.set_cookie}, {request.delete_cookie} and {request.cookies} with a single Hash like inteface.
+    # A cookie jar for both accessing and setting cookies. Unifies `request.set_cookie`, `request.delete_cookie` and `request.cookies` with a single Hash like inteface.
     #
     # Read a cookie:
     #

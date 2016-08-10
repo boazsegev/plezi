@@ -44,7 +44,7 @@ module Plezi
     hash
   end
 
-  # Catches String/Symbol mixups. Add this to any Hash using {Hash#default_proc=}
+  # Catches String/Symbol mixups. Add this to any Hash using Hash#default_proc=
   def hash_proc_4symstr
     @hash_proc_4symstr ||= proc do |hash, key|
       case key
