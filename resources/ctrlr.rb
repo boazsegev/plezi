@@ -16,7 +16,7 @@ class RootController
   def on_open
     print 'Welcome to appname!'
     @handle = params['id'.freeze] || 'Somebody'
-    broadcast :print, "#{@handle} joind us :-)"
+    broadcast :print, "#{ERB::Util.html_escape @handle} joind us :-)"
   end
 
   def on_close
