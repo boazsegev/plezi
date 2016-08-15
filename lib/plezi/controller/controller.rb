@@ -104,7 +104,7 @@ module Plezi
       response['X-Sendfile'.freeze] = filename
       options[:filename] ||= File.basename(filename)
       filename = File.open(filename, 'rb'.freeze) # unless Iodine::Rack.public
-      response.write filename, options
+      send_data filename, options
     end
 
     # A shortcut for Rack's `response.redirect`.
