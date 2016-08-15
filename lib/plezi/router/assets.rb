@@ -13,7 +13,7 @@ module Plezi
             FileUtils.mkpath File.dirname(name)
             IO.binwrite(name, data)
           end
-          response['X-Sendfile'] = name
+          response['X-Sendfile'.freeze] = name
           response.body = File.open(name)
           true
         end
@@ -23,7 +23,7 @@ module Plezi
           data = ::Plezi::AssetBaker.bake(name)
           IO.binwrite(name, data) if data.is_a?(String)
           if File.exist? name
-            response['X-Sendfile'] = name
+            response['X-Sendfile'.freeze] = name
             response.body = File.open(name)
             return true
           end
