@@ -143,6 +143,8 @@ module Plezi
     # This allows a module "library" to be used similar to the way "rooms" are used in node.js, so that a number of different Controllers can listen to shared events.
     #
     # By dynamically extending a Controller instance using a module, Websocket broadcasts will be allowed to invoke the module's functions.
+    #
+    # Notice: It is impossible to `unextend` an extended module at this time.
     def extend(mod)
       raise TypeError, '`mod` should be a module' unless mod.class == Module
       raise "#{self} already extended by #{mod.name}" if is_a?(mod)
