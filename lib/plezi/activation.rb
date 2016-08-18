@@ -12,10 +12,10 @@ module Plezi
   end
   @plezi_initialize = nil
   def self.plezi_initialize
+    ::Plezi::Base::MessageDispatch._init
     if @plezi_initialize.nil?
       @plezi_initialize = true
       @plezi_autostart = true if @plezi_autostart.nil?
-      ::Plezi::Base::MessageDispatch._init
       at_exit do
         next if @plezi_autostart == false
         ::Iodine::Rack.app = ::Plezi.app
@@ -23,5 +23,6 @@ module Plezi
         ::Iodine.start
       end
     end
+    true
   end
 end
