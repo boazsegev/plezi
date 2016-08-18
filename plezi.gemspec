@@ -7,7 +7,7 @@ Gem::Specification.new do |spec|
   spec.name          = 'plezi'
   spec.version       = Plezi::VERSION
   spec.authors       = ['Boaz Segev']
-  spec.email         = ['Boaz@2be.co.il']
+  spec.email         = ['bo@plezi.io']
 
   spec.summary       = 'The Plezi.io Ruby Framework for real time web applications.'
   spec.description   = 'The Plezi.io Ruby Framework for real time web applications.'
@@ -17,7 +17,7 @@ Gem::Specification.new do |spec|
   # Prevent pushing this gem to RubyGems.org. To allow pushes either set the 'allowed_push_host'
   # to allow pushing to a single host or delete this section to allow pushing to any host.
   if spec.respond_to?(:metadata)
-    spec.metadata['allowed_push_host'] = "TODO: Set to 'http://mygemserver.com'"
+    spec.metadata['allowed_push_host'] = 'https://rubygems.org'
   else
     raise 'RubyGems 2.0 or newer is required to protect against public gem pushes.'
   end
