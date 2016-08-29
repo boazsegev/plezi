@@ -120,12 +120,12 @@ module Plezi
 
     # A connection's Plezi ID uniquely identifies the connection across application instances, allowing it to receive and send messages using {#unicast}.
     def id
-      @_pl_id ||= (uuid && "#{::Plezi::Base::MessageDispatch.pid}-#{uuid.to_s(16)}")
+      @_pl_id ||= (conn_id && "#{::Plezi::Base::MessageDispatch.pid}-#{conn_id.to_s(16)}")
     end
 
     # @private
     # This is the process specific Websocket's UUID. This function is here to protect you from yourself. Don't call it.
-    def uuid
+    def conn_id
       defined?(super) && super
     end
 

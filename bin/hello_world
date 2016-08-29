@@ -37,7 +37,8 @@ class WebsocketSample
   #
   # data is a string that contains binary or UTF8 (message dependent) data.
   def on_message(data)
-    Plezi.info "Websocket got: #{data}"
+    puts "Websocket got: #{data}"
+    write ">> #{data}"
   end
 
   # called once, AFTER the connection was closed.

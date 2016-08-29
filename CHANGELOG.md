@@ -2,6 +2,12 @@
 
 ***
 
+Change log v.0.14.1
+
+**Update**: update due to Iodine's 0.2.1 version and the deprecation of the `uuid` method (replaced by `conn_id` to minimize collisions).
+
+***
+
 Change log v.0.14.0
 
 Rewrote the whole thing. v. 0.14.0 is a total restart...
