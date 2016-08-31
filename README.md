@@ -8,7 +8,7 @@ Are microservices on your mind? Do you dream of a an SPA that's easy to scale? D
 
 Welcome to your new home with [plezi.io](http://www.plezi.io), the Ruby real-time framework that assumes the application's logic is *not* part of the web service.
 
-**NOTICE**: Plezi 0.14.0 (this branch) is NOT an update, it's a total rewrite. Features were _removed_ as well as altered. For example, Plezi is now a Rack framework, with the limitations of CGI design and the advantages of using existing middleware. API changes abound.
+**NOTICE**: Plezi 0.14.x (this branch) is NOT an update, it's a total rewrite. Features were _removed_ as well as altered. For example, Plezi is now a Rack framework, with the limitations of CGI design and the advantages of using existing middleware. API changes abound.
 
 ## What does Plezi have to offer?
 
@@ -76,7 +76,7 @@ Or install it yourself as:
 
 ## Usage
 
-A new application:
+A new application (default applications include a simple chatroom demo):
 
      $  plezi new app_name
 
@@ -96,16 +96,15 @@ Plezi.route '*', HelloWorld
 exit # <= if running from terminal, this will start the server
 ```
 
-## Development
+## Documentation
 
-After checking out the repo, run `bin/setup` to install dependencies. Then, run `rake test` to run the tests. You can also run `bin/console` for an interactive prompt that will allow you to experiment.
+Plezi is fairly well documented.
 
-To install this gem onto your local machine, run `bundle exec rake install`. To release a new version, update the version number in `version.rb`, and then run `bundle exec rake release`, which will create a git tag for the version, push git commits and tags, and push the `.gem` file to [rubygems.org](https://rubygems.org).
+Documentation is available both in the forms of tutorials and explanations available on the [plezi.io website](http://www.plezi.io) as well as through [the YARD documentation](http://www.rubydoc.info/gems/plezi).
 
 ## Contributing
 
 Bug reports and pull requests are welcome on GitHub at https://github.com/boazsegev/plezi.
-
 
 ## License
 
