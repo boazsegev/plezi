@@ -22,7 +22,7 @@ module Plezi
         @controller = controller
         @param_names = []
         @origial = path.dup.freeze
-        path2regex(m[2])
+        prep_params(m[2])
         self.class.qp
         case @controller
         when Class
@@ -36,17 +36,8 @@ module Plezi
 
       def call(request, response)
         return nil unless match(request.path_info, request)
-        case @controller
-        when Class
-          c = @controller.new
-          return c._pl_respond(request, response, Thread.current[@route_id])
-        when Regexp
-          params = Thread.current[@route_id]
-          return nil unless controller =~ params[@param_names[0]]
-          request.path_info = "/#{params.delete('*'.freeze).to_a.join '/'}"
-          request.params.update params
-        end
-        nil
+        c = @controller.new
+        c._pl_respond(request, response, Thread.current[@route_id])
       end
 
       def fits_params(path, request)
@@ -70,7 +61,7 @@ module Plezi
         req_path.start_with?(@prefix) && fits_params(req_path, request)
       end
 
-      def path2regex(postfix)
+      def prep_params(postfix)
         pfa = postfix.split '/'.freeze
         start = 0; stop = 0
         optional = false
@@ -106,6 +97,16 @@ module Plezi
 
       def self.qp
         @qp ||= ::Rack::QueryParser.new(Hash, 65_536, 100)
+      end
+    end
+    class RouteRewrite < Route
+      def call(request, _response)
+        return nil unless match(request.path_info, request)
+        params = Thread.current[@route_id]
+        return nil unless controller =~ params[@param_names[0]]
+        request.path_info = "/#{params.delete('*'.freeze).to_a.join '/'}"
+        request.params.update params
+        nil
       end
     end
   end

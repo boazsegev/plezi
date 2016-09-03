@@ -14,7 +14,7 @@ module Plezi
 
       def new(app)
         puts 'Plezi as Middleware'
-        @app = ((app == Plezi.app) ? nil : app)
+        @app = (app == Plezi.app ? nil : app)
         Plezi.app
       end
 
@@ -46,6 +46,7 @@ module Plezi
           path << '/*'.freeze unless path[-1] == '*'.freeze
         when Regexp
           path << '/*'.freeze unless path[-1] == '*'.freeze
+          return @routes << RouteRewrite.new(path, controller)
         end
         @routes << Route.new(path, controller)
       end
