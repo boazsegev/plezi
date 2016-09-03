@@ -239,7 +239,7 @@ module Plezi
     # @private
     # This function is used internally by Plezi, do not call.
     def _pl_ad_httpreview(data)
-      data = data.to_json if self.class._pl_is_ad? && data.is_a?(Hash)
+      return data.to_json if self.class._pl_is_ad? && data.is_a?(Hash)
       data
     end
 
