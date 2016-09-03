@@ -2,6 +2,12 @@
 
 ***
 
+Change log v.0.14.2 (unreleased)
+
+**Performance**: minor changes to the router allowed us to move a `case` statement from the live (app is running) stage to the prep (app is initializing) stage.
+
+***
+
 Change log v.0.14.1
 
 **Update**: update due to Iodine's 0.2.1 version and the deprecation of the `uuid` method (replaced by `conn_id` to minimize collisions).
