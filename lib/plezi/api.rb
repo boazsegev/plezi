@@ -33,7 +33,7 @@ module Plezi
   def app
     no_autostart
     puts "Running Plezi version: #{::Plezi::VERSION}"
-    Plezi::Base::Router.method :call
+    Plezi::Base::Router.call_method
   end
 
   # Will add a route to the Plezi application.

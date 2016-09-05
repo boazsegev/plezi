@@ -13,8 +13,10 @@ module Plezi
       module_function
 
       def new(app)
-        puts 'Plezi as Middleware'
-        @app = (app == Plezi.app ? nil : app)
+        if app && app != call_method
+          puts 'Plezi as Middleware'
+          @app = app
+        end
         Plezi.app
       end
 
@@ -34,6 +36,11 @@ module Plezi
         response = Rack::Response.new
         response.write ::Plezi::Base::Err500Ctrl.new._pl_respond(request, response, request.params)
         return response.finish
+      end
+
+      # returns the `call` method. Used repeatedly in middleware mode and only once in application mode.
+      def call_method
+        @call_method ||= Plezi::Base::Router.method(:call)
       end
 
       def route(path, controller)
@@ -112,7 +119,7 @@ module Plezi
         while names.any? && params[name[0]]
           url << "/#{Rack::Utils.escape params[names.shift]}"
         end
-        url = '/'.dup if url.empty?
+        url << '/'.freeze if url.empty?
         (url << '?') << Rack::Utils.build_nested_query(params) if params.any?
         url
       end
