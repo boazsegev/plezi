@@ -4,7 +4,7 @@
 
 Change log v.0.14.2 (unreleased)
 
-**Performance**: minor changes to the router allowed us to move a `case` statement from the live (app is running) stage to the prep (app is initializing) stage.
+**Performance**: minor performance updates, i.e.: in the router, moved a `case` statement from the live (app is running) stage to the prep (app is initializing) stage and saved the `call` method extraction result for faster middleware mode performance.
 
 ***
 
