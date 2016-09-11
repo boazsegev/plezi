@@ -171,7 +171,7 @@ module Plezi
       ::Plezi::Base::MessageDispatch.unicast(id ? self : self.class, target, event_method, args)
     end
 
-    # Invokes a method on every websocket connection that belongs to this Controller / Type. When using Iodine, the method is invoked asynchronously.
+    # Invokes a method on every websocket connection (except `self`) that belongs to this Controller / Type. When using Iodine, the method is invoked asynchronously.
     #
     #        self.broadcast :my_method, "argument 1", "argument 2", 3
     #
@@ -180,7 +180,7 @@ module Plezi
       ::Plezi::Base::MessageDispatch.broadcast(id ? self : self.class, event_method, args)
     end
 
-    # Invokes a method on every websocket connection in the application.
+    # Invokes a method on every websocket connection in the application (except `self`).
     #
     #        self.multicast :my_method, "argument 1", "argument 2", 3
     #
