@@ -166,7 +166,7 @@ module Plezi
     #         puts "#{from} is available"
     #       end
     #
-    # Methods invoked using {unicast}, {broadcast} or {multicast} will quitely fail if the connection was lost, the requested method is undefined or the 'target' was invalid.
+    # Methods invoked using {unicast}, {broadcast} or {multicast} will quietly fail if the connection was lost, the requested method is undefined or the 'target' was invalid.
     def unicast(target, event_method, *args)
       ::Plezi::Base::MessageDispatch.unicast(id ? self : self.class, target, event_method, args)
     end
@@ -175,7 +175,7 @@ module Plezi
     #
     #        self.broadcast :my_method, "argument 1", "argument 2", 3
     #
-    # Methods invoked using {unicast}, {broadcast} or {multicast} will quitely fail if the connection was lost, the requested method is undefined or the 'target' was invalid.
+    # Methods invoked using {unicast}, {broadcast} or {multicast} will quietly fail if the connection was lost, the requested method is undefined or the 'target' was invalid.
     def broadcast(event_method, *args)
       ::Plezi::Base::MessageDispatch.broadcast(id ? self : self.class, event_method, args)
     end
@@ -184,7 +184,7 @@ module Plezi
     #
     #        self.multicast :my_method, "argument 1", "argument 2", 3
     #
-    # Methods invoked using {unicast}, {broadcast} or {multicast} will quitely fail if the connection was lost, the requested method is undefined or the 'target' was invalid.
+    # Methods invoked using {unicast}, {broadcast} or {multicast} will quietly fail if the connection was lost, the requested method is undefined or the 'target' was invalid.
     def multicast(event_method, *args)
       ::Plezi::Base::MessageDispatch.multicast(id ? self : self.class, event_method, args)
     end
