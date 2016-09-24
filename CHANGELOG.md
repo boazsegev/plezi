@@ -2,7 +2,9 @@
 
 ***
 
-Change log v.0.14.2 (unreleased)
+Change log v.0.14.2
+
+**Dependencies**: updates to dependency version requirements.
 
 **Performance**: minor performance updates, i.e.: in the router, moved a `case` statement from the live (app is running) stage to the prep (app is initializing) stage and saved the `call` method extraction result for faster middleware mode performance.
 
