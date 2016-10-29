@@ -93,6 +93,7 @@ module Plezi
       content_disposition << "; filename=#{::File.basename(options[:filename])}" if options[:filename]
 
       response['content-type'.freeze] = (options[:mime] ||= options[:filename] && Rack::Mime.mime_type(::File.extname(options[:filename])))
+      response.delete('content-type'.freeze) unless response['content-type'.freeze]
       response['content-disposition'.freeze] = content_disposition
       true
     end
