@@ -2,6 +2,12 @@
 
 ***
 
+Change log v.0.14.3 (unreleased)
+
+**Dependencies**: added the missing `bundler` dependency. Since the bundler gem is often installed, it took me a while to realize it was missing from the dependency list.
+
+***
+
 Change log v.0.14.2
 
 **Dependencies**: updates to dependency version requirements.
