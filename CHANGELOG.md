@@ -4,7 +4,9 @@
 
 Change log v.0.14.3 (unreleased)
 
-**Dependencies**: added the missing `bundler` dependency. Since the bundler gem is often installed, it took me a while to realize it was missing from the dependency list.
+**Dependencies**: added the missing `bundler` dependency. Since the bundler gem is often installed by default, it took me a while to realize it was missing from the dependency list.
+
+**Update**: minor tweaks to the cookie jar, allowing a unified `to_s` method and unified `keys`/`values` methods.
 
 ***
 

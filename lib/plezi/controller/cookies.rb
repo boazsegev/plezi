@@ -36,5 +36,19 @@ module Plezi
         super
       end
     end
+    # Writes a line dlimited string of all the existing and the new cookies. i.e.:
+    #      name1=value1
+    #      name2=value2
+    def to_s
+      (@request ? (self.to_a + request.cookies.to_a) : self.to_a).map! {|pair| pair.join('=') } .join ("\n")
+    end
+    # Returns an array with all the keys of any available cookies (both existing and new cookies).
+    def keys
+      (@request ? (super + request.cookies.keys) : super)
+    end
+    # Returns an array with all the values of any available cookies (both existing and new cookies).
+    def values
+      (@request ? (super + request.cookies.values) : super)
+    end
   end
 end
