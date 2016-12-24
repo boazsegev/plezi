@@ -24,15 +24,15 @@ Plezi will provide the following features over plain Rack:
 
 * Raw Websocket connections.
 
-    Non-RESTful public Controller methods will be automatically published as valid HTTP routes, allowing the Controller to feel like an intuitive "virtual folder" with RESTful features.
+    Websocket connections are now route specific, routing the websocket callbacks to the Controller that "owns" the route.
 
-* An (optional) Auto-Dispatch to map JSON websocket "events" to Controller functions (handlers).
+* Auto-Dispatch (optional) to automatically map JSON websocket "events" to Controller functions (handlers).
 
 * Automatic (optional) scaling using Redis.
 
 * An extensible template rendering abstraction engine, supports Slim, Markdown (using RedCarpet) and ERB out of the box.
 
-* Belated, extensible, asset baking (a fallback for when the application's assets weren't baked before deployment).
+* Belated, extensible, asset baking (optional fallback for when the application's assets weren't baked before deployment).
 
     It's possible to define an asset route (this isn't the default) to bake assets on the fly.
 
