@@ -19,10 +19,12 @@ module Plezi
       at_exit do
         next if @plezi_autostart == false
         ::Iodine::Rack.app = ::Plezi.app
-        ::Iodine.threads ||= 16
         ::Iodine.start
       end
     end
     true
   end
 end
+
+::Iodine.threads ||= 16
+::Iodine.processes ||= 1 unless ENV['PL_REDIS_URL'.freeze]

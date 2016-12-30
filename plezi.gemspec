@@ -28,6 +28,7 @@ Gem::Specification.new do |spec|
   spec.require_paths = ['lib']
 
   spec.add_dependency 'iodine', '~> 0.2', '>= 0.2.3'
+  spec.add_dependency 'rack', '>= 2.0.0'
   spec.add_dependency 'bundler', '~> 1.13'
   # spec.add_dependency 'redcarpet', '> 3.3.0'
   # spec.add_dependency 'slim', '> 3.0.0'

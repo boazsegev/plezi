@@ -4,9 +4,13 @@
 
 Change log v.0.14.3 (unreleased)
 
-**Dependencies**: added the missing `bundler` dependency. Since the bundler gem is often installed by default, it took me a while to realize it was missing from the dependency list.
+**Dependencies**: added the missing `bundler` and `rack >= 2.0.0` dependencies. Since the bundler gem is often installed by default, it took me a while to realize it was missing from the dependency list. Rack was also easy to miss (being as common).
 
 **Update**: minor tweaks to the cookie jar, allowing a unified `to_s` method and unified `keys`/`values` methods.
+
+**Update**: added Iodine process default to prevent auto-forking unless Redis is used for Websocket scaling. Plezi will default to a single process even though Iodine will default to the number of CPU cores / 2.
+
+**minor fix**: fixed small issues with the app template (old text was updated).
 
 ***
 

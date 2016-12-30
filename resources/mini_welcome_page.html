@@ -45,7 +45,7 @@ h2
 }
 h3
 {
-    font-family: 'Architects Daughter', cursive;    
+    font-family: 'Architects Daughter', cursive;
     background-color: #44518E;
     color: #C6CCE7;
     text-align: left;
@@ -79,7 +79,7 @@ p
 {
     font-size: 1em;
     padding: 0 1em;
-    margin: 0.5em 0;        
+    margin: 0.5em 0;
 }
 a
 {
@@ -153,7 +153,7 @@ input[type=submit]:active
     background-color: #C6CCE7;
     color: #424A70;
     border-radius: 0.5em;
-    border: 1px solid #424A70;    
+    border: 1px solid #424A70;
 }
 #monitor p
 {
@@ -225,7 +225,7 @@ function init_websocket()
         // msg = JSON.parse(e.data); // remember to use JSON also in your Plezi controller.
     };
 }
-window.addEventListener("load", init_websocket, false); 
+window.addEventListener("load", init_websocket, false);
 function send_text()
 {
     var msg = document.getElementById("input").value;
@@ -250,11 +250,13 @@ function send_text()
         <li>
             <p class="bold">Reviewing the sample code and feeding <a href="http://www.plezi.io/">Plezi</a> your code:</p>
             <ul>
-                <li>Review and update MyController in your 'appname.rb'.</li>
-                <li>Edit or delete this file (appname/templates/welcome.html.erb).</li>
-                <li>Write your own controller and code, maybe using a sub-folder as suggested in the 'appname.rb' file.</li>
-                <li>Set up your routes in the 'appname.rb' file.</li>
-                <li>Edit the javascript for the client in your 'appname/websockets.js' file and link to it from your html.</li>
+                <li>Review and update your first Controller in <span class="bold">'appname/app/my_controller.rb'</span>.</li>
+                <li>Edit or delete this file (appname/views/welcome.html.erb).</li>
+                <li>Write new controllers and code, maybe adding sub-folders to 'appname/app'.</li>
+                <li>Set up your routes in the 'appname/routes.rb' file.</li>
+                <li>Add WebSocket support to appname using 'appname/public/javascripts/client.js'.</li>
+                <li>Create some beautiful layouts for appname.</li>
+                <li>Update the error templates at 'appname/views/' to use your app's layout.</li>
             </ul>
         </li>
         <li>
