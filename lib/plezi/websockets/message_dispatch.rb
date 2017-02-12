@@ -12,7 +12,13 @@ module Plezi
 
       module_function
 
+      @ppid = ::Process.pid
+
       def pid
+        if(@ppid != ::Process.pid)
+          @pid = nil
+          @ppid = ::Process.pid
+        end
         @pid ||= SecureRandom.urlsafe_base64.tap { |str| @prefix_len = str.length }
       end
 

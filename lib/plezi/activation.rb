@@ -12,7 +12,6 @@ module Plezi
   end
   @plezi_initialize = nil
   def self.plezi_initialize
-    ::Plezi::Base::MessageDispatch._init
     if @plezi_initialize.nil?
       @plezi_initialize = true
       @plezi_autostart = true if @plezi_autostart.nil?
@@ -28,3 +27,4 @@ end
 
 ::Iodine.threads ||= 16
 ::Iodine.processes ||= 1 unless ENV['PL_REDIS_URL'.freeze]
+::Iodine.run { ::Plezi::Base::MessageDispatch._init }

@@ -2,6 +2,12 @@
 
 ***
 
+Change log v.0.14.4
+
+**Fix**: fixed an issue were scaling using `fork` or server workers would break the automatic scaling feature. The issue was caused by the pub/Sub channel ID of the new processes being identical to the origin process. Credit to Vladimir Dementyev (@palkan) for exposing this issue. This did not seem to effect applications that scaled up with independent processes / machines, such as applications that scaled up using "dynos" on Heroku.
+
+***
+
 Change log v.0.14.3
 
 **Dependencies**: added the missing `bundler` and `rack >= 2.0.0` dependencies. Since the bundler gem is often installed by default, it took me a while to realize it was missing from the dependency list. Rack was also easy to miss (being as common).
