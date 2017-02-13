@@ -5,12 +5,14 @@ require 'plezi/router/adclient'
 
 module Plezi
    module Base
+      # this module is incharge of routing requests to the correct Controller.
       module Router
          @routes = []
          @app = nil
 
          module_function
 
+         # Creates a new router
          def new(app)
             if app && app != call_method
                puts 'Plezi as Middleware'
@@ -19,6 +21,7 @@ module Plezi
             Plezi.app
          end
 
+         # called when an HTTP request had arrived
          def call(env)
             request = Rack::Request.new(env)
             response = Rack::Response.new
@@ -42,6 +45,10 @@ module Plezi
             @call_method ||= Plezi::Base::Router.method(:call)
          end
 
+         # Creates a new route.
+         #
+         # `path`:: should be a string describing the route. Named parameters are allowed.
+         # `controller`:: should be a Class object that will receive all the class properties of a Plezi Controller, or one of the allowed keywords.
          def route(path, controller)
             path = path.chomp('/'.freeze) unless path == '/'.freeze
             case controller
@@ -61,6 +68,7 @@ module Plezi
             @routes
          end
 
+         # Returns the URL for requested controller method and paramerets.
          def url_for(controller, method_sym, params = {})
             # GET,PUT,POST,DELETE
             r = nil

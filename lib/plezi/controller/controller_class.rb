@@ -1,5 +1,6 @@
 module Plezi
    module Controller
+      # this module extends the controller class with Plezi functions
       module ClassMethods
          # A Ruby callback used to initialize class data for new Controllers.
          def self.extended(base)
@@ -48,10 +49,10 @@ module Plezi
 
             @_pl_get_map = {}
             mths = public_instance_methods false
-            mths.delete_if { |m| m.to_s[0] == '_' || !(-1..0).cover?(instance_method(m).arity) }
+            mths.delete_if { |mthd| mthd.to_s[0] == '_' || !(-1..0).cover?(instance_method(mthd).arity) }
             @_pl_get_map[nil] = :index if mths.include?(:index)
-            RESERVED_METHODS.each { |m| mths.delete m }
-            mths.each { |m| @_pl_get_map[m.to_s.freeze] = m }
+            RESERVED_METHODS.each { |mthd| mths.delete mthd }
+            mths.each { |mthd| @_pl_get_map[mthd.to_s.freeze] = mthd }
 
             @_pl_get_map
          end
@@ -106,8 +107,8 @@ module Plezi
             @_pl_ws_map = {}
             mths = instance_methods false
             mths.delete :index
-            RESERVED_METHODS.each { |m| mths.delete m }
-            mths.each { |m| @_pl_ws_map[m.to_s.freeze] = m; @_pl_ws_map[m] = m }
+            RESERVED_METHODS.each { |mthd| mths.delete mthd }
+            mths.each { |mthd| @_pl_ws_map[mthd.to_s.freeze] = mthd; @_pl_ws_map[mthd] = mthd }
 
             @_pl_ws_map
          end

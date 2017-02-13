@@ -7,6 +7,7 @@ module Plezi
 
          def initialize(path, controller)
             @route_id = "Route#{object_id.to_s(16)}".to_sym
+            @params_range = (0..0)
             m = path.match(/([^\:\(\*]*)(.*)/)
             @prefix = m[1].chomp('/'.freeze)
             if @prefix.nil? || @prefix == ''.freeze
@@ -64,7 +65,7 @@ module Plezi
             optional = false
             while pfa.any?
                name = pfa.shift
-               raise "#{name} is not a valid path section in #{@origial}" if /^((\:[\w\.\[\]]+)|(\(\:[\w\.\[\]]+\))|(\*))$/.match(name).nil?
+               raise "#{name} is not a valid path section in #{@origial}" unless /^((\:[\w\.\[\]]+)|(\(\:[\w\.\[\]]+\))|(\*))$/.match(name)
                if name[0] == ':'
                   raise "Cannot have a required parameter after an optional parameter in #{@origial}" if optional
                   @param_names << name[1..-1].freeze

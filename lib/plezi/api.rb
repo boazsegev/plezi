@@ -3,6 +3,7 @@ require 'plezi/helpers'
 require 'plezi/router/router'
 
 module Plezi
+   # Plezi is amazing. Read the {README}
    class << self
      # Get / set the template folder for the {Controller#render} function.
      attr_accessor :templates

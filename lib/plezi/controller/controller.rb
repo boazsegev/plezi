@@ -42,9 +42,9 @@ module Plezi
          @response = response
          @params = params
          @cookies = Cookies.new(request, response)
-         m = requested_method
+         mthd = requested_method
          # puts "m == #{m.nil? ? 'nil' : m.to_s}"
-         return _pl_ad_httpreview(__send__(m)) if m
+         return _pl_ad_httpreview(__send__(mthd)) if mthd
          false
       end
 
@@ -88,12 +88,12 @@ module Plezi
       # Available options: `:inline` (`true` / `false`), `:filename`, `:mime`.
       def send_data(data, options = {})
          response.write data if data
+         filename = options[:filename]
          # set headers
          content_disposition = options[:inline] ? 'inline'.dup : 'attachment'.dup
-         content_disposition << "; filename=#{::File.basename(options[:filename])}" if options[:filename]
-
-         response['content-type'.freeze] = (options[:mime] ||= options[:filename] && Rack::Mime.mime_type(::File.extname(options[:filename])))
-         response.delete('content-type'.freeze) unless response['content-type'.freeze]
+         content_disposition << "; filename=#{::File.basename(options[:filename])}" if filename
+         cont_type = (options[:mime] ||= filename && Rack::Mime.mime_type(::File.extname(filename)))
+         response['content-type'.freeze] = cont_type if cont_type
          response['content-disposition'.freeze] = content_disposition
          true
       end
