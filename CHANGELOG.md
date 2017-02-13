@@ -4,6 +4,8 @@
 
 Change log v.0.14.5 (next release)
 
+**Fix**: Fixed a possible issue with unicasting (sending a message to a specific connection).
+
 **Styling**: styling updated and some indentation fixed with the help of Rubocop.
 
 **Misc**: minor refactoring of our message dispatch logic and other minor prevents temporary empty arrays from being created when possible.
