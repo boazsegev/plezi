@@ -11,16 +11,16 @@
 var ws_controller_path =
     windselfow.location.pathname; // change to '/controller/path'
 var ws_uri = (self.location.protocol.match(/https/) ? 'wss' : 'ws') + '://' +
-             self.document.location.host + ws_controller_path
+             self.document.location.host + ws_controller_path;
 // websocket variable.
-var websocket = NaN
+var websocket = NaN;
 // count failed attempts
-var websocket_fail_count = 0
+var websocket_fail_count = 0;
 // to limit failed reconnection attempts, set this to a number.
-var websocket_fail_limit = NaN
+var websocket_fail_limit = NaN;
 // to offer some space between reconnection attempts, set this interval in
 // miliseconds.
-var websocket_reconnect_interval = 250
+var websocket_reconnect_interval = 250;
 
 function init_websocket() {
   if (websocket && websocket.readyState == 1)
@@ -28,7 +28,7 @@ function init_websocket() {
   websocket = new WebSocket(ws_uri);
   websocket.onopen = function(e) {
     // reset the count.
-    websocket_fail_count = 0
+    websocket_fail_count = 0;
     // what do you want to do now?
   };
 
@@ -37,7 +37,7 @@ function init_websocket() {
     if (!isNaN(websocket_fail_limit) &&
         websocket_fail_count >= websocket_fail_limit) {
       // What to do if we can't reconnect so many times?
-      return
+      return;
     };
     // you probably want to reopen the websocket if it closes.
     if (isNaN(websocket_fail_limit) ||
@@ -50,7 +50,7 @@ function init_websocket() {
   };
   websocket.onerror = function(e) {
     // update the count.
-    websocket_fail_count += 1
+    websocket_fail_count += 1;
     // what do you want to do now?
   };
   websocket.onmessage = function(e) {

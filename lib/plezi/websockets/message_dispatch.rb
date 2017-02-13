@@ -9,6 +9,9 @@ module Plezi
 
          module_function
 
+         SAFE_TYPES = [Symbol, Date, Time, Encoding, Struct, Regexp, Range, Set].freeze
+         EMPTY_ARGS = [].freeze
+
          @ppid = ::Process.pid
 
          def pid
@@ -32,17 +35,20 @@ module Plezi
          end
 
          def <<(msg)
-            @safe_types ||= [Symbol, Date, Time, Encoding, Struct, Regexp, Range, Set].freeze
-            msg = YAML.safe_load(msg, @safe_types)
+            msg = YAML.safe_load(msg, SAFE_TYPES)
             return if msg[:origin] == pid
+            # handle string vs. symbol issues
             msg[:type] ||= msg['type'.freeze]
+            msg[:event] ||= msg['event'.freeze]
+            msg[:target] ||= msg['target'.freeze]
+            msg[:args] ||= msg['args'.freeze] || EMPTY_ARGS
             msg[:type] = Object.const_get msg[:type] if msg[:type] && msg[:type] != :all
-            if msg[:target] ||= msg['target'.freeze]
-               Iodine::Websocket.defer(target2uuid(msg[:target])) { |ws| ws._pl_ad_review(ws.__send__(ws._pl_ws_map[msg[:event]], *(msg[:args] ||= msg['args'.freeze] || []))) if ws._pl_ws_map[msg[:event] ||= msg['event'.freeze]] }
+            if msg[:target]
+               Iodine::Websocket.defer(target2uuid(msg[:target])) { |ws| ws._pl_ad_review(ws.__send__(ws._pl_ws_map[msg[:event]], *(msg[:args]))) if ws._pl_ws_map[msg[:event]] }
             elsif (msg[:type]) == :all
-               Iodine::Websocket.each { |ws| ws._pl_ad_review(ws.__send__(ws._pl_ws_map[msg[:event]], *(msg[:args] ||= msg['args'.freeze] || []))) if ws._pl_ws_map[msg[:event] ||= msg['event'.freeze]] }
+               Iodine::Websocket.each { |ws| ws._pl_ad_review(ws.__send__(ws._pl_ws_map[msg[:event]], *(msg[:args]))) if ws._pl_ws_map[msg[:event]] }
             else
-               Iodine::Websocket.each { |ws| ws._pl_ad_review(ws.__send__(ws._pl_ws_map[msg[:event]], *(msg[:args] ||= msg['args'.freeze] || []))) if ws.is_a?(msg[:type]) && msg[:type]._pl_ws_map[msg[:event] ||= msg['event'.freeze]] }
+               Iodine::Websocket.each { |ws| ws._pl_ad_review(ws.__send__(ws._pl_ws_map[msg[:event]], *(msg[:args]))) if ws.is_a?(msg[:type]) && msg[:type]._pl_ws_map[msg[:event]] }
             end
 
          rescue => e

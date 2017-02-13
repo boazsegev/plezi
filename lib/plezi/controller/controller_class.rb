@@ -157,9 +157,7 @@ module Plezi
          # This function is used internally by Plezi, do not call.
          def _pl_init_class_data
             @auto_dispatch ||= nil
-            @_pl_get_map = nil
-            @_pl_ad_map = nil
-            @_pl_ws_map = nil
+            @_pl_get_map = @_pl_ad_map = @_pl_ws_map = nil
             @_pl_has_show = public_instance_methods(false).include?(:show)
             @_pl_has_new = public_instance_methods(false).include?(:new)
             @_pl_has_create = public_instance_methods(false).include?(:create)

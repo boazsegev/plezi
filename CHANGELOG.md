@@ -2,6 +2,14 @@
 
 ***
 
+Change log v.0.14.5 (next release)
+
+**Styling**: styling updated and some indentation fixed with the help of Rubocop.
+
+**Misc**: minor refactoring of our message dispatch logic and other minor prevents temporary empty arrays from being created when possible.
+
+***
+
 Change log v.0.14.4
 
 **Fix**: fixed an issue were scaling using `fork` or server workers would break the automatic scaling feature. The issue was caused by the pub/Sub channel ID of the new processes being identical to the origin process. Credit to Vladimir Dementyev (@palkan) for exposing this issue. This did not seem to effect applications that scaled up with independent processes / machines, such as applications that scaled up using "dynos" on Heroku.
