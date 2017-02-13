@@ -37,7 +37,7 @@ module Plezi
          def <<(msg)
             msg = YAML.safe_load(msg, SAFE_TYPES)
             return if msg[:origin] == pid
-            # handle string vs. symbol issues
+            # handle string vs. symbol issues related to older Plezi versions.
             msg[:type] ||= msg['type'.freeze] || :all
             msg[:event] ||= msg['event'.freeze]
             msg[:target] ||= msg['target'.freeze]
