@@ -15,6 +15,7 @@ module Plezi
     if @plezi_initialize.nil?
       @plezi_initialize = true
       @plezi_autostart = true if @plezi_autostart.nil?
+      puts "WARNNING: auto-scaling with redis is set using ENV['PL_REDIS_URL'.freeze]\r\n           but the Redis gem isn't included! - SCALING IS IGNORED!" if ENV['PL_REDIS_URL'.freeze] && !defined?(::Redis)
       at_exit do
         next if @plezi_autostart == false
         ::Iodine::Rack.app = ::Plezi.app
