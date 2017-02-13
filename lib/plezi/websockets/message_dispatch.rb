@@ -58,7 +58,7 @@ module Plezi
 
          def unicast(_sender, target, meth, args)
             return false if target.nil?
-            if (tuuid = target2uuid)
+            if (tuuid = target2uuid(target))
                Iodine::Websocket.defer(tuuid) { |ws| ws._pl_ad_review(ws.__send__(ws._pl_ws_map[meth], *args)) if ws._pl_ws_map[meth] }
                return true
             end
