@@ -1,0 +1,30 @@
+#!/usr/bin/env ruby
+
+# # Uncomment and set Redis URL for automatic scalling across proccesses and machines:
+# require 'redis'
+# ENV['PL_REDIS_URL'] ||= "redis://localhost:7777/0"
+# ENV['PL_REDIS_URL'] ||= "redis://:password@my.host:6389/0"
+
+Dir.chdir(File.expand_path(File.join('..', '..', 'lib'), __FILE__))
+require 'bundler/setup'
+require 'plezi'
+class ShootoutApp
+  # the default HTTP response
+  def index
+    "This application should be used with the websocket-shootout benchmark utility."
+  end
+  # we won't be using AutoDispatch, but directly using the `on_message` callback.
+  def on_message data
+    cmd, payload = JSON(data).values_at('type', 'payload')
+    if cmd == 'echo'
+      write({type: 'echo', payload: payload}.to_json)
+    else
+      ShootoutApp.write2everyone({type: 'broadcast', payload: payload}.to_json)
+      write({type: "broadcastResult", payload: payload}.to_json)
+    end
+  rescue
+    puts "Incoming message format error - not JSON?"
+  end
+end
+
+Plezi.route '*', ShootoutApp

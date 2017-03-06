@@ -190,6 +190,24 @@ module Plezi
          ::Plezi::Base::MessageDispatch.multicast(id ? self : self.class, event_method, args)
       end
 
+      # Writes a message to every client websocket connection, for all controllers(!), EXCEPT self. Accepts an optional filter method using a location reference for a *static* (Class/Module/global) method. The filter method will be passerd the websocket object and it should return `true` / `false`.
+      #
+      #        self.write2everyone {event: "global", message: "This will be sent to everyone"}.to_json
+      #        # or, we can define a filter method somewhere in our code
+      #        module Filter
+      #            def self.should_send? ws
+      #               true
+      #            end
+      #        end
+      #        # and we can use this filter method.
+      #        data = {event: "global", message: "This will be sent to everyone"}.to_json
+      #        self.write2everyone data, ::Filter, :should_send?
+      #
+      # It's important that the filter method is defined statically in our code and isn't dynamically allocated. Otherwise, scaling the application would be impossible.
+      def write2everyone(data, filter_owner = nil, filter_name = nil)
+         ::Plezi::Base::MessageDispatch.write2everyone(id ? self : self.class, data, filter_owner, filter_name)
+      end
+
       # @private
       # This function is used internally by Plezi, do not call.
       def _pl_ws_map

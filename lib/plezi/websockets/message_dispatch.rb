@@ -55,9 +55,23 @@ module Plezi
                Iodine::Websocket.each { |ws| ws._pl_ad_review(ws.__send__(ws._pl_ws_map[event], *(msg[:args]))) if ws._pl_ws_map[event] }
                return
             end
+            if event == :write2everyone
+               return unless msg[:data]
+               mth = msg[:method]
+               if(mth)
+                  target_type = Object.const_get target_type
+                  mth = target_type.method(mth)
+                  return unless mth
+                  Iodine::Websocket.each_write msg[:data], &mth
+               else
+                  Iodine::Websocket.each_write msg[:data]
+               end
+               return
+            end
             target_type = Object.const_get target_type
             if target_type._pl_ws_map[event]
                Iodine::Websocket.each { |ws| ws._pl_ad_review(ws.__send__(ws._pl_ws_map[event], *(msg[:args]))) if ws.is_a?(target_type) }
+               return
             end
 
          rescue => e
@@ -91,8 +105,17 @@ module Plezi
          # Sends a message to a all existing websocket connections, as well as pushing the message to the Pub/Sub drivers.
          def multicast(sender, meth, args)
             sender = Iodine::Websocket if sender.is_a?(Class)
-            Iodine::Websocket.each { |ws| ws._pl_ad_review(ws.__send__(ws._pl_ws_map[meth], *args)) if ws._pl_ws_map[meth] }
+            sender.each { |ws| ws._pl_ad_review(ws.__send__(ws._pl_ws_map[meth], *args)) if ws._pl_ws_map[meth] }
             push type: :all, args: args, event: meth
+         end
+
+         # Writes directly to all clients of all controllers.
+         def write2everyone(sender, data, filter_owner = nil, filter_name = nil)
+           sender = Iodine::Websocket if sender.is_a?(Class)
+           mth = nil
+           raise TypeError, "Plezi\#write_each filter error - method doesn't exist? #{filter_owner}.#{filter_name}" if(filter_owner && !(mth = filter_owner.method(filter_name)))
+           mth ? sender.each_write(data, &mth) : sender.each_write(data)
+           push event: :write2everyone, data: data, type: (filter_owner || Iodine::Websocket).name, method: (filter_owner && filter_name)
          end
 
          # Converts a target Global UUID to a localized UUID
