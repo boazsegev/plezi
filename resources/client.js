@@ -199,7 +199,7 @@ PleziClient.prototype.___dispatch =
 }
 
                             PleziClient.origin =
-                                (self.location.protocol.match(/https/) ? 'wws'
+                                (self.location.protocol.match(/https/) ? 'wss'
                                                                        : 'ws') +
                                 '://' + self.location.hostname +
                                 (self.location.port == ''

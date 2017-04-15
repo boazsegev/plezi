@@ -2,6 +2,12 @@
 
 ***
 
+Change log v.0.14.6
+
+**Fix**: Fixed Plezi client SSL URL scheme for auto-url connections.
+
+***
+
 Change log v.0.14.5
 
 **Fix**: Fixed Plezi client issues related to the code beautifier moving things around.
