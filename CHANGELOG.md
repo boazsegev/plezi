@@ -2,7 +2,9 @@
 
 ***
 
-Change log v.0.14.5 (next release)
+Change log v.0.14.5
+
+**Fix**: Fixed Plezi client issues related to the code beautifier moving things around.
 
 **Fix**: Fixed a possible issue with unicasting (sending a message to a specific connection).
 
