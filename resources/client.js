@@ -85,8 +85,7 @@ PleziClient.prototype.___on_open =
   }
 }
             // The Websocket onmessage callback
-            PleziClient.prototype.___on_message =
-                function(e) {
+            PleziClient.prototype.___on_message = function(e) {
   try {
     var msg = JSON.parse(e.data);
     this.owner.___dispatch(msg);
@@ -95,8 +94,10 @@ PleziClient.prototype.___on_open =
         "PleziClient experienced an error parsing the following data (not JSON):",
         err, e);
   }
-} PleziClient.prototype.___dispatch =
-                    function(msg) {
+};
+
+PleziClient.prototype.___dispatch =
+    function(msg) {
   try {
     if (this.log_events) {
       console.log(msg);
@@ -126,16 +127,16 @@ PleziClient.prototype.___on_open =
   }
 }
 
-                    // Clears meta timeout data
-                    PleziClient.prototype.___perform_timeout_callback =
-                        function(event, pl_client, callback) {
+    // Clears meta timeout data
+    PleziClient.prototype.___perform_timeout_callback =
+        function(event, pl_client, callback) {
   delete pl_client[event._EID_];
   callback(event, pl_client);
 }
 
-                        // Sets a timeout for the websocket message
-                        PleziClient.prototype.___set_failed_timeout =
-                            function(event, callback, timeout) {
+        // Sets a timeout for the websocket message
+        PleziClient.prototype.___set_failed_timeout =
+            function(event, callback, timeout) {
   if (event._EID_) {
     return event;
   };
@@ -152,11 +153,11 @@ PleziClient.prototype.___on_open =
                            this, callback);
   return event;
 }
-                            // Removes the _client_ property from the event and
-                            // calls
-                            // the ontimeout callback within the correct scope
-                            PleziClient.prototype.___on_timeout =
-                                function(event, client) {
+            // Removes the _client_ property from the event and
+            // calls
+            // the ontimeout callback within the correct scope
+            PleziClient.prototype.___on_timeout =
+                function(event, client) {
   if (client.ajaj.auto) {
     if (client.log_events) {
       console.log("falling back on AJAJ for the event:", event);
@@ -166,17 +167,17 @@ PleziClient.prototype.___on_open =
     client.ontimeout(event);
   }
 }
-                                // The timeout callback
-                                PleziClient.prototype.ontimeout =
-                                    function(event) {
+                // The timeout callback
+                PleziClient.prototype.ontimeout =
+                    function(event) {
   console.warn("Timeout reached - it's assumed the connection was lost " +
                    "and the following event was ignored by the server:",
                event);
   console.log(this);
 }
 
-                                    PleziClient.prototype.reconnect =
-                                        function() {
+                    PleziClient.prototype.reconnect =
+                        function() {
   this.connected = NaN;
   this.ws = new WebSocket(this.url);
   // lets us access the client from the callbacks
@@ -191,22 +192,19 @@ PleziClient.prototype.___on_open =
   this.ws.onmessage = this.___on_message;
 }
 
-                                        PleziClient.prototype.close =
-                                            function() {
+                        PleziClient.prototype.close =
+                            function() {
   this.autoreconnect = false;
   this.ws.close();
 }
 
-                                            PleziClient.origin =
-                                                (self.location.protocol.match(
-                                                     /https/)
-                                                     ? 'wws'
-                                                     : 'ws') +
-                                                '://' + self.location.hostname +
-                                                (self.location.port == ''
-                                                     ? ''
-                                                     : (':' +
-                                                        self.location.port));
+                            PleziClient.origin =
+                                (self.location.protocol.match(/https/) ? 'wws'
+                                                                       : 'ws') +
+                                '://' + self.location.hostname +
+                                (self.location.port == ''
+                                     ? ''
+                                     : (':' + self.location.port));
 
 PleziClient.prototype.sendraw =
     function(data) {
@@ -224,7 +222,8 @@ PleziClient.prototype.sendraw =
         function(event, callback, timeout_callback, timeout) {
   if (!timeout && callback && !this.emit_timeout)
     timeout = 10;
-  this.___set_failed_timeout(event, timeout_callback, timeout) if (callback) {
+  this.___set_failed_timeout(event, timeout_callback, timeout);
+  if (callback) {
     this[event._EID_] = {callback : callback, event : event};
   }
   return this.sendraw(JSON.stringify(event));
@@ -234,7 +233,10 @@ PleziClient.prototype.sendraw =
             function() { return this.ws.readyState; }
 
             PleziClient.prototype.___ajaj__emit = function(event, callback) {
-  var combined = {} for (var k in this.add) { combined[k] = this.add[k]; };
+  var combined = {};
+  for (var k in this.add) {
+    combined[k] = this.add[k];
+  };
   for (var k in event) {
     combined[k] = event[k];
   };
@@ -265,7 +267,8 @@ PleziClient.prototype.sendraw =
         this.callback(this.json);
       }
     }
-  } req.open("POST", this.url, true);
+  };
+  req.open("POST", this.url, true);
   req.setRequestHeader("Content-type", "application/json");
   try {
     req.send(JSON.stringify(combined));
