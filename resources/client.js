@@ -176,8 +176,7 @@ PleziClient.prototype.___dispatch =
   console.log(this);
 }
 
-                    PleziClient.prototype.reconnect =
-                        function() {
+                    PleziClient.prototype.reconnect = function() {
   this.connected = NaN;
   this.ws = new WebSocket(this.url);
   // lets us access the client from the callbacks
@@ -190,21 +189,14 @@ PleziClient.prototype.___dispatch =
   this.ws.onerror = this.___on_error;
   // The Websocket onmessage callback
   this.ws.onmessage = this.___on_message;
-}
+};
 
-                        PleziClient.prototype.close =
-                            function() {
+PleziClient.prototype.close = function() {
   this.autoreconnect = false;
   this.ws.close();
-}
+};
 
-                            PleziClient.origin =
-                                (self.location.protocol.match(/https/) ? 'wss'
-                                                                       : 'ws') +
-                                '://' + self.location.hostname +
-                                (self.location.port == ''
-                                     ? ''
-                                     : (':' + self.location.port));
+PleziClient.origin = document.location.origin.replace(/^http/i, "ws");
 
 PleziClient.prototype.sendraw =
     function(data) {
