@@ -75,7 +75,7 @@ h1 a:hover, h2 a:hover, h3 a:hover
 {
     color: #EBD7A6;
 }
-p
+p, li
 {
     font-size: 1em;
     padding: 0 1em;
@@ -103,7 +103,7 @@ a:hover
 
 #wrapper p{ padding: 0 2%;}
 .bold { font-weight: bold; }
-#wrapper ol li{ padding: 0 2%;}
+#wrapper li{ padding: 0 1em;}
 pre
 {
     border-radius: 20px;
@@ -250,12 +250,13 @@ function send_text()
         <li>
             <p class="bold">Reviewing the sample code and feeding <a href="http://www.plezi.io/">Plezi</a> your code:</p>
             <ul>
-                <li>Review and update your first Controller in <span class="bold">'appname/app/my_controller.rb'</span>.</li>
+                <li>Review and update your first Controller in <span class="bold">'appname/controllers/example.rb'</span>.</li>
                 <li>Edit or delete this file (appname/views/welcome.html.erb).</li>
-                <li>Write new controllers and code, maybe adding sub-folders to 'appname/app'.</li>
                 <li>Set up your routes in the 'appname/routes.rb' file.</li>
-                <li>Add WebSocket support to appname using 'appname/public/javascripts/client.js'.</li>
-                <li>Create some beautiful layouts for appname.</li>
+                <li>Write new controllers that tanslate between your application's API and the internet layer.</li>
+                <li>Save the actual application logic in the 'appname/lib' folder, seperating it from the network layer.</li>
+                <li>Add WebSocket support, just because it's easy and fun.</li>
+                <li>Write a beautiful client to access appname through the web.</li>
                 <li>Update the error templates at 'appname/views/' to use your app's layout.</li>
             </ul>
         </li>

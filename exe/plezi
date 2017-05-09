@@ -72,8 +72,8 @@ module Builder
       app_tree['Gemfile'] << IO.read(Root.join('resources', 'gemfile'))
       app_tree['Gemfile'] << "\n\nruby '#{RUBY_VERSION}'\n"
       app_tree['rakefile'] ||= IO.read(Root.join('resources', 'rakefile'))
-      app_tree['app'] ||= {}
-      app_tree['app']['my_controler.rb'] ||= IO.read(Root.join('resources', 'ctrlr.rb')).gsub('appname', app_name)
+      app_tree['controllers'] ||= {}
+      app_tree['controllers']['example.rb'] ||= IO.read(Root.join('resources', 'ctrlr.rb')).gsub('appname', app_name)
       app_tree['views'] ||= {}
       app_tree['views']['welcome.html.erb'] ||= IO.read(Root.join('resources', 'mini_welcome_page.html')).gsub('appname', app_name)
       app_tree['views']['404.html.erb'] ||= IO.read(Root.join('resources', '404.erb'))
@@ -83,6 +83,7 @@ module Builder
       app_tree['public']['javascripts'] ||= {}
       app_tree['public']['javascripts']['client.js'] ||= IO.read(Root.join('resources', 'client.js')).gsub('appname', app_name)
       app_tree['public']['javascripts']['simple-client.js'] ||= IO.read(Root.join('resources', 'simple-client.js')).gsub('appname', app_name)
+      app_tree['test'] ||= {}
 
       begin
          Dir.mkdir app_name

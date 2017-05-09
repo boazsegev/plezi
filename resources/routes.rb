@@ -18,4 +18,4 @@
 # Plezi.route "/:format" , /^(html|json|xml)$/
 
 # # The root Controller
-Plezi.route '/', RootController
+Plezi.route '/', ExampleCtrl

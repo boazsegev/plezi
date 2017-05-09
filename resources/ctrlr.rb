@@ -1,5 +1,5 @@
 # Replace this sample with real code.
-class RootController
+class ExampleCtrl
    # HTTP
    def index
       # any String returned will be appended to the response. We return a String.
