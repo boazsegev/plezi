@@ -8,6 +8,7 @@
 Dir.chdir(File.expand_path(File.join('..', '..', 'lib'), __FILE__))
 require 'bundler/setup'
 require 'plezi'
+
 class ShootoutApp
   # the default HTTP response
   def index
@@ -19,12 +20,19 @@ class ShootoutApp
     if cmd == 'echo'
       write({type: 'echo', payload: payload}.to_json)
     else
+      # data = {type: 'broadcast', payload: payload}.to_json
+      # broadcast :push2client, data
       ShootoutApp.write2everyone({type: 'broadcast', payload: payload}.to_json)
       write({type: "broadcastResult", payload: payload}.to_json)
     end
   rescue
     puts "Incoming message format error - not JSON?"
   end
+
+  def push2client data
+    write data
+  end
+
 end
 
 Plezi.route '*', ShootoutApp

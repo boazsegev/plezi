@@ -2,6 +2,12 @@
 
 ***
 
+Change log v.0.14.7
+
+**Fix**: Tested against Iodine 0.3.0.
+
+***
+
 Change log v.0.14.6
 
 **Fix**: Fixed Plezi client SSL URL scheme for auto-url connections.
