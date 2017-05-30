@@ -29,7 +29,7 @@ if defined?(::Sass)
             def review_cache(filename, target)
                return nil unless File.exist?(filename)
                eng = self[filename]
-               return true unless eng.nil? || refresh_sass?(filename)
+               return self[target] unless eng.nil? || refresh_sass?(filename)
                self[filename] = (eng = Sass::Engine.for_file(filename, SASS_OPTIONS)).dependencies
                map_name = "#{target}.map".freeze
                css, map = eng.render_with_sourcemap(File.basename(map_name))

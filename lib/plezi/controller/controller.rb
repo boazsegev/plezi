@@ -244,17 +244,15 @@ module Plezi
       # @private
       # This function is used internally by Plezi, do not call.
       def _pl_ad_review(data)
-         if self.class._pl_is_ad?
-            case data
-            when Hash
-               write data.to_json
-            when String
-               write data
-               # when Array
-               #   write ret
-            end
-         end
-         data
+        return data unless self.class._pl_is_ad?
+        case data
+        when Hash
+           write data.to_json
+        when String
+           write data
+           # when Array
+           #   write data.to_json
+        end
       end
 
       # @private

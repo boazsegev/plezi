@@ -33,13 +33,15 @@ module Plezi
          end
 
          def call(request, response)
-            return nil unless match(request.path_info, request)
+            params = match(request.path_info, request)
+            return nil unless params
             c = @controller.new
-            c._pl_respond(request, response, Thread.current[@route_id])
+            c._pl_respond(request, response, params)
          end
 
          def fits_params(path, request)
             params = (Thread.current[@route_id] ||= {}).clear
+            params.default_proc = Plezi.hash_proc_4symstr
             params.update request.params.to_h if request && request.params
             # puts "cutting: #{path[(@prefix_length)..-1] ? path[(@prefix_length + 1)..-1] : 'nil'}"
             pa = (path[@prefix_length..-1] || ''.freeze).split('/'.freeze)
@@ -51,7 +53,7 @@ module Plezi
                                               Plezi.try_utf8!(Rack::Utils.unescape(pa.shift)), 100)
             end
             params['*'.freeze] = pa unless pa.empty?
-            true
+            params
          end
 
          def match(req_path, request = nil)

@@ -19,12 +19,13 @@ module Plezi
             def index
                name = File.join(Plezi.assets, *params['*'.freeze]).freeze
                data = ::Plezi::AssetBaker.bake(name)
-               IO.binwrite(name, data) if data.is_a?(String)
-               if File.exist? name
-                  response['X-Sendfile'.freeze] = name
-                  response.body = File.open(name)
-                  return true
-               end
+               return data if data.is_a?(String)
+               # IO.binwrite(name, data) if data.is_a?(String)
+               # if File.exist? name
+               #    response['X-Sendfile'.freeze] = name
+               #    response.body = File.open(name)
+               #    return true
+               # end
                false
             end
          end

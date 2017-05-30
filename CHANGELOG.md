@@ -2,6 +2,14 @@
 
 ***
 
+Change log v.0.14.8 (next)
+
+**Fix**: Asset Sass rendering will now only save the output to a file in production mode, allowing development mode to hot-load the assets and re-render them when changes occur.
+
+**Feature**: (experimental) The `params` hash will now search for a String alternative, if a Symbol is provided... in other words, the `params#[]` accessor can now be used with both symbols and Strings.
+
+***
+
 Change log v.0.14.7
 
 **Fix**: Tested against Iodine 0.3.0.

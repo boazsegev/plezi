@@ -14,6 +14,7 @@ module Plezi
   def self.plezi_initialize
      if @plezi_initialize.nil?
         @plezi_initialize = true
+        self.hash_proc_4symstr # crerate the Proc object used for request params
         @plezi_autostart = true if @plezi_autostart.nil?
         puts "WARNNING: auto-scaling with redis is set using ENV['PL_REDIS_URL'.freeze]\r\n           but the Redis gem isn't included! - SCALING IS IGNORED!" if ENV['PL_REDIS_URL'.freeze] && !defined?(::Redis)
         at_exit do
