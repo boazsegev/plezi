@@ -8,6 +8,8 @@ Change log v.0.14.8 (next)
 
 **Feature**: (experimental) The `params` hash will now search for a String alternative, if a Symbol is provided... in other words, the `params#[]` accessor can now be used with both symbols and Strings.
 
+**Changes**: Changed the default Iodine workers to dynamically adjust to Redis scaling availability.
+
 ***
 
 Change log v.0.14.7
