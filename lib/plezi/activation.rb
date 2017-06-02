@@ -19,6 +19,8 @@ module Plezi
         if ENV['PL_REDIS_URL'.freeze] && !defined?(::Redis)
           puts "WARNNING: auto-scaling with redis is set using ENV['PL_REDIS_URL'.freeze]\r\n           but the Redis gem isn't included! - SCALING IS IGNORED!"
           ::Iodine.processes ||= 1
+        elsif !ENV['PL_REDIS_URL'.freeze]
+          ::Iodine.processes ||= 1
         end
         ::Iodine.processes ||= 4
         at_exit do
