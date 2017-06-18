@@ -148,64 +148,12 @@ module Plezi
       # Notice: It is impossible to `unextend` an extended module at this time.
       def extend(mod)
          raise TypeError, '`mod` should be a module' unless mod.class == Module
-         raise "#{self} already extended by #{mod.name}" if is_a?(mod)
-         mod.extend ::Plezi::Controller::ClassMethods
-         super(mod)
+         unless is_a?(mod)
+           mod.extend ::Plezi::Controller::ClassMethods
+           super(mod)
+         end
          _pl_ws_map.update mod._pl_ws_map
          _pl_ad_map.update mod._pl_ad_map
-      end
-
-      # Invokes a method on the `target` websocket connection. When using Iodine, the method is invoked asynchronously.
-      #
-      #       def perform_poke(target)
-      #         unicast target, :poke, self.id
-      #       end
-      #       def poke(from)
-      #         unicast from, :poke_back, self.id
-      #       end
-      #       def poke_back(from)
-      #         puts "#{from} is available"
-      #       end
-      #
-      # Methods invoked using {unicast}, {broadcast} or {multicast} will quietly fail if the connection was lost, the requested method is undefined or the 'target' was invalid.
-      def unicast(target, event_method, *args)
-         ::Plezi::Base::MessageDispatch.unicast(id ? self : self.class, target, event_method, args)
-      end
-
-      # Invokes a method on every websocket connection (except `self`) that belongs to this Controller / Type. When using Iodine, the method is invoked asynchronously.
-      #
-      #        self.broadcast :my_method, "argument 1", "argument 2", 3
-      #
-      # Methods invoked using {unicast}, {broadcast} or {multicast} will quietly fail if the connection was lost, the requested method is undefined or the 'target' was invalid.
-      def broadcast(event_method, *args)
-         ::Plezi::Base::MessageDispatch.broadcast(id ? self : self.class, event_method, args)
-      end
-
-      # Invokes a method on every websocket connection in the application (except `self`).
-      #
-      #        self.multicast :my_method, "argument 1", "argument 2", 3
-      #
-      # Methods invoked using {unicast}, {broadcast} or {multicast} will quietly fail if the connection was lost, the requested method is undefined or the 'target' was invalid.
-      def multicast(event_method, *args)
-         ::Plezi::Base::MessageDispatch.multicast(id ? self : self.class, event_method, args)
-      end
-
-      # Writes a message to every client websocket connection, for all controllers(!), EXCEPT self. Accepts an optional filter method using a location reference for a *static* (Class/Module/global) method. The filter method will be passerd the websocket object and it should return `true` / `false`.
-      #
-      #        self.write2everyone {event: "global", message: "This will be sent to everyone"}.to_json
-      #        # or, we can define a filter method somewhere in our code
-      #        module Filter
-      #            def self.should_send? ws
-      #               true
-      #            end
-      #        end
-      #        # and we can use this filter method.
-      #        data = {event: "global", message: "This will be sent to everyone"}.to_json
-      #        self.write2everyone data, ::Filter, :should_send?
-      #
-      # It's important that the filter method is defined statically in our code and isn't dynamically allocated. Otherwise, scaling the application would be impossible.
-      def write2everyone(data, filter_owner = nil, filter_name = nil)
-         ::Plezi::Base::MessageDispatch.write2everyone(id ? self : self.class, data, filter_owner, filter_name)
       end
 
       # @private

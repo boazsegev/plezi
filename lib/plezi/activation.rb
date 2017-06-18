@@ -1,5 +1,5 @@
 require 'plezi/websockets/message_dispatch' unless defined?(::Plezi::Base::MessageDispatch)
-
+require 'uri'
 module Plezi
    protected
 
@@ -16,13 +16,10 @@ module Plezi
         @plezi_initialize = true
         self.hash_proc_4symstr # crerate the Proc object used for request params
         @plezi_autostart = true if @plezi_autostart.nil?
-        if ENV['PL_REDIS_URL'.freeze] && !defined?(::Redis)
-          puts "WARNNING: auto-scaling with redis is set using ENV['PL_REDIS_URL'.freeze]\r\n           but the Redis gem isn't included! - SCALING IS IGNORED!"
-          ::Iodine.processes ||= 1
-        elsif !ENV['PL_REDIS_URL'.freeze]
-          ::Iodine.processes ||= 1
+        if((ENV['PL_REDIS_URL'.freeze] ||= ENV["REDIS_URL"]))
+          uri = URI(ENV['PL_REDIS_URL'.freeze])
+          Iodine::Websocket.default_pubsub = Iodine::PubSub::RedisEngine.new(uri.host, uri.port, 0, uri.password)
         end
-        ::Iodine.processes ||= 4
         at_exit do
            next if @plezi_autostart == false
            ::Iodine::Rack.app = ::Plezi.app
@@ -33,6 +30,5 @@ module Plezi
   end
 end
 
-::Iodine.threads ||= 16
 # ::Iodine.processes ||= (ENV['PL_REDIS_URL'.freeze] ? 4 : 1)
 ::Iodine.run { ::Plezi::Base::MessageDispatch._init }
