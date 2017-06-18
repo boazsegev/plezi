@@ -104,7 +104,7 @@ module Builder
       puts ''
       puts "please change directory into the app directory: cd #{app_name}"
       puts ''
-      puts "run the #{app_name} app using: ./#{app_name} or using the iodine / rackup commands."
+      puts "run the #{app_name} app using: ./#{app_name} or using the iodine or rackup commands."
       puts ''
    end
 end

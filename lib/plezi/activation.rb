@@ -1,5 +1,4 @@
-require 'plezi/websockets/message_dispatch' unless defined?(::Plezi::Base::MessageDispatch)
-require 'uri'
+require 'uri' unless defined?(::URI)
 module Plezi
    protected
 
@@ -29,6 +28,3 @@ module Plezi
      true
   end
 end
-
-# ::Iodine.processes ||= (ENV['PL_REDIS_URL'.freeze] ? 4 : 1)
-::Iodine.run { ::Plezi::Base::MessageDispatch._init }

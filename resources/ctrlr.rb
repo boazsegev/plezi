@@ -1,34 +1,25 @@
 # Replace this sample with real code.
 class ExampleCtrl
-   # HTTP
-   def index
-      # any String returned will be appended to the response. We return a String.
-      render 'welcome'
-   end
+  # HTTP
+  def index
+    # any String returned will be appended to the response. We return a String.
+    render 'welcome'
+  end
 
-   # Websockets
-   def on_message(data)
-      data = ERB::Util.html_escape data
-      print data
-      broadcast :print, data
-   end
+  # Websockets
+  def on_open
+    subscribe channel: "chat"
+    write 'Welcome to appname!'
+    @handle = params['id'.freeze] || 'Somebody'
+    publish channel: "chat", message: "#{ERB::Util.html_escape @handle} joind us :-)"
+  end
+  def on_message(data)
+    data = ERB::Util.html_escape data
+    publish channel: "chat", message: data
+  end
 
-   def on_open
-      print 'Welcome to appname!'
-      @handle = params['id'.freeze] || 'Somebody'
-      broadcast :print, "#{ERB::Util.html_escape @handle} joind us :-)"
-   end
+  def on_close
+    publish channel: "chat", message: "#{@handle} left us :-("
+  end
 
-   def on_close
-      broadcast :print, "#{@handle} left us :-("
-   end
-
-   protected
-
-   # write is inherites when a Websocket connection is opened.
-   #
-   # Inherited functions aren't exposed (for our security), so we need to wrap it.
-   def print(data)
-      write data
-   end
 end

@@ -1,9 +1,11 @@
 #!/usr/bin/env ruby
 
-# # Uncomment and set Redis URL for automatic scalling across proccesses and machines:
-# require 'redis'
-# ENV['PL_REDIS_URL'] ||= "redis://localhost:7777/0"
-# ENV['PL_REDIS_URL'] ||= "redis://:password@my.host:6389/0"
+# Example benchmark scripts:
+#
+#    websocket-bench broadcast ws://127.0.0.1:3000/ --concurrent 10 --sample-size 100 --server-type binary --step-size 1000 --limit-percentile 95 --limit-rtt 250ms --initial-clients 1000
+#
+#    websocket-bench broadcast ws://127.0.0.1:3000/ --concurrent 10 --sample-size 100 --step-size 1000 --limit-percentile 95 --limit-rtt 250ms --initial-clients 1000 --server-type json
+#
 
 Dir.chdir(File.expand_path(File.join('..', '..', 'lib'), __FILE__))
 require 'bundler/setup'
@@ -14,23 +16,28 @@ class ShootoutApp
   def index
     "This application should be used with the websocket-shootout benchmark utility."
   end
+  def on_open
+    subscribe channel: "shootout"
+  end
   # we won't be using AutoDispatch, but directly using the `on_message` callback.
   def on_message data
+    if data[0] == 'b' # binary
+      publish(channel: "shootout", message: data)
+      data[0] = 'r'
+      write data
+      return
+    end
     cmd, payload = JSON(data).values_at('type', 'payload')
     if cmd == 'echo'
       write({type: 'echo', payload: payload}.to_json)
     else
       # data = {type: 'broadcast', payload: payload}.to_json
       # broadcast :push2client, data
-      ShootoutApp.write2everyone({type: 'broadcast', payload: payload}.to_json)
+      publish(channel: "shootout", message: ({type: 'broadcast', payload: payload}.to_json))
       write({type: "broadcastResult", payload: payload}.to_json)
     end
   rescue
     puts "Incoming message format error - not JSON?"
-  end
-
-  def push2client data
-    write data
   end
 
 end

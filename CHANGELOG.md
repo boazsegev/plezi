@@ -2,7 +2,15 @@
 
 ***
 
-Change log v.0.14.8 (next)
+Change log v.0.15.0
+
+**Deprecation**: no more `broadcast`, `unicast`, `multicast` or `write2everyone`... Plezi fully embraced the Pub/Sub design and the [Iodine Extensions to the Rack Websocket Specification Proposal](https://github.com/boazsegev/iodine/blob/master/SPEC-Websocket-Draft.md).
+
+**Feature**: Super powerful Pub/Sub support comes directly from the server layer (iodine), allowing for process cluster Pub/Sub without the need for any Pub/Sub service. Iodine also brings a native Redis connector to easily scale Pub/Sub to multiple machines using a Redis servers.
+
+***
+
+Change log v.0.14.9 - EOL (last 0.14.x release)
 
 **Fix**: Asset Sass rendering will now only save the output to a file in production mode, allowing development mode to hot-load the assets and re-render them when changes occur.
 

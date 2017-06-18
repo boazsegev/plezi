@@ -1,7 +1,6 @@
 require 'plezi/render/render'
 require 'plezi/controller/cookies'
 require 'plezi/controller/controller_class'
-require 'plezi/websockets/message_dispatch'
 
 module Plezi
    # This module contains the functionality provided to any Controller class.
@@ -174,6 +173,7 @@ module Plezi
          json = nil
          begin
             json = JSON.parse(data, symbolize_names: true)
+            # json.default_proc = Plezi.hash_proc_4symstr
          rescue
             puts 'AutoDispatch Warnnig: Received non-JSON message. Closing Connection.'
             close
