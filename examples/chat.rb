@@ -12,7 +12,7 @@ class ChatServer
     write "Welcome, #{@name}!"
   end
   def on_close
-    publish channel: "chat, message: "#{@name} joind the chat."
+    publish channel: "chat", message: "#{@name} joind the chat."
   end
   def on_message data
     publish channel: "chat", message: "#{@name}: #{data}"
