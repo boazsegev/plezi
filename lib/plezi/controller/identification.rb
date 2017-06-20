@@ -1,6 +1,9 @@
 module Plezi
   module Base
     module Identification
+
+      module_function
+
       @ppid = ::Process.pid
       # returns a Plezi flavored pid UUID, used to set the pub/sub channel when scaling
       def pid
