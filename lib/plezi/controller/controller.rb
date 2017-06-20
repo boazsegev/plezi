@@ -1,4 +1,5 @@
 require 'plezi/render/render'
+require 'plezi/controller/identification'
 require 'plezi/controller/cookies'
 require 'plezi/controller/controller_class'
 
@@ -118,13 +119,13 @@ module Plezi
          ::Plezi::Base::Router.url_for self.class, func, params
       end
 
-      # A connection's Plezi ID uniquely identifies the connection across application instances, allowing it to receive and send messages using {#unicast}.
+      # A connection's Plezi ID uniquely identifies the connection across application instances.
       def id
-         @_pl_id ||= (conn_id && "#{::Plezi::Base::MessageDispatch.pid}-#{conn_id.to_s(16)}")
+         @_pl_id ||= (conn_id && "#{::Plezi::Base::Identification.pid}-#{conn_id.to_s(16)}")
       end
 
       # @private
-      # This is the process specific Websocket's UUID. This function is here to protect you from yourself. Don't call it.
+      # This is the process specific Websocket's ID. This function is here to protect you from yourself. Don't call it.
       def conn_id
          defined?(super) && super
       end
@@ -142,7 +143,7 @@ module Plezi
       #
       # This allows a module "library" to be used similar to the way "rooms" are used in node.js, so that a number of different Controllers can listen to shared events.
       #
-      # By dynamically extending a Controller instance using a module, Websocket broadcasts will be allowed to invoke the module's functions.
+      # By dynamically extending a Controller instance using a module, Auto Dispatch events can be routed to the newly available methods.
       #
       # Notice: It is impossible to `unextend` an extended module at this time.
       def extend(mod)

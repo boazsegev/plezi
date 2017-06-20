@@ -13,11 +13,12 @@ module Plezi
   def self.plezi_initialize
      if @plezi_initialize.nil?
         @plezi_initialize = true
-        self.hash_proc_4symstr # crerate the Proc object used for request params
+        self.hash_proc_4symstr # creates the Proc object used for request params
         @plezi_autostart = true if @plezi_autostart.nil?
+        Iodine.patch_rack
         if((ENV['PL_REDIS_URL'.freeze] ||= ENV["REDIS_URL"]))
           uri = URI(ENV['PL_REDIS_URL'.freeze])
-          Iodine::Websocket.default_pubsub = Iodine::PubSub::RedisEngine.new(uri.host, uri.port, 0, uri.password)
+          Iodine.default_pubsub = Iodine::PubSub::RedisEngine.new(uri.host, uri.port, 0, uri.password)
         end
         at_exit do
            next if @plezi_autostart == false

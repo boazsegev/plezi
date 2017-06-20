@@ -7,6 +7,11 @@ module Plezi
             base._pl_init_class_data
          end
 
+         # Publishes a message to a channel.
+         def publish(args)
+            Iodine.publish args
+         end
+
          # Returns a relative URL for the controller, placing the requested parameters in the URL (inline, where possible and as query data when not possible).
          def url_for(func, params = {})
             ::Plezi::Base::Router.url_for self, func, params
