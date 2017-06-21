@@ -187,7 +187,7 @@ var websocket_fail_count = 0
 function init_websocket()
 {
     if(websocket && websocket.readyState == 1) return true; // console.log('no need to renew socket connection');
-    websocket = new WebSocket(ws_uri);
+    websocket = new WebSocket(ws_uri + document.getElementById("input").value);
     websocket.onopen = function(e) {
         //restart fail count
         websocket_fail = 0
@@ -266,7 +266,7 @@ function send_text()
     </ol>
     <p class="bold">Good Luck!</p>
     <h3> Did you try our websocket broadcast? </h3>
-    <p>Your appname app can send <span class="bold">WebSocket</span> broadcasts (and unicasts). Why not try them out? You can even try them across multiple windows.</p>
+    <p>Your appname app can send <span class="bold">WebSocket</span> messages and subscribe / publish to channels of information. This chat works across browser windows.</p>
     <form onsubmit='send_text(); return false;' id='monitor'>
         <p><input type='text' id='input' placeholder='Your message' /> <input type='submit'  value='Broadcast'/> </p>
         <ul id='output'>
