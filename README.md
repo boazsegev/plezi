@@ -10,7 +10,7 @@ Welcome to your new home with [plezi.io](http://www.plezi.io), the Ruby real-tim
 
 ## Short and Sweet
 
-What if your next Pub/Sub application could be as short as.
+What if your next Pub/Sub application could be as easy as:
 
 ```ruby
 require 'plezi'
