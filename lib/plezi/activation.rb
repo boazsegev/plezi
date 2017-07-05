@@ -16,9 +16,10 @@ module Plezi
         self.hash_proc_4symstr # creates the Proc object used for request params
         @plezi_autostart = true if @plezi_autostart.nil?
         Iodine.patch_rack
-        if((ENV['PL_REDIS_URL'.freeze] ||= ENV["REDIS_URL"]))
+        if((ENV['PL_REDIS_URL'.freeze] ||= ENV['REDIS_URL'.freeze]))
           uri = URI(ENV['PL_REDIS_URL'.freeze])
-          Iodine.default_pubsub = Iodine::PubSub::RedisEngine.new(uri.host, uri.port, 0, uri.password)
+          Iodine.default_pubsub = Iodine::PubSub::RedisEngine.new(uri.host, uri.port, (ENV['PL_REDIS_TIMEOUT'.freeze] || ENV['REDIS_TIMEOUT'.freeze]).to_i, uri.password)
+          Iodine.default_pubsub = Iodine::PubSub::Cluster unless Iodine.default_pubsub
         end
         at_exit do
            next if @plezi_autostart == false
