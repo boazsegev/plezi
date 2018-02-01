@@ -9,7 +9,7 @@
 // URI.
 // remember to update to the specific controller's path to your websocket URI.
 var ws_controller_path =
-    windselfow.location.pathname; // change to '/controller/path'
+    window.location.pathname; // change to '/controller/path'
 var ws_uri = (self.location.protocol.match(/https/) ? 'wss' : 'ws') + '://' +
              self.document.location.host + ws_controller_path;
 // websocket variable.
