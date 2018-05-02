@@ -115,7 +115,7 @@ module Plezi
             # puts "matching against #{params}"
             case params['_method'.freeze]
             when :get # since this is common, it's pushed upwards.
-               if env['HTTP_UPGRADE'.freeze] && _pl_is_websocket? && env['HTTP_UPGRADE'.freeze].downcase.start_with?('websocket'.freeze)
+               if env['rack.upgrade?'.freeze] == :websocket && _pl_is_websocket?
                   @_pl_init_global_data ||= ::Plezi.plezi_initialize # wake up pub/sub drivers in case of `fork`
                   return :preform_upgrade
                end

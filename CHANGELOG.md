@@ -2,6 +2,18 @@
 
 ***
 
+Change log v.0.16.0
+
+**Update**: update gem dependency to utilize `iodine` 0.5.x versions.
+
+***
+
+Change log v.0.15.1
+
+**Fix**: fixed gem dependency to limit the allowed versions of the `iodine` server and protect against changes made to the iodine 0.5.0 pub/sub API.
+
+***
+
 Change log v.0.15.0
 
 **Deprecation**: no more `broadcast`, `unicast`, `multicast` or `write2everyone`... Plezi fully embraced the Pub/Sub design and the [Iodine Extensions to the Rack Websocket Specification Proposal](https://github.com/boazsegev/iodine/blob/master/SPEC-Websocket-Draft.md).

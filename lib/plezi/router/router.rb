@@ -15,7 +15,7 @@ module Plezi
          # Creates a new router
          def new(app)
             if app && app != call_method
-               puts 'Plezi as Middleware'
+               puts "Plezi #{ Plezi::VERSION } as Middleware"
                @app = app
             end
             Plezi.app

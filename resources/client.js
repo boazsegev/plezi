@@ -109,14 +109,17 @@ PleziClient.prototype.___dispatch =
       }
       delete this[msg._EID_];
     }
-    if ((msg.event) && (this[msg.event])) {
+    if ((msg.event) && (this[msg.event]) &&
+        (typeof this[msg.event] === "function")) {
       this[msg.event](msg);
-    } else if ((msg.event) && (this['on' + msg.event])) {
+    } else if ((msg.event) && (this['on' + msg.event]) &&
+               (typeof this[msg.event] === "function")) {
       console.warn('PleziClient: use a callback called "' + msg.event +
                    '" instead of of "on' + msg.event + '"');
       this['on' + msg.event](msg);
     } else {
-      if (this['unknown'] && (msg.event != '_ack_')) {
+      if (this['unknown'] && (msg.event != '_ack_') &&
+          (typeof this['unknown'] === "function")) {
         this['unknown'](msg);
       };
     }
