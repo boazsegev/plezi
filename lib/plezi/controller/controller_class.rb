@@ -19,7 +19,7 @@ module Plezi
 
          # @private
          # This is used internally by Plezi, do not use.
-         RESERVED_METHODS = [:delete, :create, :update, :new, :show, :pre_connect, :on_open, :on_close, :on_shutdown, :on_message].freeze
+         RESERVED_METHODS = [:delete, :create, :update, :new, :show, :pre_connect, :on_sse, :on_open, :on_close, :on_shutdown, :on_message].freeze
          # @private
          # This function is used internally by Plezi, do not call.
          def _pl_get_map
@@ -73,6 +73,12 @@ module Plezi
 
          # @private
          # This function is used internally by Plezi, do not call.
+         def _pl_is_sse?
+            @_pl_is_sse
+         end
+
+         # @private
+         # This function is used internally by Plezi, do not call.
          def _pl_is_ad?
             @auto_dispatch
          end
@@ -115,9 +121,14 @@ module Plezi
             # puts "matching against #{params}"
             case params['_method'.freeze]
             when :get # since this is common, it's pushed upwards.
-               if env['rack.upgrade?'.freeze] == :websocket && _pl_is_websocket?
-                  @_pl_init_global_data ||= ::Plezi.plezi_initialize # wake up pub/sub drivers in case of `fork`
-                  return :preform_upgrade
+               if env['rack.upgrade?'.freeze]
+                  if env['rack.upgrade?'.freeze] == :websocket && _pl_is_websocket?
+                     @_pl_init_global_data ||= ::Plezi.plezi_initialize # why did we do this?
+                     return :preform_upgrade
+                  elsif env['rack.upgrade?'.freeze] == :sse && _pl_is_sse?
+                     @_pl_init_global_data ||= ::Plezi.plezi_initialize # why did we do this?
+                     return :preform_upgrade
+                  end
                end
                return :new if _pl_has_new && par_id == 'new'.freeze
                return meth_id || (_pl_has_show && :show) || nil
@@ -143,6 +154,7 @@ module Plezi
             @_pl_has_update = public_instance_methods(false).include?(:update)
             @_pl_has_delete = public_instance_methods(false).include?(:delete)
             @_pl_is_websocket = (instance_variable_defined?(:@auto_dispatch) && instance_variable_get(:@auto_dispatch)) || instance_methods(false).include?(:on_message)
+            @_pl_is_sse = instance_methods(false).include?(:on_sse)
             _pl_get_map
             _pl_ad_map
             _pl_ws_map

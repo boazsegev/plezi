@@ -17,13 +17,14 @@ module Plezi
         @plezi_autostart = true if @plezi_autostart.nil?
         Iodine.patch_rack
         if((ENV['PL_REDIS_URL'.freeze] ||= ENV['REDIS_URL'.freeze]))
-          uri = URI(ENV['PL_REDIS_URL'.freeze])
-          Iodine.default_pubsub = Iodine::PubSub::RedisEngine.new(uri.host, uri.port, (ENV['PL_REDIS_TIMEOUT'.freeze] || ENV['REDIS_TIMEOUT'.freeze]).to_i, uri.password)
-          Iodine.default_pubsub = Iodine::PubSub::Cluster unless Iodine.default_pubsub
+          ping = ENV['PL_REDIS_TIMEOUT'.freeze] || ENV['REDIS_TIMEOUT'.freeze]
+          ping = ping.to_i if ping
+          Iodine::PubSub.default = Iodine::PubSub::RedisEngine.new(ENV['PL_REDIS_URL'.freeze], ping: ping)
+          Iodine::PubSub.default = Iodine::PubSub::CLUSTER unless Iodine::PubSub.default
         end
         at_exit do
            next if @plezi_autostart == false
-           ::Iodine::Rack.app = ::Plezi.app
+           ::Iodine.listen2http app: ::Plezi.app
            ::Iodine.start
         end
      end

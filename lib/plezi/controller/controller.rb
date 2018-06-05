@@ -2,11 +2,15 @@ require 'plezi/render/render'
 require 'plezi/controller/identification'
 require 'plezi/controller/cookies'
 require 'plezi/controller/controller_class'
+require 'plezi/controller/bridge'
 
 module Plezi
    # This module contains the functionality provided to any Controller class.
    #
    # This module will be included within every Class that is asigned to a route, providing the functionality without forcing an inheritance model.
+   #
+   # Any Controller can suppoert WebSocket connections by either implementing an `on_message(data)` callback or setting the `@auto_dispatch` class instance variable to `true`.
+   #
    module Controller
       def self.included(base)
          base.extend ::Plezi::Controller::ClassMethods
@@ -34,6 +38,10 @@ module Plezi
       #         cookies["name"] = nil
       #
       attr_reader :cookies
+
+      # @private
+      # Used internally to access the Iodine::Connection client data (if available).
+      attr_reader :_pl__client
 
       # @private
       # This function is used internally by Plezi, do not call.
@@ -119,23 +127,47 @@ module Plezi
          ::Plezi::Base::Router.url_for self.class, func, params
       end
 
-      # A connection's Plezi ID uniquely identifies the connection across application instances.
-      def id
-         @_pl_id ||= (conn_id && "#{::Plezi::Base::Identification.pid}-#{conn_id.to_s(16)}")
-      end
-
-      # @private
-      # This is the process specific Websocket's ID. This function is here to protect you from yourself. Don't call it.
-      def conn_id
-         defined?(super) && super
-      end
-
-      # Override this method to read / write cookies, perform authentication or perform validation before establishing a Websocket connecion.
+      # Override this method to read / write cookies, perform authentication or perform validation before establishing a Websocket or SSE connecion.
       #
       # Return `false` or `nil` to refuse the websocket connection.
       def pre_connect
          true
       end
+
+      # Writes to an SSE / WebSocket connection (raises an error unless the connection was already established).
+      def write data
+         _pl__client.write data
+      end
+
+      # Closes an SSE / WebSocket connection (raises an error unless the connection was already established).
+      def close
+         _pl__client.close
+      end
+      # Tests the known state for an SSE / WebSocket connection (the known state might not be the same as the actual state).
+      def open?
+         _pl__client && _pl__client.open?
+      end
+      # Returns the number of pending `write` operations that need to complete before the next `on_drained` callback is called.
+      def pending
+         return 0 unless _pl__client
+         _pl__client.pending
+      end
+
+      # Subscribes to a Pub/Sub stream / channel or replaces an existing subscription to the same stream / channel (raises an error unless an SSE / WebSocket connection was established).
+      def subscribe *args, &block
+         raise "WebSocket / SSE connection missing" unless _pl__client
+         if(block)
+            _pl__client.subscribe *args, &block
+         else
+            _pl__client.subscribe *args
+         end
+      end
+
+      # Publishes to a Pub/Sub stream / channel (routes to Iodine.publish).
+      def publish *args
+         ::Iodine.publish *args
+      end
+
 
       # Experimental: takes a module to be used for Websocket callbacks events.
       #
@@ -186,7 +218,7 @@ module Plezi
             puts "AutoDispatch Warnnig: JSON missing/invalid `event` name '#{json[:event]}' for class #{self.class.name}. Closing Connection."
             close
          end
-         write("{\"event\":\"_ack_\",\"_EID_\":#{json[:_EID_].to_json}}") if json[:_EID_]
+         _pl__client.write("{\"event\":\"_ack_\",\"_EID_\":#{json[:_EID_].to_json}}") if json[:_EID_]
          _pl_ad_review __send__(envt, json)
       end
 
@@ -196,9 +228,9 @@ module Plezi
         return data unless self.class._pl_is_ad?
         case data
         when Hash
-           write data.to_json
+           _pl__client.write data.to_json
         when String
-           write data
+           _pl__client.write data
            # when Array
            #   write data.to_json
         end
@@ -217,7 +249,8 @@ module Plezi
       # This function is used internally by Plezi, do not call.
       def preform_upgrade
          return false unless pre_connect
-         request.env['upgrade.websocket'.freeze] = self
+         request.env[::Plezi::Base::Bridge::CONTROLLER_NAME] = self
+         request.env['upgrade.websocket'.freeze] = ::Plezi::Base::Bridge
          @params = @params.dup # disable memory saving (used a single object per thread)
          @_pl_ws_map = self.class._pl_ws_map.dup
          @_pl_ad_map = self.class._pl_ad_map.dup
