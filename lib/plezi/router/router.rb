@@ -32,7 +32,6 @@ module Plezi
                ret = ::Plezi::Base::Err404Ctrl.new._pl_respond(request, response, request.params)
             end
             response.write(ret) if ret.is_a?(String)
-            p response
             return response.finish
          rescue => e
             puts e.message, e.backtrace

@@ -201,6 +201,23 @@ module Plezi
       end
 
       # @private
+      # Overload this method to handle event.
+      def on_open
+      end
+      # @private
+      # Overload this method to handle event.
+      def on_close
+      end
+      # @private
+      # Overload this method to handle event.
+      def on_drained
+      end
+      # @private
+      # Overload this method to handle event.
+      def on_shutdown
+      end
+      
+      # @private
       # This function is used internally by Plezi, for Auto-Dispatch support do not call.
       def on_message(data)
          json = nil
@@ -250,7 +267,7 @@ module Plezi
       def preform_upgrade
          return false unless pre_connect
          request.env[::Plezi::Base::Bridge::CONTROLLER_NAME] = self
-         request.env['upgrade.websocket'.freeze] = ::Plezi::Base::Bridge
+         request.env['rack.upgrade'.freeze] = ::Plezi::Base::Bridge
          @params = @params.dup # disable memory saving (used a single object per thread)
          @_pl_ws_map = self.class._pl_ws_map.dup
          @_pl_ad_map = self.class._pl_ad_map.dup

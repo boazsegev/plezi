@@ -122,10 +122,7 @@ module Plezi
             case params['_method'.freeze]
             when :get # since this is common, it's pushed upwards.
                if env['rack.upgrade?'.freeze]
-                  if env['rack.upgrade?'.freeze] == :websocket && _pl_is_websocket?
-                     @_pl_init_global_data ||= ::Plezi.plezi_initialize # why did we do this?
-                     return :preform_upgrade
-                  elsif env['rack.upgrade?'.freeze] == :sse && _pl_is_sse?
+                  if (env['rack.upgrade?'.freeze] == :websocket && _pl_is_websocket?) || (env['rack.upgrade?'.freeze] == :sse && _pl_is_sse?)
                      @_pl_init_global_data ||= ::Plezi.plezi_initialize # why did we do this?
                      return :preform_upgrade
                   end

@@ -17,7 +17,7 @@ Dir[File.join '{controllers}', '**', '*.rb'].each { |file| load File.expand_path
 Dir[File.join '{lib}', '**', '*.rb'].each { |file| load File.expand_path(file) }
 
 ## Logging
-Iodine::Rack.log = 1 if Iodine::Rack.log.nil?
+Iodine::DEFAULT_HTTP_ARGS[:log] = 1 if Iodine::DEFAULT_HTTP_ARGS[:log].nil?
 
 # # Optional Scaling (across processes or machines):
 ENV['PL_REDIS_URL'] ||= ENV['REDIS_URL'] ||

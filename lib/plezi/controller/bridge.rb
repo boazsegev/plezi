@@ -13,7 +13,7 @@ module Plezi
       def on_open client
         c = controller(client)
         c.instance_variable_set(CLIENT_NAME, client)
-        if c.protocol == :sse
+        if client.protocol == :sse
           c.on_sse
         else
           c.on_open
