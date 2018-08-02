@@ -63,4 +63,6 @@ module Plezi
       end
    end
 end
+
+require 'plezi/render/sassc.rb'
 require 'plezi/render/sass.rb'
