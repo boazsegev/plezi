@@ -2,6 +2,12 @@
 
 ***
 
+Change log v.0.16.1
+
+**Fix**: Fix the application boilerplate code, fixing a typo in the resulting `config.ru` which resulted in boilerplate code failing to execute. Credit to @namiwang (Nami WANG) for PR #28.
+
+***
+
 Change log v.0.16.0
 
 **Update**: update gem dependency to utilize `iodine` 0.5.x versions.
