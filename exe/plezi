@@ -75,6 +75,7 @@ module Builder
       app_tree['controllers'] ||= {}
       app_tree['controllers']['example.rb'] ||= IO.read(Root.join('resources', 'ctrlr.rb')).gsub('appname', app_name)
       app_tree['views'] ||= {}
+      app_tree['views']['assets'] ||= ''
       app_tree['views']['welcome.html.erb'] ||= IO.read(Root.join('resources', 'mini_welcome_page.html')).gsub('appname', app_name)
       app_tree['views']['404.html.erb'] ||= IO.read(Root.join('resources', '404.erb'))
       app_tree['views']['500.html.erb'] ||= IO.read(Root.join('resources', '500.erb'))

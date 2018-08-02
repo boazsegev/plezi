@@ -6,6 +6,8 @@ Change log v.0.16.1
 
 **Fix**: Fix the application boilerplate code, fixing a typo in the resulting `config.ru` which resulted in boilerplate code failing to execute. Credit to @namiwang (Nami WANG) for PR #28.
 
+**Update**: Added support for SassC for assets routing.
+
 ***
 
 Change log v.0.16.0

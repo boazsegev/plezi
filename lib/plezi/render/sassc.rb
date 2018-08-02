@@ -16,23 +16,30 @@ if defined?(::SassC)
          module BakeSASS
             extend HasCache
 
-            module_function
+            SCSSC_OPTIONS = { filename: :filename, source_map_file: ((ENV['ENV'] || ENV['RACK_ENV']) == 'production' ? false : true), source_map_embed: ((ENV['ENV'] || ENV['RACK_ENV']) == 'production' ? false : true), load_paths: :load_paths, style: (ENV['SASS_STYLE'] || ((ENV['ENV'] || ENV['RACK_ENV']) == 'production' ? :compressed : :nested)) }.dup
 
-            SASS_OPTIONS = { cache_store: SassC::CacheStores::Memory.new, style: (ENV['SASS_STYLE'] || ((ENV['ENV'] || ENV['RACK_ENV']) == 'production' ? :compressed : :nested)) }.dup
+            module_function
 
             # Bakes the SASS for the requested target, if a SASS source file is found.
             def call(target)
                return self[target] if File.extname(target) == '.map'.freeze
-               review_cache("#{target}.scss", target) || review_cache("#{target}.sass", target)
+               load_target("#{target}.scss", target) || load_target("#{target}.sass", target)
             end
 
-            def review_cache(filename, target)
+            def load_target(filename, target)
                return nil unless File.exist?(filename)
                eng = self[filename]
-               return self[target] unless eng.nil? || refresh_sass?(filename)
-               self[filename] = (eng = SassC::Engine.for_file(filename, SASS_OPTIONS)).dependencies
+               return self[target] unless eng.nil?  || refresh_sass?(filename)
                map_name = "#{target}.map".freeze
-               css, map = eng.render_with_sourcemap(File.basename(map_name))
+               opt = SCSSC_OPTIONS.dup
+               opt[:source_map_file] = map_name if opt[:source_map_file]
+               opt[:filename] = filename
+               opt[:load_paths] = [ File.basename(target) ]
+               data = IO.binread(filename)
+               eng = SassC::Engine.new(data, opt)
+               css = eng.render
+               map = eng.source_map
+               self[filename] = eng.dependencies
                self[filename.to_sym] = Time.now
                IO.write map_name, map.to_json(css_uri: File.basename(target))
                self[target] = css

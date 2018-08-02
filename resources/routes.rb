@@ -17,5 +17,8 @@
 
 # Plezi.route "/:format" , /^(html|json|xml)$/
 
+# An optional assets route:
+# Plezi.route('/assets', :assets)
+
 # # The root Controller
 Plezi.route '/', ExampleCtrl
