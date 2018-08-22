@@ -8,8 +8,8 @@ module Plezi
          end
 
          # Publishes a message to a channel.
-         def publish(args)
-            Iodine.publish args
+         def publish(*args)
+            Iodine.publish *args
          end
 
          # Returns a relative URL for the controller, placing the requested parameters in the URL (inline, where possible and as query data when not possible).

@@ -2,6 +2,12 @@
 
 ***
 
+Change log v.0.16.2
+
+**Fix**: Fixed an issue with Controller class method `publish` where only the named-arguments style API was respected, now non-named arguments are supported as wee - this didn't effect the Controller instance method `publish`.
+
+***
+
 Change log v.0.16.1
 
 **Fix**: Fix the application boilerplate code, fixing a typo in the resulting `config.ru` which resulted in boilerplate code failing to execute. Credit to @namiwang (Nami WANG) for PR #28.
