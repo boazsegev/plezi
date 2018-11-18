@@ -2,6 +2,12 @@
 
 ***
 
+Change log v.0.16.3
+
+**Fix**: Default logging is now enabled in a way that allows easier disabling (through the `procfile`).
+
+***
+
 Change log v.0.16.2
 
 **Fix**: Fixed an issue with Controller class method `publish` where only the named-arguments style API was respected, now non-named arguments are supported as wee - this didn't effect the Controller instance method `publish`.

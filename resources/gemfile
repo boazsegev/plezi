@@ -1,4 +1,1 @@
 
-## Redis servers are used to allow websocket scaling.
-## Plezi can be configured to automatically use Redis for easy scaling.
-# gem 'redis'
