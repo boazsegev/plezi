@@ -2,6 +2,10 @@
 
 ***
 
+Change log v.0.16.4
+
+**Fix**: (`iodine`) removed bundler requirement in the `iodine.gemspec` file.
+
 Change log v.0.16.3
 
 **Fix**: Default logging is now enabled in a way that allows easier disabling (through the `procfile`).

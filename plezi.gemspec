@@ -29,7 +29,7 @@ Gem::Specification.new do |spec|
 
   spec.add_dependency 'iodine', '>= 0.6.0', '< 0.8.0'
   spec.add_dependency 'rack', '>= 2.0.0'
-  spec.add_dependency 'bundler', '~> 1.14'
+  # spec.add_dependency 'bundler', '~> 1.14'
   # spec.add_dependency 'redcarpet', '> 3.3.0'
   # spec.add_dependency 'slim', '> 3.0.0'
 
