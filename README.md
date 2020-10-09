@@ -4,6 +4,8 @@
 [![Inline docs](http://inch-ci.org/github/boazsegev/plezi.svg?branch=master)](http://www.rubydoc.info/github/boazsegev/plezi/master/frames)
 [![GitHub](https://img.shields.io/badge/GitHub-Open%20Source-blue.svg)](https://github.com/boazsegev/plezi)
 
+> **Note**: at this point, [plezi.io](http://www.plezi.io) is mostly a wrapper around the [iodine Ruby server](https://github.com/boazsegev/iodine). Use iodine directly if possible.
+
 Are microservices on your mind? Do you dream of a an SPA that's easy to scale? Did you wonder if you could write a whole Websockets, RESTful AJAX back-end with just a few lines of code (business logic not included)?
 
 Welcome to your new home with [plezi.io](http://www.plezi.io), the Ruby real-time framework that assumes the business logic is *seperate* from the web service logic.
